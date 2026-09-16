@@ -22,8 +22,13 @@ def main():
         if expected and proc.returncode: raise RuntimeError(f'{log}: exit {proc.returncode}')
         return proc.returncode
     head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    versions = [line.split()[0] for line in subprocess.check_output([args.dotnet,'--list-sdks'],text=True).splitlines() if line.startswith('8.0.') and '-' not in line.split()[0]]
+    if not versions: raise RuntimeError('Install a .NET 8 SDK to run this audit.')
+    sdk = max(versions, key=lambda value: tuple(map(int,value.split('.'))))
     with tempfile.TemporaryDirectory(prefix='gameplaytags-audit-') as directory:
-        work = pathlib.Path(directory); baseline = work / 'baseline'; baseline.mkdir()
+        work = pathlib.Path(directory)
+        (work/'global.json').write_text(json.dumps({'sdk':{'version':sdk,'rollForward':'disable'}}))
+        baseline = work / 'baseline'; baseline.mkdir()
         archive = subprocess.check_output(['git', 'archive', BASELINE], cwd=ROOT)
         with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
             for entry in tar.getmembers():
@@ -40,7 +45,12 @@ def main():
             if path.endswith('.meta') or path == 'LICENSE':
                 if not (ROOT / path).exists() or (ROOT / path).read_bytes() != data: raise RuntimeError('Original meta/license changed: '+path)
             inventory.append({'path':path,'baseline_blob':sha,'head_sha256':hashlib.sha256((ROOT/path).read_bytes()).hexdigest() if (ROOT/path).exists() else None})
-        (output/'inventory.json').write_text(json.dumps({'baseline':BASELINE,'head':head,'files':inventory},indent=2))
+        (output/'inventory.json').write_text(json.dumps({'baseline':BASELINE,'head':head,'sdk':sdk,'files':inventory},indent=2))
+        production = {}
+        for variant, source in [('baseline',baseline),('candidate',ROOT)]:
+            files=[p for folder in ('Runtime','Editor','Samples~') for p in (source/folder).rglob('*.cs')]
+            production[variant]={'files':len(files),'lines':sum(len(p.read_text().splitlines()) for p in files),'bytes':sum(p.stat().st_size for p in files)}
+        (output/'complexity.json').write_text(json.dumps(production,indent=2))
         builds = {}
         optimized = 'class FrozenGameplayTagQuery' in (ROOT/'Runtime/GameplayTagQuery.cs').read_text()
         for variant, source in [('baseline',baseline),('candidate',ROOT)]:
@@ -63,6 +73,10 @@ def main():
             profile = host/'Profile.csproj'
             profile.write_text(f'<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>netstandard2.1</TargetFramework><LangVersion>9.0</LangVersion><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup><ItemGroup><Compile Include="{source}/Runtime/**/*.cs"/><Compile Include="UnityStubs.cs"/></ItemGroup></Project>')
             run([args.dotnet,'build',profile,'-c','Release','-p:BaseIntermediateOutputPath=obj-profile/','-p:OutputPath=bin-profile/'],variant+'-profile.log',host)
+            if variant=='candidate' and optimized:
+                run([args.dotnet,'build',profile,'-c','Release','-p:DefineConstants=UNITY_EDITOR','-p:BaseIntermediateOutputPath=obj-editor-profile/','-p:OutputPath=bin-editor-profile/'],'candidate-editor-profile.log',host)
+                run([args.dotnet,'build','Extended.csproj','-c','Release',f'-p:SourceRoot={source}','-p:BaseIntermediateOutputPath=obj-extended/','-p:OutputPath=bin-extended/'],'extended-build.log',host)
+                run([args.dotnet,host/'bin-extended/Extended.dll',output/'extended.json'],'extended-tests.log',host)
         if not args.skip_bench:
             for round_number in range(args.rounds):
                 order = ['baseline','candidate'] if round_number % 2 == 0 else ['candidate','baseline']
@@ -86,7 +100,7 @@ def main():
                 comparisons.append({'name':key[0],'size':key[1],'baseline_ns':bn,'candidate_ns':cn,'ratio':cn/bn,'baseline':b,'candidate':c})
         alerts=[{'name':r['name'],'size':r['size'],'ratio':r['ratio']} for r in comparisons if r['ratio']>1.05]
         (output/'comparison.json').write_text(json.dumps(comparisons,indent=2))
-        summary={'baseline':BASELINE,'head':head,'optimized_source':optimized,'managed_checks':'passed','unity_editor':'not_run','il2cpp_android':'not_run','il2cpp_ios':'not_run','performance':'not_run' if args.skip_bench else ('review_required' if alerts else 'host_only_no_alerts'),'alerts_over_5_percent':alerts,'release_approved':False,'measurement_note':'7 samples per process; alternating fresh processes; all raw samples retained. No significance claims from shared runners.'}
+        summary={'baseline':BASELINE,'head':head,'sdk':sdk,'optimized_source':optimized,'managed_checks':'passed','unity_editor':'not_run','il2cpp_android':'not_run','il2cpp_ios':'not_run','performance':'not_run' if args.skip_bench else ('review_required' if alerts else 'host_only_no_alerts'),'alerts_over_5_percent':alerts,'release_approved':False,'measurement_note':'7 samples per process; alternating fresh processes; all raw samples retained. No significance claims from shared runners. query.construct includes the wrapper, matcher delegate and, for the candidate, validation/freezing.'}
         (output/'summary.json').write_text(json.dumps(summary,indent=2)); print(json.dumps(summary,indent=2),flush=True)
     return 0
 
