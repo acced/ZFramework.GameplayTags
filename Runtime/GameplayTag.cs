@@ -48,6 +48,12 @@ namespace GameplayTags
                 {
                     if (normalized[i - 1] == '.') { error = "Gameplay Tag cannot contain an empty hierarchy segment."; return false; }
                 }
+                else if (char.IsSurrogate(c))
+                {
+                    if (!char.IsHighSurrogate(c) || i + 1 == normalized.Length || !char.IsLowSurrogate(normalized[i + 1]))
+                    { error = "Gameplay Tag contains an unpaired UTF-16 surrogate."; return false; }
+                    i++;
+                }
                 else if (char.IsWhiteSpace(c) || char.IsControl(c) || InvalidCharacters.IndexOf(c) >= 0)
                 { error = "Gameplay Tag contains whitespace, a control character, or reserved punctuation."; return false; }
             }

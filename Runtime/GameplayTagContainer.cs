@@ -61,6 +61,7 @@ namespace GameplayTags
             if (Count == 0) { CopyFrom(other); return; }
             int start = IndexOf(other[0].Name);
             if (start < 0) start = ~start;
+            if (start == Count) { m_GameplayTags.AddRange(other.m_GameplayTags); return; }
             int oldCount = Count, i = start, j = 0, added = 0;
             while (i < oldCount && j < other.Count)
             {
@@ -72,7 +73,12 @@ namespace GameplayTags
             added += other.Count - j;
             if (added == 0) return;
             int count = checked(oldCount + added);
-            if (Capacity < count) Capacity = count;
+            if (Capacity < count)
+            {
+                // Preserve amortized growth for repeated small batches, with only one resize for a large batch.
+                int growth = Capacity <= int.MaxValue / 2 ? Capacity * 2 : count;
+                Capacity = Math.Max(count, growth);
+            }
             while (Count < count) m_GameplayTags.Add(default);
             i = oldCount - 1; j = other.Count - 1;
             int write = count - 1;
@@ -248,7 +254,8 @@ namespace GameplayTags
         /// <summary>Loading boundary: resolve redirects atomically. Unknown names throw without altering this container.</summary>
         public void ResolveRegisteredTags()
         {
-            var resolved = new List<GameplayTag>(Count);
+            if (Count == 0) return;
+            var resolved = new List<GameplayTag>(Capacity);
             for (int i = 0; i < Count; i++) resolved.Add(GameplayTagManager.RequestTag(m_GameplayTags[i].Name));
             Normalize(resolved);
             m_GameplayTags = resolved;

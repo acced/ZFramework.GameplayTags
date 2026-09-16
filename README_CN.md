@@ -9,7 +9,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Unity-2021.3%2B-222222?logo=unity" alt="Unity 2021.3 及以上">
   <img src="https://img.shields.io/badge/Package-UPM-3178C6" alt="Unity Package Manager">
-  <a href="./LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-22A06B" alt="MIT 许可证"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-22A06B" alt="MIT 许可证"></a>
 </p>
 
 **[ZFramework Gameplay Tags](https://github.com/acced/ZFramework.GameplayTags)** 为 Unity 提供类似 Unreal Gameplay Tags 的标签能力。使用 `Ability.Attack.Melee`、`State.Debuff.Stunned` 这样的名称描述技能、状态、伤害类型等游戏概念。
@@ -22,6 +22,26 @@
 - **配置校验**：构建前检查标签名称、重定向、来源分组和受限层级。
 
 [安装](#installation) · [快速开始](#quick-start) · [使用方式](#usage) · [编辑器操作](#editor-guide) · [项目设置](#configuration) · [示例](#samples) · [常见问题](#faq)
+
+## 2.0 版本状态与迁移
+
+本分支为 **2.0.0-pre.2**，不是已经通过 Unity/设备验收的稳定版。托管 CI 的成功只证明其覆盖的 C# 检查完成；正式发布条件见 [发布验收](Documentation~/RELEASE.md)。安装本 PR 使用下面带分支名的 Git URL，生产项目应固定到已审核的 commit/tag。
+
+**Query 源数据与执行对象已分离。** 在加载阶段调用 `source.Freeze()`，复用返回的 `FrozenGameplayTagQuery`；修改源图不会改变已有 matcher。先完整验证活动源图，再做层级冗余删除、常量折叠与同类 All/Any 展平。不要逐帧或逐单位重复冻结相同规则。
+
+**线程与生命周期：**注册表和 Editor 操作在主线程；容器由单一调用方持有，不支持并发修改或边枚举边修改。注册表重建不会自动更新旧名称快照。关闭 Domain Reload 时库会复位静态注册表；调用方必须在新的运行会话重新建立订阅和加载状态。
+
+**序列化：**字段名保留；反序列化只对本地列表排序去重，不加载 Resources。主线程加载边界对序列化容器调用 `ResolveRegisteredTags()`，未知名称抛异常且不改原容器；解析保留预留容量。单标签用 `RequestTag(serializedTag.Name)`；查询标签由 Freeze 解析。快照复制/集合操作不再通过注册表偷偷过滤名称。
+
+**容量与结果：**`Capacity` 可预留；`FilterInto`、`FilterExactInto`、`UnionInto`、`IntersectionExactInto` 覆盖调用方提供的结果。在已初始化、输入已解析且实际结果容量足够时，这些核心操作不分配托管内存。容量不足按增长策略扩容，不丢结果。便利返回值 API、Freeze、加载解析、父/叶名称截取与异常路径不在零分配承诺内。
+
+| 别名/空条件 | 契约 |
+|---|---|
+| Copy/Append 自身 | 不操作；Remove 自身清空 |
+| UnionInto / 精确交集与过滤 | 可覆盖任一输入 |
+| 层级 FilterInto | 可覆盖源；拒绝覆盖另一独立条件容器，且修改前报错 |
+| 空/ null 条件 | Any=false，All=true；空 Query=false；空 No=true |
+| None | 非有效标签；`IsValid` 仅表示非空，不代表当前已注册 |
 
 <a id="installation"></a>
 ## 安装
@@ -54,7 +74,7 @@ YourUnityProject/
 在 Unity Package Manager 中点击 **+ → Add package from git URL…**。包的 `package.json` 位于仓库根目录时，使用：
 
 ```text
-https://github.com/acced/ZFramework.GameplayTags.git
+https://github.com/acced/ZFramework.GameplayTags.git#optimize/whole-repo-20260916
 ```
 
 如果仓库包含完整 Unity 项目，包位于 `Packages/zframework.gameplaytag`，则使用以下地址：
@@ -130,9 +150,10 @@ public sealed class GameplayTagsQuickStart : MonoBehaviour
                 .AddExpression(GameplayTagQueryExpression.NoTagsMatch().AddTag(stunned)),
             "Alive and not stunned");
 
-        Debug.Log(canAct.Matches(owned));      // True
+        FrozenGameplayTagQuery matcher = canAct.Freeze();
+        Debug.Log(matcher.Matches(owned));     // True
         owned.AddTag(stunned);
-        Debug.Log(canAct.Matches(owned));      // False
+        Debug.Log(matcher.Matches(owned));      // False
     }
 }
 ```
@@ -161,7 +182,7 @@ poisoned.MatchesTagExact(debuff);  // false
 | `owned.HasAny(other)` / `owned.HasAll(other)` | 对另一个容器中的标签做任意或全部匹配，包含层级匹配。 |
 | `owned.HasAnyExact(other)` / `owned.HasAllExact(other)` | 使用精确名称做任意或全部匹配。 |
 | `owned.Filter(other)` | 返回当前容器中能匹配 `other` 任意标签的那些标签。 |
-| `query.Matches(owned)` | 对容器执行查询。 |
+| `matcher.Matches(owned)` | 对容器执行查询。 |
 
 对于可能不存在的标签，使用 `TryRequestTag`，以返回值处理查找失败：
 
@@ -273,12 +294,12 @@ Sample.State.Debuff.Control.Stunned,Prevents actions,Default,false,true
 | --- | --- | --- |
 | Auto Initialize | `true` | 在首个场景加载前初始化。关闭后跳过启动初始化，注册表 API 仍可能在首次使用时初始化。 |
 | Include Implicit Parent Tags In Generated Code | `true` | 为自动注册的父级和显式定义都生成字段，不影响运行时父子匹配。 |
-| Warn On Invalid Serialized Tags | `true` | 当 `AddTag(GameplayTag)` 拒绝未注册且非空的名称时提醒；同名只提醒一次，注册表初始化会清空提醒记录。不会扫描全部资源。 |
+| Warn On Invalid Serialized Tags | `true` | 当 `AddTag(GameplayTag)` 拒绝未注册且非空的名称时提醒；仅 Editor/Development Build 按名称去重提示，Release 不保留该提示集合。不会扫描全部资源。 |
 | Generated Namespace | `Game` | 生成类的命名空间，留空则不生成命名空间。 |
 | Generated Class Name | `GameplayTags` | 生成的静态类名。 |
 | Generated Code Path | `Assets/GameScripts/Main/Generated/GameplayTags.gen.cs` | 生成 C# 文件的目标路径。 |
 
-页面还显示 **Defined Tags**（显式定义数）、**Registered Tags**（包含父级的注册数）、**Redirects**（重定向数）和 **Content Hash**（内容哈希）。哈希涵盖标签定义和重定向，不包含生成选项，因此不能仅靠它完整判断生成代码是否需要更新。
+配置哈希覆盖定义、重定向和生成选项，仅用于诊断；构建检查比较完整的预期生成文本，不以哈希相等代替源码一致性验证。
 
 修改选项后，使用 **File → Save Project** 保存。这个设置页会将资源标记为已修改，但不会主动立即写入磁盘。修改生成选项后还需重新生成代码。
 
@@ -299,12 +320,12 @@ Sample.State.Debuff.Control.Stunned,Prevents actions,Default,false,true
 它是可序列化类型，并且有自定义 PropertyDrawer。在组件或 `ScriptableObject` 中声明 public 字段，或使用 `[SerializeField]` 标记 private 字段即可。脚本需要挂到 GameObject 上，才会作为场景组件显示。
 
 **RequestTag 为什么找不到标签？**  
-检查名称和大小写，确认已经在 Manager 中定义，并将默认配置保留在 `Resources/GameplayTags/GameplayTagSettings.asset`。编辑器能搜索到被移动的配置，但默认运行时加载不一定能找到。如果允许标签不存在，使用 `TryRequestTag`。
+检查名称和大小写，确认已经在 Manager 中定义，并将默认配置保留在 `Resources/GameplayTags/GameplayTagSettings.asset`。默认编辑器工作流与默认运行时加载器使用相同的固定位置。如果允许标签不存在，使用 `TryRequestTag`。
 
 **构建为什么被校验拦住？**  
-先运行 **Tools → ZFramework → Gameplay Tags → Validate**，按提示修复配置。构建校验要求配置资源存在，并检查定义、来源、限制和重定向；不会自动生成 C# API。
+先运行 **Tools → ZFramework → Gameplay Tags → Validate**，按提示修复配置。构建校验要求配置资源存在，检查定义、来源、限制和重定向，并比较完整的预期生成源码；生成文件缺失或过期都会阻止构建。构建阶段不会自动生成 C# API。
 
 <a id="license"></a>
 ## 许可证
 
-[MIT](./LICENSE.md)。
+[MIT](./LICENSE)。

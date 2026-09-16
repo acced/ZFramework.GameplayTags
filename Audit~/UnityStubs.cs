@@ -17,9 +17,10 @@ namespace UnityEngine
     {
         public static readonly Dictionary<string, Object> Values = new Dictionary<string, Object>();
         public static T Load<T>(string path) where T : Object => Values.TryGetValue(path, out var value) ? value as T : null;
+        public static void UnloadAsset(Object value) => throw new NotSupportedException("Native Unity test only.");
     }
     public static class Debug { public static void Log(object value) { } public static void LogWarning(object value) { } public static void LogError(object value) { } public static void LogException(Exception value) { } }
-    public static class Application { public static string dataPath => System.IO.Path.Combine(Environment.CurrentDirectory, "Assets"); public static bool isPlaying; }
+    public static class Application { public static string dataPath => System.IO.Path.Combine(Environment.CurrentDirectory, "Assets"); public static bool isPlaying; public static string unityVersion => throw new NotSupportedException("Native Unity test only."); public static string platform => throw new NotSupportedException("Native Unity test only."); }
     public struct Vector2 { public float x,y; public Vector2(float x,float y) { this.x=x; this.y=y; } }
     public struct Rect { public float x,y,width,height; public float xMax => x+width; public Rect(float x,float y,float width,float height) { this.x=x; this.y=y; this.width=width; this.height=height; } }
     public struct Color { public Color(float r,float g,float b) { } public static Color white => default; }
@@ -55,7 +56,12 @@ namespace UnityEditor
     public enum EnterPlayModeOptions { None, DisableDomainReload, DisableSceneReload }
     public class SettingsProvider { public string label; public Action<string> guiHandler; public IEnumerable<string> keywords; public SettingsProvider(string path,SettingsScope scope) { } }
     public static class EditorApplication { public static Action delayCall; public static Action<PlayModeStateChange> playModeStateChanged; public static bool isPlayingOrWillChangePlaymode; }
-    public static class Undo { public static Action undoRedoPerformed; public static void RecordObject(Object obj,string label) { } }
+    public static class Undo { public static Action undoRedoPerformed; public static void RecordObject(Object obj,string label) { }
+        public static void FlushUndoRecordObjects() => throw new NotSupportedException("Native Unity test only.");
+        public static void PerformUndo() => throw new NotSupportedException("Native Unity test only.");
+        public static void PerformRedo() => throw new NotSupportedException("Native Unity test only.");
+        public static void ClearUndo(Object value) => throw new NotSupportedException("Native Unity test only.");
+    }
     public static class Selection { public static Object activeObject; }
     public static class AssetDatabase
     {
@@ -66,12 +72,14 @@ namespace UnityEditor
         public static bool IsValidFolder(string path)=>System.IO.Directory.Exists(path);
         public static string CreateFolder(string parent,string name) { string p=System.IO.Path.Combine(parent,name); System.IO.Directory.CreateDirectory(p); return p; }
         public static void CreateAsset(Object obj,string path) { Values.Add(path,obj); }
+        public static bool DeleteAsset(string path) => throw new NotSupportedException("Native Unity test only.");
         public static string GetAssetPath(Object obj) { foreach(var pair in Values) if(ReferenceEquals(pair.Value,obj)) return pair.Key; return string.Empty; }
         public static void SaveAssets() { } public static void Refresh() { } public static void ImportAsset(string path,ImportAssetOptions options) { }
     }
     public static class EditorUtility
     {
         public static void SetDirty(Object obj) { }
+        public static bool IsPersistent(Object value) => throw new NotSupportedException("Native Unity test only.");
         public static bool DisplayDialog(string title,string message,string ok,string cancel=null)=>false;
         public static string SaveFilePanel(string a,string b,string c,string d)=>string.Empty;
         public static string OpenFilePanel(string a,string b,string c)=>string.Empty;

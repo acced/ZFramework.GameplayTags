@@ -1,11 +1,19 @@
 {
   "name": "zframework.gameplaytag",
   "displayName": "ZFramework Gameplay Tags",
-  "version": "2.0.0-pre.1",
+  "version": "2.0.0-pre.2",
   "unity": "2021.3",
   "description": "Hierarchical Gameplay Tags with ordered containers, caller-owned results, validated frozen queries, redirects and editor tools. Prerelease: native Unity and device acceptance remains required.",
-  "keywords": ["gameplay-tags", "gameplay-ability-system", "gas", "zframework", "unity"],
-  "author": { "name": "ZFramework" },
+  "keywords": [
+    "gameplay-tags",
+    "gameplay-ability-system",
+    "gas",
+    "zframework",
+    "unity"
+  ],
+  "author": {
+    "name": "ZFramework"
+  },
   "license": "MIT",
   "samples": [
     {

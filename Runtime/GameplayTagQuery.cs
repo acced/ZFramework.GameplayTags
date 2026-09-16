@@ -112,8 +112,14 @@ namespace GameplayTags
         public bool IsEmpty => m_Root == null;
         private FrozenGameplayTagQuery(Node root, string description) { m_Root = root; UserDescription = description; }
         public bool Matches(GameplayTagContainer tags) => tags != null && m_Root != null && m_Root.Matches(tags);
-        internal static FrozenGameplayTagQuery Create(GameplayTagQueryExpression root, string description) =>
-            new FrozenGameplayTagQuery(root == null ? null : new Builder().Build(root, 1).Value, description);
+        internal static FrozenGameplayTagQuery Create(GameplayTagQueryExpression root, string description)
+        {
+            // A leaf has no active graph edges: resolve it without allocating traversal state.
+            Node node = root == null ? null : root.UsesTags
+                ? Builder.BuildTags(root)
+                : new Builder().Build(root, 1).Value;
+            return new FrozenGameplayTagQuery(node, description);
+        }
 
         private sealed class Node
         {
@@ -152,95 +158,156 @@ namespace GameplayTags
         private sealed class Builder
         {
             private const int MaxDepth = 64, MaxWork = 65536;
+            // A default Built means "on the current DFS path"; completed values always have a Node.
             private readonly Dictionary<GameplayTagQueryExpression, Built> m_Built = new Dictionary<GameplayTagQueryExpression, Built>();
-            private readonly HashSet<GameplayTagQueryExpression> m_Visiting = new HashSet<GameplayTagQueryExpression>();
+            private static readonly Comparison<GameplayTag> HierarchyOrder = CompareHierarchy;
+
             internal Built Build(GameplayTagQueryExpression source, int depth)
             {
                 if (source == null) throw new InvalidOperationException("Query contains a null expression.");
                 if (depth > MaxDepth) throw new InvalidOperationException("Query exceeds 64 expression levels.");
                 if (m_Built.TryGetValue(source, out Built prior))
                 {
+                    if (prior.Value == null) throw new InvalidOperationException("Query contains a cycle.");
                     if (depth + prior.Height - 1 > MaxDepth) throw new InvalidOperationException("Shared query path exceeds 64 levels.");
                     return prior;
                 }
-                if (!m_Visiting.Add(source)) throw new InvalidOperationException("Query contains a cycle.");
+                m_Built.Add(source, default);
                 int work = 1, height = 1;
                 Node result;
                 if (source.UsesTags)
                 {
-                    if (source.Tags == null) throw new InvalidOperationException("Query has a null tag payload.");
-                    if (source.Tags.Count >= MaxWork) throw new InvalidOperationException("Query exceeds its expanded work limit.");
+                    result = BuildTags(source);
                     work += source.Tags.Count;
-                    var names = new HashSet<string>(StringComparer.Ordinal);
-                    for (int i = 0; i < source.Tags.Count; i++) names.Add(GameplayTagManager.RequestTag(source.Tags[i].Name).Name);
-                    result = ReduceTags(source.Type, names);
                 }
                 else if (source.UsesExpressions)
                 {
                     if (source.Expressions == null) throw new InvalidOperationException("Query has a null child payload.");
-                    var children = new List<Node>(source.Expressions.Count);
-                    // Visit EVERY active child before folding constants or simplifying. Invalid branches cannot hide behind short-circuiting.
-                    for (int i = 0; i < source.Expressions.Count; i++)
+                    int count = source.Expressions.Count;
+                    if (count >= MaxWork) throw new InvalidOperationException("Query exceeds its expanded work limit.");
+                    // Singleton All/Any groups need validation, but no temporary child array.
+                    if (count == 1 && source.Type != GameplayTagQueryExpressionType.NoExpressionsMatch)
                     {
-                        Built child = Build(source.Expressions[i], depth + 1);
+                        Built child = Build(source.Expressions[0], depth + 1);
                         work += child.Work;
-                        if (work > MaxWork) throw new InvalidOperationException("Query exceeds 65536 expanded node/tag visits.");
-                        height = Math.Max(height, child.Height + 1);
-                        children.Add(child.Value);
+                        height = child.Height + 1;
+                        result = child.Value;
                     }
-                    result = ReduceChildren(source.Type, children);
+                    else
+                    {
+                        var children = count == 0 ? Array.Empty<Node>() : new Node[count];
+                        // Validate EVERY active child before folding constants. Short-circuiting cannot hide invalid input.
+                        for (int i = 0; i < count; i++)
+                        {
+                            Built child = Build(source.Expressions[i], depth + 1);
+                            work += child.Work;
+                            if (work > MaxWork) throw new InvalidOperationException("Query exceeds 65536 expanded node/tag visits.");
+                            height = Math.Max(height, child.Height + 1);
+                            children[i] = child.Value;
+                        }
+                        result = ReduceChildren(source.Type, children);
+                    }
                 }
                 else throw new InvalidOperationException("Query contains an undefined expression type.");
-                m_Visiting.Remove(source);
+                if (work > MaxWork) throw new InvalidOperationException("Query exceeds 65536 expanded node/tag visits.");
                 var built = new Built(result, height, work);
-                m_Built.Add(source, built);
+                m_Built[source] = built;
                 return built;
             }
-            private static Node ReduceTags(GameplayTagQueryExpressionType type, HashSet<string> names)
+
+            internal static Node BuildTags(GameplayTagQueryExpression source)
             {
-                if (names.Count == 0) return type == GameplayTagQueryExpressionType.AnyTagsMatch ? Node.False : Node.True;
-                if (names.Count > 1)
+                if (source.Tags == null) throw new InvalidOperationException("Query has a null tag payload.");
+                int count = source.Tags.Count;
+                if (count >= MaxWork) throw new InvalidOperationException("Query exceeds its expanded work limit.");
+                if (count == 0) return source.Type == GameplayTagQueryExpressionType.AnyTagsMatch ? Node.False : Node.True;
+
+                var tags = new GameplayTag[count];
+                for (int i = 0; i < count; i++)
+                    tags[i] = GameplayTagManager.RequestTag(source.Tags[i].Name);
+                if (count > 1)
                 {
-                    var redundant = new HashSet<string>(StringComparer.Ordinal);
-                    foreach (string name in names)
+                    // Hierarchy order ('.' before other characters) makes each subtree contiguous,
+                    // even for legal names such as A!x, A-x and A.B. No parent substrings or HashSets.
+                    Array.Sort(tags, HierarchyOrder);
+                    bool all = source.Type == GameplayTagQueryExpressionType.AllTagsMatch;
+                    int write = 1;
+                    for (int read = 1; read < count; read++)
                     {
-                        string parent = GameplayTagName.GetParent(name);
-                        while (parent.Length > 0)
+                        GameplayTag tag = tags[read];
+                        if (tag.MatchesTag(tags[write - 1]))
                         {
-                            if (names.Contains(parent))
-                            {
-                                if (type == GameplayTagQueryExpressionType.AllTagsMatch) redundant.Add(parent);
-                                else { redundant.Add(name); break; }
-                            }
-                            parent = GameplayTagName.GetParent(parent);
+                            if (all) tags[write - 1] = tag; // All keeps the most specific requirement.
                         }
+                        else tags[write++] = tag;
                     }
-                    names.ExceptWith(redundant);
+                    if (write != count) Array.Resize(ref tags, write);
                 }
-                var tags = new GameplayTag[names.Count];
-                int index = 0;
-                foreach (string name in names) tags[index++] = new GameplayTag(name);
-                Array.Sort(tags);
-                return new Node(type, tags, null);
+                return new Node(source.Type, tags, null);
             }
-            private static Node ReduceChildren(GameplayTagQueryExpressionType type, List<Node> children)
+
+            private static int CompareHierarchy(GameplayTag left, GameplayTag right)
+            {
+                string a = left.Name, b = right.Name;
+                int length = Math.Min(a.Length, b.Length);
+                for (int i = 0; i < length; i++)
+                {
+                    if (a[i] == b[i]) continue;
+                    if (a[i] == '.') return -1;
+                    if (b[i] == '.') return 1;
+                    return a[i] - b[i];
+                }
+                return a.Length.CompareTo(b.Length);
+            }
+
+            private static Node ReduceChildren(GameplayTagQueryExpressionType type, Node[] children)
             {
                 bool all = type == GameplayTagQueryExpressionType.AllExpressionsMatch;
                 bool none = type == GameplayTagQueryExpressionType.NoExpressionsMatch;
-                var reduced = new List<Node>();
-                for (int i = 0; i < children.Count; i++)
+                int count = 0;
+                Node single = null;
+                bool unchanged = true;
+                for (int i = 0; i < children.Length; i++)
                 {
                     Node child = children[i];
                     if (ReferenceEquals(child, Node.True))
-                    { if (!all) return none ? Node.False : Node.True; continue; }
+                    {
+                        if (!all) return none ? Node.False : Node.True;
+                        unchanged = false;
+                        continue;
+                    }
                     if (ReferenceEquals(child, Node.False))
-                    { if (all) return Node.False; continue; }
-                    if (!none && child.Type == type) reduced.AddRange(child.Children);
-                    else reduced.Add(child);
+                    {
+                        if (all) return Node.False;
+                        unchanged = false;
+                        continue;
+                    }
+                    if (!none && child.Type == type)
+                    {
+                        count += child.Children.Length;
+                        unchanged = false;
+                    }
+                    else { count++; single = child; }
                 }
-                if (reduced.Count == 0) return all || none ? Node.True : Node.False;
-                if (!none && reduced.Count == 1) return reduced[0];
-                return new Node(type, null, reduced.ToArray());
+                if (count == 0) return all || none ? Node.True : Node.False;
+                // Same-kind child groups are already reduced and have at least two children.
+                if (!none && count == 1) return single;
+                if (unchanged) return new Node(type, null, children);
+
+                var reduced = new Node[count];
+                int write = 0;
+                for (int i = 0; i < children.Length; i++)
+                {
+                    Node child = children[i];
+                    if (ReferenceEquals(child, Node.True) || ReferenceEquals(child, Node.False)) continue;
+                    if (!none && child.Type == type)
+                    {
+                        Array.Copy(child.Children, 0, reduced, write, child.Children.Length);
+                        write += child.Children.Length;
+                    }
+                    else reduced[write++] = child;
+                }
+                return new Node(type, null, reduced);
             }
         }
     }

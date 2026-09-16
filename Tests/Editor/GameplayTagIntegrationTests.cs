@@ -1,5 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Collections;
+using System.IO;
+using UnityEditor;
+using UnityEngine.TestTools;
 using NUnit.Framework;
 using UnityEngine;
 using GameplayTags.Editor;
@@ -104,6 +108,110 @@ namespace GameplayTags.Tests
             Assert.IsFalse(GameplayTagEditorUtility.TryAddTag(m_Settings, "state.Other", out _));
             Assert.AreEqual(before, m_Settings.ComputeContentHash());
             Assert.AreEqual(revision, m_Settings.Revision);
+        }
+        [Test]
+        public void NativeUndoRedoRestoresSettings()
+        {
+            uint original = m_Settings.ComputeContentHash();
+            Undo.RecordObject(m_Settings, "Acceptance add tag");
+            Assert.IsTrue(GameplayTagEditorUtility.TryAddTag(m_Settings, "State.Extra", out string error), error);
+            Undo.FlushUndoRecordObjects();
+            uint changed = m_Settings.ComputeContentHash();
+            Assert.AreNotEqual(original, changed);
+            Undo.PerformUndo();
+            Assert.AreEqual(original, m_Settings.ComputeContentHash());
+            Undo.PerformRedo();
+            Assert.AreEqual(changed, m_Settings.ComputeContentHash());
+            Undo.ClearUndo(m_Settings);
+        }
+
+        [Test]
+        public void SerializeReferenceAssetSurvivesDiskReload()
+        {
+            string path = "Assets/GameplayTagsQueryAcceptance-" + Guid.NewGuid().ToString("N") + ".asset";
+            var asset = ScriptableObject.CreateInstance<GameplayTagQueryTestAsset>();
+            try
+            {
+                asset.Query = new GameplayTagQuery(GameplayTagQueryExpression.AllTagsMatch()
+                    .AddTag(GameplayTagManager.RequestTag("State.Debuff")));
+                AssetDatabase.CreateAsset(asset, path);
+                AssetDatabase.SaveAssets();
+                Resources.UnloadAsset(asset);
+                asset = AssetDatabase.LoadAssetAtPath<GameplayTagQueryTestAsset>(path);
+                Assert.IsNotNull(asset);
+                Assert.IsTrue(asset.Query.Freeze().Matches(new GameplayTagContainer(
+                    GameplayTagManager.RequestTag("State.Debuff.Burning"))));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(path);
+                if (asset != null && !EditorUtility.IsPersistent(asset)) UnityEngine.Object.DestroyImmediate(asset);
+            }
+        }
+    }
+
+    public sealed class GameplayTagLifecycleTests
+    {
+        private bool m_OptionsEnabled;
+        private EnterPlayModeOptions m_Options;
+        private Action m_Callback;
+        private int m_CallbackCount;
+
+        [SetUp]
+        public void SetUp()
+        {
+            m_OptionsEnabled = EditorSettings.enterPlayModeOptionsEnabled;
+            m_Options = EditorSettings.enterPlayModeOptions;
+            Assert.IsTrue(File.Exists("GAMEPLAYTAGS_ACCEPTANCE_PROJECT"),
+                "Run this fixture in the isolated project made by Audit~/unity_acceptance.py.");
+            m_CallbackCount = 0;
+            m_Callback = () => m_CallbackCount++;
+        }
+
+        [UnityTearDown]
+        public IEnumerator TearDown()
+        {
+            GameplayTagManager.RegistryChanged -= m_Callback;
+            if (Application.isPlaying) yield return new ExitPlayMode();
+            EditorSettings.enterPlayModeOptionsEnabled = m_OptionsEnabled;
+            EditorSettings.enterPlayModeOptions = m_Options;
+        }
+
+        [UnityTest]
+        public IEnumerator StaticStateResetsWithDomainReloadDisabled()
+        {
+            EditorSettings.enterPlayModeOptionsEnabled = true;
+            EditorSettings.enterPlayModeOptions = EnterPlayModeOptions.DisableDomainReload;
+            GameplayTagManager.RegistryChanged += m_Callback;
+            yield return new EnterPlayMode(false);
+            Assert.IsTrue(GameplayTagManager.IsInitialized);
+            Assert.AreEqual(0, m_CallbackCount, "An old editor subscriber survived a new play session.");
+            GameplayTagManager.RegistryChanged += m_Callback;
+            yield return new ExitPlayMode();
+            int callsAfterExit = m_CallbackCount;
+            yield return new EnterPlayMode(false);
+            Assert.IsTrue(GameplayTagManager.IsInitialized);
+            Assert.AreEqual(callsAfterExit, m_CallbackCount, "A subscriber survived the second play session.");
+            yield return new ExitPlayMode();
+        }
+    }
+
+    public static class AcceptanceProjectSetup
+    {
+        public static void Prepare()
+        {
+            if (!File.Exists("GAMEPLAYTAGS_ACCEPTANCE_PROJECT"))
+                throw new InvalidOperationException("Refusing to modify an unmarked Unity project.");
+            var settings = GameplayTagEditorUtility.GetSettings(true);
+            foreach (string name in new[]{"Acceptance.Alive", "Acceptance.Debuff.Burning", "Acceptance.Debuff.Stunned"})
+            {
+                if (!settings.TryGetTagDefinition(name, out _) &&
+                    !GameplayTagEditorUtility.TryAddTag(settings, name, out string error))
+                    throw new InvalidOperationException(error);
+            }
+            GameplayTagEditorUtility.SaveAndReinitialize(settings);
+            GameplayTagCodeGenerator.Generate(settings);
+            Debug.Log("GAMEPLAYTAGS_UNITY_VERSION=" + Application.unityVersion);
         }
     }
 }

@@ -51,6 +51,64 @@ internal static class Extended
     }
     static void RunTests()
     {
+        Test("well-formed-utf16-name-boundary",()=>{
+            foreach (string name in new[]{"A\uD800","A\uDC00","A\uD800B","A\uDC00\uD800"})
+                Check(!GameplayTagName.TryNormalize(name,out _,out _),"unpaired surrogate accepted");
+            Check(GameplayTagName.TryNormalize("A.\uD83D\uDE00",out _,out _),"valid surrogate pair rejected");
+            Check(!Settings("A\uD800").Validate(new List<string>()));
+        });
+        Test("freeze-punctuation-hierarchy-reference-equivalence",()=>{
+            string[] names={"A","A!x","A!x.B","A-x","A+x","A.B","A.B!x","A.B.C","A.B.D","A.Z","A_Z","A.\u4e2d","A.\u4e2d.C","A.\uD83D\uDE00","Z"};
+            Setup(names); var random=new Random(409671);
+            for(int sample=0;sample<800;sample++)
+            {
+                var conditions=names.Where(_=>random.Next(3)==0).ToArray();
+                foreach(var type in new[]{GameplayTagQueryExpressionType.AllTagsMatch,GameplayTagQueryExpressionType.AnyTagsMatch,GameplayTagQueryExpressionType.NoTagsMatch})
+                {
+                    var expression=new GameplayTagQueryExpression(type).AddTags(Container(conditions));
+                    string before=expression.ToString(); var frozen=new GameplayTagQuery(expression).Freeze();
+                    Check(before==expression.ToString(),"Freeze modified source");
+                    for(int choice=0;choice<12;choice++)
+                    {
+                        var owned=names.Where(_=>random.Next(3)==0).ToArray();
+                        Func<string,bool> present=p=>owned.Any(c=>c==p || c.StartsWith(p+".",StringComparison.Ordinal));
+                        bool expected=type==GameplayTagQueryExpressionType.AllTagsMatch?conditions.All(present):
+                            type==GameplayTagQueryExpressionType.AnyTagsMatch?conditions.Any(present):!conditions.Any(present);
+                        Check(frozen.Matches(Container(owned))==expected,"hierarchy reduction changed semantics");
+                    }
+                }
+            }
+        });
+        Test("large-freeze-and-canonical-alias-dedup",()=>{
+            var names=Enumerable.Range(0,2048).Select(i=>"Root.T"+i.ToString("D4")).ToArray(); Setup(names);
+            var expression=GameplayTagQueryExpression.AllTagsMatch().AddTags(Container(names));
+            var frozen=new GameplayTagQuery(expression).Freeze();
+            Check(frozen.Matches(Container(names))); Check(!frozen.Matches(Container(names.Take(2047).ToArray())));
+            var s=Settings("A.B"); s.RedirectsInternal.Add(new GameplayTagRedirect("Old","A.B")); GameplayTagManager.Initialize(s,true);
+            var aliases=GameplayTagQueryExpression.AllTagsMatch();
+            Field(aliases.Tags,"m_GameplayTags",new List<GameplayTag>{new GameplayTag("Old"),new GameplayTag("A"),new GameplayTag("A.B")});
+            Check(new GameplayTagQuery(aliases).Freeze().Matches(Container("A.B")));
+        });
+        Test("resolve-preserves-reserved-capacity-and-empty-noop",()=>{
+            Setup("A.B"); var s=Settings("A.B"); s.RedirectsInternal.Add(new GameplayTagRedirect("Old","A.B"));
+            GameplayTagManager.Initialize(s,true);
+            var c=new GameplayTagContainer(64); c.AddTag("A.B"); c.ResolveRegisteredTags(); Check(c.Capacity>=64);
+            c.Clear(); long before=GC.GetAllocatedBytesForCurrentThread(); c.ResolveRegisteredTags();
+            Check(GC.GetAllocatedBytesForCurrentThread()==before); Check(c.Capacity>=64);
+        });
+        Test("append-amortized-growth",()=>{
+            var names=Enumerable.Range(0,257).Select(i=>"Grow.T"+i.ToString("D4")).ToArray(); Setup(names);
+            foreach(bool reverse in new[]{false,true})
+            {
+                var output=new GameplayTagContainer(); int resizes=0,last=0; var one=new GameplayTagContainer(1);
+                for(int i=0;i<names.Length;i++)
+                {
+                    one.Clear(); one.AddTag(names[reverse?names.Length-1-i:i]); output.AppendTags(one);
+                    if(output.Capacity!=last) {resizes++; last=output.Capacity;}
+                }
+                Same(output,names); Check(resizes<=12,"one backing allocation per batch");
+            }
+        });
         Test("canonical-input-restrictions",()=>{
             foreach(string name in new[]{" A ","A..B","A\0B",".A","A."}) { var s=Settings(name); Check(!s.Validate(new List<string>())); }
             var restricted=Settings("A","A.B"); restricted.TagsInternal[0]=new GameplayTagDefinition("A","","Default",true,false); Check(!restricted.Validate(new List<string>()));
