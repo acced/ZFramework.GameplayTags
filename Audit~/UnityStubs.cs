@@ -43,7 +43,7 @@ namespace UnityEditor
 {
     using UnityEngine;
     using Object=UnityEngine.Object;
-    [AttributeUsage(AttributeTargets.Method)] public sealed class MenuItem : Attribute { public MenuItem(string value) { } }
+    [AttributeUsage(AttributeTargets.Method)] public sealed class MenuItem : Attribute { public int priority; public MenuItem(string value) { } }
     [AttributeUsage(AttributeTargets.Class)] public sealed class InitializeOnLoadAttribute : Attribute { }
     [AttributeUsage(AttributeTargets.Method)] public sealed class InitializeOnEnterPlayModeAttribute : Attribute { }
     [AttributeUsage(AttributeTargets.Class)] public sealed class CustomPropertyDrawer : Attribute { public CustomPropertyDrawer(Type type) { } }
