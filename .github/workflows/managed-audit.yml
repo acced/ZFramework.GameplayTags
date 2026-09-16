@@ -1,0 +1,43 @@
+name: Managed audit (not Unity release approval)
+on:
+  push:
+    branches: [optimize/whole-repo-20260916]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: managed-audit-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  managed:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '8.0.425'
+      - name: Test audit and release evidence gates
+        run: python3 -S -m unittest discover -s 'Audit~' -p 'test_*.py'
+      - name: Compile all managed source and run regression and performance audit
+        run: python3 'Audit~/run.py' --output artifacts/results --rounds 3
+      - name: Recheck nine historical alerts with both frozen references
+        run: python3 'Audit~/perf_regression.py' --output artifacts/performance-regression --rounds 6
+      - name: Archive exact checked source
+        if: always()
+        run: |
+          mkdir -p artifacts
+          git archive --format=zip HEAD > artifacts/ZFramework.GameplayTags.Source.zip
+          git rev-parse HEAD > artifacts/SOURCE_COMMIT.txt
+          dotnet --info > artifacts/dotnet-info.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: gameplaytags-audit-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14

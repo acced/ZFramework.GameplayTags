@@ -6,527 +6,258 @@ using UnityEngine;
 
 namespace GameplayTags.Editor
 {
-    /// <summary>
-    /// Settings 资产的生命周期与全部写操作。
-    ///
-    /// 每个 Try* 都在配置的副本上施加改动，整体校验通过之后才写回，
-    /// 所以失败时原配置一个字节都没动，不需要快照回滚。
-    /// 撤销由调用方的 <see cref="Undo.RecordObject"/> 负责。
-    /// </summary>
+    /// <summary>Editor-only transactions. Callers record Undo; successful TryApply transfers ownership of its lists.</summary>
     public static class GameplayTagEditorUtility
     {
         private static GameplayTagSettings s_LastSettings;
         private static int s_LastRevision = int.MinValue;
-
         public static GameplayTagSettings GetSettings(bool createIfMissing)
         {
-            GameplayTagSettings settings = AssetDatabase.LoadAssetAtPath<GameplayTagSettings>(
-                GameplayTagSettings.DefaultAssetPath);
-            if (settings == null)
-            {
-                string[] guids = AssetDatabase.FindAssets("t:GameplayTagSettings");
-                if (guids.Length > 0)
-                    settings = AssetDatabase.LoadAssetAtPath<GameplayTagSettings>(AssetDatabase.GUIDToAssetPath(guids[0]));
-            }
-
-            if (settings == null && createIfMissing)
-                settings = CreateSettings();
-            return settings;
+            var settings = AssetDatabase.LoadAssetAtPath<GameplayTagSettings>(GameplayTagSettings.DefaultAssetPath);
+            return settings == null && createIfMissing ? CreateSettings() : settings;
         }
-
         public static GameplayTagSettings CreateSettings()
         {
+            var existing = GetSettings(false);
+            if (existing != null) return existing;
             EnsureAssetDirectory(Path.GetDirectoryName(GameplayTagSettings.DefaultAssetPath));
-
-            GameplayTagSettings settings = ScriptableObject.CreateInstance<GameplayTagSettings>();
-            TryAddSource(settings, "Default", string.Empty, false, out _);
+            var settings = ScriptableObject.CreateInstance<GameplayTagSettings>();
+            if (!TryAddSource(settings, "Default", string.Empty, false, out string error)) throw new InvalidOperationException(error);
             AssetDatabase.CreateAsset(settings, GameplayTagSettings.DefaultAssetPath);
             AssetDatabase.SaveAssets();
             Selection.activeObject = settings;
             InitializeManager(settings, true);
             return settings;
         }
-
         public static void InitializeManager(GameplayTagSettings settings, bool force)
         {
-            if (settings == null)
-                return;
-            if (!force && ReferenceEquals(settings, s_LastSettings) && s_LastRevision == settings.Revision)
-                return;
-
+            if (settings == null || EditorApplication.isPlayingOrWillChangePlaymode) return;
+            if (!force && GameplayTagManager.IsInitialized && ReferenceEquals(GameplayTagManager.Settings, settings) &&
+                ReferenceEquals(settings, s_LastSettings) && settings.Revision == s_LastRevision) return;
             GameplayTagManager.ReinitializeForEditor(settings);
             s_LastSettings = settings;
             s_LastRevision = settings.Revision;
         }
-
         public static void SaveAndReinitialize(GameplayTagSettings settings)
         {
-            if (settings == null)
-                return;
-
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
             EditorUtility.SetDirty(settings);
             AssetDatabase.SaveAssets();
             InitializeManager(settings, true);
         }
-
         public static void EnsureAssetDirectory(string directory)
         {
-            if (string.IsNullOrEmpty(directory) || AssetDatabase.IsValidFolder(directory))
-                return;
-
+            if (string.IsNullOrEmpty(directory)) return;
             string[] segments = directory.Replace('\\', '/').Split('/');
-            string current = segments[0];
+            if (segments[0] != "Assets") throw new ArgumentException("Asset directories must start at Assets.", nameof(directory));
+            for (int i = 1; i < segments.Length; i++) if (segments[i].Length == 0 || segments[i] == "." || segments[i] == "..")
+                throw new ArgumentException("Asset directories cannot contain empty or relative segments.", nameof(directory));
+            string current = "Assets";
             for (int i = 1; i < segments.Length; i++)
             {
                 string next = current + "/" + segments[i];
-                if (!AssetDatabase.IsValidFolder(next))
-                    AssetDatabase.CreateFolder(current, segments[i]);
+                if (!AssetDatabase.IsValidFolder(next)) AssetDatabase.CreateFolder(current, segments[i]);
                 current = next;
             }
         }
-
-        public static bool TryAddTag(GameplayTagSettings settings, string name, out string error) =>
-            TryAddTag(settings, name, string.Empty, "Default", false, true, out error);
-
-        public static bool TryAddTag(
-            GameplayTagSettings settings,
-            string name,
-            string devComment,
-            string source,
-            bool restricted,
-            bool allowNonRestrictedChildren,
-            out string error)
+        public static bool TryAddTag(GameplayTagSettings settings, string name, out string error) => TryAddTag(settings, name, string.Empty, "Default", false, true, out error);
+        public static bool TryAddTag(GameplayTagSettings settings, string name, string devComment, string source, bool restricted, bool allowNonRestrictedChildren, out string error)
         {
-            if (!GameplayTagName.TryNormalize(name, out string normalized, out error))
-                return false;
-
-            List<GameplayTagDefinition> tags = CloneDefinitions(settings.Tags);
-            List<GameplayTagSource> sources = CloneSources(settings.Sources);
-            if (FindTag(tags, normalized) >= 0)
-            {
-                error = "Gameplay Tag already exists: " + normalized;
-                return false;
-            }
-            if (ContainsTagIgnoringCase(tags, normalized))
-            {
-                error = "A Gameplay Tag with different letter casing already exists: " + normalized;
-                return false;
-            }
-
-            string normalizedSource = source?.Trim() ?? string.Empty;
-            if (!TryUseSource(sources, normalizedSource, out error))
-                return false;
-
-            tags.Add(new GameplayTagDefinition(
-                normalized,
-                devComment ?? string.Empty,
-                normalizedSource,
-                restricted,
-                allowNonRestrictedChildren));
+            if (!GameplayTagName.TryNormalize(name, out string normalized, out error)) return false;
+            var tags = CloneDefinitions(settings.Tags);
+            if (FindTag(tags, normalized) >= 0) { error = "Gameplay Tag already exists: " + normalized; return false; }
+            var sources = CloneSources(settings.Sources);
+            source = source?.Trim() ?? string.Empty;
+            if (!TryUseSource(sources, source, out error)) return false;
+            tags.Add(new GameplayTagDefinition(normalized, devComment ?? string.Empty, source, restricted, allowNonRestrictedChildren));
             return TryApply(settings, tags, CloneRedirects(settings.Redirects), sources, out error);
         }
-
-        public static bool TrySetTagMetadata(
-            GameplayTagSettings settings,
-            string name,
-            string devComment,
-            string source,
-            bool restricted,
-            bool allowNonRestrictedChildren,
-            out string error)
+        public static bool TrySetTagMetadata(GameplayTagSettings settings, string name, string devComment, string source, bool restricted, bool allowNonRestrictedChildren, out string error)
         {
-            List<GameplayTagDefinition> tags = CloneDefinitions(settings.Tags);
-            List<GameplayTagSource> sources = CloneSources(settings.Sources);
-            int index = FindTag(tags, name);
-            if (index < 0)
-            {
-                error = "Gameplay Tag does not exist: " + name;
-                return false;
-            }
-
-            if (!TryEditSource(sources, tags[index].Source, out error))
-                return false;
-
-            string normalizedSource = source?.Trim() ?? string.Empty;
-            if (!TryUseSource(sources, normalizedSource, out error))
-                return false;
-
-            tags[index].SetMetadata(
-                devComment ?? string.Empty,
-                normalizedSource,
-                restricted,
-                allowNonRestrictedChildren);
+            if (!GameplayTagName.TryNormalize(name, out string normalized, out error)) return false;
+            var tags = CloneDefinitions(settings.Tags);
+            int index = FindTag(tags, normalized);
+            if (index < 0) { error = "Gameplay Tag does not exist: " + normalized; return false; }
+            var sources = CloneSources(settings.Sources);
+            if (!TryEditSource(sources, tags[index].Source, out error)) return false;
+            source = source?.Trim() ?? string.Empty;
+            if (!TryUseSource(sources, source, out error)) return false;
+            tags[index].SetMetadata(devComment ?? string.Empty, source, restricted, allowNonRestrictedChildren);
             return TryApply(settings, tags, CloneRedirects(settings.Redirects), sources, out error);
         }
-
-        public static bool TryRenameTag(
-            GameplayTagSettings settings,
-            string oldName,
-            string newName,
-            bool renameChildren,
-            bool createRedirects,
-            out string error)
+        public static bool TryRenameTag(GameplayTagSettings settings, string oldName, string newName, bool renameChildren, bool createRedirects, out string error)
         {
-            if (!GameplayTagName.TryNormalize(oldName, out string normalizedOld, out error) ||
-                !GameplayTagName.TryNormalize(newName, out string normalizedNew, out error))
-                return false;
-
-            List<GameplayTagDefinition> tags = CloneDefinitions(settings.Tags);
-            List<GameplayTagRedirect> redirects = CloneRedirects(settings.Redirects);
-            List<GameplayTagSource> sources = CloneSources(settings.Sources);
-            if (FindTag(tags, normalizedOld) < 0)
-            {
-                error = "Gameplay Tag does not exist: " + normalizedOld;
-                return false;
-            }
-            if (!renameChildren && HasDefinedChildren(tags, normalizedOld))
-            {
-                error = "The tag has children. Enable renameChildren to rename the hierarchy safely.";
-                return false;
-            }
-            if (!string.Equals(normalizedOld, normalizedNew, StringComparison.Ordinal) &&
-                (GameplayTagName.IsEqualOrChildOf(normalizedNew, normalizedOld) ||
-                 GameplayTagName.IsEqualOrChildOf(normalizedOld, normalizedNew)))
-            {
-                error = "A Gameplay Tag hierarchy cannot be renamed into itself or one of its ancestors.";
-                return false;
-            }
-
-            // 先把改名计划算出来，才能判断新名字是否撞上不参与改名的既有标签。
+            if (!GameplayTagName.TryNormalize(oldName, out string oldTag, out error) || !GameplayTagName.TryNormalize(newName, out string newTag, out error)) return false;
+            var tags = CloneDefinitions(settings.Tags);
+            if (FindTag(tags, oldTag) < 0) { error = "Gameplay Tag does not exist: " + oldTag; return false; }
+            if (oldTag == newTag) { error = null; return true; }
+            if (!renameChildren && HasDefinedChildren(tags, oldTag)) { error = "The tag has children; enable renameChildren."; return false; }
+            if (GameplayTagName.IsEqualOrChildOf(newTag, oldTag) || GameplayTagName.IsEqualOrChildOf(oldTag, newTag))
+            { error = "A hierarchy cannot be renamed into itself or one of its ancestors."; return false; }
+            var sources = CloneSources(settings.Sources);
+            var redirects = CloneRedirects(settings.Redirects);
+            var explicitNames = new HashSet<string>(StringComparer.Ordinal);
+            for (int i = 0; i < tags.Count; i++) explicitNames.Add(tags[i].Name);
             var renamed = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (string name in GameplayTagSettings.CollectResolvableNames(explicitNames))
+                if (GameplayTagName.IsEqualOrChildOf(name, oldTag)) renamed.Add(name, newTag + name.Substring(oldTag.Length));
             for (int i = 0; i < tags.Count; i++)
             {
-                string current = tags[i].Name;
-                if (!string.Equals(current, normalizedOld, StringComparison.Ordinal) &&
-                    !(renameChildren && GameplayTagName.IsEqualOrChildOf(current, normalizedOld)))
-                    continue;
-
-                if (!TryEditSource(sources, tags[i].Source, out error))
-                    return false;
-
-                renamed[current] = normalizedNew + current.Substring(normalizedOld.Length);
+                if (!renamed.TryGetValue(tags[i].Name, out string replacement)) continue;
+                if (!TryEditSource(sources, tags[i].Source, out error)) return false;
+                tags[i].SetName(replacement);
             }
-
-            var finalNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < tags.Count; i++)
-            {
-                if (!renamed.TryGetValue(tags[i].Name, out string finalName))
-                    finalName = tags[i].Name;
-
-                if (!finalNames.Add(finalName))
-                {
-                    error = "Renaming would collide with the existing tag: " + finalName;
-                    return false;
-                }
-            }
-
-            for (int i = 0; i < tags.Count; i++)
-            {
-                if (!renamed.TryGetValue(tags[i].Name, out string finalName))
-                    continue;
-
-                string previous = tags[i].Name;
-                tags[i].SetName(finalName);
-                if (createRedirects)
-                    SetRedirect(redirects, previous, finalName);
-            }
-
+            // Existing incoming redirects survive a rename even when no additional aliases are requested.
+            for (int i = 0; i < redirects.Count; i++)
+                if (renamed.TryGetValue(redirects[i].NewName, out string replacement)) redirects[i].Set(redirects[i].OldName, replacement);
+            if (createRedirects) foreach (var pair in renamed) SetRedirect(redirects, pair.Key, pair.Value);
             return TryApply(settings, tags, redirects, sources, out error);
         }
-
         public static bool TryRemoveTag(GameplayTagSettings settings, string name, bool removeChildren, out string error)
         {
-            if (!GameplayTagName.TryNormalize(name, out string normalized, out error))
-                return false;
-
-            List<GameplayTagDefinition> tags = CloneDefinitions(settings.Tags);
-            List<GameplayTagRedirect> redirects = CloneRedirects(settings.Redirects);
-            List<GameplayTagSource> sources = CloneSources(settings.Sources);
-            if (FindTag(tags, normalized) < 0)
-            {
-                error = "Gameplay Tag does not exist: " + normalized;
-                return false;
-            }
-            if (!removeChildren && HasDefinedChildren(tags, normalized))
-            {
-                error = "The tag has children. Enable removeChildren to remove the hierarchy.";
-                return false;
-            }
-
+            if (!GameplayTagName.TryNormalize(name, out string normalized, out error)) return false;
+            var tags = CloneDefinitions(settings.Tags);
+            if (FindTag(tags, normalized) < 0) { error = "Gameplay Tag does not exist: " + normalized; return false; }
+            if (!removeChildren && HasDefinedChildren(tags, normalized)) { error = "The tag has children; enable removeChildren."; return false; }
+            var sources = CloneSources(settings.Sources);
             for (int i = tags.Count - 1; i >= 0; i--)
             {
-                string current = tags[i].Name;
-                if (!string.Equals(current, normalized, StringComparison.Ordinal) &&
-                    !(removeChildren && GameplayTagName.IsEqualOrChildOf(current, normalized)))
-                    continue;
-
-                if (!TryEditSource(sources, tags[i].Source, out error))
-                    return false;
+                if (!GameplayTagName.IsEqualOrChildOf(tags[i].Name, normalized)) continue;
+                if (!TryEditSource(sources, tags[i].Source, out error)) return false;
                 tags.RemoveAt(i);
             }
-
-            for (int i = redirects.Count - 1; i >= 0; i--)
-            {
-                if (GameplayTagName.IsEqualOrChildOf(redirects[i].OldName, normalized) ||
-                    GameplayTagName.IsEqualOrChildOf(redirects[i].NewName, normalized))
-                    redirects.RemoveAt(i);
-            }
-
+            var redirects = CloneRedirects(settings.Redirects);
             PruneInvalidRedirects(redirects, tags);
             return TryApply(settings, tags, redirects, sources, out error);
         }
-
         public static bool TryAddRedirect(GameplayTagSettings settings, string oldName, string newName, out string error)
         {
-            if (!GameplayTagName.TryNormalize(oldName, out string normalizedOld, out error) ||
-                !GameplayTagName.TryNormalize(newName, out string normalizedNew, out error))
-                return false;
-
-            if (string.Equals(normalizedOld, normalizedNew, StringComparison.Ordinal))
-            {
-                error = "A Gameplay Tag redirect cannot target itself.";
-                return false;
-            }
-
-            // 源仍是活标签、目标不存在、成环、大小写冲突都由 Validate 在写回前拦下。
-            List<GameplayTagRedirect> redirects = CloneRedirects(settings.Redirects);
-            SetRedirect(redirects, normalizedOld, normalizedNew);
+            if (!GameplayTagName.TryNormalize(oldName, out string oldTag, out error) || !GameplayTagName.TryNormalize(newName, out string newTag, out error)) return false;
+            var redirects = CloneRedirects(settings.Redirects);
+            SetRedirect(redirects, oldTag, newTag);
             return TryApply(settings, CloneDefinitions(settings.Tags), redirects, CloneSources(settings.Sources), out error);
         }
-
         public static bool TryRemoveRedirect(GameplayTagSettings settings, string oldName)
         {
-            List<GameplayTagRedirect> redirects = CloneRedirects(settings.Redirects);
-            if (redirects.RemoveAll(redirect => string.Equals(redirect.OldName, oldName, StringComparison.Ordinal)) == 0)
-                return false;
-
-            List<GameplayTagDefinition> tags = CloneDefinitions(settings.Tags);
+            var redirects = CloneRedirects(settings.Redirects);
+            int index = redirects.FindIndex(r => string.Equals(r.OldName, oldName, StringComparison.Ordinal));
+            if (index < 0) return false;
+            redirects.RemoveAt(index);
+            var tags = CloneDefinitions(settings.Tags);
             PruneInvalidRedirects(redirects, tags);
-            return TryApply(settings, tags, redirects, CloneSources(settings.Sources), out _);
+            if (!TryApply(settings, tags, redirects, CloneSources(settings.Sources), out string error)) throw new InvalidOperationException(error);
+            return true;
         }
-
-        public static bool TryAddSource(
-            GameplayTagSettings settings,
-            string name,
-            string owner,
-            bool readOnly,
-            out string error)
+        public static bool TryAddSource(GameplayTagSettings settings, string name, string owner, bool readOnly, out string error)
         {
-            string normalized = name?.Trim() ?? string.Empty;
-            if (normalized.Length == 0)
-            {
-                error = "Gameplay Tag source cannot be empty.";
-                return false;
-            }
-
-            List<GameplayTagSource> sources = CloneSources(settings.Sources);
-            if (FindSource(sources, normalized) != null)
-            {
-                error = "Gameplay Tag source already exists: " + normalized;
-                return false;
-            }
-
-            sources.Add(new GameplayTagSource(normalized, owner ?? string.Empty, readOnly));
+            name = name?.Trim() ?? string.Empty;
+            if (name.Length == 0) { error = "Source name cannot be empty."; return false; }
+            var sources = CloneSources(settings.Sources);
+            if (FindSource(sources, name) != null) { error = "Source already exists: " + name; return false; }
+            sources.Add(new GameplayTagSource(name, owner ?? string.Empty, readOnly));
             return TryApply(settings, CloneDefinitions(settings.Tags), CloneRedirects(settings.Redirects), sources, out error);
         }
-
-        /// <summary>校验副本，只有全部通过才写回 <paramref name="settings"/>。</summary>
-        public static bool TryApply(
-            GameplayTagSettings settings,
-            List<GameplayTagDefinition> tags,
-            List<GameplayTagRedirect> redirects,
-            List<GameplayTagSource> sources,
-            out string error)
+        public static bool TryApply(GameplayTagSettings settings, List<GameplayTagDefinition> tags, List<GameplayTagRedirect> redirects, List<GameplayTagSource> sources, out string error)
         {
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
             var errors = new List<string>();
-            if (!GameplayTagSettings.Validate(tags, redirects, sources, errors))
-            {
-                error = errors[0];
-                return false;
-            }
-
+            if (!GameplayTagSettings.Validate(tags, redirects, sources, errors)) { error = string.Join("\n", errors); return false; }
             settings.ReplaceAll(tags, redirects, sources);
             error = null;
             return true;
         }
-
         public static List<GameplayTagDefinition> CloneDefinitions(IReadOnlyList<GameplayTagDefinition> source)
         {
             var result = new List<GameplayTagDefinition>(source.Count);
             for (int i = 0; i < source.Count; i++)
             {
-                if (source[i] != null)
-                    result.Add(source[i].Clone());
+                if (source[i] == null) throw new InvalidOperationException("Repair the null tag definition before editing this configuration.");
+                result.Add(source[i].Clone());
             }
             return result;
         }
-
         public static List<GameplayTagRedirect> CloneRedirects(IReadOnlyList<GameplayTagRedirect> source)
         {
             var result = new List<GameplayTagRedirect>(source.Count);
             for (int i = 0; i < source.Count; i++)
             {
-                if (source[i] != null)
-                    result.Add(new GameplayTagRedirect(source[i].OldName, source[i].NewName));
+                if (source[i] == null) throw new InvalidOperationException("Repair the null redirect before editing this configuration.");
+                result.Add(new GameplayTagRedirect(source[i].OldName, source[i].NewName));
             }
             return result;
         }
-
         public static List<GameplayTagSource> CloneSources(IReadOnlyList<GameplayTagSource> source)
         {
             var result = new List<GameplayTagSource>(source.Count);
             for (int i = 0; i < source.Count; i++)
             {
-                if (source[i] != null)
-                    result.Add(new GameplayTagSource(source[i].Name, source[i].Owner, source[i].ReadOnly));
+                if (source[i] == null) throw new InvalidOperationException("Repair the null source before editing this configuration.");
+                result.Add(new GameplayTagSource(source[i].Name, source[i].Owner, source[i].ReadOnly));
             }
             return result;
         }
-
-        /// <summary>把标签归入某个分组：分组必须可写，不存在时按需创建。</summary>
         private static bool TryUseSource(List<GameplayTagSource> sources, string name, out string error)
         {
-            if (!TryEditSource(sources, name, out error))
-                return false;
-
-            if (!string.IsNullOrEmpty(name) && FindSource(sources, name) == null)
-                sources.Add(new GameplayTagSource(name, string.Empty, false));
+            if (!TryEditSource(sources, name, out error)) return false;
+            if (name.Length > 0 && FindSource(sources, name) == null) sources.Add(new GameplayTagSource(name, string.Empty, false));
             return true;
         }
-
-        /// <summary>确认某个分组下的标签允许改动，只读分组一律拒绝。</summary>
         private static bool TryEditSource(List<GameplayTagSource> sources, string name, out string error)
-        {
-            if (!IsSourceReadOnly(sources, name))
-            {
-                error = null;
-                return true;
-            }
-
-            error = "Gameplay Tag source is read-only: " + name;
-            return false;
-        }
-
-        public static bool IsSourceReadOnly(List<GameplayTagSource> sources, string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return false;
-
-            GameplayTagSource existing = FindSource(sources, name);
-            return existing != null && existing.ReadOnly;
-        }
-
+        { error = IsSourceReadOnly(sources, name) ? "Gameplay Tag source is read-only: " + name : null; return error == null; }
+        public static bool IsSourceReadOnly(List<GameplayTagSource> sources, string name) => FindSource(sources, name)?.ReadOnly ?? false;
         private static GameplayTagSource FindSource(List<GameplayTagSource> sources, string name)
-        {
-            for (int i = 0; i < sources.Count; i++)
-            {
-                if (string.Equals(sources[i].Name, name, StringComparison.Ordinal))
-                    return sources[i];
-            }
-            return null;
-        }
-
+        { for (int i = 0; i < sources.Count; i++) if (sources[i].Name == name) return sources[i]; return null; }
         private static int FindTag(List<GameplayTagDefinition> tags, string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return -1;
-
-            for (int i = 0; i < tags.Count; i++)
-            {
-                if (string.Equals(tags[i].Name, name, StringComparison.Ordinal))
-                    return i;
-            }
-            return -1;
-        }
-
-        private static bool ContainsTagIgnoringCase(List<GameplayTagDefinition> tags, string name)
-        {
-            for (int i = 0; i < tags.Count; i++)
-            {
-                if (string.Equals(tags[i].Name, name, StringComparison.OrdinalIgnoreCase))
-                    return true;
-            }
-            return false;
-        }
-
+        { for (int i = 0; i < tags.Count; i++) if (tags[i].Name == name) return i; return -1; }
         private static bool HasDefinedChildren(List<GameplayTagDefinition> tags, string name)
-        {
-            for (int i = 0; i < tags.Count; i++)
-            {
-                string current = tags[i].Name;
-                if (current.Length > name.Length && GameplayTagName.IsEqualOrChildOf(current, name))
-                    return true;
-            }
-            return false;
-        }
-
+        { for (int i = 0; i < tags.Count; i++) if (tags[i].Name.Length > name.Length && GameplayTagName.IsEqualOrChildOf(tags[i].Name, name)) return true; return false; }
         private static void SetRedirect(List<GameplayTagRedirect> redirects, string oldName, string newName)
         {
-            for (int i = 0; i < redirects.Count; i++)
-            {
-                if (string.Equals(redirects[i].OldName, oldName, StringComparison.Ordinal))
-                {
-                    redirects[i].Set(oldName, newName);
-                    return;
-                }
-            }
-
+            for (int i = 0; i < redirects.Count; i++) if (redirects[i].OldName == oldName) { redirects[i].Set(oldName, newName); return; }
             redirects.Add(new GameplayTagRedirect(oldName, newName));
         }
-
-        /// <summary>丢弃链条最终落不到活标签上的重定向；删除操作会连锁产生这类孤儿。</summary>
-        private static void PruneInvalidRedirects(
-            List<GameplayTagRedirect> redirects,
-            List<GameplayTagDefinition> tags)
+        private static void PruneInvalidRedirects(List<GameplayTagRedirect> redirects, List<GameplayTagDefinition> tags)
         {
-            bool removed;
-            do
+            var explicitNames = new HashSet<string>(StringComparer.Ordinal);
+            for (int i = 0; i < tags.Count; i++) explicitNames.Add(tags[i].Name);
+            var active = GameplayTagSettings.CollectResolvableNames(explicitNames);
+            var map = new Dictionary<string, string>(StringComparer.Ordinal);
+            for (int i = 0; i < redirects.Count; i++) map[redirects[i].OldName] = redirects[i].NewName;
+            var known = new Dictionary<string, bool>(StringComparer.Ordinal);
+            var visiting = new HashSet<string>(StringComparer.Ordinal);
+            var path = new List<string>();
+            foreach (string source in map.Keys)
             {
-                var map = new Dictionary<string, string>(StringComparer.Ordinal);
-                for (int i = 0; i < redirects.Count; i++)
-                    map[redirects[i].OldName] = redirects[i].NewName;
-
-                removed = redirects.RemoveAll(redirect => !ResolvesToDefinedTag(redirect.OldName, map, tags)) > 0;
+                visiting.Clear(); path.Clear(); string current = source; bool valid;
+                while (true)
+                {
+                    if (known.TryGetValue(current, out valid)) break;
+                    if (!map.TryGetValue(current, out string next)) { valid = active.Contains(current); break; }
+                    if (!visiting.Add(current)) { valid = false; break; }
+                    path.Add(current); current = next;
+                }
+                for (int i = 0; i < path.Count; i++) known[path[i]] = valid;
             }
-            while (removed);
-        }
-
-        private static bool ResolvesToDefinedTag(
-            string oldName,
-            Dictionary<string, string> redirects,
-            List<GameplayTagDefinition> tags)
-        {
-            var visited = new HashSet<string>(StringComparer.Ordinal);
-            string current = oldName;
-            while (redirects.TryGetValue(current, out string next))
-            {
-                if (!visited.Add(current))
-                    return false;
-                current = next;
-            }
-
-            for (int i = 0; i < tags.Count; i++)
-            {
-                if (GameplayTagName.IsEqualOrChildOf(tags[i].Name, current))
-                    return true;
-            }
-            return false;
+            redirects.RemoveAll(r => !known[r.OldName]);
         }
     }
-
     [InitializeOnLoad]
     internal static class GameplayTagEditorBootstrap
     {
         static GameplayTagEditorBootstrap()
         {
-            EditorApplication.delayCall += Initialize;
+            EditorApplication.delayCall += Refresh;
+            Undo.undoRedoPerformed += Refresh;
+            EditorApplication.playModeStateChanged += OnPlayModeChanged;
         }
-
-        private static void Initialize()
+        private static void OnPlayModeChanged(PlayModeStateChange state)
+        { if (state == PlayModeStateChange.EnteredEditMode) Refresh(); }
+        private static void Refresh()
         {
-            GameplayTagSettings settings = GameplayTagEditorUtility.GetSettings(false);
-            if (settings != null)
-                GameplayTagEditorUtility.InitializeManager(settings, true);
+            var settings = GameplayTagEditorUtility.GetSettings(false);
+            if (settings == null) return;
+            try { GameplayTagEditorUtility.InitializeManager(settings, true); }
+            catch (GameplayTagRegistryException error) { Debug.LogError(error.Message); }
         }
     }
 }

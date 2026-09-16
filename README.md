@@ -9,7 +9,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Unity-2021.3%2B-222222?logo=unity" alt="Unity 2021.3 or later">
   <img src="https://img.shields.io/badge/Package-UPM-3178C6" alt="Unity Package Manager">
-  <a href="./LICENSE.md"><img src="https://img.shields.io/badge/License-MIT-22A06B" alt="MIT License"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-22A06B" alt="MIT License"></a>
 </p>
 
 **[ZFramework Gameplay Tags](https://github.com/acced/ZFramework.GameplayTags)** is an Unreal-style tag system for Unity. Use names such as `Ability.Attack.Melee` or `State.Debuff.Stunned` to describe abilities, states, damage types, and other gameplay concepts.
@@ -22,6 +22,26 @@
 - **Definition validation** — check names, redirects, sources, and restricted hierarchies before a build.
 
 [Installation](#installation) · [Quick start](#quick-start) · [Usage](#usage) · [Editor guide](#editor-guide) · [Configuration](#configuration) · [Samples](#samples) · [FAQ](#faq)
+
+## Version 2 status and migration
+
+This branch is **2.0.0-pre.2**, not a stable release with completed Unity/device acceptance. A green managed CI run covers managed checks only; see the [release checklist](Documentation~/RELEASE.md). The Git URL below installs this PR branch. Pin production dependencies to a reviewed commit/tag.
+
+**Query source is separate from execution.** Call `source.Freeze()` at load time and reuse the returned `FrozenGameplayTagQuery`. Editing the source does not change an existing matcher. Every active branch is validated before hierarchy reduction, constant folding and same-kind All/Any flattening. Share one matcher per rule definition, rather than freezing it every frame or for every unit.
+
+**Threading and lifetime:** registry/editor operations run on the main thread. Containers have a single owner and do not support concurrent mutation or mutation during enumeration. Rebuilding the registry does not update old name snapshots. Static registry state resets for a new play session, including when Domain Reload is disabled; callers must re-establish their own subscriptions and loading state.
+
+**Serialization:** field names are preserved. Deserialization only sorts/deduplicates local lists; it does not load Resources. Call `ResolveRegisteredTags()` for serialized containers at the main-thread loading boundary. Unknown names throw without changing the container, and reserved capacity is preserved. Resolve a single tag with `RequestTag(serializedTag.Name)`; Freeze resolves query tags. Copy/bulk operations no longer silently filter snapshots through the registry.
+
+**Capacity and results:** reserve `Capacity`; `FilterInto`, `FilterExactInto`, `UnionInto` and `IntersectionExactInto` overwrite caller-owned results. After initialization/resolution and with enough actual-result capacity, these core operations allocate no managed memory. Insufficient capacity grows; results are not dropped. Allocating convenience APIs, Freeze, loading resolution, parent/leaf substrings and exception paths are outside that contract.
+
+| Aliases / empty inputs | Contract |
+|---|---|
+| Self Copy/Append | No-op; self Remove clears |
+| UnionInto / exact intersection and filtering | Either input may be the output |
+| Hierarchical FilterInto | May overwrite the source, not a distinct condition container; rejected before mutation |
+| Empty/null condition | Any=false, All=true; empty Query=false; empty No=true |
+| None | Invalid; IsValid means nonempty, not registered |
 
 <a id="installation"></a>
 ## Installation
@@ -54,7 +74,7 @@ If it already exists at `Packages/zframework.gameplaytag`, it is an embedded pac
 In Unity Package Manager, choose **+ → Add package from git URL…**. When the package's `package.json` is at the repository root, use:
 
 ```text
-https://github.com/acced/ZFramework.GameplayTags.git
+https://github.com/acced/ZFramework.GameplayTags.git#optimize/whole-repo-20260916
 ```
 
 If the repository contains the full Unity project and the package is under `Packages/zframework.gameplaytag`, use this URL instead:
@@ -130,9 +150,10 @@ public sealed class GameplayTagsQuickStart : MonoBehaviour
                 .AddExpression(GameplayTagQueryExpression.NoTagsMatch().AddTag(stunned)),
             "Alive and not stunned");
 
-        Debug.Log(canAct.Matches(owned));      // True
+        FrozenGameplayTagQuery matcher = canAct.Freeze();
+        Debug.Log(matcher.Matches(owned));     // True
         owned.AddTag(stunned);
-        Debug.Log(canAct.Matches(owned));      // False
+        Debug.Log(matcher.Matches(owned));      // False
     }
 }
 ```
@@ -161,7 +182,7 @@ poisoned.MatchesTagExact(debuff);  // false
 | `owned.HasAny(other)` / `owned.HasAll(other)` | Checks any/all tags in another container, including hierarchy matches. |
 | `owned.HasAnyExact(other)` / `owned.HasAllExact(other)` | Checks any/all using exact names. |
 | `owned.Filter(other)` | Returns stored tags that match any tag in `other`. |
-| `query.Matches(owned)` | Evaluates a query against the container. |
+| `matcher.Matches(owned)` | Evaluates a query against the container. |
 
 For optional lookups, use `TryRequestTag` to handle missing names without an exception:
 
@@ -273,12 +294,12 @@ Open **Edit → Project Settings… → ZFramework → Gameplay Tags**. All six 
 | --- | --- | --- |
 | Auto Initialize | `true` | Initializes before the first scene loads. Disabling it skips startup initialization; registry APIs can still initialize on first use. |
 | Include Implicit Parent Tags In Generated Code | `true` | Generates fields for automatically registered parents as well as explicit definitions. Runtime parent matching is unchanged. |
-| Warn On Invalid Serialized Tags | `true` | Warns when `AddTag(GameplayTag)` rejects an unregistered nonempty name, once per name until registry initialization resets the warning history. Does not scan all assets. |
+| Warn On Invalid Serialized Tags | `true` | Warns when `AddTag(GameplayTag)` rejects an unregistered nonempty name, once per name in Editor/development builds. Release builds omit this cache and warning call. Does not scan all assets. |
 | Generated Namespace | `Game` | Namespace of the generated class. Empty means no namespace. |
 | Generated Class Name | `GameplayTags` | Name of the generated static class. |
 | Generated Code Path | `Assets/GameScripts/Main/Generated/GameplayTags.gen.cs` | Destination of the generated C# file. |
 
-The readouts show **Defined Tags**, **Registered Tags** including parents, **Redirects**, and **Content Hash**. The hash covers tag definitions and redirects; generation options are excluded, so it is not a complete check for whether generated code needs updating.
+The readouts show **Defined Tags**, **Registered Tags** including parents, **Redirects**, and **Content Hash**. The diagnostic hash includes definitions, redirects and generation options. Build validation compares the complete expected source text; a matching hash alone is not proof of freshness.
 
 After changing options, use **File → Save Project**. This settings page marks the asset dirty without explicitly saving it to disk. Generate again when you change generation options.
 
@@ -299,12 +320,12 @@ In **Project Settings → ZFramework → Gameplay Tags**, below **Generated Clas
 `GameplayTag` is serializable and has a custom property drawer. Put a public field or a private `[SerializeField]` field on a component or `ScriptableObject`. A script must be attached to a GameObject to appear as a scene component.
 
 **Why does RequestTag fail?**  
-Check the name and casing, define the tag in Manager, and keep the default settings asset under `Resources/GameplayTags/GameplayTagSettings.asset`. The editor can find a moved asset that default runtime loading cannot find. Use `TryRequestTag` when absence is expected.
+Check the name and casing, define the tag in Manager, and keep the default settings asset under `Resources/GameplayTags/GameplayTagSettings.asset`. Both the default editor workflow and default runtime loader use that same location. Use `TryRequestTag` when absence is expected.
 
 **Why does a build fail validation?**  
-Run **Tools → ZFramework → Gameplay Tags → Validate** and fix the reported configuration errors. Build validation requires a settings asset and checks definitions, sources, restrictions, and redirects. It does not automatically generate the C# API.
+Run **Tools → ZFramework → Gameplay Tags → Validate** and fix the reported configuration errors. Build validation requires a settings asset and checks definitions, sources, restrictions, and redirects. It also requires an up-to-date generated C# API and does not generate it automatically during a build.
 
 <a id="license"></a>
 ## License
 
-[MIT](./LICENSE.md).
+[MIT](./LICENSE).

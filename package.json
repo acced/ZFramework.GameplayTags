@@ -1,9 +1,9 @@
 {
   "name": "zframework.gameplaytag",
   "displayName": "ZFramework Gameplay Tags",
-  "version": "1.0.0",
+  "version": "2.0.0-pre.2",
   "unity": "2021.3",
-  "description": "An Unreal-style Gameplay Tags implementation for Unity: hierarchical dot-separated tags, containers, queries, redirects and editor tooling.",
+  "description": "Hierarchical Gameplay Tags with ordered containers, caller-owned results, validated frozen queries, redirects and editor tools. Prerelease: native Unity and device acceptance remains required.",
   "keywords": [
     "gameplay-tags",
     "gameplay-ability-system",
@@ -18,7 +18,7 @@
   "samples": [
     {
       "displayName": "Basic Usage",
-      "description": "Requesting tags, holding them in a container and evaluating a query.",
+      "description": "Request tags, own a container, freeze a query once and reuse its immutable matcher.",
       "path": "Samples~/BasicUsage"
     }
   ]

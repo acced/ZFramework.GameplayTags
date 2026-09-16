@@ -83,7 +83,7 @@ namespace GameplayTags.Editor
             if (GUILayout.Button("Export CSV", EditorStyles.toolbarButton, GUILayout.Width(90f)))
                 GameplayTagCsvUtility.ExportWithDialog(m_Settings);
             if (GUILayout.Button("Generate", EditorStyles.toolbarButton, GUILayout.Width(80f)))
-                GameplayTagCodeGenerator.Generate(m_Settings);
+                GameplayTagCodeGenerator.GenerateInteractive(m_Settings);
             if (GUILayout.Button("Validate", EditorStyles.toolbarButton, GUILayout.Width(80f)))
                 GameplayTagBuildValidator.ValidateInteractive();
             EditorGUILayout.EndHorizontal();

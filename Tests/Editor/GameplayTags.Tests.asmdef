@@ -1,0 +1,9 @@
+{
+  "name": "GameplayTags.Tests",
+  "references": ["GameplayTags", "GameplayTags.Editor"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"],
+  "autoReferenced": false,
+  "overrideReferences": false,
+  "noEngineReferences": false
+}

@@ -6,42 +6,23 @@ using UnityEngine;
 namespace GameplayTags
 {
     /// <summary>
-    /// 一组标签，按名称序数升序存放，所以去重、相等判定和 <see cref="ToString"/> 都是确定的。
-    ///
-    /// 层级查询二分定位后只比较相邻的一小段前缀，不预先展开祖先集合，
-    /// 省下的是每次注册表变化后重建缓存的复杂度。
+    /// Sorted unique name snapshots. Single owner; no concurrent mutation or mutation during enumeration.
+    /// Resolve serialized names once at a loading boundary. Bulk operations do not re-query the registry.
     /// </summary>
     [Serializable]
     public sealed class GameplayTagContainer : ISerializationCallbackReceiver, IEquatable<GameplayTagContainer>
     {
-        [SerializeField] private List<GameplayTag> m_GameplayTags = new List<GameplayTag>();
-
+        [SerializeField] private List<GameplayTag> m_GameplayTags;
         public int Count => m_GameplayTags.Count;
-        public bool IsEmpty => m_GameplayTags.Count == 0;
+        public int Capacity { get => m_GameplayTags.Capacity; set => m_GameplayTags.Capacity = value; }
+        public bool IsEmpty => Count == 0;
         public GameplayTag this[int index] => m_GameplayTags[index];
-
-        public GameplayTagContainer()
-        {
-        }
-
-        public GameplayTagContainer(int capacity)
-        {
-            m_GameplayTags = new List<GameplayTag>(capacity);
-        }
-
-        public GameplayTagContainer(GameplayTag tag)
-        {
-            AddTag(tag);
-        }
-
-        public GameplayTagContainer(GameplayTagContainer other)
-        {
-            AppendTags(other);
-        }
-
+        public GameplayTagContainer() : this(0) { }
+        public GameplayTagContainer(int capacity) { m_GameplayTags = new List<GameplayTag>(capacity); }
+        public GameplayTagContainer(GameplayTag tag) : this(1) { AddTag(tag); }
+        public GameplayTagContainer(GameplayTagContainer other) : this(other?.Count ?? 0) { CopyFrom(other); }
         public GameplayTag GetTagAt(int index) => m_GameplayTags[index];
 
-        /// <summary>加入一个已注册的标签；未注册的会被拒绝，并按设置提醒一次。</summary>
         public bool AddTag(GameplayTag tag)
         {
             if (!GameplayTagManager.IsRegistered(tag))
@@ -49,276 +30,288 @@ namespace GameplayTags
                 GameplayTagManager.WarnUnregistered(tag.Name);
                 return false;
             }
-
+            return Insert(tag);
+        }
+        public bool AddTag(string name) => GameplayTagManager.TryRequestTag(name, out GameplayTag tag) && Insert(tag);
+        private bool Insert(GameplayTag tag)
+        {
             int index = IndexOf(tag.Name);
-            if (index >= 0)
-                return false;
-
+            if (index >= 0) return false;
             m_GameplayTags.Insert(~index, tag);
             return true;
         }
-
-        public bool AddTag(string name) =>
-            GameplayTagManager.TryRequestTag(name, out GameplayTag tag) && AddTag(tag);
-
         public bool RemoveTag(GameplayTag tag)
         {
             int index = IndexOf(tag.Name);
-            if (index < 0)
-                return false;
-
+            if (index < 0) return false;
             m_GameplayTags.RemoveAt(index);
             return true;
         }
-
-        public bool RemoveTags(GameplayTagContainer other)
+        public void Clear() => m_GameplayTags.Clear();
+        public void CopyFrom(GameplayTagContainer other)
         {
-            if (other == null || other.Count == 0)
-                return false;
-
-            if (ReferenceEquals(this, other))
-            {
-                bool hadTags = m_GameplayTags.Count > 0;
-                Clear();
-                return hadTags;
-            }
-
-            bool changed = false;
-            for (int i = 0; i < other.Count; i++)
-                changed |= RemoveTag(other[i]);
-            return changed;
+            if (ReferenceEquals(this, other)) return;
+            Clear();
+            if (other != null) m_GameplayTags.AddRange(other.m_GameplayTags);
         }
 
         public void AppendTags(GameplayTagContainer other)
         {
-            if (other == null || ReferenceEquals(this, other))
-                return;
-
-            for (int i = 0; i < other.Count; i++)
-                AddTag(other[i]);
+            if (other == null || other.Count == 0 || ReferenceEquals(this, other)) return;
+            if (Count == 0) { CopyFrom(other); return; }
+            int start = IndexOf(other[0].Name);
+            if (start < 0) start = ~start;
+            if (start == Count) { m_GameplayTags.AddRange(other.m_GameplayTags); return; }
+            int oldCount = Count, i = start, j = 0, added = 0;
+            while (i < oldCount && j < other.Count)
+            {
+                int order = m_GameplayTags[i].CompareTo(other[j]);
+                if (order < 0) i++;
+                else if (order > 0) { added++; j++; }
+                else { i++; j++; }
+            }
+            added += other.Count - j;
+            if (added == 0) return;
+            int count = checked(oldCount + added);
+            if (Capacity < count)
+            {
+                // Preserve amortized growth for repeated small batches, with only one resize for a large batch.
+                int growth = Capacity <= int.MaxValue / 2 ? Capacity * 2 : count;
+                Capacity = Math.Max(count, growth);
+            }
+            while (Count < count) m_GameplayTags.Add(default);
+            i = oldCount - 1; j = other.Count - 1;
+            int write = count - 1;
+            while (i >= start && j >= 0)
+            {
+                int order = m_GameplayTags[i].CompareTo(other[j]);
+                if (order > 0) m_GameplayTags[write--] = m_GameplayTags[i--];
+                else if (order < 0) m_GameplayTags[write--] = other[j--];
+                else { m_GameplayTags[write--] = m_GameplayTags[i--]; j--; }
+            }
+            while (j >= 0) m_GameplayTags[write--] = other[j--];
         }
-
-        public void CopyFrom(GameplayTagContainer other)
+        public bool RemoveTags(GameplayTagContainer other)
         {
-            if (ReferenceEquals(this, other))
-                return;
-
-            Clear();
-            AppendTags(other);
+            if (other == null || other.Count == 0 || Count == 0) return false;
+            if (ReferenceEquals(this, other)) { Clear(); return true; }
+            // Avoid a managed full-list compaction for tiny removals; List performs the native tail move.
+            if (other.Count <= 2)
+            {
+                bool changed = false;
+                for (int k = 0; k < other.Count; k++) changed |= RemoveTag(other[k]);
+                return changed;
+            }
+            int start = IndexOf(other[0].Name);
+            if (start < 0) start = ~start;
+            int read = start, write = start, j = 0, count = Count;
+            while (read < count && j < other.Count)
+            {
+                int order = m_GameplayTags[read].CompareTo(other[j]);
+                if (order < 0) { if (write != read) m_GameplayTags[write] = m_GameplayTags[read]; write++; read++; }
+                else if (order > 0) j++;
+                else { read++; j++; }
+            }
+            if (write == read) return false;
+            while (read < count) m_GameplayTags[write++] = m_GameplayTags[read++];
+            m_GameplayTags.RemoveRange(write, count - write);
+            return true;
         }
 
-        public void Clear() => m_GameplayTags.Clear();
-
-        /// <summary>容器里是否有标签等于 <paramref name="tag"/> 或落在它下面。</summary>
         public bool HasTag(GameplayTag tag)
         {
             string parent = tag.Name;
-            if (parent.Length == 0)
-                return false;
-
+            if (parent.Length == 0) return false;
             int index = IndexOf(parent);
-            if (index >= 0)
-                return true;
-
-            // 列表按序数序排列，后代都以 parent 为前缀因而严格大于它，只可能挨着插入点往后连成一段；
-            // 一旦碰到不带这个前缀的名字，后面就不可能再出现后代了。
-            for (int i = ~index; i < m_GameplayTags.Count; i++)
+            if (index >= 0) return true;
+            index = ~index;
+            if (index == Count) return false;
+            string name = m_GameplayTags[index].Name;
+            if (!GameplayTagName.HasPrefix(name, parent)) return false;
+            char next = name[parent.Length];
+            if (next == '.') return true;
+            if (next > '.') return false;
+            // Punctuation such as A!x can precede A.B. Locate virtual parent+'.' without allocating it.
+            int low = index + 1, high = Count;
+            while (low < high)
             {
-                string name = m_GameplayTags[i].Name;
-                if (!GameplayTagName.HasPrefix(name, parent))
-                    return false;
-                if (name[parent.Length] == '.')
-                    return true;
+                int mid = low + ((high - low) >> 1);
+                name = m_GameplayTags[mid].Name;
+                int order = string.CompareOrdinal(name, 0, parent, 0, parent.Length);
+                if (order == 0) order = name.Length == parent.Length ? -1 : name[parent.Length] - '.';
+                if (order < 0) low = mid + 1; else high = mid;
             }
-            return false;
+            return low < Count && m_GameplayTags[low].MatchesTag(tag);
         }
-
-        public bool HasTagExact(GameplayTag tag) => IndexOf(tag.Name) >= 0;
-
-        /// <summary>
-        /// 找 <paramref name="name"/> 在有序列表中的位置，找不到时返回插入点的按位取反，语义同
-        /// <see cref="List{T}.BinarySearch(T)"/>。手写是为了直接调 <see cref="string.CompareOrdinal(string,string)"/>，
-        /// 绕开 Mono 上 Comparer&lt;GameplayTag&gt;.Default 的虚调用——这是容器最热的一条路径。
-        /// </summary>
+        // An empty set needs neither a name read nor a binary-search call.
+        public bool HasTagExact(GameplayTag tag) => m_GameplayTags.Count != 0 && IndexOf(tag.Name) >= 0;
         private int IndexOf(string name)
         {
-            int low = 0;
-            int high = m_GameplayTags.Count - 1;
+            int low = 0, high = Count - 1;
             while (low <= high)
             {
                 int mid = low + ((high - low) >> 1);
                 int order = string.CompareOrdinal(m_GameplayTags[mid].Name, name);
-                if (order == 0)
-                    return mid;
-                if (order < 0)
-                    low = mid + 1;
-                else
-                    high = mid - 1;
+                if (order == 0) return mid;
+                if (order < 0) low = mid + 1; else high = mid - 1;
             }
             return ~low;
         }
-
         public bool HasAny(GameplayTagContainer other) => HasAny(other, false);
         public bool HasAnyExact(GameplayTagContainer other) => HasAny(other, true);
         public bool HasAll(GameplayTagContainer other) => HasAll(other, false);
         public bool HasAllExact(GameplayTagContainer other) => HasAll(other, true);
-
-        public bool MatchesQuery(GameplayTagQuery query) => query != null && query.Matches(this);
-
-        /// <summary>本容器中层级上命中 <paramref name="other"/> 任一标签的那些标签。</summary>
-        public GameplayTagContainer Filter(GameplayTagContainer other) => Filter(other, false);
-
-        public GameplayTagContainer FilterExact(GameplayTagContainer other) => Filter(other, true);
-
-        public Enumerator GetEnumerator() => new Enumerator(this);
-
-        public bool Equals(GameplayTagContainer other)
-        {
-            if (ReferenceEquals(this, other))
-                return true;
-            if (other == null || m_GameplayTags.Count != other.m_GameplayTags.Count)
-                return false;
-
-            for (int i = 0; i < m_GameplayTags.Count; i++)
-            {
-                if (!m_GameplayTags[i].Equals(other.m_GameplayTags[i]))
-                    return false;
-            }
-            return true;
-        }
-
-        public override bool Equals(object obj) => Equals(obj as GameplayTagContainer);
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                int hash = 17;
-                for (int i = 0; i < m_GameplayTags.Count; i++)
-                    hash = (hash * 31) + m_GameplayTags[i].GetHashCode();
-                return hash;
-            }
-        }
-
-        public override string ToString()
-        {
-            if (m_GameplayTags.Count == 0)
-                return "{}";
-
-            var builder = new StringBuilder("{");
-            for (int i = 0; i < m_GameplayTags.Count; i++)
-            {
-                if (i > 0)
-                    builder.Append(", ");
-                builder.Append(m_GameplayTags[i].Name);
-            }
-            return builder.Append('}').ToString();
-        }
-
-        public static GameplayTagContainer Union(GameplayTagContainer lhs, GameplayTagContainer rhs)
-        {
-            var result = new GameplayTagContainer((lhs?.Count ?? 0) + (rhs?.Count ?? 0));
-            result.AppendTags(lhs);
-            result.AppendTags(rhs);
-            return result;
-        }
-
-        public static GameplayTagContainer IntersectionExact(GameplayTagContainer lhs, GameplayTagContainer rhs)
-        {
-            var result = new GameplayTagContainer();
-            if (lhs == null || rhs == null)
-                return result;
-
-            for (int i = 0; i < lhs.Count; i++)
-            {
-                if (rhs.HasTagExact(lhs[i]))
-                    result.m_GameplayTags.Add(lhs[i]);
-            }
-            return result;
-        }
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize()
-        {
-        }
-
-        void ISerializationCallbackReceiver.OnAfterDeserialize()
-        {
-            // Inspector 可以塞进空条目、重复项和乱序，这里把升序去重的不变式恢复回来。
-            m_GameplayTags ??= new List<GameplayTag>();
-            m_GameplayTags.RemoveAll(tag => !tag.IsValid);
-            m_GameplayTags.Sort();
-            for (int i = m_GameplayTags.Count - 1; i > 0; i--)
-            {
-                if (m_GameplayTags[i].Equals(m_GameplayTags[i - 1]))
-                    m_GameplayTags.RemoveAt(i);
-            }
-        }
-
         private bool HasAny(GameplayTagContainer other, bool exact)
         {
-            if (other == null)
-                return false;
-
-            for (int i = 0; i < other.Count; i++)
-            {
-                if (exact ? HasTagExact(other[i]) : HasTag(other[i]))
-                    return true;
-            }
+            if (other == null) return false;
+            for (int i = 0; i < other.Count; i++) if (exact ? HasTagExact(other[i]) : HasTag(other[i])) return true;
             return false;
         }
-
         private bool HasAll(GameplayTagContainer other, bool exact)
         {
-            if (other == null)
-                return true;
-
-            for (int i = 0; i < other.Count; i++)
-            {
-                if (!(exact ? HasTagExact(other[i]) : HasTag(other[i])))
-                    return false;
-            }
+            if (other == null) return true;
+            for (int i = 0; i < other.Count; i++) if (!(exact ? HasTagExact(other[i]) : HasTag(other[i]))) return false;
             return true;
         }
+        public bool MatchesQuery(FrozenGameplayTagQuery query) => query != null && query.Matches(this);
 
-        private GameplayTagContainer Filter(GameplayTagContainer other, bool exact)
+        public GameplayTagContainer Filter(GameplayTagContainer other)
+        { var result = new GameplayTagContainer(); FilterInto(other, result); return result; }
+        public GameplayTagContainer FilterExact(GameplayTagContainer other)
+        { var result = new GameplayTagContainer(); FilterExactInto(other, result); return result; }
+        public static GameplayTagContainer Union(GameplayTagContainer left, GameplayTagContainer right)
+        { var result = new GameplayTagContainer(); UnionInto(left, right, result); return result; }
+        public static GameplayTagContainer IntersectionExact(GameplayTagContainer left, GameplayTagContainer right)
+        { var result = new GameplayTagContainer(); IntersectionExactInto(left, right, result); return result; }
+
+        /// <summary>Overwrites result. Either input can be result; sufficient actual-result capacity means zero allocation.</summary>
+        public static void UnionInto(GameplayTagContainer left, GameplayTagContainer right, GameplayTagContainer result)
         {
-            var result = new GameplayTagContainer(m_GameplayTags.Count);
-            if (other == null)
-                return result;
-
-            // 源列表本身有序，顺序追加即可保持不变式。
-            for (int i = 0; i < m_GameplayTags.Count; i++)
+            if (result == null) throw new ArgumentNullException(nameof(result));
+            if (ReferenceEquals(result, right)) { result.AppendTags(left); return; }
+            result.CopyFrom(left);
+            result.AppendTags(right);
+        }
+        public void FilterExactInto(GameplayTagContainer other, GameplayTagContainer result) => IntersectionExactInto(this, other, result);
+        /// <summary>Overwrites result. Both input aliases are supported.</summary>
+        public static void IntersectionExactInto(GameplayTagContainer left, GameplayTagContainer right, GameplayTagContainer result)
+        {
+            if (result == null) throw new ArgumentNullException(nameof(result));
+            if (left == null || right == null) { result.Clear(); return; }
+            if (ReferenceEquals(left, right)) { result.CopyFrom(left); return; }
+            bool alias = ReferenceEquals(result, left) || ReferenceEquals(result, right);
+            if (!alias) result.Clear();
+            int write = 0;
+            GameplayTagContainer small = left.Count <= right.Count ? left : right;
+            GameplayTagContainer large = ReferenceEquals(small, left) ? right : left;
+            // Search the smaller set only when sizes are very asymmetric; never search a buffer being overwritten.
+            if (small.Count < large.Count / 16 && !ReferenceEquals(result, large))
             {
-                if (MatchesAnyOf(m_GameplayTags[i], other, exact))
-                    result.m_GameplayTags.Add(m_GameplayTags[i]);
+                int count = small.Count;
+                for (int i = 0; i < count; i++) if (large.HasTagExact(small[i])) Write(result, small[i], alias, ref write);
             }
-            return result;
+            else
+            {
+                int i = 0, j = 0, a = left.Count, b = right.Count;
+                // Skip a prefix that cannot intersect. Tiny sets keep the original direct scan.
+                if (small.Count > 8)
+                {
+                    int firstOrder = left[0].CompareTo(right[0]);
+                    if (firstOrder < 0) { i = left.IndexOf(right[0].Name); if (i < 0) i = ~i; }
+                    else if (firstOrder > 0) { j = right.IndexOf(left[0].Name); if (j < 0) j = ~j; }
+                }
+                while (i < a && j < b)
+                {
+                    int order = left[i].CompareTo(right[j]);
+                    if (order < 0) i++;
+                    else if (order > 0) j++;
+                    else { Write(result, left[i], alias, ref write); i++; j++; }
+                }
+            }
+            if (alias) result.m_GameplayTags.RemoveRange(write, result.Count - write);
+        }
+        private static void Write(GameplayTagContainer target, GameplayTag tag, bool overwrite, ref int index)
+        {
+            if (overwrite) target.m_GameplayTags[index] = tag; else target.m_GameplayTags.Add(tag);
+            index++;
+        }
+        /// <summary>Overwrites result. May overwrite this, but not a separate condition container.</summary>
+        public void FilterInto(GameplayTagContainer other, GameplayTagContainer result)
+        {
+            if (result == null) throw new ArgumentNullException(nameof(result));
+            if (ReferenceEquals(other, result) && !ReferenceEquals(this, result))
+                throw new ArgumentException("A hierarchy filter cannot overwrite its separate condition container.", nameof(result));
+            if (ReferenceEquals(this, other)) { result.CopyFrom(this); return; }
+            if (other == null) { result.Clear(); return; }
+            bool alias = ReferenceEquals(this, result);
+            if (!alias) result.Clear();
+            int count = Count, write = 0;
+            for (int i = 0; i < count; i++)
+            {
+                GameplayTag tag = m_GameplayTags[i];
+                for (int j = 0; j < other.Count; j++)
+                {
+                    if (!tag.MatchesTag(other[j])) continue;
+                    Write(result, tag, alias, ref write);
+                    break;
+                }
+            }
+            if (alias) m_GameplayTags.RemoveRange(write, Count - write);
         }
 
-        /// <summary><paramref name="tag"/> 是否等于 <paramref name="other"/> 中某个标签或落在它下面。</summary>
-        private static bool MatchesAnyOf(GameplayTag tag, GameplayTagContainer other, bool exact)
+        /// <summary>Loading boundary: resolve redirects atomically. Unknown names throw without altering this container.</summary>
+        public void ResolveRegisteredTags()
         {
-            for (int i = 0; i < other.Count; i++)
-            {
-                if (exact ? tag.Equals(other[i]) : tag.MatchesTag(other[i]))
-                    return true;
-            }
-            return false;
+            if (Count == 0) return;
+            var resolved = new List<GameplayTag>(Capacity);
+            for (int i = 0; i < Count; i++) resolved.Add(GameplayTagManager.RequestTag(m_GameplayTags[i].Name));
+            Normalize(resolved);
+            m_GameplayTags = resolved;
         }
-
+        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            m_GameplayTags ??= new List<GameplayTag>();
+            Normalize(m_GameplayTags);
+        }
+        private static void Normalize(List<GameplayTag> tags)
+        {
+            tags.Sort();
+            int write = 0;
+            for (int read = 0; read < tags.Count; read++)
+            {
+                GameplayTag tag = tags[read];
+                if (!tag.IsValid || (write > 0 && tags[write - 1] == tag)) continue;
+                tags[write++] = tag;
+            }
+            tags.RemoveRange(write, tags.Count - write);
+        }
+        public bool Equals(GameplayTagContainer other)
+        {
+            if (ReferenceEquals(this, other)) return true;
+            if (other == null || Count != other.Count) return false;
+            for (int i = 0; i < Count; i++) if (m_GameplayTags[i] != other[i]) return false;
+            return true;
+        }
+        public override bool Equals(object obj) => Equals(obj as GameplayTagContainer);
+        public override int GetHashCode()
+        {
+            unchecked { int hash = 17; for (int i = 0; i < Count; i++) hash = hash * 31 + m_GameplayTags[i].GetHashCode(); return hash; }
+        }
+        public override string ToString()
+        {
+            if (Count == 0) return "{}";
+            var builder = new StringBuilder("{");
+            for (int i = 0; i < Count; i++) { if (i > 0) builder.Append(", "); builder.Append(m_GameplayTags[i].Name); }
+            return builder.Append('}').ToString();
+        }
+        public Enumerator GetEnumerator() => new Enumerator(this);
         public struct Enumerator
         {
             private readonly GameplayTagContainer m_Container;
             private int m_Index;
-
-            internal Enumerator(GameplayTagContainer container)
-            {
-                m_Container = container;
-                m_Index = -1;
-            }
-
+            internal Enumerator(GameplayTagContainer container) { m_Container = container; m_Index = -1; }
             public GameplayTag Current => m_Container[m_Index];
-
             public bool MoveNext() => ++m_Index < m_Container.Count;
         }
     }
