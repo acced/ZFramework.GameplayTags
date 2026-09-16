@@ -212,28 +212,20 @@ namespace GameplayTags
             }
             else
             {
-                // Local list references and prefix bounds avoid repeated container indirection and scans.
-                // Output still grows with actual matches; Into never reserves a worst-case input bound.
-                List<GameplayTag> a = left.m_GameplayTags, b = right.m_GameplayTags, output = result.m_GameplayTags;
-                int i = 0, j = 0, aCount = a.Count, bCount = b.Count;
-                // Tiny inputs scan directly; binary positioning has its own fixed cost.
-                if (aCount > 8 && bCount > 8)
+                int i = 0, j = 0, a = left.Count, b = right.Count;
+                // Skip a prefix that cannot intersect. Tiny sets keep the original direct scan.
+                if (small.Count > 8)
                 {
-                    int order = a[0].CompareTo(b[0]);
-                    if (order < 0) { i = left.IndexOf(b[0].Name); if (i < 0) i = ~i; }
-                    else if (order > 0) { j = right.IndexOf(a[0].Name); if (j < 0) j = ~j; }
+                    int firstOrder = left[0].CompareTo(right[0]);
+                    if (firstOrder < 0) { i = left.IndexOf(right[0].Name); if (i < 0) i = ~i; }
+                    else if (firstOrder > 0) { j = right.IndexOf(left[0].Name); if (j < 0) j = ~j; }
                 }
-                while (i < aCount && j < bCount)
+                while (i < a && j < b)
                 {
-                    GameplayTag tag = a[i];
-                    int order = tag.CompareTo(b[j]);
+                    int order = left[i].CompareTo(right[j]);
                     if (order < 0) i++;
                     else if (order > 0) j++;
-                    else
-                    {
-                        if (alias) output[write] = tag; else output.Add(tag);
-                        write++; i++; j++;
-                    }
+                    else { Write(result, left[i], alias, ref write); i++; j++; }
                 }
             }
             if (alias) result.m_GameplayTags.RemoveRange(write, result.Count - write);

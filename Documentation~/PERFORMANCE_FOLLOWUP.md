@@ -18,9 +18,9 @@ Only `GameplayTagContainer.HasTagExact` and the merge branch of
 mutable caches, pools, dependencies, or registry/query semantics are added.
 
 * An empty exact query returns before reading the query name or entering binary search.
-* Exact intersection uses local list references and writes directly to the output
-  list. For non-tiny inputs, binary positioning skips a prefix that cannot possibly
-  intersect the other input. Inputs of eight or fewer elements retain a direct scan;
+* Exact intersection keeps a single direct merge loop. For non-tiny inputs, binary
+  positioning skips a prefix that cannot possibly intersect the other input.
+  Inputs of eight or fewer elements retain the original direct scan;
   the supplementary matrix checks 1/2/4/8/9/16/32/128/512, rather than assuming
   that the threshold is optimal on every backend.
 * The existing asymmetric-input algorithm and input/output alias contracts remain.
@@ -68,6 +68,17 @@ identity together. Runtime source SHA256 values accompany the focused summary.
 All final quantitative claims must refer to that run's actual output, not an older
 run or exploratory local timing. A ratio above 1.05 remains an alert; a ratio below
 it is not a statistical proof, native-platform result, or stable release approval.
+
+## Intermediate CI correction
+
+The first performance commit `f712f507c208fa85b4bb2433085093be75491b47`
+passed the watched nine scenarios but its original full matrix flagged exact
+filtering at size 8 (+45.5% against the early frozen reference), despite the longer
+focused sample showing only +1.5%. That conflict was not suppressed. The follow-up
+keeps the original shared merge loop for every size and only adds prefix positioning
+for larger inputs, instead of retaining the local-list/direct-write variant or
+adding a second duplicated small-input loop. The first run and all its warnings
+remain available at Actions run `35069695999`; final claims use the follow-up run.
 
 ## Unchanged release boundary
 
