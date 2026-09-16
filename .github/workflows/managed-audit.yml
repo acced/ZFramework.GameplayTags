@@ -7,7 +7,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: managed-audit-${{ github.ref }}
+  group: managed-audit-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   managed:
@@ -25,6 +25,8 @@ jobs:
         run: python3 -S -m unittest discover -s 'Audit~' -p 'test_*.py'
       - name: Compile all managed source and run regression and performance audit
         run: python3 'Audit~/run.py' --output artifacts/results --rounds 3
+      - name: Recheck nine historical alerts with both frozen references
+        run: python3 'Audit~/perf_regression.py' --output artifacts/performance-regression --rounds 6
       - name: Archive exact checked source
         if: always()
         run: |
