@@ -1,13 +1,13 @@
 name: Integer runtime audit
 on:
   push:
-    branches: [refactor/runtime-index-bitset-20260920]
+    branches: [main, optimize/whole-repo-20260916, refactor/runtime-index-bitset-20260920]
   pull_request:
-    branches: [optimize/whole-repo-20260916]
+    branches: [main, optimize/whole-repo-20260916]
 permissions:
   contents: read
 concurrency:
-  group: integer-runtime-${{ github.ref }}
+  group: integer-runtime-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   verify:
