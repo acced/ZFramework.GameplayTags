@@ -1,331 +1,97 @@
-<h1 align="center">ZFramework Gameplay Tags</h1>
+# ZFramework Gameplay Tags — integer runtime
 
-<p align="center">Hierarchical gameplay tags for Unity.<br>Define tags once. Use them in code, components, and gameplay queries.</p>
+[简体中文](README_CN.md) · [Architecture and migration](Documentation~/RUNTIME_INDEX.md) · [Native release requirements](Documentation~/RELEASE.md)
 
-<p align="center">
-  <a href="./README_CN.md">CN · 简体中文</a> · <a href="./README.md"><strong>EN · English</strong></a>
-</p>
+Version **3.0.0-pre.1** is a breaking structural preview, not an approved stable release. Unity 2021.3+ / C# 9 / .NET Standard 2.1 are the declared targets. Native Editor and IL2CPP results must be obtained separately; managed CI uses explicitly labelled API facades.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Unity-2021.3%2B-222222?logo=unity" alt="Unity 2021.3 or later">
-  <img src="https://img.shields.io/badge/Package-UPM-3178C6" alt="Unity Package Manager">
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-22A06B" alt="MIT License"></a>
-</p>
+## Install and configure
 
-**[ZFramework Gameplay Tags](https://github.com/acced/ZFramework.GameplayTags)** is an Unreal-style tag system for Unity. Use names such as `Ability.Attack.Melee` or `State.Debuff.Stunned` to describe abilities, states, damage types, and other gameplay concepts.
+Use Unity Package Manager **Add package from disk** and select `package.json`, or select the `refactor/runtime-index-bitset-20260920` Git branch. Reference the `GameplayTags` assembly from your game assembly.
 
-- **Hierarchy matching** — child tags match their parents; parent tags are registered automatically.
-- **Tag containers** — store unique tags, check any/all conditions, and filter tag sets.
-- **Composable queries** — combine tag and expression conditions with any, all, and none semantics.
-- **Editor tools** — manage definitions, choose tags in the Inspector, and import/export CSV.
-- **Generated C# API** — access tags through named fields with IDE completion.
-- **Definition validation** — check names, redirects, sources, and restricted hierarchies before a build.
+Create settings with **Tools → ZFramework → Gameplay Tags → Create Settings**. Keep the default asset at `Assets/Resources/GameplayTags/GameplayTagSettings.asset`. Define tags in the Manager, or use the CSV editor. Existing serialized names, Inspector drawers, redirects, restricted sources, validation, Undo and code-generation controls remain authoring features.
 
-[Installation](#installation) · [Quick start](#quick-start) · [Usage](#usage) · [Editor guide](#editor-guide) · [Configuration](#configuration) · [Samples](#samples) · [FAQ](#faq)
+## Separate authoring from execution
 
-## Version 2 status and migration
-
-This branch is **2.0.0-pre.2**, not a stable release with completed Unity/device acceptance. A green managed CI run covers managed checks only; see the [release checklist](Documentation~/RELEASE.md). The Git URL below installs this PR branch. Pin production dependencies to a reviewed commit/tag.
-
-**Query source is separate from execution.** Call `source.Freeze()` at load time and reuse the returned `FrozenGameplayTagQuery`. Editing the source does not change an existing matcher. Every active branch is validated before hierarchy reduction, constant folding and same-kind All/Any flattening. Share one matcher per rule definition, rather than freezing it every frame or for every unit.
-
-**Threading and lifetime:** registry/editor operations run on the main thread. Containers have a single owner and do not support concurrent mutation or mutation during enumeration. Rebuilding the registry does not update old name snapshots. Static registry state resets for a new play session, including when Domain Reload is disabled; callers must re-establish their own subscriptions and loading state.
-
-**Serialization:** field names are preserved. Deserialization only sorts/deduplicates local lists; it does not load Resources. Call `ResolveRegisteredTags()` for serialized containers at the main-thread loading boundary. Unknown names throw without changing the container, and reserved capacity is preserved. Resolve a single tag with `RequestTag(serializedTag.Name)`; Freeze resolves query tags. Copy/bulk operations no longer silently filter snapshots through the registry.
-
-**Capacity and results:** reserve `Capacity`; `FilterInto`, `FilterExactInto`, `UnionInto` and `IntersectionExactInto` overwrite caller-owned results. After initialization/resolution and with enough actual-result capacity, these core operations allocate no managed memory. Insufficient capacity grows; results are not dropped. Allocating convenience APIs, Freeze, loading resolution, parent/leaf substrings and exception paths are outside that contract.
-
-| Aliases / empty inputs | Contract |
-|---|---|
-| Self Copy/Append | No-op; self Remove clears |
-| UnionInto / exact intersection and filtering | Either input may be the output |
-| Hierarchical FilterInto | May overwrite the source, not a distinct condition container; rejected before mutation |
-| Empty/null condition | Any=false, All=true; empty Query=false; empty No=true |
-| None | Invalid; IsValid means nonempty, not registered |
-
-<a id="installation"></a>
-## Installation
-
-Requires **Unity 2021.3 or later**, as declared in `package.json`. The runtime assembly has no references to other ZFramework packages.
-
-### Local package
-
-1. Download or clone [the repository](https://github.com/acced/ZFramework.GameplayTags) and locate the package folder containing `package.json`.
-2. Open **Window → Package Manager** in Unity.
-3. Select **+ → Add package from disk…** and choose that `package.json`.
-4. Wait for Unity to import and compile the package.
-
-Alternatively, copy the whole package folder into your Unity project:
-
-```text
-YourUnityProject/
-└── Packages/
-    └── zframework.gameplaytag/
-        ├── package.json
-        ├── Runtime/
-        ├── Editor/
-        └── Samples~/
-```
-
-If it already exists at `Packages/zframework.gameplaytag`, it is an embedded package and needs no additional installation.
-
-### Git URL
-
-In Unity Package Manager, choose **+ → Add package from git URL…**. When the package's `package.json` is at the repository root, use:
-
-```text
-https://github.com/acced/ZFramework.GameplayTags.git#optimize/whole-repo-20260916
-```
-
-If the repository contains the full Unity project and the package is under `Packages/zframework.gameplaytag`, use this URL instead:
-
-```text
-https://github.com/acced/ZFramework.GameplayTags.git?path=/Packages/zframework.gameplaytag
-```
-
-Git must be installed for this method. The package files must be committed to the repository at the location used by the URL.
-
-### Assembly definitions
-
-For scripts under your own `.asmdef`, add **GameplayTags** to its **Assembly Definition References**. Runtime code uses:
-
-```csharp
-using GameplayTags;
-```
-
-<a id="quick-start"></a>
-## Quick start
-
-### 1. Create the settings asset
-
-Open **Tools → ZFramework → Gameplay Tags → Create Settings**. The default asset is created at:
-
-```text
-Assets/Resources/GameplayTags/GameplayTagSettings.asset
-```
-
-Keep it at this location when using default runtime loading. Commit this asset and its `.meta` file with your project.
-
-### 2. Define some tags
-
-Open **Tools → ZFramework → Gameplay Tags → Manager**. On the **Tags** tab, enter each name in **Add Tag**, then click **Add**:
-
-```text
-Sample.State.Alive
-Sample.State.Debuff.DamageOverTime.Poisoned
-Sample.State.Debuff.Control.Stunned
-```
-
-Parents such as `Sample.State.Debuff` are registered implicitly; you do not need to add separate definitions for them. Names are case-sensitive. Use dot-separated segments without spaces or empty segments.
-
-### 3. Run a component
-
-Create `GameplayTagsQuickStart.cs` with the following code, attach it to any GameObject, and enter Play Mode:
+`GameplayTag` and `GameplayTagContainer` contain **serialized names**. They are no longer the combat set. Resolve once into `RuntimeTag` and `RuntimeTagSet`, and freeze query definitions against the same immutable `TagRegistry`.
 
 ```csharp
 using GameplayTags;
 using UnityEngine;
 
-public sealed class GameplayTagsQuickStart : MonoBehaviour
+public sealed class RuntimeTagExample : MonoBehaviour
 {
+    [SerializeField] private GameplayTagContainer initialTags = new GameplayTagContainer();
+    [SerializeField] private GameplayTagQuery activation = new GameplayTagQuery();
+    private RuntimeTagSet owned;
+    private FrozenGameplayTagQuery matcher;
+
     private void Awake()
     {
-        GameplayTag alive = GameplayTagManager.RequestTag("Sample.State.Alive");
-        GameplayTag poisoned = GameplayTagManager.RequestTag(
-            "Sample.State.Debuff.DamageOverTime.Poisoned");
-        GameplayTag stunned = GameplayTagManager.RequestTag(
-            "Sample.State.Debuff.Control.Stunned");
-        GameplayTag debuff = GameplayTagManager.RequestTag("Sample.State.Debuff");
+        TagRegistry registry = GameplayTagManager.CurrentRegistry;
+        owned = initialTags.ToRuntime(registry, 32);
+        matcher = activation.Freeze(registry);
+    }
 
-        var owned = new GameplayTagContainer();
-        owned.AddTag(alive);
-        owned.AddTag(poisoned);
+    public bool CanActivate() => matcher.Matches(owned);
+    public bool AddState(RuntimeTag tag) => owned.AddTag(tag);
+    public bool RemoveState(RuntimeTag tag) => owned.RemoveTag(tag);
+}
+```
 
-        Debug.Log(owned.HasTag(debuff));       // True: poisoned is a descendant.
-        Debug.Log(owned.HasTagExact(debuff));  // False: debuff itself was not added.
+Populate the two authoring fields in the Inspector. An empty source query evaluates to false. Prepare the object before invoking its runtime methods.
 
-        var canAct = new GameplayTagQuery(
-            GameplayTagQueryExpression.AllExpressionsMatch()
-                .AddExpression(GameplayTagQueryExpression.AllTagsMatch().AddTag(alive))
-                .AddExpression(GameplayTagQueryExpression.NoTagsMatch().AddTag(stunned)),
-            "Alive and not stunned");
+A rule shared by many units should be frozen once by the context that loads the definition:
 
-        FrozenGameplayTagQuery matcher = canAct.Freeze();
-        Debug.Log(matcher.Matches(owned));     // True
-        owned.AddTag(stunned);
-        Debug.Log(matcher.Matches(owned));      // False
+```csharp
+using GameplayTags;
+using UnityEngine;
+
+[CreateAssetMenu(menuName = "Game/Skill rule")]
+public sealed class SharedSkillRule : ScriptableObject
+{
+    [SerializeField] private GameplayTagQuery conditions = new GameplayTagQuery();
+
+    public FrozenGameplayTagQuery Prepare(TagRegistry registry)
+    {
+        return conditions.Freeze(registry);
     }
 }
 ```
 
-With the default settings, the registry initializes before the first scene loads. Requesting a tag looks it up in the registry; it does not create a new definition.
+The caller owns and shares the returned matcher. Changing the definition does not change already prepared matchers.
 
-<a id="usage"></a>
-## Usage
+## Runtime operations
 
-### Match tags and containers
+Resolve `registry.Resolve("State.Debuff.Burning")` at loading time and retain that scoped handle. `set.HasTagExact(handle)` tests an explicit member; `set.HasTag(parent)` tests the parent or any descendant. Only explicit members are stored. `Count` always counts explicit members.
 
-Hierarchy matching goes from **child to parent**. Using the variables from the quick start:
+`RuntimeTagSet.UnionInto(left, right, output)` and `IntersectionExactInto` overwrite caller-owned output and allow either input as output. `FilterInto` is hierarchical: it allows the source as output but rejects a different condition set as output. `CopyFrom`, `AppendTags` and `RemoveTags` preserve storage mode and never modify another input. Default `RuntimeTag.None` is not a member; foreign non-default handles/sets/queries throw before mutating output. Runtime set arguments must be non-null.
 
-```csharp
-poisoned.MatchesTag(debuff);       // true
-debuff.MatchesTag(poisoned);       // false
-poisoned.MatchesTagExact(debuff);  // false
+`Union` and `IntersectionExact` allocate independent results. A copy constructor performs a real independent copy, not copy-on-write.
+
+## Storage and zero allocation
+
+A set owns **one** sorted `int[]` or one `ulong[]`, never both live representations. `TagSetStorage.Auto` selects at construction using expected capacity and data-buffer size. Sparse storage grows amortized when necessary; dense storage allocates the bounded registry bitmap once. `EnsureCapacity` never silently switches representation. To convert, explicitly create another set in the desired mode and `CopyFrom` it.
+
+Prepared handles, frozen queries and sufficiently sized output/member buffers support allocation-free runtime queries and mutations. Initialization, definition conversion, `Freeze`, growth and allocating convenience APIs are outside that promise. Into never resizes solely because an input-count upper bound is larger than an already sufficient actual-result capacity. Popcount/cardinality work is included in mutations, not postponed until after measurement.
+
+Runtime enumeration is deterministic DFS-index order, not ordinal name order. There is no hidden O(1) k-th-member indexer for bitmaps. Use `foreach`; export and sort names explicitly for UI/persistence. `BufferBytes` describes member-array payload only, not complete managed/native memory.
+
+## Snapshot lifetime and generated bindings
+
+Rebuilding the manager publishes a new immutable snapshot. Old handles, sets and matchers retain their old snapshot and remain internally valid, but cannot be mixed with the new one. They never auto-rebind. Save stable names, not RuntimeIndex. Build/resolve on the main thread; mutate sets through one owner. Concurrent mutation is not supported.
+
+Regenerate the C# API. Generated classes now contain **instance readonly RuntimeTag fields** and take a `TagRegistry` constructor argument, for example `var tags = new Game.GameplayTags(registry);`. Create one binding per context. No static runtime handles survive registry rebuilding unnoticed. Generated text is checked in full before builds.
+
+## Reproduce the structural audit
+
+Run from a full Git checkout with .NET 8 SDK and Python 3.12+, after exporting the three pinned references (the workflow does this):
+
+```text
+python3 Audit~/integer_audit.py --references artifacts --output artifacts/results --rounds 5
 ```
 
-| API | Behavior |
-| --- | --- |
-| `owned.AddTag(tag)` | Adds a registered tag; returns `false` for duplicates or unregistered tags. |
-| `owned.RemoveTag(tag)` | Removes that exact tag. |
-| `owned.HasTag(tag)` | Matches the tag itself or a stored descendant. |
-| `owned.HasTagExact(tag)` | Matches only the exact stored name. |
-| `owned.HasAny(other)` / `owned.HasAll(other)` | Checks any/all tags in another container, including hierarchy matches. |
-| `owned.HasAnyExact(other)` / `owned.HasAllExact(other)` | Checks any/all using exact names. |
-| `owned.Filter(other)` | Returns stored tags that match any tag in `other`. |
-| `matcher.Matches(owned)` | Evaluates a query against the container. |
+The integer-runtime workflow compiles production, editor, samples, exact README examples and test assembly boundaries; runs differential, lifetime, interval and allocation checks; then measures the unchanged original main, previous optimize, pinned Alex-Rachel runtime and this candidate using identical inputs. Raw samples, failed rows, member-buffer costs, source hashes and the exact source ZIP remain in the artifact. Forced sparse/dense candidate runs supplement, not replace, Auto results. A managed winner is not Unity/IL2CPP release approval.
 
-For optional lookups, use `TryRequestTag` to handle missing names without an exception:
+The older `run.py` and performance fixtures are historical tools for the 2.x name-container API; this branch uses `integer_audit.py`. The native runner remains `unity_acceptance.py`; run the new source tests in a marked disposable Unity project and collect matching device evidence. Do not reuse 2.x native acceptance evidence.
 
-```csharp
-if (GameplayTagManager.TryRequestTag("Sample.State.Alive", out GameplayTag tag))
-{
-    Debug.Log(tag.Name);
-}
-```
-
-`RequestTag(name)` throws when the name cannot be resolved. `RequestTag(name, false)` returns `GameplayTag.None` instead. `IsValid` checks whether a tag has a nonempty name; use `GameplayTagManager.IsRegistered(tag)` to check current registry membership.
-
-### Build queries
-
-| Factory | Meaning |
-| --- | --- |
-| `AnyTagsMatch()` | At least one listed tag matches. |
-| `AllTagsMatch()` | Every listed tag matches. |
-| `NoTagsMatch()` | None of the listed tags match. |
-| `AnyExpressionsMatch()` | At least one child expression succeeds. |
-| `AllExpressionsMatch()` | Every child expression succeeds. |
-| `NoExpressionsMatch()` | No child expression succeeds. |
-
-Use `.AddTag(tag)` with tag expressions and `.AddExpression(expression)` with expression groups, as in the quick start. Tag conditions use hierarchy matching. A query with no root expression returns `false`.
-
-### Select tags in the Inspector
-
-Create `Skill.cs` and attach it to a GameObject:
-
-```csharp
-using GameplayTags;
-using UnityEngine;
-
-public sealed class Skill : MonoBehaviour
-{
-    [SerializeField] private GameplayTag damageTag;
-    [SerializeField] private GameplayTagContainer ownedTags = new GameplayTagContainer();
-    [SerializeField] private GameplayTagQuery activationQuery = new GameplayTagQuery();
-}
-```
-
-Select the GameObject in **Hierarchy**, then edit these fields under **Inspector → Skill**. Custom property drawers provide a single-tag picker, a container editor, and a query editor. The same field types work in `ScriptableObject` assets.
-
-These selections belong to the component or asset being inspected. Manage the project's available tag definitions in **Gameplay Tag Manager**.
-
-### Generate a C# API
-
-1. Open **Edit → Project Settings… → ZFramework → Gameplay Tags**.
-2. Set **Generated Namespace**, **Generated Class Name**, and **Generated Code Path**.
-3. Use an output file under `Assets/`, such as `Assets/Scripts/Generated/GameplayTags.gen.cs`.
-4. Save the project, then click **Generate C# API** and wait for compilation.
-
-With the default namespace `Game` and class name `GameplayTags`, a gameplay method can use:
-
-```csharp
-GameplayTag alive = Game.GameplayTags.Sample_State_Alive;
-```
-
-Dots become underscores in generated field names. Conflicting names receive suffixes such as `_2`; the original tag names stay unchanged. Generated fields resolve registered tags during static initialization.
-
-Regenerate after editing definitions or generation options. Generation overwrites the configured file. If you move the output path, remove the obsolete generated `.cs` asset through Unity to avoid duplicate class definitions.
-
-If your gameplay scripts use an `.asmdef`, generate into that assembly's folder, or into a separate assembly they reference. A custom assembly cannot reference `Assembly-CSharp`, which is where scripts outside any `.asmdef` normally compile. The assembly containing generated code must reference **GameplayTags**.
-
-<a id="editor-guide"></a>
-## Editor guide
-
-| Task | Where to go |
-| --- | --- |
-| Create the default settings asset | **Tools → ZFramework → Gameplay Tags → Create Settings** |
-| Add, rename, or delete definitions | **Tools → ZFramework → Gameplay Tags → Manager → Tags** |
-| Configure old-name mappings | **Manager → Redirects** |
-| Add source groups and view ownership | **Manager → Sources** |
-| Set initialization and code output options | **Edit → Project Settings… → ZFramework → Gameplay Tags** |
-| Choose tags for a component or asset | Its **Inspector** |
-| Generate code | **Tools → ZFramework → Gameplay Tags → Generate C# API**, or **Generate** in Manager |
-| Validate definitions | **Tools → ZFramework → Gameplay Tags → Validate**, or **Validate** in Manager |
-
-Manager is also available through **Window → ZFramework → Gameplay Tag Manager**. Its **Generate** button uses the options configured in Project Settings.
-
-### Rename tags and use redirects
-
-Select a definition, edit **Name**, and click **Rename Hierarchy**. This renames the tag and its defined descendants, and creates redirects for renamed definitions. **Apply Metadata** applies the comment, source, and restriction options.
-
-Redirects allow `RequestTag` / `TryRequestTag` to resolve an old name to its current name. They do not rewrite every existing component or asset. An old name must no longer be an active tag, and its redirect chain must end at a registered tag without forming a cycle.
-
-### Sources and restricted tags
-
-Use **Sources** to add groups such as `Game` or `Combat` with an owner and a read-only flag. Assign a tag's source in **Tags**, then click **Apply Metadata**. Editor operations reject changes to tags in read-only sources. A restricted parent can prohibit non-restricted descendants when **Allow Non-restricted Children** is disabled.
-
-### Import and export CSV
-
-Use **Import CSV** / **Export CSV** in Manager. The column order is:
-
-```csv
-Tag,Comment,Source,Restricted,AllowNonRestrictedChildren
-Sample.State.Alive,Character is alive,Default,false,true
-Sample.State.Debuff.Control.Stunned,Prevents actions,Default,false,true
-```
-
-Import adds new names and replaces definitions with matching names; tags absent from the CSV remain unchanged. New source names are added as editable sources. The imported result is validated before applying changes. Export includes tag definitions and their source names, but not redirects or source ownership/read-only metadata.
-
-<a id="configuration"></a>
-## Configuration
-
-Open **Edit → Project Settings… → ZFramework → Gameplay Tags**. All six options are stored in the `GameplayTagSettings` asset.
-
-| Field | Default | Effect |
-| --- | --- | --- |
-| Auto Initialize | `true` | Initializes before the first scene loads. Disabling it skips startup initialization; registry APIs can still initialize on first use. |
-| Include Implicit Parent Tags In Generated Code | `true` | Generates fields for automatically registered parents as well as explicit definitions. Runtime parent matching is unchanged. |
-| Warn On Invalid Serialized Tags | `true` | Warns when `AddTag(GameplayTag)` rejects an unregistered nonempty name, once per name in Editor/development builds. Release builds omit this cache and warning call. Does not scan all assets. |
-| Generated Namespace | `Game` | Namespace of the generated class. Empty means no namespace. |
-| Generated Class Name | `GameplayTags` | Name of the generated static class. |
-| Generated Code Path | `Assets/GameScripts/Main/Generated/GameplayTags.gen.cs` | Destination of the generated C# file. |
-
-The readouts show **Defined Tags**, **Registered Tags** including parents, **Redirects**, and **Content Hash**. The diagnostic hash includes definitions, redirects and generation options. Build validation compares the complete expected source text; a matching hash alone is not proof of freshness.
-
-After changing options, use **File → Save Project**. This settings page marks the asset dirty without explicitly saving it to disk. Generate again when you change generation options.
-
-<a id="samples"></a>
-## Samples
-
-In **Window → Package Manager**, select **ZFramework Gameplay Tags**, expand **Samples**, and import **Basic Usage**. Define the three `Sample.*` tags from the quick start, then attach `BasicGameplayTagsExample` to a GameObject and enter Play Mode.
-
-Browse the [sample instructions](./Samples~/BasicUsage/README.md) or [sample source](./Samples~/BasicUsage/BasicGameplayTagsExample.cs) directly.
-
-<a id="faq"></a>
-## FAQ
-
-**Where is Generated Code Path?**  
-In **Project Settings → ZFramework → Gameplay Tags**, below **Generated Class Name**. The tag list window is Manager; use Project Settings for output options.
-
-**Why does a tag appear in the Inspector?**  
-`GameplayTag` is serializable and has a custom property drawer. Put a public field or a private `[SerializeField]` field on a component or `ScriptableObject`. A script must be attached to a GameObject to appear as a scene component.
-
-**Why does RequestTag fail?**  
-Check the name and casing, define the tag in Manager, and keep the default settings asset under `Resources/GameplayTags/GameplayTagSettings.asset`. Both the default editor workflow and default runtime loader use that same location. Use `TryRequestTag` when absence is expected.
-
-**Why does a build fail validation?**  
-Run **Tools → ZFramework → Gameplay Tags → Validate** and fix the reported configuration errors. Build validation requires a settings asset and checks definitions, sources, restrictions, and redirects. It also requires an up-to-date generated C# API and does not generate it automatically during a build.
-
-<a id="license"></a>
-## License
-
-[MIT](./LICENSE).
+[MIT license](LICENSE). Algorithm references and explicit tradeoffs are recorded in [RUNTIME_INDEX.md](Documentation~/RUNTIME_INDEX.md).
