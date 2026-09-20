@@ -44,11 +44,12 @@ namespace GameplayTags.Tests
         [Test]
         public void HierarchyDirectionAndExactness()
         {
-            var parent = GameplayTagManager.RequestTag("State.Debuff");
-            var child = GameplayTagManager.RequestTag("State.Debuff.Burning");
+            var parent = GameplayTagManager.CurrentRegistry.Resolve("State.Debuff");
+            var child = GameplayTagManager.CurrentRegistry.Resolve("State.Debuff.Burning");
             Assert.IsTrue(child.MatchesTag(parent));
             Assert.IsFalse(parent.MatchesTag(child));
-            var owned = new GameplayTagContainer(child);
+            var owned = new RuntimeTagSet(GameplayTagManager.CurrentRegistry, 4);
+            owned.AddTag(child);
             Assert.IsTrue(owned.HasTag(parent));
             Assert.IsFalse(owned.HasTagExact(parent));
         }
@@ -77,7 +78,7 @@ namespace GameplayTags.Tests
             var expression = GameplayTagQueryExpression.AllTagsMatch().AddTag(GameplayTagManager.RequestTag("State"));
             var matcher = new GameplayTagQuery(expression).Freeze();
             expression.AddTag(GameplayTagManager.RequestTag("State.Alive"));
-            var owned = new GameplayTagContainer(GameplayTagManager.RequestTag("State.Debuff.Burning"));
+            var owned = new GameplayTagContainer(GameplayTagManager.RequestTag("State.Debuff.Burning")).ToRuntime();
             Assert.IsTrue(matcher.Matches(owned));
             Assert.IsFalse(new GameplayTagQuery(expression).Freeze().Matches(owned));
         }
@@ -91,14 +92,14 @@ namespace GameplayTags.Tests
         [Test]
         public void IntoOperationsPreserveInputAliases()
         {
-            var left = new GameplayTagContainer(GameplayTagManager.RequestTag("State.Alive"));
-            var right = new GameplayTagContainer(GameplayTagManager.RequestTag("State.Debuff.Burning"));
-            left.Capacity = 2;
-            GameplayTagContainer.UnionInto(left, right, left);
+            var left = new GameplayTagContainer(GameplayTagManager.RequestTag("State.Alive")).ToRuntime();
+            var right = new GameplayTagContainer(GameplayTagManager.RequestTag("State.Debuff.Burning")).ToRuntime();
+            left.EnsureCapacity(2);
+            RuntimeTagSet.UnionInto(left, right, left);
             Assert.AreEqual(2, left.Count);
-            GameplayTagContainer.IntersectionExactInto(left, right, right);
+            RuntimeTagSet.IntersectionExactInto(left, right, right);
             Assert.AreEqual(1, right.Count);
-            Assert.AreEqual("State.Debuff.Burning", right[0].Name);
+            Assert.IsTrue(right.HasTagExact(GameplayTagManager.CurrentRegistry.Resolve("State.Debuff.Burning")));
         }
         [Test]
         public void EditorTransactionRejectsCaseConflictWithoutChangingSettings()
@@ -140,7 +141,7 @@ namespace GameplayTags.Tests
                 asset = AssetDatabase.LoadAssetAtPath<GameplayTagQueryTestAsset>(path);
                 Assert.IsNotNull(asset);
                 Assert.IsTrue(asset.Query.Freeze().Matches(new GameplayTagContainer(
-                    GameplayTagManager.RequestTag("State.Debuff.Burning"))));
+                    GameplayTagManager.RequestTag("State.Debuff.Burning")).ToRuntime()));
             }
             finally
             {
