@@ -119,7 +119,7 @@ internal static class IntegerTests
                 string[] y = Domain.Where((_, i) => (b & (1 << i)) != 0).ToArray();
                 foreach (TagSetStorage am in Modes) foreach (TagSetStorage bm in Modes)
                 {
-                    var left = Set(registry, x, am), right = Set(registry, y, bm);
+                    var left = Set(registry, x, am); var right = Set(registry, y, bm);
                     Check(left.HasAnyExact(right) == x.Intersect(y).Any());
                     Check(left.HasAllExact(right) == y.All(n => x.Contains(n)));
                     Check(left.HasAny(right) == y.Any(p => x.Any(n => Matches(n, p))));
@@ -177,7 +177,7 @@ internal static class IntegerTests
         Test("snapshot-identity-lifetime-and-transactional-rebuild", () =>
         {
             TagRegistry first = Setup(Domain), second = TagRegistry.Create(Settings(Domain));
-            var old = Set(first, Domain, TagSetStorage.Dense), foreign = Set(second, Domain, TagSetStorage.Sparse);
+            var old = Set(first, Domain, TagSetStorage.Dense); var foreign = Set(second, Domain, TagSetStorage.Sparse);
             RuntimeTag tag = first.Resolve("A.B"), other = second.Resolve("A.B");
             Check(tag != other); Check(tag.Name == other.Name);
             Throws<ArgumentException>(() => old.AddTag(other)); Throws<ArgumentException>(() => old.HasTagExact(other));

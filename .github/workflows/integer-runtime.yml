@@ -2,6 +2,8 @@ name: Integer runtime audit
 on:
   push:
     branches: [refactor/runtime-index-bitset-20260920]
+  pull_request:
+    branches: [optimize/whole-repo-20260916]
 permissions:
   contents: read
 concurrency:
@@ -33,8 +35,7 @@ jobs:
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
         with:
           dotnet-version: '8.0.425'
-      - name: Run new runtime checks when implementation is present
-        if: ${{ hashFiles('Audit~/integer_audit.py') != '' }}
+      - name: Compile, verify and compare all four runtimes
         run: python3 'Audit~/integer_audit.py' --references artifacts --output artifacts/results --rounds 5
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()

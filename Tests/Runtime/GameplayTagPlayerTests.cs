@@ -38,22 +38,22 @@ namespace GameplayTags.Runtime.Tests
         [Test]
         public void PlayerHierarchyFrozenQueryAndAliases()
         {
-            var child = GameplayTagManager.RequestTag("Acceptance.Debuff.Burning");
-            var parent = GameplayTagManager.RequestTag("Acceptance.Debuff");
-            var alive = GameplayTagManager.RequestTag("Acceptance.Alive");
-            var owned = new GameplayTagContainer(16);
+            var child = GameplayTagManager.CurrentRegistry.Resolve("Acceptance.Debuff.Burning");
+            var parent = GameplayTagManager.CurrentRegistry.Resolve("Acceptance.Debuff");
+            var alive = GameplayTagManager.CurrentRegistry.Resolve("Acceptance.Alive");
+            var owned = new RuntimeTagSet(GameplayTagManager.CurrentRegistry, 16);
             owned.AddTag(child);
             Assert.IsTrue(owned.HasTag(parent));
             Assert.IsFalse(owned.HasTagExact(parent));
             Assert.IsFalse(parent.MatchesTag(child));
-            var source = new GameplayTagQuery(GameplayTagQueryExpression.AllTagsMatch().AddTag(parent));
+            var source = new GameplayTagQuery(GameplayTagQueryExpression.AllTagsMatch().AddTag(GameplayTagManager.RequestTag(parent.Name)));
             var frozen = source.Freeze();
-            source.RootExpression.AddTag(alive);
+            source.RootExpression.AddTag(GameplayTagManager.RequestTag(alive.Name));
             Assert.IsTrue(frozen.Matches(owned));
             Assert.IsFalse(source.Freeze().Matches(owned));
-            var other = new GameplayTagContainer(alive);
-            GameplayTagContainer.UnionInto(owned, other, owned);
-            GameplayTagContainer.IntersectionExactInto(owned, other, other);
+            var other = new RuntimeTagSet(GameplayTagManager.CurrentRegistry, 1); other.AddTag(alive);
+            RuntimeTagSet.UnionInto(owned, other, owned);
+            RuntimeTagSet.IntersectionExactInto(owned, other, other);
             Assert.AreEqual(1, other.Count);
             Assert.IsTrue(other.HasTagExact(alive));
         }
@@ -77,11 +77,11 @@ namespace GameplayTags.Runtime.Tests
             s_Sink = new byte[4096];
             Assert.Greater(GC.GetAllocatedBytesForCurrentThread() - before, 0L,
                 "Allocation counter is unsupported or inactive; a zero reading cannot certify zero allocation.");
-            var tag = GameplayTagManager.RequestTag("Acceptance.Alive");
-            var other = new GameplayTagContainer(tag);
-            var owned = new GameplayTagContainer(16);
-            var output = new GameplayTagContainer(16);
-            var frozen = new GameplayTagQuery(GameplayTagQueryExpression.AllTagsMatch().AddTag(tag)).Freeze();
+            var tag = GameplayTagManager.CurrentRegistry.Resolve("Acceptance.Alive");
+            var other = new RuntimeTagSet(GameplayTagManager.CurrentRegistry, 1); other.AddTag(tag);
+            var owned = new RuntimeTagSet(GameplayTagManager.CurrentRegistry, 16);
+            var output = new RuntimeTagSet(GameplayTagManager.CurrentRegistry, 16);
+            var frozen = new GameplayTagQuery(GameplayTagQueryExpression.AllTagsMatch().AddTag(GameplayTagManager.RequestTag(tag.Name))).Freeze();
             int checksum = 0;
             for (int pass = 0; pass < 2; pass++)
             {
@@ -90,8 +90,8 @@ namespace GameplayTags.Runtime.Tests
                 {
                     owned.CopyFrom(other);
                     checksum += owned.HasTag(tag) && owned.HasTagExact(tag) && frozen.Matches(owned) ? 1 : 0;
-                    GameplayTagContainer.UnionInto(owned, other, output);
-                    GameplayTagContainer.IntersectionExactInto(output, other, output);
+                    RuntimeTagSet.UnionInto(owned, other, output);
+                    RuntimeTagSet.IntersectionExactInto(output, other, output);
                     owned.FilterInto(other, output);
                     owned.FilterExactInto(other, output);
                     owned.RemoveTag(tag);

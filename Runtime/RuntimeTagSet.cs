@@ -198,6 +198,11 @@ namespace GameplayTags
                 m_Count += other.m_Count;
                 return;
             }
+            if (other.m_Words == null)
+            {
+                AppendSparse(other);
+                return;
+            }
             int unionCount = CountUnion(this, other);
             if (unionCount == m_Count) return;
             EnsureCapacity(unionCount);
@@ -213,6 +218,35 @@ namespace GameplayTags
             }
             while (incomingExists) { m_Ids[write--] = reverse.Current; incomingExists = reverse.MoveNext(); }
             m_Count = unionCount;
+        }
+        private void AppendSparse(RuntimeTagSet other)
+        {
+            int count = CountUnionSparse(this, other);
+            if (count == m_Count) return;
+            EnsureCapacity(count);
+            int a = m_Count - 1, b = other.m_Count - 1, write = count - 1;
+            int[] incoming = other.m_Ids;
+            while (a >= 0 && b >= 0)
+            {
+                int x = m_Ids[a], y = incoming[b];
+                if (x > y) { m_Ids[write--] = x; a--; }
+                else if (x < y) { m_Ids[write--] = y; b--; }
+                else { m_Ids[write--] = x; a--; b--; }
+            }
+            if (b >= 0) Array.Copy(incoming, 0, m_Ids, 0, b + 1);
+            m_Count = count;
+        }
+        private static int CountUnionSparse(RuntimeTagSet left, RuntimeTagSet right)
+        {
+            int a = 0, b = 0, duplicates = 0;
+            int[] x = left.m_Ids, y = right.m_Ids;
+            while (a < left.m_Count && b < right.m_Count)
+            {
+                if (x[a] < y[b]) a++;
+                else if (x[a] > y[b]) b++;
+                else { duplicates++; a++; b++; }
+            }
+            return checked(left.m_Count + (right.m_Count - duplicates));
         }
         public bool RemoveTags(RuntimeTagSet other)
         {
@@ -330,6 +364,24 @@ namespace GameplayTags
                 else if (left.m_Words != null) { result.CopyFrom(left); result.AppendTags(right); }
                 else if (right.m_Words != null) { result.CopyFrom(right); result.AppendTags(left); }
                 else { result.CopyFrom(left); result.AppendTags(right); }
+                return;
+            }
+            if (left.m_Words == null && right.m_Words == null)
+            {
+                long upper = Math.Min(left.Registry.Count, (long)left.m_Count + right.m_Count);
+                if (result.Capacity < upper) result.EnsureCapacity(CountUnionSparse(left, right));
+                int leftIndex = 0, rightIndex = 0, write = 0;
+                int[] x = left.m_Ids, y = right.m_Ids, destination = result.m_Ids;
+                while (leftIndex < left.m_Count && rightIndex < right.m_Count)
+                {
+                    int first = x[leftIndex], second = y[rightIndex];
+                    if (first < second) { destination[write++] = first; leftIndex++; }
+                    else if (first > second) { destination[write++] = second; rightIndex++; }
+                    else { destination[write++] = first; leftIndex++; rightIndex++; }
+                }
+                if (leftIndex < left.m_Count) { Array.Copy(x, leftIndex, destination, write, left.m_Count - leftIndex); write += left.m_Count - leftIndex; }
+                if (rightIndex < right.m_Count) { Array.Copy(y, rightIndex, destination, write, right.m_Count - rightIndex); write += right.m_Count - rightIndex; }
+                result.m_Count = write;
                 return;
             }
             long maximum = Math.Min(left.Registry.Count, (long)left.m_Count + right.m_Count);

@@ -31,7 +31,6 @@ namespace GameplayTags
         public static GameplayTagQuery MakeQuery(GameplayTagQueryExpression expression) => new GameplayTagQuery(expression);
         public static GameplayTagQuery MakeQueryMatchAnyTags(GameplayTagContainer tags) => new GameplayTagQuery(GameplayTagQueryExpression.AnyTagsMatch().AddTags(tags));
         public static GameplayTagQuery MakeQueryMatchAllTags(GameplayTagContainer tags) => new GameplayTagQuery(GameplayTagQueryExpression.AllTagsMatch().AddTags(tags));
-        public static GameplayTagQuery MakeQueryMatchNoTagsMatch(GameplayTagContainer tags) => new GameplayTagQuery(GameplayTagQueryExpression.NoTagsMatch().AddTags(tags));
         public static GameplayTagQuery MakeQueryMatchNoTags(GameplayTagContainer tags) => new GameplayTagQuery(GameplayTagQueryExpression.NoTagsMatch().AddTags(tags));
         public override string ToString() => string.IsNullOrEmpty(m_UserDescription) ? m_RootExpression?.ToString() ?? "<empty>" : m_UserDescription;
     }
