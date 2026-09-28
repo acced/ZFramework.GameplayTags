@@ -1,12 +1,12 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace GameplayTags
 {
     /// <summary>
-    /// Dense-only, single-owner bitmap bound to an immutable registry. The one buffer contains
-    /// member words followed by 64-way nonzero-word summaries. Summaries are an index, not a
-    /// second member representation. No concurrent mutation or mutation during public enumeration.
-    /// Prepare with a positive capacity before allocation-free mutation. Empty sets need no buffer.
+    /// Dense-only, single-owner bitmap bound to an immutable registry. One buffer contains member
+    /// words followed by 64-way nonzero-word summaries. No second member representation, concurrent
+    /// mutation or mutation during public enumeration. Prepare before allocation-free mutation.
     /// </summary>
     public sealed class RuntimeTagSet
     {
@@ -18,7 +18,7 @@ namespace GameplayTags
         public int Count => m_Count;
         public bool IsEmpty => m_Count == 0;
         public int Capacity => m_Data.Length == 0 ? 0 : Registry.Count;
-        /// <summary>Member buffer plus all summary levels; excludes the object and shared registry.</summary>
+        /// <summary>Member buffer plus summary levels; excludes the object and shared registry.</summary>
         public long BufferBytes => 8L * m_Data.Length;
 
         public RuntimeTagSet(TagRegistry registry, int capacity = 0)
@@ -60,7 +60,12 @@ namespace GameplayTags
             }
             return ContainsId(tag.Id);
         }
-        internal bool ContainsId(int id) => m_Data.Length != 0 && (m_Data[id >> 6] & (1UL << (id & 63))) != 0;
+        internal bool ContainsId(int id)
+        {
+            int word = id >> 6;
+            ulong[] data = m_Data;
+            return (uint)word < (uint)data.Length && (data[word] & (1UL << (id & 63))) != 0;
+        }
         public bool HasTag(RuntimeTag tag) => Accept(tag) && AnyInRange(tag.Id, Registry.Ends[tag.Id]);
         public bool AddTag(RuntimeTag tag) => Accept(tag) && AddId(tag.Id);
         public bool RemoveTag(RuntimeTag tag) => Accept(tag) && RemoveId(tag.Id);
@@ -84,7 +89,7 @@ namespace GameplayTags
             m_Count--;
             return true;
         }
-        // Cardinality belongs to the caller. Index changes propagate only on zero/nonzero transitions.
+        // Cardinality belongs to the caller. Propagate only zero/nonzero transitions.
         private void StoreWord(int word, ulong value)
         {
             ulong before = m_Data[word];
@@ -107,7 +112,7 @@ namespace GameplayTags
                 offset += length;
             }
         }
-        // Find a nonzero word at this level. A summary lookup skips 64 children at once.
+        // A summary lookup skips 64 children. The final one-word level terminates recursion.
         private int NextAtLevel(int offset, int length, int start)
         {
             if (start >= length) return -1;
@@ -148,15 +153,15 @@ namespace GameplayTags
             m_Count = 0;
             m_ActiveWords = 0;
         }
-        // Used only inside copy/union transactions that immediately replace the entire directory.
-        // The old summaries stay valid for every not-yet-visited word during the forward clear.
+        // Internal transactions replace the directory immediately after this forward member clear.
+        // Old summaries still describe every not-yet-visited word. No callback observes this phase.
         private void ClearMembers()
         {
             if (m_Count == 0) return;
             if (UseLinear(m_ActiveWords)) Array.Clear(m_Data, 0, m_WordCount);
             else for (int word = NextWord(0); word >= 0; word = NextAtLevel(0, m_WordCount, word + 1)) m_Data[word] = 0;
         }
-        // Kernel choice, not a representation change. Both paths operate on the same Dense words.
+        // A kernel choice, never a member-storage mode or allocation change.
         private bool UseLinear(int activeWords) => activeWords >= (m_WordCount + 7) / 8;
         public void CopyFrom(RuntimeTagSet other)
         {
@@ -169,7 +174,6 @@ namespace GameplayTags
             {
                 ClearMembers();
                 for (int word = other.NextWord(0); word >= 0; word = other.NextWord(word + 1)) m_Data[word] = other.m_Data[word];
-                // Copy the small directory once, rather than rebuilding ancestors for each copied word.
                 Array.Copy(other.m_Data, m_WordCount, m_Data, m_WordCount, m_Data.Length - m_WordCount);
             }
             m_Count = other.m_Count;
@@ -180,34 +184,24 @@ namespace GameplayTags
             Require(other);
             if (other.m_Count == 0 || ReferenceEquals(this, other)) return;
             if (m_Count == 0) { CopyFrom(other); return; }
-            int added = 0;
             if (UseLinear(other.m_ActiveWords))
             {
                 ulong[] data = m_Data, incoming = other.m_Data;
-                int i = 0, extra = 0, length = m_WordCount;
-                // Independent accumulators shorten the population-count dependency chain.
-                for (; i + 1 < length; i += 2)
-                {
-                    ulong a = data[i], b = data[i + 1], x = incoming[i], y = incoming[i + 1];
-                    data[i] = a | x; data[i + 1] = b | y;
-                    added += Bits.Count(x & ~a); extra += Bits.Count(y & ~b);
-                }
-                if (i < length) { ulong old = data[i]; data[i] = old | incoming[i]; added += Bits.Count(incoming[i] & ~old); }
-                added += extra;
+                for (int i = 0; i < m_WordCount; i++) data[i] |= incoming[i];
+                m_Count = Bits.CountWords(data, m_WordCount);
                 MergeSummary(other);
+                return;
             }
-            else
+            int added = 0;
+            for (int word = other.NextWord(0); word >= 0; word = other.NextWord(word + 1))
             {
-                for (int word = other.NextWord(0); word >= 0; word = other.NextWord(word + 1))
-                {
-                    ulong old = m_Data[word], incoming = other.m_Data[word];
-                    added += Bits.Count(incoming & ~old);
-                    StoreWord(word, old | incoming);
-                }
+                ulong old = m_Data[word], incoming = other.m_Data[word];
+                added += Bits.Count(incoming & ~old);
+                StoreWord(word, old | incoming);
             }
             m_Count += added;
         }
-        // Nonzero(a|b) == nonzero(a)|nonzero(b), at every summary level. No data re-scan.
+        // Occupied(a|b) == occupied(a)|occupied(b), including every summary level.
         private void MergeSummary(RuntimeTagSet other)
         {
             if (m_WordCount == 1) { m_ActiveWords = 1; return; }
@@ -231,21 +225,21 @@ namespace GameplayTags
                 ulong[] data = m_Data, mask = other.m_Data;
                 for (int i = 0; i < m_WordCount; i++)
                 {
-                    ulong old = data[i], gone = old & mask[i], value = old ^ gone;
+                    ulong old = data[i], value = old & ~mask[i];
                     data[i] = value;
-                    removed += Bits.Count(gone);
-                    // Difference cannot create an occupied word. Only newly empty words need indexing.
+                    // Difference cannot create an occupied word. Index only newly empty words.
                     if (value == 0 && old != 0) ChangeOccupancy(i, false);
                 }
+                int count = Bits.CountWords(data, m_WordCount);
+                removed = m_Count - count;
+                m_Count = count;
+                return removed != 0;
             }
-            else
+            for (int word = scan.NextWord(0); word >= 0; word = scan.NextWord(word + 1))
             {
-                for (int word = scan.NextWord(0); word >= 0; word = scan.NextWord(word + 1))
-                {
-                    ulong old = m_Data[word], mask = other.m_Data[word];
-                    removed += Bits.Count(old & mask);
-                    StoreWord(word, old & ~mask);
-                }
+                ulong old = m_Data[word], mask = other.m_Data[word];
+                removed += Bits.Count(old & mask);
+                StoreWord(word, old & ~mask);
             }
             m_Count -= removed;
             return removed != 0;
@@ -321,20 +315,12 @@ namespace GameplayTags
             int count = 0;
             if (linear)
             {
-                int i = 0, extra = 0, length = result.m_WordCount;
-                for (; i + 1 < length; i += 2)
-                {
-                    ulong x = a[i] | b[i], y = a[i + 1] | b[i + 1];
-                    output[i] = x; output[i + 1] = y;
-                    count += Bits.Count(x); extra += Bits.Count(y);
-                }
-                if (i < length) { ulong x = a[i] | b[i]; output[i] = x; count += Bits.Count(x); }
-                count += extra;
+                for (int i = 0; i < result.m_WordCount; i++) output[i] = a[i] | b[i];
+                count = Bits.CountWords(output, result.m_WordCount);
             }
             else
             {
-                // The newly ORed directory describes exactly the words that will be nonzero.
-                // Payload is still clear, so use the directory directly, not Count or old membership.
+                // The ORed directory now describes exactly the result's nonzero member words.
                 for (int word = result.NextAtLevel(0, result.m_WordCount, 0); word >= 0;
                     word = result.NextAtLevel(0, result.m_WordCount, word + 1))
                 {
@@ -447,8 +433,6 @@ namespace GameplayTags
         }
         private static class Bits
         {
-            // Portable SWAR and De Bruijn scan: identical code ships in netstandard2.1 and the audit.
-            // References and all-64-positions regression are recorded in Documentation~/DENSE_ONLY.md.
             private static readonly byte[] Positions = {
                 0,1,48,2,57,49,28,3,61,58,50,42,38,29,17,4,
                 62,55,59,36,53,51,43,22,45,39,33,30,24,18,12,5,
@@ -465,6 +449,48 @@ namespace GameplayTags
                 }
             }
             internal static int Lowest(ulong value) => Positions[unchecked(((value & (0UL - value)) * 0x03F79D71B4CB0A89UL) >> 58)];
+
+            // Portable Harley-Seal carry-save reduction. Adapted from Wojciech Mula's
+            // sse-popcount/popcnt-harley-seal.cpp. See THIRD_PARTY_NOTICES.md (BSD-2-Clause).
+            // Only member words are counted. The compact occupancy directory is excluded.
+            internal static int CountWords(ulong[] words, int length)
+            {
+                int count = 0, i = 0;
+                if (length >= 64)
+                {
+                    ulong ones = 0, twos = 0, fours = 0, eights = 0;
+                    for (; i + 15 < length; i += 16)
+                    {
+                        Carry(out ulong t0, ref ones, ones, words[i], words[i + 1]);
+                        Carry(out ulong t1, ref ones, ones, words[i + 2], words[i + 3]);
+                        Carry(out ulong f0, ref twos, twos, t0, t1);
+                        Carry(out t0, ref ones, ones, words[i + 4], words[i + 5]);
+                        Carry(out t1, ref ones, ones, words[i + 6], words[i + 7]);
+                        Carry(out ulong f1, ref twos, twos, t0, t1);
+                        Carry(out ulong e0, ref fours, fours, f0, f1);
+                        Carry(out t0, ref ones, ones, words[i + 8], words[i + 9]);
+                        Carry(out t1, ref ones, ones, words[i + 10], words[i + 11]);
+                        Carry(out f0, ref twos, twos, t0, t1);
+                        Carry(out t0, ref ones, ones, words[i + 12], words[i + 13]);
+                        Carry(out t1, ref ones, ones, words[i + 14], words[i + 15]);
+                        Carry(out f1, ref twos, twos, t0, t1);
+                        Carry(out ulong e1, ref fours, fours, f0, f1);
+                        Carry(out ulong sixteens, ref eights, eights, e0, e1);
+                        count += Count(sixteens);
+                    }
+                    count = count * 16 + Count(eights) * 8 + Count(fours) * 4 + Count(twos) * 2 + Count(ones);
+                }
+                for (; i < length; i++) count += Count(words[i]);
+                return count;
+            }
+            // This small Boolean circuit must not become fifteen calls per 16-word block.
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void Carry(out ulong high, ref ulong low, ulong a, ulong b, ulong c)
+            {
+                ulong different = a ^ b;
+                high = (a & b) | (different & c);
+                low = different ^ c;
+            }
         }
     }
 }
