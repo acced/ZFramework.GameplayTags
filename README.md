@@ -1,24 +1,22 @@
-# ZFramework Gameplay Tags — integer runtime
+# ZFramework Gameplay Tags — Dense-only 4.0 prerelease
 
-[简体中文](README_CN.md) · [Architecture and migration](Documentation~/RUNTIME_INDEX.md) · [Native release requirements](Documentation~/RELEASE.md)
+[简体中文](README_CN.md) · [Design, costs and migration](Documentation~/DENSE_ONLY.md) · [MIT license](LICENSE)
 
-Version **3.0.0-pre.1** is a breaking structural preview, not an approved stable release. Unity 2021.3+ / C# 9 / .NET Standard 2.1 are the declared targets. Native Editor and IL2CPP results must be obtained separately; managed CI uses explicitly labelled API facades.
+This branch removes the Sparse/Auto runtime backend. Every prepared set is one dense member bitmap with 64-way occupancy summaries in the same array. The registry remains an immutable DFS snapshot; editable and serialized data remain stable names.
 
-## Install and configure
+**Not a stable release.** Managed checks and hosted benchmarks do not replace native Unity 2021.3 / Unity 6 or Android/iOS IL2CPP validation. Full results, including losing cases, are retained by the Dense audit. Flat Dense allocation is proportional to the entire registry, even when a character owns few tags.
 
-Use Unity Package Manager **Add package from disk** and select `package.json`, or select the `refactor/runtime-index-bitset-20260920` Git branch. Reference the `GameplayTags` assembly from your game assembly.
+## Install and define tags
 
-Create settings with **Tools → ZFramework → Gameplay Tags → Create Settings**. Keep the default asset at `Assets/Resources/GameplayTags/GameplayTagSettings.asset`. Define tags in the Manager, or use the CSV editor. Existing serialized names, Inspector drawers, redirects, restricted sources, validation, Undo and code-generation controls remain authoring features.
+Install this branch as a local UPM package using its `package.json`. Reference `GameplayTags` from a gameplay asmdef. Use Tools → ZFramework → Gameplay Tags to create the default settings at `Assets/Resources/GameplayTags/GameplayTagSettings.asset` and define `State.Alive`, `State.Debuff.Burning`, and `State.Debuff.Stunned`.
 
-## Separate authoring from execution
-
-`GameplayTag` and `GameplayTagContainer` contain **serialized names**. They are no longer the combat set. Resolve once into `RuntimeTag` and `RuntimeTagSet`, and freeze query definitions against the same immutable `TagRegistry`.
+## Load once; reuse at runtime
 
 ```csharp
 using GameplayTags;
 using UnityEngine;
 
-public sealed class RuntimeTagExample : MonoBehaviour
+public sealed class DenseTagsExample : MonoBehaviour
 {
     [SerializeField] private GameplayTagContainer initialTags = new GameplayTagContainer();
     [SerializeField] private GameplayTagQuery activation = new GameplayTagQuery();
@@ -28,70 +26,54 @@ public sealed class RuntimeTagExample : MonoBehaviour
     private void Awake()
     {
         TagRegistry registry = GameplayTagManager.CurrentRegistry;
-        owned = initialTags.ToRuntime(registry, 32);
+        owned = initialTags.ToRuntime(registry, 1);
         matcher = activation.Freeze(registry);
     }
 
     public bool CanActivate() => matcher.Matches(owned);
-    public bool AddState(RuntimeTag tag) => owned.AddTag(tag);
-    public bool RemoveState(RuntimeTag tag) => owned.RemoveTag(tag);
 }
 ```
 
-Populate the two authoring fields in the Inspector. An empty source query evaluates to false. Prepare the object before invoking its runtime methods.
+Any positive capacity reserves the entire Dense buffer once. `EnsureCapacity(1)` does not reserve one tag-sized array. After preparation, normal operations do not allocate. A zero-capacity empty object allocates its bitmap on first addition; queries never allocate or repair state.
 
-A rule shared by many units should be frozen once by the context that loads the definition:
+## Caller-owned results
 
 ```csharp
 using GameplayTags;
 using UnityEngine;
 
-[CreateAssetMenu(menuName = "Game/Skill rule")]
-public sealed class SharedSkillRule : ScriptableObject
+public sealed class DenseUnionExample : MonoBehaviour
 {
-    [SerializeField] private GameplayTagQuery conditions = new GameplayTagQuery();
+    private RuntimeTagSet owned;
+    private RuntimeTagSet buffs;
+    private RuntimeTagSet output;
 
-    public FrozenGameplayTagQuery Prepare(TagRegistry registry)
+    private void Awake()
     {
-        return conditions.Freeze(registry);
+        TagRegistry registry = GameplayTagManager.CurrentRegistry;
+        owned = new RuntimeTagSet(registry, 1);
+        buffs = new RuntimeTagSet(registry, 1);
+        output = new RuntimeTagSet(registry, 1);
+        owned.AddTag(registry.Resolve("State.Alive"));
+        buffs.AddTag(registry.Resolve("State.Debuff.Burning"));
+    }
+
+    public int CombinedCount()
+    {
+        RuntimeTagSet.UnionInto(owned, buffs, output);
+        return output.Count;
     }
 }
 ```
 
-The caller owns and shares the returned matcher. Changing the definition does not change already prepared matchers.
+Union and exact intersection may overwrite either input. Hierarchical filtering may overwrite its source, but not a separate condition set. All runtime operands must be non-null and belong to the same registry snapshot. Unknown names fail at loading; None is not a member. An empty All condition is true and an empty Any condition is false. An empty source query is false.
 
-## Runtime operations
+`new RuntimeTagSet(source)` and `Union(left,right)` create independent objects and include allocation costs. `CopyFrom` overwrites existing members and keeps prepared capacity; `Clear` keeps capacity. A new empty copy does not copy unused reservation.
 
-Resolve `registry.Resolve("State.Debuff.Burning")` at loading time and retain that scoped handle. `set.HasTagExact(handle)` tests an explicit member; `set.HasTag(parent)` tests the parent or any descendant. Only explicit members are stored. `Count` always counts explicit members.
+## Migration and performance
 
-`RuntimeTagSet.UnionInto(left, right, output)` and `IntersectionExactInto` overwrite caller-owned output and allow either input as output. `FilterInto` is hierarchical: it allows the source as output but rejects a different condition set as output. `CopyFrom`, `AppendTags` and `RemoveTags` preserve storage mode and never modify another input. Default `RuntimeTag.None` is not a member; foreign non-default handles/sets/queries throw before mutating output. Runtime set arguments must be non-null.
+Remove `TagSetStorage` arguments and `.Storage` calls: the type no longer exists. Names, redirects, generated registry-bound binding instances and `Freeze(registry)` remain. Never persist RuntimeIndex. Old snapshots remain valid while referenced; different scopes cannot be mixed. Enumeration is DFS ID order, not ordinal name order. Export/sort names explicitly for UI or persistence.
 
-`Union` and `IntersectionExact` allocate independent results. A copy constructor performs a real independent copy, not copy-on-write.
+The algorithms are occupancy-summary successor search, set-bit iteration, portable SWAR population count, and direct word operations. A linear-versus-indexed *kernel* choice never changes member storage. It is not a claim that Dense dominates sparse arrays for every universe or allocation pattern.
 
-## Storage and zero allocation
-
-A set owns **one** sorted `int[]` or one `ulong[]`, never both live representations. `TagSetStorage.Auto` selects at construction using expected capacity and data-buffer size. Sparse storage grows amortized when necessary; dense storage allocates the bounded registry bitmap once. `EnsureCapacity` never silently switches representation. To convert, explicitly create another set in the desired mode and `CopyFrom` it.
-
-Prepared handles, frozen queries and sufficiently sized output/member buffers support allocation-free runtime queries and mutations. Initialization, definition conversion, `Freeze`, growth and allocating convenience APIs are outside that promise. Into never resizes solely because an input-count upper bound is larger than an already sufficient actual-result capacity. Popcount/cardinality work is included in mutations, not postponed until after measurement.
-
-Runtime enumeration is deterministic DFS-index order, not ordinal name order. There is no hidden O(1) k-th-member indexer for bitmaps. Use `foreach`; export and sort names explicitly for UI/persistence. `BufferBytes` describes member-array payload only, not complete managed/native memory.
-
-## Snapshot lifetime and generated bindings
-
-Rebuilding the manager publishes a new immutable snapshot. Old handles, sets and matchers retain their old snapshot and remain internally valid, but cannot be mixed with the new one. They never auto-rebind. Save stable names, not RuntimeIndex. Build/resolve on the main thread; mutate sets through one owner. Concurrent mutation is not supported.
-
-Regenerate the C# API. Generated classes now contain **instance readonly RuntimeTag fields** and take a `TagRegistry` constructor argument, for example `var tags = new Game.GameplayTags(registry);`. Create one binding per context. No static runtime handles survive registry rebuilding unnoticed. Generated text is checked in full before builds.
-
-## Reproduce the structural audit
-
-Run from a full Git checkout with .NET 8 SDK and Python 3.12+, after exporting the three pinned references (the workflow does this):
-
-```text
-python3 Audit~/integer_audit.py --references artifacts --output artifacts/results --rounds 5
-```
-
-The integer-runtime workflow compiles production, editor, samples, exact README examples and test assembly boundaries; runs differential, lifetime, interval and allocation checks; then measures the unchanged original main, previous optimize, pinned Alex-Rachel runtime and this candidate using identical inputs. Raw samples, failed rows, member-buffer costs, source hashes and the exact source ZIP remain in the artifact. Forced sparse/dense candidate runs supplement, not replace, Auto results. A managed winner is not Unity/IL2CPP release approval.
-
-The older `run.py` and performance fixtures are historical tools for the 2.x name-container API; this branch uses `integer_audit.py`. The native runner remains `unity_acceptance.py`; run the new source tests in a marked disposable Unity project and collect matching device evidence. Do not reuse 2.x native acceptance evidence.
-
-[MIT license](LICENSE). Algorithm references and explicit tradeoffs are recorded in [RUNTIME_INDEX.md](Documentation~/RUNTIME_INDEX.md).
+Run `Audit~/dense_audit.py` with the exported pinned references. The workflow compares unchanged Z main, Z optimize, Alex-Rachel, the preceding Auto implementation, its forced Dense path, and this Dense-only candidate. It retains the original 100-case matrix and adds a larger registry and prepared workloads. Native tests are compiled by the managed facade, not executed by it.

@@ -1,38 +1,37 @@
 using System;
+using System.Runtime.CompilerServices;
 
 namespace GameplayTags
 {
-    public enum TagSetStorage { Auto, Sparse, Dense }
-
     /// <summary>
-    /// Single-owner runtime set. Exactly one member buffer is live: sorted int[] or ulong[].
-    /// Storage is chosen at construction and never changes implicitly. No concurrent mutation or mutation during enumeration.
+    /// Dense-only, single-owner bitmap bound to an immutable registry. One buffer contains member
+    /// words followed by 64-way nonzero-word summaries. No second member representation, concurrent
+    /// mutation or mutation during public enumeration. Prepare before allocation-free mutation.
     /// </summary>
     public sealed class RuntimeTagSet
     {
-        private int[] m_Ids;
-        private readonly ulong[] m_Words;
+        private ulong[] m_Data;
+        private readonly int m_WordCount;
         private int m_Count;
+        private int m_ActiveWords;
         public TagRegistry Registry { get; }
         public int Count => m_Count;
         public bool IsEmpty => m_Count == 0;
-        public TagSetStorage Storage => m_Words == null ? TagSetStorage.Sparse : TagSetStorage.Dense;
-        public int Capacity => m_Words == null ? m_Ids.Length : Registry.Count;
-        public long BufferBytes => m_Words == null ? 4L * m_Ids.Length : 8L * m_Words.Length;
+        public int Capacity => m_Data.Length == 0 ? 0 : Registry.Count;
+        /// <summary>Member buffer plus summary levels; excludes the object and shared registry.</summary>
+        public long BufferBytes => 8L * m_Data.Length;
 
-        public RuntimeTagSet(TagRegistry registry, int capacity = 0, TagSetStorage storage = TagSetStorage.Auto)
+        public RuntimeTagSet(TagRegistry registry, int capacity = 0)
         {
             Registry = registry ?? throw new ArgumentNullException(nameof(registry));
-            if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
-            if (storage < TagSetStorage.Auto || storage > TagSetStorage.Dense) throw new ArgumentOutOfRangeException(nameof(storage));
-            capacity = Math.Min(capacity, registry.Count);
-            bool dense = storage == TagSetStorage.Dense || (storage == TagSetStorage.Auto && registry.Count != 0 && 8L * registry.WordCount <= 4L * capacity);
-            if (dense) m_Words = registry.WordCount == 0 ? Array.Empty<ulong>() : new ulong[registry.WordCount];
-            else m_Ids = capacity == 0 ? Array.Empty<int>() : new int[capacity];
+            m_WordCount = registry.WordCount;
+            m_Data = Array.Empty<ulong>();
+            EnsureCapacity(capacity);
         }
+        // Copy contents, not unused reservation. Empty copies still have independent ownership.
         public RuntimeTagSet(RuntimeTagSet source)
-            : this(Required(source).Registry, source.Capacity, source.Storage) { CopyFrom(source); }
-        private static RuntimeTagSet Required(RuntimeTagSet value) => value ?? throw new ArgumentNullException(nameof(value));
+            : this(Required(source).Registry, source.Count) { CopyFrom(source); }
+        private static RuntimeTagSet Required(RuntimeTagSet set) => set ?? throw new ArgumentNullException(nameof(set));
         private void Require(RuntimeTagSet other)
         {
             if (other == null) throw new ArgumentNullException(nameof(other));
@@ -47,298 +46,361 @@ namespace GameplayTags
         public void EnsureCapacity(int capacity)
         {
             if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
-            if (m_Words != null || capacity <= m_Ids.Length) return;
-            capacity = Math.Min(capacity, Registry.Count);
-            int grown = (int)Math.Min(Registry.Count, Math.Max(4L, 2L * m_Ids.Length));
-            Array.Resize(ref m_Ids, Math.Max(capacity, grown));
+            if (capacity == 0 || m_WordCount == 0 || m_Data.Length != 0) return;
+            int length = m_WordCount, total = length;
+            while (length > 1) { length = (length + 63) >> 6; total = checked(total + length); }
+            m_Data = new ulong[total];
         }
+        // The checked public hot path is intentionally small; the foreign-scope error stays cold.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool HasTagExact(RuntimeTag tag)
         {
-            if (!ReferenceEquals(Registry, tag.Owner))
-            {
-                if (tag.Owner == null) return false;
-                Registry.RequireSame(tag.Owner);
-            }
+            if (!ReferenceEquals(Registry, tag.Owner)) return ForeignTag(tag);
             return ContainsId(tag.Id);
         }
-        internal bool ContainsId(int id) => m_Words != null
-            ? (m_Words[id >> 6] & (1UL << (id & 63))) != 0
-            : IndexOf(id) >= 0;
+        private bool ForeignTag(RuntimeTag tag)
+        {
+            if (tag.Owner == null) return false;
+            Registry.RequireSame(tag.Owner);
+            return false;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal bool ContainsId(int id)
+        {
+            int word = id >> 6;
+            ulong[] data = m_Data;
+            return (uint)word < (uint)data.Length && (data[word] & (1UL << (id & 63))) != 0;
+        }
         public bool HasTag(RuntimeTag tag) => Accept(tag) && AnyInRange(tag.Id, Registry.Ends[tag.Id]);
         public bool AddTag(RuntimeTag tag) => Accept(tag) && AddId(tag.Id);
         public bool RemoveTag(RuntimeTag tag) => Accept(tag) && RemoveId(tag.Id);
         internal bool AddId(int id)
         {
-            if (m_Words != null)
-            {
-                int word = id >> 6;
-                ulong bit = 1UL << (id & 63), before = m_Words[word];
-                if ((before & bit) != 0) return false;
-                m_Words[word] = before | bit;
-                m_Count++;
-                return true;
-            }
-            int index = IndexOf(id);
-            if (index >= 0) return false;
-            index = ~index;
-            EnsureCapacity(m_Count + 1);
-            Array.Copy(m_Ids, index, m_Ids, index + 1, m_Count - index);
-            m_Ids[index] = id;
+            EnsureCapacity(1);
+            int word = id >> 6;
+            ulong bit = 1UL << (id & 63), before = m_Data[word];
+            if ((before & bit) != 0) return false;
+            StoreWord(word, before | bit);
             m_Count++;
             return true;
         }
         private bool RemoveId(int id)
         {
-            if (m_Words != null)
-            {
-                int word = id >> 6;
-                ulong bit = 1UL << (id & 63), before = m_Words[word];
-                if ((before & bit) == 0) return false;
-                m_Words[word] = before & ~bit;
-                m_Count--;
-                return true;
-            }
-            int index = IndexOf(id);
-            if (index < 0) return false;
+            if (m_Count == 0) return false;
+            int word = id >> 6;
+            ulong bit = 1UL << (id & 63), before = m_Data[word];
+            if ((before & bit) == 0) return false;
+            StoreWord(word, before & ~bit);
             m_Count--;
-            Array.Copy(m_Ids, index + 1, m_Ids, index, m_Count - index);
             return true;
         }
-        private int IndexOf(int id)
+        // Single-word updates propagate only zero/nonzero transitions.
+        private void StoreWord(int word, ulong value)
         {
-            int low = 0, high = m_Count - 1;
-            while (low <= high)
+            ulong before = m_Data[word];
+            m_Data[word] = value;
+            if ((before == 0) != (value == 0)) ChangeOccupancy(word, value != 0);
+        }
+        private void ChangeOccupancy(int child, bool occupied)
+        {
+            m_ActiveWords += occupied ? 1 : -1;
+            Propagate(child, m_WordCount, m_WordCount, occupied);
+        }
+        private void Propagate(int child, int offset, int length, bool occupied)
+        {
+            while (length > 1)
             {
-                int mid = low + ((high - low) >> 1), value = m_Ids[mid];
-                if (value == id) return mid;
-                if (value < id) low = mid + 1; else high = mid - 1;
+                int parent = child >> 6;
+                ulong mask = 1UL << (child & 63), old = m_Data[offset + parent];
+                ulong next = occupied ? old | mask : old & ~mask;
+                m_Data[offset + parent] = next;
+                if ((old == 0) == (next == 0)) break;
+                child = parent;
+                length = (length + 63) >> 6;
+                offset += length;
             }
-            return ~low;
+        }
+        private ulong BlockMask(int block) => m_WordCount == 1
+            ? (m_Data[0] == 0 ? 0UL : 1UL) : m_Data[m_WordCount + block];
+        // Bulk callers have already written this block's member words. Publish its directory once,
+        // not once per member word. The caller maintains eager member and occupied-word counts.
+        private void PublishBlock(int block, ulong mask)
+        {
+            if (m_WordCount == 1) return;
+            int at = m_WordCount + block;
+            ulong old = m_Data[at];
+            m_Data[at] = mask;
+            if ((old == 0) != (mask == 0))
+            {
+                int length = (m_WordCount + 63) >> 6;
+                Propagate(block, m_WordCount + length, length, mask != 0);
+            }
+        }
+        // A summary lookup skips 64 children. The final one-word level terminates recursion.
+        private int NextAtLevel(int offset, int length, int start)
+        {
+            if (start >= length) return -1;
+            if (m_Data[offset + start] != 0) return start;
+            if (length <= 1) return -1;
+            int summary = offset + length, parentLength = (length + 63) >> 6;
+            int parent = start >> 6;
+            ulong candidates = m_Data[summary + parent] & (ulong.MaxValue << (start & 63));
+            if (candidates != 0) return (parent << 6) + Bits.Lowest(candidates);
+            parent = NextAtLevel(summary, parentLength, parent + 1);
+            return parent < 0 ? -1 : (parent << 6) + Bits.Lowest(m_Data[summary + parent]);
+        }
+        // This cursor carries a scalar mask, never another member collection. Internal forward
+        // transforms may rewrite the current block after capturing Mask, but never future blocks.
+        private struct BlockCursor
+        {
+            private readonly RuntimeTagSet m_Set;
+            private int m_Next;
+            internal int Block;
+            internal ulong Mask;
+            internal BlockCursor(RuntimeTagSet set) { m_Set = set; m_Next = set.m_Count == 0 ? -1 : 0; Block = -1; Mask = 0; }
+            internal bool MoveNext()
+            {
+                if (m_Next < 0 || m_Set.m_Data.Length == 0) return false;
+                if (m_Set.m_WordCount == 1)
+                {
+                    m_Next = -1; Block = 0; Mask = m_Set.m_Data[0] == 0 ? 0UL : 1UL;
+                    return Mask != 0;
+                }
+                int length = (m_Set.m_WordCount + 63) >> 6;
+                Block = m_Set.NextAtLevel(m_Set.m_WordCount, length, m_Next);
+                if (Block < 0) { m_Next = -1; return false; }
+                Mask = m_Set.m_Data[m_Set.m_WordCount + Block];
+                m_Next = Block + 1;
+                return true;
+            }
         }
         internal bool AnyInRange(int start, int end)
         {
-            if (m_Count == 0 || start == end) return false;
-            if (m_Words == null)
-            {
-                int at = IndexOf(start);
-                if (at >= 0) return true;
-                at = ~at;
-                return at < m_Count && m_Ids[at] < end;
-            }
+            if (m_Count == 0 || start >= end) return false;
             int first = start >> 6, last = (end - 1) >> 6;
             ulong lowMask = ulong.MaxValue << (start & 63);
             ulong highMask = (end & 63) == 0 ? ulong.MaxValue : (1UL << (end & 63)) - 1;
-            if (first == last) return (m_Words[first] & lowMask & highMask) != 0;
-            if ((m_Words[first] & lowMask) != 0) return true;
-            for (int i = first + 1; i < last; i++) if (m_Words[i] != 0) return true;
-            return (m_Words[last] & highMask) != 0;
+            if (first == last) return (m_Data[first] & lowMask & highMask) != 0;
+            if ((m_Data[first] & lowMask) != 0 || (m_Data[last] & highMask) != 0) return true;
+            int next = NextAtLevel(0, m_WordCount, first + 1);
+            return next >= 0 && next < last;
         }
         public void Clear()
         {
             if (m_Count == 0) return;
-            if (m_Words != null) Array.Clear(m_Words, 0, m_Words.Length);
+            if (UseLinear(m_ActiveWords)) Array.Clear(m_Data, 0, m_Data.Length);
+            else
+            {
+                var blocks = new BlockCursor(this);
+                while (blocks.MoveNext())
+                {
+                    ulong mask = blocks.Mask;
+                    while (mask != 0)
+                    {
+                        m_Data[(blocks.Block << 6) + Bits.Lowest(mask)] = 0;
+                        mask &= mask - 1;
+                    }
+                    PublishBlock(blocks.Block, 0);
+                }
+            }
             m_Count = 0;
+            m_ActiveWords = 0;
         }
+        // A kernel choice, never a member-storage mode or allocation change.
+        private bool UseLinear(int activeWords) => activeWords >= (m_WordCount + 7) / 8;
         public void CopyFrom(RuntimeTagSet other)
         {
             Require(other);
             if (ReferenceEquals(this, other)) return;
-            if (m_Words != null && other.m_Words != null)
-                Array.Copy(other.m_Words, m_Words, m_Words.Length);
-            else if (m_Words == null && other.m_Words == null)
-            {
-                EnsureCapacity(other.m_Count);
-                Array.Copy(other.m_Ids, m_Ids, other.m_Count);
-            }
+            if (other.m_Count == 0) { Clear(); return; }
+            EnsureCapacity(1);
+            if (UseLinear(other.m_ActiveWords)) Array.Copy(other.m_Data, m_Data, m_Data.Length);
             else
             {
-                Clear();
-                EnsureCapacity(other.m_Count);
-                var iterator = new IdEnumerator(other);
-                while (iterator.MoveNext()) AppendOrdered(iterator.Current);
+                // Overwrite and remove stale words in one directory merge. Do not clear a
+                // block and immediately rebuild the identical occupancy path.
+                if (UseLinear(m_ActiveWords)) Clear();
+                var previous = new BlockCursor(this);
+                var incoming = new BlockCursor(other);
+                bool hasOld = previous.MoveNext(), hasNew = incoming.MoveNext();
+                while (hasOld || hasNew)
+                {
+                    int block = !hasNew || (hasOld && previous.Block < incoming.Block)
+                        ? previous.Block : incoming.Block;
+                    ulong oldMask = hasOld && previous.Block == block ? previous.Mask : 0;
+                    ulong newMask = hasNew && incoming.Block == block ? incoming.Mask : 0;
+                    ulong removed = oldMask & ~newMask;
+                    while (removed != 0)
+                    {
+                        m_Data[(block << 6) + Bits.Lowest(removed)] = 0;
+                        removed &= removed - 1;
+                    }
+                    ulong remaining = newMask;
+                    while (remaining != 0)
+                    {
+                        int word = (block << 6) + Bits.Lowest(remaining);
+                        m_Data[word] = other.m_Data[word];
+                        remaining &= remaining - 1;
+                    }
+                    PublishBlock(block, newMask);
+                    if (hasOld && previous.Block == block) hasOld = previous.MoveNext();
+                    if (hasNew && incoming.Block == block) hasNew = incoming.MoveNext();
+                }
             }
             m_Count = other.m_Count;
-        }
-        // Used only for known unique ascending IDs, not an external admission API.
-        private void AppendOrdered(int id)
-        {
-            if (m_Words != null) m_Words[id >> 6] |= 1UL << (id & 63);
-            else
-            {
-                if (m_Count == m_Ids.Length) EnsureCapacity(m_Count + 1);
-                m_Ids[m_Count] = id;
-            }
-            m_Count++;
+            m_ActiveWords = other.m_ActiveWords;
         }
         public void AppendTags(RuntimeTagSet other)
         {
             Require(other);
             if (other.m_Count == 0 || ReferenceEquals(this, other)) return;
             if (m_Count == 0) { CopyFrom(other); return; }
-            if (m_Words != null)
+            if (UseLinear(other.m_ActiveWords))
             {
-                if (other.m_Words != null)
+                ulong[] data = m_Data, incoming = other.m_Data;
+                for (int i = 0; i < m_WordCount; i++) data[i] |= incoming[i];
+                m_Count = Bits.CountWords(data, m_WordCount);
+                MergeSummary(other);
+                return;
+            }
+            int added = 0;
+            var blocks = new BlockCursor(other);
+            while (blocks.MoveNext())
+            {
+                int block = blocks.Block;
+                ulong mask = blocks.Mask, oldMask = BlockMask(block);
+                m_ActiveWords += Bits.Count(mask & ~oldMask);
+                while (mask != 0)
                 {
-                    int added = 0;
-                    for (int i = 0; i < m_Words.Length; i++)
-                    {
-                        ulong before = m_Words[i], incoming = other.m_Words[i];
-                        added += Bits.Count(incoming & ~before);
-                        m_Words[i] = before | incoming;
-                    }
-                    m_Count += added;
+                    int word = (block << 6) + Bits.Lowest(mask);
+                    ulong old = m_Data[word], incoming = other.m_Data[word];
+                    added += Bits.Count(incoming & ~old);
+                    m_Data[word] = old | incoming;
+                    mask &= mask - 1;
                 }
-                else for (int i = 0; i < other.m_Count; i++) AddId(other.m_Ids[i]);
-                return;
+                PublishBlock(block, oldMask | blocks.Mask);
             }
-            if (other.m_Words == null && m_Ids[m_Count - 1] < other.m_Ids[0])
-            {
-                EnsureCapacity(m_Count + other.m_Count);
-                Array.Copy(other.m_Ids, 0, m_Ids, m_Count, other.m_Count);
-                m_Count += other.m_Count;
-                return;
-            }
-            if (other.m_Words == null)
-            {
-                AppendSparse(other);
-                return;
-            }
-            int unionCount = CountUnion(this, other);
-            if (unionCount == m_Count) return;
-            EnsureCapacity(unionCount);
-            int read = m_Count - 1, write = unionCount - 1;
-            var reverse = new IdEnumerator(other, true);
-            bool incomingExists = reverse.MoveNext();
-            while (read >= 0 && incomingExists)
-            {
-                int own = m_Ids[read], incoming = reverse.Current;
-                if (own > incoming) m_Ids[write--] = m_Ids[read--];
-                else if (own < incoming) { m_Ids[write--] = incoming; incomingExists = reverse.MoveNext(); }
-                else { m_Ids[write--] = m_Ids[read--]; incomingExists = reverse.MoveNext(); }
-            }
-            while (incomingExists) { m_Ids[write--] = reverse.Current; incomingExists = reverse.MoveNext(); }
-            m_Count = unionCount;
+            m_Count += added;
         }
-        private void AppendSparse(RuntimeTagSet other)
+        // Occupied(a|b) == occupied(a)|occupied(b), including every summary level.
+        private void MergeSummary(RuntimeTagSet other)
         {
-            int count = CountUnionSparse(this, other);
-            if (count == m_Count) return;
-            EnsureCapacity(count);
-            int a = m_Count - 1, b = other.m_Count - 1, write = count - 1;
-            int[] incoming = other.m_Ids;
-            while (a >= 0 && b >= 0)
+            if (m_WordCount == 1) { m_ActiveWords = 1; return; }
+            int bottomEnd = m_WordCount + ((m_WordCount + 63) >> 6);
+            for (int i = m_WordCount; i < bottomEnd; i++)
             {
-                int x = m_Ids[a], y = incoming[b];
-                if (x > y) { m_Ids[write--] = x; a--; }
-                else if (x < y) { m_Ids[write--] = y; b--; }
-                else { m_Ids[write--] = x; a--; b--; }
+                m_ActiveWords += Bits.Count(other.m_Data[i] & ~m_Data[i]);
+                m_Data[i] |= other.m_Data[i];
             }
-            if (b >= 0) Array.Copy(incoming, 0, m_Ids, 0, b + 1);
-            m_Count = count;
-        }
-        private static int CountUnionSparse(RuntimeTagSet left, RuntimeTagSet right)
-        {
-            int a = 0, b = 0, duplicates = 0;
-            int[] x = left.m_Ids, y = right.m_Ids;
-            while (a < left.m_Count && b < right.m_Count)
-            {
-                if (x[a] < y[b]) a++;
-                else if (x[a] > y[b]) b++;
-                else { duplicates++; a++; b++; }
-            }
-            return checked(left.m_Count + (right.m_Count - duplicates));
+            for (int i = bottomEnd; i < m_Data.Length; i++) m_Data[i] |= other.m_Data[i];
         }
         public bool RemoveTags(RuntimeTagSet other)
         {
             Require(other);
             if (m_Count == 0 || other.m_Count == 0) return false;
             if (ReferenceEquals(this, other)) { Clear(); return true; }
-            int beforeCount = m_Count;
-            if (m_Words != null)
+            RuntimeTagSet scan = m_ActiveWords <= other.m_ActiveWords ? this : other;
+            int removed = 0;
+            if (UseLinear(scan.m_ActiveWords))
             {
-                if (other.m_Words != null)
+                ulong[] data = m_Data, mask = other.m_Data;
+                for (int i = 0; i < m_WordCount; i++)
                 {
-                    int removed = 0;
-                    for (int i = 0; i < m_Words.Length; i++)
-                    {
-                        ulong old = m_Words[i], incoming = other.m_Words[i];
-                        removed += Bits.Count(old & incoming);
-                        m_Words[i] = old & ~incoming;
-                    }
-                    m_Count -= removed;
+                    ulong old = data[i], value = old & ~mask[i];
+                    data[i] = value;
+                    if (value == 0 && old != 0) ChangeOccupancy(i, false);
                 }
-                else for (int i = 0; i < other.m_Count; i++) RemoveId(other.m_Ids[i]);
+                int count = Bits.CountWords(data, m_WordCount);
+                removed = m_Count - count;
+                m_Count = count;
+                return removed != 0;
             }
-            else
+            var blocks = new BlockCursor(scan);
+            while (blocks.MoveNext())
             {
-                int write = 0;
-                if (other.m_Words != null)
+                int block = blocks.Block;
+                ulong oldMask = BlockMask(block), mask = oldMask & other.BlockMask(block), emptied = 0;
+                while (mask != 0)
                 {
-                    for (int i = 0; i < m_Count; i++) if (!other.ContainsId(m_Ids[i])) m_Ids[write++] = m_Ids[i];
+                    int bit = Bits.Lowest(mask), word = (block << 6) + bit;
+                    ulong old = m_Data[word], incoming = other.m_Data[word], value = old & ~incoming;
+                    removed += Bits.Count(old & incoming);
+                    m_Data[word] = value;
+                    if (value == 0) emptied |= 1UL << bit;
+                    mask &= mask - 1;
                 }
-                else
+                if (emptied != 0)
                 {
-                    int i = 0, j = 0;
-                    while (i < m_Count && j < other.m_Count)
-                    {
-                        int left = m_Ids[i], right = other.m_Ids[j];
-                        if (left < right) { m_Ids[write++] = left; i++; }
-                        else if (left > right) j++;
-                        else { i++; j++; }
-                    }
-                    if (i < m_Count) { Array.Copy(m_Ids, i, m_Ids, write, m_Count - i); write += m_Count - i; }
+                    m_ActiveWords -= Bits.Count(emptied);
+                    PublishBlock(block, oldMask & ~emptied);
                 }
-                m_Count = write;
             }
-            return beforeCount != m_Count;
+            m_Count -= removed;
+            return removed != 0;
         }
         public bool HasAnyExact(RuntimeTagSet other)
         {
             Require(other);
-            if (m_Words != null && other.m_Words != null)
+            if (m_Count == 0 || other.m_Count == 0) return false;
+            var blocks = new BlockCursor(m_ActiveWords <= other.m_ActiveWords ? this : other);
+            while (blocks.MoveNext())
             {
-                for (int i = 0; i < m_Words.Length; i++) if ((m_Words[i] & other.m_Words[i]) != 0) return true;
-                return false;
+                ulong mask = BlockMask(blocks.Block) & other.BlockMask(blocks.Block);
+                while (mask != 0)
+                {
+                    int word = (blocks.Block << 6) + Bits.Lowest(mask);
+                    if ((m_Data[word] & other.m_Data[word]) != 0) return true;
+                    mask &= mask - 1;
+                }
             }
-            RuntimeTagSet small = m_Count <= other.m_Count ? this : other;
-            RuntimeTagSet large = ReferenceEquals(small, this) ? other : this;
-            var iterator = new IdEnumerator(small);
-            while (iterator.MoveNext()) if (large.ContainsId(iterator.Current)) return true;
             return false;
         }
         public bool HasAllExact(RuntimeTagSet other)
         {
             Require(other);
             if (other.m_Count > m_Count) return false;
-            if (m_Words != null && other.m_Words != null)
+            if (other.m_Count == 0 || ReferenceEquals(this, other)) return true;
+            var blocks = new BlockCursor(other);
+            while (blocks.MoveNext())
             {
-                for (int i = 0; i < m_Words.Length; i++) if ((m_Words[i] & other.m_Words[i]) != other.m_Words[i]) return false;
-                return true;
+                ulong mask = blocks.Mask;
+                if ((BlockMask(blocks.Block) & mask) != mask) return false;
+                while (mask != 0)
+                {
+                    int word = (blocks.Block << 6) + Bits.Lowest(mask);
+                    if ((m_Data[word] & other.m_Data[word]) != other.m_Data[word]) return false;
+                    mask &= mask - 1;
+                }
             }
-            var iterator = new IdEnumerator(other);
-            while (iterator.MoveNext()) if (!ContainsId(iterator.Current)) return false;
             return true;
         }
         public bool HasAny(RuntimeTagSet conditions)
         {
             Require(conditions);
-            var iterator = new IdEnumerator(conditions);
-            while (iterator.MoveNext()) if (AnyInRange(iterator.Current, Registry.Ends[iterator.Current])) return true;
+            var iterator = conditions.GetEnumerator();
+            while (iterator.MoveNext())
+            {
+                int id = iterator.Current.Id;
+                if (AnyInRange(id, Registry.Ends[id])) return true;
+            }
             return false;
         }
         public bool HasAll(RuntimeTagSet conditions)
         {
             Require(conditions);
-            var iterator = new IdEnumerator(conditions);
-            while (iterator.MoveNext()) if (!AnyInRange(iterator.Current, Registry.Ends[iterator.Current])) return false;
+            var iterator = conditions.GetEnumerator();
+            while (iterator.MoveNext())
+            {
+                int id = iterator.Current.Id;
+                if (!AnyInRange(id, Registry.Ends[id])) return false;
+            }
             return true;
         }
         public bool MatchesQuery(FrozenGameplayTagQuery query) => query != null && query.Matches(this);
-        public static RuntimeTagSet Union(RuntimeTagSet left, RuntimeTagSet right, TagSetStorage storage = TagSetStorage.Auto)
+        public static RuntimeTagSet Union(RuntimeTagSet left, RuntimeTagSet right)
         {
             Required(left).Require(right);
-            int maximum = (int)Math.Min(left.Registry.Count, (long)left.m_Count + right.m_Count);
-            var result = new RuntimeTagSet(left.Registry, maximum, storage);
+            var result = new RuntimeTagSet(left.Registry, left.m_Count == 0 ? right.m_Count : left.m_Count);
             UnionInto(left, right, result);
             return result;
         }
@@ -348,82 +410,66 @@ namespace GameplayTags
             left.Require(result);
             if (ReferenceEquals(result, left)) { result.AppendTags(right); return; }
             if (ReferenceEquals(result, right)) { result.AppendTags(left); return; }
-            if (result.m_Words != null)
+            if (left.m_Count == 0) { result.CopyFrom(right); return; }
+            if (right.m_Count == 0) { result.CopyFrom(left); return; }
+            result.EnsureCapacity(1);
+            ulong[] a = left.m_Data, b = right.m_Data, output = result.m_Data;
+            int active = 0, count = 0;
+            if (result.UseLinear(Math.Max(left.m_ActiveWords, right.m_ActiveWords)))
             {
-                if (left.m_Words != null && right.m_Words != null)
+                for (int i = 0; i < result.m_WordCount; i++) output[i] = a[i] | b[i];
+                count = Bits.CountWords(output, result.m_WordCount);
+                int bottomEnd = result.m_WordCount + ((result.m_WordCount + 63) >> 6);
+                active = result.m_WordCount == 1 ? 1 : 0;
+                for (int i = result.m_WordCount; i < output.Length; i++)
                 {
-                    int count = 0;
-                    for (int i = 0; i < result.m_Words.Length; i++)
+                    ulong mask = a[i] | b[i];
+                    output[i] = mask;
+                    if (i < bottomEnd) active += Bits.Count(mask);
+                }
+            }
+            else
+            {
+                if (result.UseLinear(result.m_ActiveWords)) result.Clear();
+                var x = new BlockCursor(left);
+                var y = new BlockCursor(right);
+                var previous = new BlockCursor(result);
+                bool hasX = x.MoveNext(), hasY = y.MoveNext(), hasOld = previous.MoveNext();
+                while (hasX || hasY || hasOld)
+                {
+                    int block = Math.Min(hasX ? x.Block : int.MaxValue, hasY ? y.Block : int.MaxValue);
+                    if (hasOld && previous.Block < block) block = previous.Block;
+                    ulong mask = (hasX && x.Block == block ? x.Mask : 0) | (hasY && y.Block == block ? y.Mask : 0);
+                    ulong oldMask = hasOld && previous.Block == block ? previous.Mask : 0;
+                    ulong removed = oldMask & ~mask;
+                    while (removed != 0)
                     {
-                        ulong word = left.m_Words[i] | right.m_Words[i];
-                        result.m_Words[i] = word;
-                        count += Bits.Count(word);
+                        output[(block << 6) + Bits.Lowest(removed)] = 0;
+                        removed &= removed - 1;
                     }
-                    result.m_Count = count;
+                    active += Bits.Count(mask);
+                    ulong remaining = mask;
+                    while (remaining != 0)
+                    {
+                        int word = (block << 6) + Bits.Lowest(remaining);
+                        ulong bits = a[word] | b[word];
+                        output[word] = bits;
+                        count += Bits.Count(bits);
+                        remaining &= remaining - 1;
+                    }
+                    result.PublishBlock(block, mask);
+                    if (hasX && x.Block == block) hasX = x.MoveNext();
+                    if (hasY && y.Block == block) hasY = y.MoveNext();
+                    if (hasOld && previous.Block == block) hasOld = previous.MoveNext();
                 }
-                else if (left.m_Words != null) { result.CopyFrom(left); result.AppendTags(right); }
-                else if (right.m_Words != null) { result.CopyFrom(right); result.AppendTags(left); }
-                else { result.CopyFrom(left); result.AppendTags(right); }
-                return;
             }
-            if (left.m_Words == null && right.m_Words == null)
-            {
-                long upper = Math.Min(left.Registry.Count, (long)left.m_Count + right.m_Count);
-                if (result.Capacity < upper) result.EnsureCapacity(CountUnionSparse(left, right));
-                int leftIndex = 0, rightIndex = 0, write = 0;
-                int[] x = left.m_Ids, y = right.m_Ids, destination = result.m_Ids;
-                while (leftIndex < left.m_Count && rightIndex < right.m_Count)
-                {
-                    int first = x[leftIndex], second = y[rightIndex];
-                    if (first < second) { destination[write++] = first; leftIndex++; }
-                    else if (first > second) { destination[write++] = second; rightIndex++; }
-                    else { destination[write++] = first; leftIndex++; rightIndex++; }
-                }
-                if (leftIndex < left.m_Count) { Array.Copy(x, leftIndex, destination, write, left.m_Count - leftIndex); write += left.m_Count - leftIndex; }
-                if (rightIndex < right.m_Count) { Array.Copy(y, rightIndex, destination, write, right.m_Count - rightIndex); write += right.m_Count - rightIndex; }
-                result.m_Count = write;
-                return;
-            }
-            long maximum = Math.Min(left.Registry.Count, (long)left.m_Count + right.m_Count);
-            // A count pass is needed only when the caller's capacity cannot hold the upper bound.
-            // Never resize a buffer whose capacity already holds the ACTUAL result.
-            if (result.Capacity < maximum) result.EnsureCapacity(CountUnion(left, right));
-            result.m_Count = 0;
-            var a = new IdEnumerator(left);
-            var b = new IdEnumerator(right);
-            bool hasA = a.MoveNext(), hasB = b.MoveNext();
-            while (hasA && hasB)
-            {
-                int x = a.Current, y = b.Current;
-                if (x < y) { result.m_Ids[result.m_Count++] = x; hasA = a.MoveNext(); }
-                else if (x > y) { result.m_Ids[result.m_Count++] = y; hasB = b.MoveNext(); }
-                else { result.m_Ids[result.m_Count++] = x; hasA = a.MoveNext(); hasB = b.MoveNext(); }
-            }
-            while (hasA) { result.m_Ids[result.m_Count++] = a.Current; hasA = a.MoveNext(); }
-            while (hasB) { result.m_Ids[result.m_Count++] = b.Current; hasB = b.MoveNext(); }
+            result.m_ActiveWords = active;
+            result.m_Count = count;
         }
-        private static int CountUnion(RuntimeTagSet left, RuntimeTagSet right)
-        {
-            var a = new IdEnumerator(left);
-            var b = new IdEnumerator(right);
-            bool hasA = a.MoveNext(), hasB = b.MoveNext();
-            int count = 0;
-            while (hasA && hasB)
-            {
-                int x = a.Current, y = b.Current;
-                if (x < y) hasA = a.MoveNext();
-                else if (x > y) hasB = b.MoveNext();
-                else { hasA = a.MoveNext(); hasB = b.MoveNext(); }
-                count++;
-            }
-            while (hasA) { count++; hasA = a.MoveNext(); }
-            while (hasB) { count++; hasB = b.MoveNext(); }
-            return count;
-        }
-        public static RuntimeTagSet IntersectionExact(RuntimeTagSet left, RuntimeTagSet right, TagSetStorage storage = TagSetStorage.Auto)
+        public static RuntimeTagSet IntersectionExact(RuntimeTagSet left, RuntimeTagSet right)
         {
             Required(left).Require(right);
-            var result = new RuntimeTagSet(left.Registry, Math.Min(left.Count, right.Count), storage);
+            var result = new RuntimeTagSet(left.Registry);
             IntersectionExactInto(left, right, result);
             return result;
         }
@@ -434,139 +480,147 @@ namespace GameplayTags
             left.Require(result);
             if (ReferenceEquals(result, left)) { result.IntersectWith(right); return; }
             if (ReferenceEquals(result, right)) { result.IntersectWith(left); return; }
-            if (result.m_Words != null && left.m_Words != null && right.m_Words != null)
-            {
-                int count = 0;
-                for (int i = 0; i < result.m_Words.Length; i++)
-                {
-                    ulong word = left.m_Words[i] & right.m_Words[i];
-                    result.m_Words[i] = word;
-                    count += Bits.Count(word);
-                }
-                result.m_Count = count;
-                return;
-            }
             result.Clear();
-            RuntimeTagSet small = left.Count <= right.Count ? left : right;
-            RuntimeTagSet large = ReferenceEquals(small, left) ? right : left;
-            var iterator = new IdEnumerator(small);
-            while (iterator.MoveNext()) if (large.ContainsId(iterator.Current)) result.AppendOrdered(iterator.Current);
+            if (left.m_Count == 0 || right.m_Count == 0) return;
+            var blocks = new BlockCursor(left.m_ActiveWords <= right.m_ActiveWords ? left : right);
+            int count = 0, active = 0;
+            while (blocks.MoveNext())
+            {
+                int block = blocks.Block;
+                ulong mask = left.BlockMask(block) & right.BlockMask(block), kept = 0;
+                while (mask != 0)
+                {
+                    int bit = Bits.Lowest(mask), word = (block << 6) + bit;
+                    ulong value = left.m_Data[word] & right.m_Data[word];
+                    if (value != 0)
+                    {
+                        result.EnsureCapacity(1);
+                        result.m_Data[word] = value;
+                        count += Bits.Count(value);
+                        active++;
+                        kept |= 1UL << bit;
+                    }
+                    mask &= mask - 1;
+                }
+                if (kept != 0) result.PublishBlock(block, kept);
+            }
+            result.m_Count = count;
+            result.m_ActiveWords = active;
         }
         private void IntersectWith(RuntimeTagSet other)
         {
             if (ReferenceEquals(this, other)) return;
             if (other.m_Count == 0) { Clear(); return; }
-            if (m_Words == null)
+            int count = 0, active = 0;
+            var blocks = new BlockCursor(this);
+            while (blocks.MoveNext())
             {
-                int write = 0;
-                for (int i = 0; i < m_Count; i++) if (other.ContainsId(m_Ids[i])) m_Ids[write++] = m_Ids[i];
-                m_Count = write;
-            }
-            else
-            {
-                int count = 0, cursor = 0;
-                for (int i = 0; i < m_Words.Length; i++)
+                ulong mask = blocks.Mask, kept = 0;
+                while (mask != 0)
                 {
-                    ulong mask = 0;
-                    if (other.m_Words != null) mask = other.m_Words[i];
-                    else while (cursor < other.m_Count && (other.m_Ids[cursor] >> 6) == i)
-                    { mask |= 1UL << (other.m_Ids[cursor++] & 63); }
-                    ulong word = m_Words[i] & mask;
-                    m_Words[i] = word;
-                    count += Bits.Count(word);
+                    int bit = Bits.Lowest(mask), word = (blocks.Block << 6) + bit;
+                    ulong value = m_Data[word] & other.m_Data[word];
+                    m_Data[word] = value;
+                    count += Bits.Count(value);
+                    if (value != 0) { active++; kept |= 1UL << bit; }
+                    mask &= mask - 1;
                 }
-                m_Count = count;
+                PublishBlock(blocks.Block, kept);
             }
+            m_Count = count;
+            m_ActiveWords = active;
         }
-        /// <summary>Hierarchy filter. Output may alias the source, but not a separate condition set.</summary>
+        /// <summary>Overwrite result. May alias this source, but not a separate condition set.</summary>
         public void FilterInto(RuntimeTagSet conditions, RuntimeTagSet result)
         {
             Require(conditions);
             Require(result);
-            if (ReferenceEquals(result, conditions) && !ReferenceEquals(result, this))
+            if (ReferenceEquals(result, conditions) && !ReferenceEquals(this, result))
                 throw new ArgumentException("Hierarchy filter cannot overwrite its separate condition set.", nameof(result));
             if (ReferenceEquals(this, conditions)) { result.CopyFrom(this); return; }
             bool alias = ReferenceEquals(this, result);
-            var iterator = new IdEnumerator(this);
             if (!alias) result.Clear();
-            int write = 0;
-            while (iterator.MoveNext())
+            int count = 0;
+            var blocks = new BlockCursor(this);
+            while (blocks.MoveNext())
             {
-                int id = iterator.Current, ancestor = id;
-                while (ancestor >= 0 && !conditions.ContainsId(ancestor)) ancestor = Registry.Parents[ancestor];
-                bool keep = ancestor >= 0;
-                if (!alias) { if (keep) result.AppendOrdered(id); }
-                else if (m_Words != null) { if (!keep) RemoveId(id); }
-                else if (keep) m_Ids[write++] = id;
+                ulong mask = blocks.Mask;
+                while (mask != 0)
+                {
+                    int word = (blocks.Block << 6) + Bits.Lowest(mask);
+                    ulong candidates = m_Data[word], kept = 0;
+                    while (candidates != 0)
+                    {
+                        int bit = Bits.Lowest(candidates), id = (word << 6) + bit, ancestor = id;
+                        candidates &= candidates - 1;
+                        while (ancestor >= 0 && !conditions.ContainsId(ancestor)) ancestor = Registry.Parents[ancestor];
+                        if (ancestor >= 0) kept |= 1UL << bit;
+                    }
+                    if (kept != 0) result.EnsureCapacity(1);
+                    if (alias || kept != 0) result.StoreWord(word, kept);
+                    count += Bits.Count(kept);
+                    mask &= mask - 1;
+                }
             }
-            if (alias && m_Words == null) m_Count = write;
+            result.m_Count = count;
         }
         public bool SetEquals(RuntimeTagSet other)
         {
             Require(other);
             if (m_Count != other.m_Count) return false;
-            if (m_Words != null && other.m_Words != null)
+            if (m_Count == 0 || ReferenceEquals(this, other)) return true;
+            var blocks = new BlockCursor(this);
+            while (blocks.MoveNext())
             {
-                for (int i = 0; i < m_Words.Length; i++) if (m_Words[i] != other.m_Words[i]) return false;
-                return true;
+                ulong mask = blocks.Mask;
+                if (mask != other.BlockMask(blocks.Block)) return false;
+                while (mask != 0)
+                {
+                    int word = (blocks.Block << 6) + Bits.Lowest(mask);
+                    if (m_Data[word] != other.m_Data[word]) return false;
+                    mask &= mask - 1;
+                }
             }
-            var a = new IdEnumerator(this);
-            var b = new IdEnumerator(other);
-            while (a.MoveNext()) { b.MoveNext(); if (a.Current != b.Current) return false; }
             return true;
         }
         public Enumerator GetEnumerator() => new Enumerator(this);
         public struct Enumerator
         {
-            private readonly TagRegistry m_Registry;
-            private IdEnumerator m_Iterator;
-            internal Enumerator(RuntimeTagSet set) { m_Registry = set.Registry; m_Iterator = new IdEnumerator(set); }
-            public RuntimeTag Current => new RuntimeTag(m_Registry, m_Iterator.Current);
-            public bool MoveNext() => m_Iterator.MoveNext();
-        }
-        private struct IdEnumerator
-        {
-            private readonly int[] m_Values;
-            private readonly ulong[] m_Bitmap;
-            private readonly int m_Length;
-            private readonly bool m_Reverse;
-            private int m_Cursor;
+            private readonly RuntimeTagSet m_Set;
+            private BlockCursor m_Blocks;
+            private ulong m_Words;
             private ulong m_Bits;
-            internal int Current { get; private set; }
-            internal IdEnumerator(RuntimeTagSet set, bool reverse = false)
+            private int m_Base;
+            private int m_Current;
+            internal Enumerator(RuntimeTagSet set)
+            { m_Set = set; m_Blocks = new BlockCursor(set); m_Words = 0; m_Bits = 0; m_Base = 0; m_Current = -1; }
+            public RuntimeTag Current => new RuntimeTag(m_Set.Registry, m_Current);
+            public bool MoveNext()
             {
-                m_Values = set.m_Ids;
-                m_Bitmap = set.m_Words;
-                m_Length = set.m_Count;
-                m_Reverse = reverse;
-                m_Cursor = reverse ? (m_Bitmap == null ? m_Length : m_Bitmap.Length) : -1;
-                m_Bits = 0;
-                Current = -1;
-            }
-            internal bool MoveNext()
-            {
-                if (m_Values != null)
+                if (m_Bits == 0)
                 {
-                    m_Cursor += m_Reverse ? -1 : 1;
-                    if ((uint)m_Cursor >= (uint)m_Length) return false;
-                    Current = m_Values[m_Cursor];
-                    return true;
+                    if (m_Words == 0)
+                    {
+                        if (!m_Blocks.MoveNext()) return false;
+                        m_Words = m_Blocks.Mask;
+                    }
+                    int word = (m_Blocks.Block << 6) + Bits.Lowest(m_Words);
+                    m_Words &= m_Words - 1;
+                    m_Base = word << 6;
+                    m_Bits = m_Set.m_Data[word];
                 }
-                while (m_Bits == 0)
-                {
-                    m_Cursor += m_Reverse ? -1 : 1;
-                    if ((uint)m_Cursor >= (uint)m_Bitmap.Length) return false;
-                    m_Bits = m_Bitmap[m_Cursor];
-                }
-                int bit = m_Reverse ? Bits.Highest(m_Bits) : Bits.Lowest(m_Bits);
-                m_Bits &= ~(1UL << bit);
-                Current = (m_Cursor << 6) + bit;
+                m_Current = m_Base + Bits.Lowest(m_Bits);
+                m_Bits &= m_Bits - 1;
                 return true;
             }
         }
         private static class Bits
         {
-            // Portable SWAR: the same code is benchmarked and shipped on .NET Standard 2.1 / IL2CPP.
+            private static readonly byte[] Positions = {
+                0,1,48,2,57,49,28,3,61,58,50,42,38,29,17,4,
+                62,55,59,36,53,51,43,22,45,39,33,30,24,18,12,5,
+                63,47,56,27,60,41,37,16,54,35,52,21,44,32,23,11,
+                46,26,40,15,34,20,31,10,25,14,19,9,13,8,7,6 };
             internal static int Count(ulong value)
             {
                 unchecked
@@ -577,25 +631,47 @@ namespace GameplayTags
                     return (int)((value * 0x0101010101010101UL) >> 56);
                 }
             }
-            internal static int Lowest(ulong value)
+            internal static int Lowest(ulong value) => Positions[unchecked(((value & (0UL - value)) * 0x03F79D71B4CB0A89UL) >> 58)];
+
+            // Portable Harley-Seal carry-save reduction. Adapted from Wojciech Mula's
+            // sse-popcount/popcnt-harley-seal.cpp. See THIRD_PARTY_NOTICES.md (BSD-2-Clause).
+            // Only member words are counted. The compact occupancy directory is excluded.
+            internal static int CountWords(ulong[] words, int length)
             {
-                int shift = 0;
-                if ((value & 0xFFFFFFFFUL) == 0) { value >>= 32; shift += 32; }
-                if ((value & 0xFFFFUL) == 0) { value >>= 16; shift += 16; }
-                if ((value & 0xFFUL) == 0) { value >>= 8; shift += 8; }
-                if ((value & 0xFUL) == 0) { value >>= 4; shift += 4; }
-                if ((value & 3UL) == 0) { value >>= 2; shift += 2; }
-                return shift + ((value & 1UL) == 0 ? 1 : 0);
+                int count = 0, i = 0;
+                if (length >= 64)
+                {
+                    ulong ones = 0, twos = 0, fours = 0, eights = 0;
+                    for (; i + 15 < length; i += 16)
+                    {
+                        Carry(out ulong t0, ref ones, ones, words[i], words[i + 1]);
+                        Carry(out ulong t1, ref ones, ones, words[i + 2], words[i + 3]);
+                        Carry(out ulong f0, ref twos, twos, t0, t1);
+                        Carry(out t0, ref ones, ones, words[i + 4], words[i + 5]);
+                        Carry(out t1, ref ones, ones, words[i + 6], words[i + 7]);
+                        Carry(out ulong f1, ref twos, twos, t0, t1);
+                        Carry(out ulong e0, ref fours, fours, f0, f1);
+                        Carry(out t0, ref ones, ones, words[i + 8], words[i + 9]);
+                        Carry(out t1, ref ones, ones, words[i + 10], words[i + 11]);
+                        Carry(out f0, ref twos, twos, t0, t1);
+                        Carry(out t0, ref ones, ones, words[i + 12], words[i + 13]);
+                        Carry(out t1, ref ones, ones, words[i + 14], words[i + 15]);
+                        Carry(out f1, ref twos, twos, t0, t1);
+                        Carry(out ulong e1, ref fours, fours, f0, f1);
+                        Carry(out ulong sixteens, ref eights, eights, e0, e1);
+                        count += Count(sixteens);
+                    }
+                    count = count * 16 + Count(eights) * 8 + Count(fours) * 4 + Count(twos) * 2 + Count(ones);
+                }
+                for (; i < length; i++) count += Count(words[i]);
+                return count;
             }
-            internal static int Highest(ulong value)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void Carry(out ulong high, ref ulong low, ulong a, ulong b, ulong c)
             {
-                int shift = 0;
-                if (value >= 1UL << 32) { value >>= 32; shift += 32; }
-                if (value >= 1UL << 16) { value >>= 16; shift += 16; }
-                if (value >= 1UL << 8) { value >>= 8; shift += 8; }
-                if (value >= 1UL << 4) { value >>= 4; shift += 4; }
-                if (value >= 1UL << 2) { value >>= 2; shift += 2; }
-                return shift + (value >= 2 ? 1 : 0);
+                ulong different = a ^ b;
+                high = (a & b) | (different & c);
+                low = different ^ c;
             }
         }
     }

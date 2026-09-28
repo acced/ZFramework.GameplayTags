@@ -148,6 +148,13 @@ internal static class FourWay
         {
             verify();
             for (int i = 0; i < 100; i++) action();
+            // BEGIN SETTLED SETUP: same preparation for every implementation and every operation.
+            // The no-op negative control reproduced allocation without querying any set. Settle
+            // setup garbage/finalizers before timing; allocations caused by action stay in timing.
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
+            GC.WaitForPendingFinalizers();
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
+            // END SETTLED SETUP
             var ns = new double[7];
             var allocations = new double[7];
             for (int sample = 0; sample < ns.Length; sample++)
@@ -162,7 +169,8 @@ internal static class FourWay
             }
             verify();
             rows.Add(new { operation, size, universe, distribution, inputDigest, status = "measured", iterations,
-                ns, allocated_bytes = allocations, input_storage = StorageName(input), input_member_buffer_bytes = MemberBufferBytes(input) });
+                measurement_protocol = "settled-setup-v2", ns, allocated_bytes = allocations,
+                input_storage = StorageName(input), input_member_buffer_bytes = MemberBufferBytes(input) });
         }
         catch (Exception e)
         {
@@ -223,13 +231,18 @@ internal static class FourWay
 #if CANDIDATE
         storage = args.Length > 2 ? (TagSetStorage)Enum.Parse(typeof(TagSetStorage), args[2]) : TagSetStorage.Auto;
 #endif
+        long controlStart = GC.GetAllocatedBytesForCurrentThread();
+        sink = new byte[4096];
+        long positiveControl = GC.GetAllocatedBytesForCurrentThread() - controlStart;
+        if (positiveControl <= 0) throw new InvalidOperationException("Allocation counter positive control failed.");
         BenchmarkUniverse(10000);
         BenchmarkUniverse(65536);
         var result = new { variant = args[1], seed = Seed, runtime = RuntimeInformation.FrameworkDescription,
             os = RuntimeInformation.OSDescription, architecture = RuntimeInformation.ProcessArchitecture.ToString(),
-            stopwatch_frequency = Stopwatch.Frequency, checksum, rows,
+            stopwatch_frequency = Stopwatch.Frequency, positive_control_bytes = positiveControl, checksum, rows,
+            measurement_protocol = "settled-setup-v2",
             semantics = "Exact lookup is already-resolved. Union and both copy/mutate operations allocate independent results; no pooling or fusion. Explicit membership, Count and input immutability are validated outside timing. Name setup is outside timing for ALL variants.",
-            limitations = "Managed .NET on shared runners, not Unity/IL2CPP. Member-buffer bytes exclude headers, registry and definitions. Failed rows remain visible and cannot rank." };
+            limitations = "Managed .NET on shared runners, not Unity/IL2CPP. Member-buffer bytes exclude headers, registry and definitions. Failed rows remain visible and cannot rank. Setup is collected before each scenario, not during action timing. Do not mix these samples with the earlier unsettled protocol." };
         File.WriteAllText(args[0], JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine("FOUR-WAY " + args[1] + " rows=" + rows.Count + " -> " + args[0]);
         return 0;
