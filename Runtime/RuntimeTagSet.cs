@@ -157,7 +157,7 @@ namespace GameplayTags
             private int m_Next;
             internal int Block;
             internal ulong Mask;
-            internal BlockCursor(RuntimeTagSet set) { m_Set = set; m_Next = 0; Block = -1; Mask = 0; }
+            internal BlockCursor(RuntimeTagSet set) { m_Set = set; m_Next = set.m_Count == 0 ? -1 : 0; Block = -1; Mask = 0; }
             internal bool MoveNext()
             {
                 if (m_Next < 0 || m_Set.m_Data.Length == 0) return false;
@@ -217,18 +217,34 @@ namespace GameplayTags
             if (UseLinear(other.m_ActiveWords)) Array.Copy(other.m_Data, m_Data, m_Data.Length);
             else
             {
-                Clear();
-                var blocks = new BlockCursor(other);
-                while (blocks.MoveNext())
+                // Overwrite and remove stale words in one directory merge. Do not clear a
+                // block and immediately rebuild the identical occupancy path.
+                if (UseLinear(m_ActiveWords)) Clear();
+                var previous = new BlockCursor(this);
+                var incoming = new BlockCursor(other);
+                bool hasOld = previous.MoveNext(), hasNew = incoming.MoveNext();
+                while (hasOld || hasNew)
                 {
-                    ulong mask = blocks.Mask;
-                    while (mask != 0)
+                    int block = !hasNew || (hasOld && previous.Block < incoming.Block)
+                        ? previous.Block : incoming.Block;
+                    ulong oldMask = hasOld && previous.Block == block ? previous.Mask : 0;
+                    ulong newMask = hasNew && incoming.Block == block ? incoming.Mask : 0;
+                    ulong removed = oldMask & ~newMask;
+                    while (removed != 0)
                     {
-                        int word = (blocks.Block << 6) + Bits.Lowest(mask);
-                        m_Data[word] = other.m_Data[word];
-                        mask &= mask - 1;
+                        m_Data[(block << 6) + Bits.Lowest(removed)] = 0;
+                        removed &= removed - 1;
                     }
-                    PublishBlock(blocks.Block, blocks.Mask);
+                    ulong remaining = newMask;
+                    while (remaining != 0)
+                    {
+                        int word = (block << 6) + Bits.Lowest(remaining);
+                        m_Data[word] = other.m_Data[word];
+                        remaining &= remaining - 1;
+                    }
+                    PublishBlock(block, newMask);
+                    if (hasOld && previous.Block == block) hasOld = previous.MoveNext();
+                    if (hasNew && incoming.Block == block) hasNew = incoming.MoveNext();
                 }
             }
             m_Count = other.m_Count;
@@ -414,14 +430,23 @@ namespace GameplayTags
             }
             else
             {
-                result.Clear();
+                if (result.UseLinear(result.m_ActiveWords)) result.Clear();
                 var x = new BlockCursor(left);
                 var y = new BlockCursor(right);
-                bool hasX = x.MoveNext(), hasY = y.MoveNext();
-                while (hasX || hasY)
+                var previous = new BlockCursor(result);
+                bool hasX = x.MoveNext(), hasY = y.MoveNext(), hasOld = previous.MoveNext();
+                while (hasX || hasY || hasOld)
                 {
-                    int block = !hasY || (hasX && x.Block < y.Block) ? x.Block : y.Block;
+                    int block = Math.Min(hasX ? x.Block : int.MaxValue, hasY ? y.Block : int.MaxValue);
+                    if (hasOld && previous.Block < block) block = previous.Block;
                     ulong mask = (hasX && x.Block == block ? x.Mask : 0) | (hasY && y.Block == block ? y.Mask : 0);
+                    ulong oldMask = hasOld && previous.Block == block ? previous.Mask : 0;
+                    ulong removed = oldMask & ~mask;
+                    while (removed != 0)
+                    {
+                        output[(block << 6) + Bits.Lowest(removed)] = 0;
+                        removed &= removed - 1;
+                    }
                     active += Bits.Count(mask);
                     ulong remaining = mask;
                     while (remaining != 0)
@@ -435,6 +460,7 @@ namespace GameplayTags
                     result.PublishBlock(block, mask);
                     if (hasX && x.Block == block) hasX = x.MoveNext();
                     if (hasY && y.Block == block) hasY = y.MoveNext();
+                    if (hasOld && previous.Block == block) hasOld = previous.MoveNext();
                 }
             }
             result.m_ActiveWords = active;
