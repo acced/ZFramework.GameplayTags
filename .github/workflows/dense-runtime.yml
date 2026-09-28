@@ -41,6 +41,8 @@ jobs:
           dotnet-version: '8.0.425'
       - name: Compile, validate invariants and compare complete workloads
         run: python3 'Audit~/dense_audit.py' --references artifacts --output artifacts/results --rounds 3
+      - name: Diagnose allocation telemetry and compare portable count kernels
+        run: python3 'Audit~/dense_diagnostics.py' --results artifacts/results
       - name: Reject invalid measurements and compare the first Dense candidate
         run: python3 'Audit~/dense_results.py' --results artifacts/results --initial artifacts/initial-dense.zip --rounds 3
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
