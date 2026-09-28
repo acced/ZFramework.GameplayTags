@@ -60,7 +60,7 @@ namespace GameplayTags
             }
             return ContainsId(tag.Id);
         }
-        internal bool ContainsId(int id) => m_Count != 0 && (m_Data[id >> 6] & (1UL << (id & 63))) != 0;
+        internal bool ContainsId(int id) => m_Data.Length != 0 && (m_Data[id >> 6] & (1UL << (id & 63))) != 0;
         public bool HasTag(RuntimeTag tag) => Accept(tag) && AnyInRange(tag.Id, Registry.Ends[tag.Id]);
         public bool AddTag(RuntimeTag tag) => Accept(tag) && AddId(tag.Id);
         public bool RemoveTag(RuntimeTag tag) => Accept(tag) && RemoveId(tag.Id);
@@ -89,10 +89,12 @@ namespace GameplayTags
         {
             ulong before = m_Data[word];
             m_Data[word] = value;
-            if ((before == 0) == (value == 0)) return;
-            bool occupied = value != 0;
+            if ((before == 0) != (value == 0)) ChangeOccupancy(word, value != 0);
+        }
+        private void ChangeOccupancy(int child, bool occupied)
+        {
             m_ActiveWords += occupied ? 1 : -1;
-            int child = word, offset = m_WordCount, length = m_WordCount;
+            int offset = m_WordCount, length = m_WordCount;
             while (length > 1)
             {
                 int parent = child >> 6;
@@ -146,8 +148,16 @@ namespace GameplayTags
             m_Count = 0;
             m_ActiveWords = 0;
         }
-        // A kernel choice, not a representation change. Both paths operate on the same Dense words.
-        private bool UseLinear(int activeWords) => activeWords >= (m_WordCount + 3) / 4;
+        // Used only inside copy/union transactions that immediately replace the entire directory.
+        // The old summaries stay valid for every not-yet-visited word during the forward clear.
+        private void ClearMembers()
+        {
+            if (m_Count == 0) return;
+            if (UseLinear(m_ActiveWords)) Array.Clear(m_Data, 0, m_WordCount);
+            else for (int word = NextWord(0); word >= 0; word = NextAtLevel(0, m_WordCount, word + 1)) m_Data[word] = 0;
+        }
+        // Kernel choice, not a representation change. Both paths operate on the same Dense words.
+        private bool UseLinear(int activeWords) => activeWords >= (m_WordCount + 7) / 8;
         public void CopyFrom(RuntimeTagSet other)
         {
             Require(other);
@@ -157,9 +167,10 @@ namespace GameplayTags
             if (UseLinear(other.m_ActiveWords)) Array.Copy(other.m_Data, m_Data, m_Data.Length);
             else
             {
-                Clear();
-                for (int word = other.NextWord(0); word >= 0; word = other.NextWord(word + 1))
-                    StoreWord(word, other.m_Data[word]);
+                ClearMembers();
+                for (int word = other.NextWord(0); word >= 0; word = other.NextWord(word + 1)) m_Data[word] = other.m_Data[word];
+                // Copy the small directory once, rather than rebuilding ancestors for each copied word.
+                Array.Copy(other.m_Data, m_WordCount, m_Data, m_WordCount, m_Data.Length - m_WordCount);
             }
             m_Count = other.m_Count;
             m_ActiveWords = other.m_ActiveWords;
@@ -172,12 +183,17 @@ namespace GameplayTags
             int added = 0;
             if (UseLinear(other.m_ActiveWords))
             {
-                for (int word = 0; word < m_WordCount; word++)
+                ulong[] data = m_Data, incoming = other.m_Data;
+                int i = 0, extra = 0, length = m_WordCount;
+                // Independent accumulators shorten the population-count dependency chain.
+                for (; i + 1 < length; i += 2)
                 {
-                    ulong old = m_Data[word], incoming = other.m_Data[word];
-                    added += Bits.Count(incoming & ~old);
-                    m_Data[word] = old | incoming;
+                    ulong a = data[i], b = data[i + 1], x = incoming[i], y = incoming[i + 1];
+                    data[i] = a | x; data[i + 1] = b | y;
+                    added += Bits.Count(x & ~a); extra += Bits.Count(y & ~b);
                 }
+                if (i < length) { ulong old = data[i]; data[i] = old | incoming[i]; added += Bits.Count(incoming[i] & ~old); }
+                added += extra;
                 MergeSummary(other);
             }
             else
@@ -210,11 +226,26 @@ namespace GameplayTags
             if (ReferenceEquals(this, other)) { Clear(); return true; }
             RuntimeTagSet scan = m_ActiveWords <= other.m_ActiveWords ? this : other;
             int removed = 0;
-            for (int word = scan.NextWord(0); word >= 0; word = scan.NextWord(word + 1))
+            if (UseLinear(scan.m_ActiveWords))
             {
-                ulong old = m_Data[word], mask = other.m_Data[word];
-                removed += Bits.Count(old & mask);
-                StoreWord(word, old & ~mask);
+                ulong[] data = m_Data, mask = other.m_Data;
+                for (int i = 0; i < m_WordCount; i++)
+                {
+                    ulong old = data[i], gone = old & mask[i], value = old ^ gone;
+                    data[i] = value;
+                    removed += Bits.Count(gone);
+                    // Difference cannot create an occupied word. Only newly empty words need indexing.
+                    if (value == 0 && old != 0) ChangeOccupancy(i, false);
+                }
+            }
+            else
+            {
+                for (int word = scan.NextWord(0); word >= 0; word = scan.NextWord(word + 1))
+                {
+                    ulong old = m_Data[word], mask = other.m_Data[word];
+                    removed += Bits.Count(old & mask);
+                    StoreWord(word, old & ~mask);
+                }
             }
             m_Count -= removed;
             return removed != 0;
@@ -275,20 +306,9 @@ namespace GameplayTags
             if (ReferenceEquals(result, right)) { result.AppendTags(left); return; }
             if (left.m_Count == 0) { result.CopyFrom(right); return; }
             if (right.m_Count == 0) { result.CopyFrom(left); return; }
-            if (!result.UseLinear(Math.Max(left.m_ActiveWords, right.m_ActiveWords)))
-            {
-                result.CopyFrom(left);
-                result.AppendTags(right);
-                return;
-            }
             result.EnsureCapacity(1);
-            int count = 0;
-            for (int i = 0; i < result.m_WordCount; i++)
-            {
-                ulong word = left.m_Data[i] | right.m_Data[i];
-                result.m_Data[i] = word;
-                count += Bits.Count(word);
-            }
+            bool linear = result.UseLinear(Math.Max(left.m_ActiveWords, right.m_ActiveWords));
+            if (!linear) result.ClearMembers();
             int active = result.m_WordCount == 1 ? 1 : 0;
             int bottomEnd = result.m_WordCount + ((result.m_WordCount + 63) >> 6);
             for (int i = result.m_WordCount; i < result.m_Data.Length; i++)
@@ -296,6 +316,32 @@ namespace GameplayTags
                 ulong summary = left.m_Data[i] | right.m_Data[i];
                 result.m_Data[i] = summary;
                 if (i < bottomEnd) active += Bits.Count(summary);
+            }
+            ulong[] a = left.m_Data, b = right.m_Data, output = result.m_Data;
+            int count = 0;
+            if (linear)
+            {
+                int i = 0, extra = 0, length = result.m_WordCount;
+                for (; i + 1 < length; i += 2)
+                {
+                    ulong x = a[i] | b[i], y = a[i + 1] | b[i + 1];
+                    output[i] = x; output[i + 1] = y;
+                    count += Bits.Count(x); extra += Bits.Count(y);
+                }
+                if (i < length) { ulong x = a[i] | b[i]; output[i] = x; count += Bits.Count(x); }
+                count += extra;
+            }
+            else
+            {
+                // The newly ORed directory describes exactly the words that will be nonzero.
+                // Payload is still clear, so use the directory directly, not Count or old membership.
+                for (int word = result.NextAtLevel(0, result.m_WordCount, 0); word >= 0;
+                    word = result.NextAtLevel(0, result.m_WordCount, word + 1))
+                {
+                    ulong bits = a[word] | b[word];
+                    output[word] = bits;
+                    count += Bits.Count(bits);
+                }
             }
             result.m_ActiveWords = active;
             result.m_Count = count;

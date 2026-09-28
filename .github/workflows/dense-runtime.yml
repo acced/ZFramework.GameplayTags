@@ -32,6 +32,7 @@ jobs:
           git archive --format=zip 934b14a47ddf0b6367bf6720be58c18cbcb09896 > artifacts/main.zip
           git archive --format=zip a99f53d4697df6f577961ff1ee1bad14caa221d1 > artifacts/optimize.zip
           git archive --format=zip 84729cc3b6e1b4681328806df2d7c8a1d8f568f6 > artifacts/auto.zip
+          git archive --format=zip 5b151da228ddebbd8119a2975e674ad6d28cb424 > artifacts/initial-dense.zip
           git -C .comparisons/alex archive --format=zip HEAD > artifacts/alex.zip
           git archive --format=zip HEAD > artifacts/DenseOnly.Source.zip
           git rev-parse HEAD > artifacts/SOURCE_COMMIT.txt
@@ -40,6 +41,8 @@ jobs:
           dotnet-version: '8.0.425'
       - name: Compile, validate invariants and compare complete workloads
         run: python3 'Audit~/dense_audit.py' --references artifacts --output artifacts/results --rounds 3
+      - name: Reject invalid measurements and compare the first Dense candidate
+        run: python3 'Audit~/dense_results.py' --results artifacts/results --initial artifacts/initial-dense.zip --rounds 3
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
