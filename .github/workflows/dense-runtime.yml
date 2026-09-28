@@ -1,9 +1,9 @@
 name: Dense-only runtime audit (not native release approval)
 on:
   push:
-    branches: [refactor/dense-only-indexed-20260928]
+    branches: [main, optimize/whole-repo-20260916, refactor/runtime-index-bitset-20260920, refactor/dense-only-indexed-20260928]
   pull_request:
-    branches: [refactor/runtime-index-bitset-20260920]
+    branches: [main, optimize/whole-repo-20260916, refactor/runtime-index-bitset-20260920]
 permissions:
   contents: read
 concurrency:
