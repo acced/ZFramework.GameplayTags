@@ -1,0 +1,49 @@
+name: Dense-only runtime audit (not native release approval)
+on:
+  push:
+    branches: [refactor/dense-only-indexed-20260928]
+  pull_request:
+    branches: [refactor/runtime-index-bitset-20260920]
+permissions:
+  contents: read
+concurrency:
+  group: dense-runtime-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: Alex-Rachel/GameplayTags
+          ref: 28e4218f459ecf0e9fb4f0bca90805c05eb962c2
+          path: .comparisons/alex
+          persist-credentials: false
+      - name: Export fixed source and every reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          git archive --format=zip 934b14a47ddf0b6367bf6720be58c18cbcb09896 > artifacts/main.zip
+          git archive --format=zip a99f53d4697df6f577961ff1ee1bad14caa221d1 > artifacts/optimize.zip
+          git archive --format=zip 84729cc3b6e1b4681328806df2d7c8a1d8f568f6 > artifacts/auto.zip
+          git -C .comparisons/alex archive --format=zip HEAD > artifacts/alex.zip
+          git archive --format=zip HEAD > artifacts/DenseOnly.Source.zip
+          git rev-parse HEAD > artifacts/SOURCE_COMMIT.txt
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '8.0.425'
+      - name: Compile, validate invariants and compare complete workloads
+        run: python3 'Audit~/dense_audit.py' --references artifacts --output artifacts/results --rounds 3
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dense-runtime-${{ github.run_id }}
+          path: artifacts/
+          retention-days: 30
+          if-no-files-found: error

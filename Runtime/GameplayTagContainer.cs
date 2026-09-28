@@ -5,10 +5,7 @@ using UnityEngine;
 
 namespace GameplayTags
 {
-    /// <summary>
-    /// Serializable authoring names, not the combat container. Convert once with ToRuntime.
-    /// Existing m_GameplayTags serialization and Inspector drawers are preserved.
-    /// </summary>
+    /// <summary>Serializable authoring names. Combat uses a separately prepared Dense RuntimeTagSet.</summary>
     [Serializable]
     public sealed class GameplayTagContainer : ISerializationCallbackReceiver, IEquatable<GameplayTagContainer>
     {
@@ -55,17 +52,16 @@ namespace GameplayTags
             if (other == null || ReferenceEquals(this, other)) return;
             for (int i = 0; i < other.Count; i++) Insert(other[i]);
         }
-        /// <summary>Loading boundary. The result owns independent integer storage and a registry snapshot.</summary>
-        public RuntimeTagSet ToRuntime(TagRegistry registry, int capacity = 0, TagSetStorage storage = TagSetStorage.Auto)
+        /// <summary>Resolve names once. Any positive capacity prepares the complete Dense bitmap.</summary>
+        public RuntimeTagSet ToRuntime(TagRegistry registry, int capacity = 0)
         {
             if (registry == null) throw new ArgumentNullException(nameof(registry));
             if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
-            var result = new RuntimeTagSet(registry, Math.Max(Count, capacity), storage);
+            var result = new RuntimeTagSet(registry, Math.Max(Count, capacity));
             for (int i = 0; i < Count; i++) result.AddId(registry.Resolve(m_GameplayTags[i].Name).Id);
             return result;
         }
         public RuntimeTagSet ToRuntime() => ToRuntime(GameplayTagManager.CurrentRegistry);
-        /// <summary>Optional authoring-name migration; failure leaves this definition unchanged.</summary>
         public void ResolveRegisteredTags()
         {
             if (Count == 0) return;
