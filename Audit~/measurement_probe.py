@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Negative-control attribution. Does a primitive counter loop show the same allocation anomaly?"""
-import json, os, pathlib, subprocess, tempfile
+"""Negative-control attribution. Neither negative-control timings nor dirty samples are rankings."""
+import json, os, pathlib, re, subprocess, tempfile
 from dense_audit import benchmark_fixture
 from integer_audit import project
 ROOT=pathlib.Path(__file__).resolve().parent.parent
@@ -14,6 +14,9 @@ with tempfile.TemporaryDirectory(prefix='allocation-attribution-') as tmp:
     (root/'global.json').write_text(json.dumps({'sdk':{'version':'8.0.425','rollForward':'disable'}}))
     (root/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
     original=benchmark_fixture((ROOT/'Audit~/FourWay.cs').read_text(),dense=True,prepared=True)
+    # Restore the old measurement environment ONLY in these diagnostic fixture copies.
+    original,count=re.subn(r'            // BEGIN SETTLED SETUP:.*?            // END SETTLED SETUP\n','',original,flags=re.S)
+    if count!=1:raise RuntimeError('Missing settled preparation marker')
     modes=('original','noop','settled','noop-settled')
     for mode in modes:
         text=original
@@ -23,8 +26,8 @@ with tempfile.TemporaryDirectory(prefix='allocation-attribution-') as tmp:
         if 'settled' in mode:
             text=replace(text,'            var ns = new double[7];',
                 '            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);\n            GC.WaitForPendingFinalizers();\n            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);\n            var ns = new double[7];')
-        text=replace(text,'var allocations = new double[7];',
-            'var allocations = new double[7];\n            var collections = new int[7];')
+        text=text.replace('measurement_protocol = "settled-setup-v2"','measurement_protocol = "diagnostic-'+mode+'"')
+        text=replace(text,'var allocations = new double[7];','var allocations = new double[7];\n            var collections = new int[7];')
         text=replace(text,'long allocated = GC.GetAllocatedBytesForCurrentThread();',
             'int beforeCollections = GC.CollectionCount(0) + GC.CollectionCount(1) + GC.CollectionCount(2);\n                long allocated = GC.GetAllocatedBytesForCurrentThread();')
         text=replace(text,'GC.KeepAlive(sink);',
@@ -49,4 +52,4 @@ with tempfile.TemporaryDirectory(prefix='allocation-attribution-') as tmp:
                     report.append({'mode':mode,'round':r,**{k:row[k] for k in ('operation','size','universe','distribution','iterations','allocated_bytes','collections')}})
     (OUT/'attribution.json').write_text(json.dumps(report,indent=2))
     print('NEGATIVE CONTROL ATTRIBUTION '+json.dumps(report),flush=True)
-    print('Diagnostic only: noop results are never performance rankings; all original samples retained.',flush=True)
+    print('Diagnostic only: no samples were subtracted, replaced, or discarded.',flush=True)
