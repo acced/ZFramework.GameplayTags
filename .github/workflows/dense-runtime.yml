@@ -47,6 +47,8 @@ jobs:
           python3 'Audit~/dense_block_check.py'
       - name: Compile, validate invariants and compare complete workloads
         run: python3 'Audit~/dense_audit.py' --references artifacts --output artifacts/results --rounds 3
+      - name: Verify independent fresh results and measure allocation controls
+        run: python3 'Audit~/dense_fresh.py' --results artifacts/results --rounds 3
       - name: Compare resumed implementation with its fixed incoming version
         run: python3 'Audit~/dense_resume.py' --reference artifacts/resume-dense.zip --results artifacts/results --rounds 3
       - name: Diagnose allocation telemetry and compare portable count kernels
