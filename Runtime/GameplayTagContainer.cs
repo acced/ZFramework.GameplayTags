@@ -5,10 +5,7 @@ using UnityEngine;
 
 namespace GameplayTags
 {
-    /// <summary>
-    /// Serializable authoring names, not the combat container. Convert once with ToRuntime.
-    /// Existing m_GameplayTags serialization and Inspector drawers are preserved.
-    /// </summary>
+    /// <summary>Serialized authoring names. Call ToRuntime once at the loading boundary.</summary>
     [Serializable]
     public sealed class GameplayTagContainer : ISerializationCallbackReceiver, IEquatable<GameplayTagContainer>
     {
@@ -32,59 +29,50 @@ namespace GameplayTags
         {
             int index = m_GameplayTags.BinarySearch(tag);
             if (index >= 0) return false;
-            m_GameplayTags.Insert(~index, tag);
-            return true;
+            m_GameplayTags.Insert(~index, tag); return true;
         }
         public bool RemoveTag(GameplayTag tag)
         {
             int index = m_GameplayTags.BinarySearch(tag);
             if (index < 0) return false;
-            m_GameplayTags.RemoveAt(index);
-            return true;
+            m_GameplayTags.RemoveAt(index); return true;
         }
         public bool HasTagExact(GameplayTag tag) => m_GameplayTags.BinarySearch(tag) >= 0;
         public void Clear() => m_GameplayTags.Clear();
         public void CopyFrom(GameplayTagContainer other)
         {
             if (ReferenceEquals(this, other)) return;
-            Clear();
-            if (other != null) m_GameplayTags.AddRange(other.m_GameplayTags);
+            Clear(); if (other != null) m_GameplayTags.AddRange(other.m_GameplayTags);
         }
         public void AppendTags(GameplayTagContainer other)
         {
             if (other == null || ReferenceEquals(this, other)) return;
             for (int i = 0; i < other.Count; i++) Insert(other[i]);
         }
-        /// <summary>Loading boundary. The result owns independent integer storage and a registry snapshot.</summary>
-        public RuntimeTagSet ToRuntime(TagRegistry registry, int capacity = 0, TagSetStorage storage = TagSetStorage.Auto)
+        /// <summary>Independent bitmap storage. Capacity reserves arbitrary member placement.</summary>
+        public RuntimeTagSet ToRuntime(TagRegistry registry, int capacity = 0)
         {
             if (registry == null) throw new ArgumentNullException(nameof(registry));
             if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
-            var result = new RuntimeTagSet(registry, Math.Max(Count, capacity), storage);
+            var result = new RuntimeTagSet(registry, Math.Max(Count, capacity));
             for (int i = 0; i < Count; i++) result.AddId(registry.Resolve(m_GameplayTags[i].Name).Id);
             return result;
         }
         public RuntimeTagSet ToRuntime() => ToRuntime(GameplayTagManager.CurrentRegistry);
-        /// <summary>Optional authoring-name migration; failure leaves this definition unchanged.</summary>
         public void ResolveRegisteredTags()
         {
             if (Count == 0) return;
             TagRegistry registry = GameplayTagManager.CurrentRegistry;
             var resolved = new List<GameplayTag>(Capacity);
             for (int i = 0; i < Count; i++) resolved.Add(new GameplayTag(registry.Resolve(m_GameplayTags[i].Name).Name));
-            Normalize(resolved);
-            m_GameplayTags = resolved;
+            Normalize(resolved); m_GameplayTags = resolved;
         }
         void ISerializationCallbackReceiver.OnBeforeSerialize() { }
         void ISerializationCallbackReceiver.OnAfterDeserialize()
-        {
-            m_GameplayTags ??= new List<GameplayTag>();
-            Normalize(m_GameplayTags);
-        }
+        { m_GameplayTags ??= new List<GameplayTag>(); Normalize(m_GameplayTags); }
         private static void Normalize(List<GameplayTag> tags)
         {
-            tags.Sort();
-            int write = 0;
+            tags.Sort(); int write = 0;
             for (int read = 0; read < tags.Count; read++)
             {
                 GameplayTag tag = tags[read];
@@ -102,9 +90,7 @@ namespace GameplayTags
         }
         public override bool Equals(object obj) => Equals(obj as GameplayTagContainer);
         public override int GetHashCode()
-        {
-            unchecked { int hash = 17; for (int i = 0; i < Count; i++) hash = hash * 31 + this[i].GetHashCode(); return hash; }
-        }
+        { unchecked { int hash = 17; for (int i = 0; i < Count; i++) hash = hash * 31 + this[i].GetHashCode(); return hash; } }
         public override string ToString()
         {
             var builder = new StringBuilder("{");
