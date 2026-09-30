@@ -1,0 +1,73 @@
+name: Micro bitmap pilot (not production approval)
+on:
+  push:
+    branches: [experiment/micro-bitmap-20260930]
+    paths: ['Audit~/Micro*.cs', 'Audit~/micro_pilot.py', '.github/workflows/micro-bitmap.yml']
+permissions:
+  contents: read
+concurrency:
+  group: micro-bitmap-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: 8.0.425
+      - name: Export exact source and fixed references
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/references
+          git archive --format=zip HEAD > artifacts/source.zip
+          git rev-parse HEAD > artifacts/SOURCE_COMMIT.txt
+          git archive --format=zip 934b14a47ddf0b6367bf6720be58c18cbcb09896 > artifacts/references/main.zip
+          git archive --format=zip a99f53d4697df6f577961ff1ee1bad14caa221d1 > artifacts/references/optimize.zip
+          git archive --format=zip 84729cc3b6e1b4681328806df2d7c8a1d8f568f6 > artifacts/references/auto.zip
+          git archive --format=zip 3781d1b6c66997ec37fcb6223cb1a1d60c7e19fb > artifacts/references/indexed.zip
+          git archive --format=zip 4c5cada6faa8635a69d31a7a074bd79646bafee0 > artifacts/references/packed.zip
+      - name: Core checks without external dependency
+        run: python3 'Audit~/micro_pilot.py' --references artifacts/references --output artifacts/core --baseline-names auto --tests-only
+      - name: Bounded external reference fetch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .comparisons/alex
+          git -C .comparisons/alex init
+          git -C .comparisons/alex remote add origin https://github.com/Alex-Rachel/GameplayTags.git
+          timeout 90 git -C .comparisons/alex fetch --depth=1 origin 28e4218f459ecf0e9fb4f0bca90805c05eb962c2
+          git -C .comparisons/alex archive --format=zip 28e4218f459ecf0e9fb4f0bca90805c05eb962c2 > artifacts/references/alex.zip
+      - name: All masks and preparation thresholds
+        shell: python
+        run: |
+          import os, pathlib, subprocess, sys, tempfile
+          root=pathlib.Path.cwd(); sys.path.insert(0,str(root/'Audit~'))
+          from integer_audit import project
+          out=root/'artifacts/stress';out.mkdir(parents=True)
+          with tempfile.TemporaryDirectory() as directory:
+              h=pathlib.Path(directory)
+              (h/'NuGet.Config').write_text('<configuration><packageSources><clear /></packageSources></configuration>')
+              for name,symbol in [('micro16',''),('micro32','MICRO_WIDE')]:
+                  project(h/(name+'.csproj'),[root/'Runtime/**/*.cs',root/'Audit~/UnityStubs.cs',root/'Audit~/MicroBitmapSet.cs',root/'Audit~/MicroStress.cs'],symbol)
+                  for step,cmd in [('build',['dotnet','build',str(h/(name+'.csproj')),'-c','Release','-p:BaseIntermediateOutputPath=obj-'+name+'/', '-o',str(h/name)]),('run',['dotnet','exec',str(h/name/(name+'.dll'))])]:
+                      p=subprocess.run(cmd,cwd=h,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+                      (out/(name+'-'+step+'.log')).write_text(p.stdout);print(p.stdout)
+                      if p.returncode: raise RuntimeError(name+' '+step+' failed')
+      - name: Full fixed-source same-input comparison
+        shell: bash
+        run: |
+          CPU=$(python3 -c 'import os; print(min(os.sched_getaffinity(0)))')
+          python3 'Audit~/micro_pilot.py' --references artifacts/references --output artifacts/results --rounds 3 --cpu "$CPU"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: micro-bitmap-${{ github.run_id }}
+          path: artifacts/
+          retention-days: 30
+          if-no-files-found: error
