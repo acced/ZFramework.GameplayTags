@@ -1,0 +1,47 @@
+name: Direct bitmap pages pilot (not production approval)
+on:
+  push:
+    branches: [experiment/direct-page-bitmap-20260930]
+    paths: ['Audit~/PagedBitmapSet.cs', 'Audit~/PagedTests.cs', 'Audit~/paged_pilot.py', 'Audit~/paged_stage.py', '.github/workflows/direct-pages.yml']
+permissions:
+  contents: read
+concurrency:
+  group: direct-pages-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  pilot:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: 8.0.425
+      - name: Kernel correctness first, no third-party repository dependency
+        run: python3 'Audit~/paged_stage.py' --tests-only --output artifacts/core --rounds 3
+      - name: Bounded fetch of the optional external comparison source
+        id: external
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .comparisons/alex
+          git -C .comparisons/alex init
+          git -C .comparisons/alex remote add origin https://github.com/Alex-Rachel/GameplayTags.git
+          if timeout 60 git -C .comparisons/alex fetch --depth=1 origin 28e4218f459ecf0e9fb4f0bca90805c05eb962c2; then
+            echo 'args=' >> "$GITHUB_OUTPUT"
+          else
+            echo 'args=--without-alex' >> "$GITHUB_OUTPUT"
+            echo 'Alex source unavailable. Record omission; never approve an incomplete comparison.'
+          fi
+      - name: Compare complete materialized operations and keep every raw result
+        run: python3 'Audit~/paged_stage.py' ${{ steps.external.outputs.args }} --output artifacts/comparison --rounds 3
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: direct-pages-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30
