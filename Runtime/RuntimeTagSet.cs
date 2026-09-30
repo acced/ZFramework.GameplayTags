@@ -28,8 +28,7 @@ namespace GameplayTags
         public TagRegistry Registry { get; }
         public int Count => m_Count;
         public bool IsEmpty => m_Count == 0;
-        // Capacity never shrinks on mutation. EnsureCapacity explicitly reserves
-        // for ANY placement of this many members, not merely their current clustering.
+        // EnsureCapacity explicitly reserves for ANY placement of this many members.
         public int Capacity => Math.Max(m_Count, ReservedMemberCapacity);
         public int ReservedMemberCapacity
         {
@@ -40,8 +39,7 @@ namespace GameplayTags
                 return Math.Min(groups, words);
             }
         }
-        // Includes the always-present 24-byte inline bitmap/directory payload, but
-        // not object/array headers, registry or other object scalar fields.
+        // Includes inline bitmap/directory payload, not object/array headers or registry.
         public long BufferBytes => 24L + (m_Groups == null ? 0 : 16L * m_Groups.Length)
             + (m_Words == null ? 0 : 8L * m_Words.Length);
         private int MaxGroups => (int)(((long)Registry.Count + 4095) >> 12);
@@ -62,7 +60,6 @@ namespace GameplayTags
         public RuntimeTagSet(RuntimeTagSet source)
         {
             Registry = Required(source).Registry;
-            // A new result copies active bitmap storage, not the source's reserve.
             EnsureLayout(source.m_GroupCount, source.m_WordCount, true);
             CopyContents(source);
         }
@@ -79,20 +76,22 @@ namespace GameplayTags
         }
         private void EnsureLayout(int groups, int words, bool exact = false)
         {
+            // Output builders publish logical counts only when complete. Growth must
+            // preserve all existing slots, including the prefix currently being built.
             if (groups > GroupCapacity)
             {
                 int size = exact ? groups : (int)Math.Min(MaxGroups, Math.Max(groups, Math.Max(4L, 2L * GroupCapacity)));
                 var buffer = new Group[size];
-                if (m_Groups != null) Array.Copy(m_Groups, buffer, m_GroupCount);
-                else if (m_GroupCount != 0) buffer[0] = m_InlineGroup;
+                if (m_Groups != null) Array.Copy(m_Groups, buffer, m_Groups.Length);
+                else buffer[0] = m_InlineGroup;
                 m_Groups = buffer;
             }
             if (words > WordCapacity)
             {
                 int size = exact ? words : (int)Math.Min(Registry.WordCount, Math.Max(words, Math.Max(4L, 2L * WordCapacity)));
                 var buffer = new ulong[size];
-                if (m_Words != null) Array.Copy(m_Words, buffer, m_WordCount);
-                else if (m_WordCount != 0) buffer[0] = m_InlineWord;
+                if (m_Words != null) Array.Copy(m_Words, buffer, m_Words.Length);
+                else buffer[0] = m_InlineWord;
                 m_Words = buffer;
             }
         }
@@ -143,15 +142,12 @@ namespace GameplayTags
                 {
                     ulong before = ReadWord(offset);
                     if ((before & member) != 0) return false;
-                    WriteWord(offset, before | member);
-                    m_Count++;
-                    return true;
+                    WriteWord(offset, before | member); m_Count++; return true;
                 }
                 EnsureLayout(m_GroupCount, m_WordCount + 1);
                 InsertWord(offset, member);
                 group.Mask |= directoryBit;
-                WriteGroup(at, group);
-                AdjustOffsets(at + 1, 1);
+                WriteGroup(at, group); AdjustOffsets(at + 1, 1);
             }
             else
             {
@@ -161,17 +157,14 @@ namespace GameplayTags
                 InsertWord(offset, member);
                 if (at < m_GroupCount) Array.Copy(m_Groups, at, m_Groups, at + 1, m_GroupCount - at);
                 WriteGroup(at, new Group(key, offset, directoryBit));
-                m_GroupCount++;
-                AdjustOffsets(at + 1, 1);
+                m_GroupCount++; AdjustOffsets(at + 1, 1);
             }
-            m_Count++;
-            return true;
+            m_Count++; return true;
         }
         private void InsertWord(int at, ulong word)
         {
             if (at < m_WordCount) Array.Copy(m_Words, at, m_Words, at + 1, m_WordCount - at);
-            WriteWord(at, word);
-            m_WordCount++;
+            WriteWord(at, word); m_WordCount++;
         }
         private void AdjustOffsets(int first, int delta)
         {
@@ -188,8 +181,7 @@ namespace GameplayTags
             int offset = group.Offset + Bits.Count(group.Mask & (directoryBit - 1));
             ulong member = 1UL << (id & 63), before = ReadWord(offset);
             if ((before & member) == 0) return false;
-            ulong after = before & ~member;
-            m_Count--;
+            ulong after = before & ~member; m_Count--;
             if (after != 0) { WriteWord(offset, after); return true; }
             m_WordCount--;
             if (offset < m_WordCount) Array.Copy(m_Words, offset + 1, m_Words, offset, m_WordCount - offset);
@@ -205,15 +197,14 @@ namespace GameplayTags
         }
         public void Clear()
         {
-            // Inactive value-type slots are never read; there are no retained members or references there.
+            // Inactive value-type slots are never read; no references are retained there.
             m_GroupCount = m_WordCount = m_Count = 0;
         }
         public void CopyFrom(RuntimeTagSet source)
         {
             Require(source);
             if (ReferenceEquals(this, source)) return;
-            EnsureLayout(source.m_GroupCount, source.m_WordCount);
-            CopyContents(source);
+            EnsureLayout(source.m_GroupCount, source.m_WordCount); CopyContents(source);
         }
         private void CopyContents(RuntimeTagSet source)
         {
@@ -224,9 +215,7 @@ namespace GameplayTags
                 if (m_Words != null && source.m_Words != null) Array.Copy(source.m_Words, m_Words, source.m_WordCount);
                 else WriteWord(0, source.ReadWord(0));
             }
-            m_GroupCount = source.m_GroupCount;
-            m_WordCount = source.m_WordCount;
-            m_Count = source.m_Count;
+            m_GroupCount = source.m_GroupCount; m_WordCount = source.m_WordCount; m_Count = source.m_Count;
         }
         public void AppendTags(RuntimeTagSet other)
         {
@@ -238,9 +227,7 @@ namespace GameplayTags
         public static RuntimeTagSet Union(RuntimeTagSet left, RuntimeTagSet right)
         {
             Required(left).Require(right);
-            var result = new RuntimeTagSet(left.Registry);
-            UnionCore(left, right, result);
-            return result;
+            var result = new RuntimeTagSet(left.Registry); UnionCore(left, right, result); return result;
         }
         public static void UnionInto(RuntimeTagSet left, RuntimeTagSet right, RuntimeTagSet result)
         {
@@ -253,13 +240,11 @@ namespace GameplayTags
         {
             if (ReferenceEquals(left, right) || right.m_Count == 0) { result.CopyFrom(left); return; }
             if (left.m_Count == 0) { result.CopyFrom(right); return; }
-            // The size pass visits directories, not individual member bits. Capacity is
-            // based on the ACTUAL number of result words/groups, never the global universe.
+            // Size directories, not individual members. Reserve only the actual result words.
             int a = 0, b = 0, groups = 0, words = 0;
             while (a < left.m_GroupCount && b < right.m_GroupCount)
             {
-                Group x = left.ReadGroup(a), y = right.ReadGroup(b);
-                ulong mask;
+                Group x = left.ReadGroup(a), y = right.ReadGroup(b); ulong mask;
                 if (x.Key < y.Key) { mask = x.Mask; a++; }
                 else if (x.Key > y.Key) { mask = y.Mask; b++; }
                 else { mask = x.Mask | y.Mask; a++; b++; }
@@ -270,7 +255,7 @@ namespace GameplayTags
             result.EnsureLayout(groups, words);
             a = left.m_GroupCount - 1; b = right.m_GroupCount - 1;
             int groupWrite = groups - 1, wordWrite = words, duplicates = 0;
-            // Reverse writing also makes either input alias safe: result is a superset.
+            // Reverse writing supports input aliases: union is a superset of both inputs.
             while (a >= 0 || b >= 0)
             {
                 Group x = a >= 0 ? left.ReadGroup(a) : default;
@@ -297,8 +282,7 @@ namespace GameplayTags
                         for (int i = length - 1; i >= 0; i--)
                         {
                             ulong first = left.ReadWord(x.Offset + i), second = right.ReadWord(y.Offset + i);
-                            result.WriteWord(begin + i, first | second);
-                            duplicates += Bits.Count(first & second);
+                            result.WriteWord(begin + i, first | second); duplicates += Bits.Count(first & second);
                         }
                     }
                     else
@@ -309,8 +293,7 @@ namespace GameplayTags
                             ulong bit = 1UL << Bits.Highest(remaining);
                             ulong first = (x.Mask & bit) != 0 ? left.ReadWord(xi--) : 0;
                             ulong second = (y.Mask & bit) != 0 ? right.ReadWord(yi--) : 0;
-                            result.WriteWord(--wordWrite, first | second);
-                            duplicates += Bits.Count(first & second);
+                            result.WriteWord(--wordWrite, first | second); duplicates += Bits.Count(first & second);
                             remaining &= ~bit;
                         }
                     }
@@ -332,16 +315,12 @@ namespace GameplayTags
             Require(other);
             if (other.m_Count == 0 || m_Count == 0) return false;
             if (ReferenceEquals(this, other)) { Clear(); return true; }
-            int before = m_Count;
-            SubsetCore(this, other, this, true);
-            return before != m_Count;
+            int before = m_Count; SubsetCore(this, other, this, true); return before != m_Count;
         }
         public static RuntimeTagSet IntersectionExact(RuntimeTagSet left, RuntimeTagSet right)
         {
             Required(left).Require(right);
-            var result = new RuntimeTagSet(left.Registry);
-            SubsetCore(left, right, result, false);
-            return result;
+            var result = new RuntimeTagSet(left.Registry); SubsetCore(left, right, result, false); return result;
         }
         public static void IntersectionExactInto(RuntimeTagSet left, RuntimeTagSet right, RuntimeTagSet result)
         { Required(left).Require(right); left.Require(result); SubsetCore(left, right, result, false); }
@@ -358,8 +337,7 @@ namespace GameplayTags
                 bool match = b < bCount && (y = right.ReadGroup(b)).Key == x.Key;
                 if (!difference && !match) continue;
                 ulong candidates = difference ? x.Mask : x.Mask & y.Mask;
-                ulong keptMask = 0;
-                int begin = wordWrite;
+                ulong keptMask = 0; int begin = wordWrite;
                 while (candidates != 0)
                 {
                     ulong bit = candidates & unchecked(0UL - candidates);
@@ -380,8 +358,7 @@ namespace GameplayTags
         }
         public bool HasAnyExact(RuntimeTagSet other)
         {
-            Require(other);
-            int a = 0, b = 0;
+            Require(other); int a = 0, b = 0;
             while (a < m_GroupCount && b < other.m_GroupCount)
             {
                 Group x = ReadGroup(a), y = other.ReadGroup(b);
@@ -405,8 +382,7 @@ namespace GameplayTags
             if (other.m_Count > m_Count) return false;
             for (int b = 0; b < other.m_GroupCount; b++)
             {
-                Group y = other.ReadGroup(b);
-                int at = FindGroup(y.Key);
+                Group y = other.ReadGroup(b); int at = FindGroup(y.Key);
                 if (at < 0) return false;
                 Group x = ReadGroup(at);
                 if ((x.Mask & y.Mask) != y.Mask) return false;
@@ -448,15 +424,13 @@ namespace GameplayTags
             & (end == 64 ? ulong.MaxValue : (1UL << end) - 1);
         public bool HasAny(RuntimeTagSet conditions)
         {
-            Require(conditions);
-            var iterator = new IdEnumerator(conditions);
+            Require(conditions); var iterator = new IdEnumerator(conditions);
             while (iterator.MoveNext()) if (AnyInRange(iterator.Current, Registry.Ends[iterator.Current])) return true;
             return false;
         }
         public bool HasAll(RuntimeTagSet conditions)
         {
-            Require(conditions);
-            var iterator = new IdEnumerator(conditions);
+            Require(conditions); var iterator = new IdEnumerator(conditions);
             while (iterator.MoveNext()) if (!AnyInRange(iterator.Current, Registry.Ends[iterator.Current])) return false;
             return true;
         }
@@ -538,12 +512,10 @@ namespace GameplayTags
                         m_Base = group.Key << 12; m_Directory = group.Mask; m_Word = group.Offset;
                     }
                     m_LogicalWord = m_Base + (Bits.Lowest(m_Directory) << 6);
-                    m_Directory &= m_Directory - 1;
-                    m_Members = m_Set.ReadWord(m_Word++);
+                    m_Directory &= m_Directory - 1; m_Members = m_Set.ReadWord(m_Word++);
                 }
                 Current = m_LogicalWord + Bits.Lowest(m_Members);
-                m_Members &= m_Members - 1;
-                return true;
+                m_Members &= m_Members - 1; return true;
             }
         }
         private static class Bits
