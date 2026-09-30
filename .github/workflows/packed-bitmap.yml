@@ -34,8 +34,12 @@ jobs:
           git archive --format=zip a99f53d4697df6f577961ff1ee1bad14caa221d1 > artifacts/references/optimize.zip
           git archive --format=zip 84729cc3b6e1b4681328806df2d7c8a1d8f568f6 > artifacts/references/auto.zip
           git -C .comparisons/alex archive --format=zip HEAD > artifacts/references/alex.zip
+      - name: Existing semantic suite, exact examples and assembly boundaries
+        run: python3 'Audit~/packed_compat.py' --output artifacts/compatibility
       - name: Compile shipping source, regressions and same-input comparisons
         run: python3 'Audit~/packed_audit.py' --references artifacts/references --output artifacts/results --rounds 3
+      - name: Isolated constructor and word-cursor experiment, not shipping source
+        run: python3 'Audit~/packed_experiment.py' --output artifacts/experiments --rounds 3
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
