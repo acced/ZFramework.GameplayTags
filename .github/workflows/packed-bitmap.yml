@@ -1,11 +1,13 @@
 name: Packed bitmap audit (not release approval)
 on:
   push:
-    branches: [refactor/packed-bitmap-20260930]
+    branches: [refactor/packed-bitmap-20260930, refactor/runtime-index-bitset-20260920, optimize/whole-repo-20260916, main]
+  pull_request:
+    branches: [refactor/runtime-index-bitset-20260920, optimize/whole-repo-20260916, main]
 permissions:
   contents: read
 concurrency:
-  group: packed-bitmap-${{ github.ref }}
+  group: packed-bitmap-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   verify:
@@ -38,6 +40,8 @@ jobs:
         run: python3 'Audit~/packed_compat.py' --output artifacts/compatibility
       - name: Compile literal shipping code, verify adoption and compare complete workloads
         run: python3 'Audit~/packed_acceptance.py' --references artifacts/references --output artifacts/results --rounds 3
+      - name: Direct comparison with old Auto and the rejected indexed Dense implementation
+        run: python3 'Audit~/packed_dense_control.py' --output artifacts/indexed-dense-control --rounds 3
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
