@@ -1,0 +1,30 @@
+name: Isolated packed-prefix experiment (not shipping)
+on:
+  push:
+    branches: [refactor/packed-bitmap-20260930]
+    paths: ['Audit~/packed_prefix_experiment.py', 'Audit~/PackedLayoutChecks.cs', '.github/workflows/packed-variant.yml']
+permissions:
+  contents: read
+concurrency:
+  group: packed-prefix-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  experiment:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '8.0.425'
+      - name: Test both kernels and keep all same-input measurements
+        run: python3 'Audit~/packed_prefix_experiment.py' --output artifacts/prefix --rounds 3
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: packed-prefix-${{ github.run_id }}
+          path: artifacts/
+          retention-days: 30
+          if-no-files-found: error
