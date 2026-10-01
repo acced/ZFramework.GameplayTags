@@ -72,7 +72,8 @@ jobs:
           - arch: arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 90
+    # Full bulk has 4,224 keys across 24 labels and three rounds; retain every row.
+    timeout-minutes: ${{ matrix.suite == 'bulk' && 240 || 90 }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -129,6 +130,8 @@ jobs:
           python3 'Audit~/Refactor/research.py' --output artifacts/frontier --portable-only "${args[@]}"
       - name: Full bulk preparation, conversion and h0-h1-h32 workloads
         if: matrix.suite == 'bulk'
+        # Leave a separate window for if: always() evidence upload after a step timeout.
+        timeout-minutes: 210
         shell: bash
         run: |
           suite=smoke; rounds=1; samples=7
