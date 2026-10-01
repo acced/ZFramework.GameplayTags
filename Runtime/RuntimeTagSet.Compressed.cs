@@ -75,6 +75,8 @@ namespace GameplayTags
             TagSetStorage mode = ChooseBulkStorage(registry, count, records);
             var result = new RuntimeTagSet(registry, mode == TagSetStorage.Compressed ? capacity : Math.Max(count, capacity), mode);
             if (mode == TagSetStorage.Compressed) result.ReservePacked(records);
+            if (mode == TagSetStorage.Dense && count == tags.Length)
+                return MaterializeUniqueDense(result, tags, count);
             int used = 0; previous = -1;
             for (int i = 0; i < tags.Length; i++)
             {
@@ -92,6 +94,15 @@ namespace GameplayTags
             }
             result.m_Count = count;
             if (mode == TagSetStorage.Compressed) result.m_PackedUsed = used;
+            return result;
+        }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+        private static RuntimeTagSet MaterializeUniqueDense(RuntimeTagSet result, ReadOnlySpan<RuntimeTag> tags, int count)
+        {
+            ulong[] words = result.m_Words;
+            for (int i = 0; i < tags.Length; i++)
+            { int id = tags[i].Id; words[id >> 6] |= 1UL << (id & 63); }
+            result.m_Count = count;
             return result;
         }
         private static TagSetStorage ChooseBulkStorage(TagRegistry registry, int count, int records)
@@ -352,6 +363,8 @@ namespace GameplayTags
         }
         private void CopyPackedAware(RuntimeTagSet other)
         {
+            if (m_Words != null && other.m_PackedUsed >= 0)
+            { CopyPackedToDense(other); return; }
             if (m_PackedUsed >= 0 && other.m_PackedUsed >= 0)
             { ReservePacked(other.m_PackedUsed); Array.Copy(other.m_Ids, m_Ids, other.m_PackedUsed); m_PackedUsed = other.m_PackedUsed; m_Count = other.m_Count; return; }
             var scan = new RecordEnumerator(other);
@@ -366,6 +379,8 @@ namespace GameplayTags
         }
         private void AppendPackedAware(RuntimeTagSet other)
         {
+            if (m_Words != null && other.m_PackedUsed >= 0)
+            { ApplyPackedToDense(other, false); return; }
             if (m_PackedUsed >= 0 && other.m_PackedUsed < 0 && other.m_Words == null &&
                 other.m_Count <= 64 && (long)other.m_Count * 32 <= m_Count)
             { for (int i = 0; i < other.m_Count; i++) PackedAdd(other.m_Ids[i]); return; }
@@ -413,6 +428,8 @@ namespace GameplayTags
         private bool RemovePackedAware(RuntimeTagSet other)
         {
             int before = m_Count;
+            if (m_Words != null && other.m_PackedUsed >= 0)
+            { ApplyPackedToDense(other, true); return before != m_Count; }
             if (m_PackedUsed >= 0 && other.m_PackedUsed < 0 && other.m_Words == null &&
                 other.m_Count <= 64 && (long)other.m_Count * 32 <= m_Count)
             { for (int i = 0; i < other.m_Count; i++) PackedRemove(other.m_Ids[i]); return before != m_Count; }
@@ -541,6 +558,8 @@ namespace GameplayTags
         }
         private static void FilterPackedByDense(RuntimeTagSet packed, RuntimeTagSet dense, RuntimeTagSet result, bool difference)
         {
+            if (result.m_Words != null)
+            { FilterPackedToDense(packed, dense, result, difference); return; }
             int[] records = packed.m_Ids; int length = packed.m_PackedUsed;
             var writer = new DenseRecordWriter(result.m_Words);
             if (result.m_Words == null) { result.m_Count = 0; if (result.m_PackedUsed >= 0) result.m_PackedUsed = 0; }
@@ -554,6 +573,77 @@ namespace GameplayTags
                 if (result.m_Words != null) writer.Add(kept); else result.EmitRecord(kept);
             }
             if (result.m_Words != null) { writer.Finish(); result.m_Count = writer.Count; }
+        }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+        private static ulong ReadPackedWord(int[] records, int length, int firstBlock, ref int read, out int word)
+        {
+            if (firstBlock >= 0 && read <= length - 4 && ((firstBlock + read) & 3) == 0)
+            {
+                word = (firstBlock + read) >> 2;
+                ulong direct = RuntimeBitOperations.PackFourRecordMasks(records, read);
+                read += 4;
+                return direct;
+            }
+            int record = records[read++], start = RecordBase(record);
+            word = start >> 6;
+            ulong mask = (ulong)(record & PackedMask) << (start & 63);
+            while (read < length)
+            {
+                record = records[read]; start = RecordBase(record);
+                if ((start >> 6) != word) break;
+                mask |= (ulong)(record & PackedMask) << (start & 63); read++;
+            }
+            return mask;
+        }
+        private static int PackedContiguousStart(RuntimeTagSet packed)
+        {
+            int length = packed.m_PackedUsed;
+            if (length < 8) return -1;
+            int first = RecordBase(packed.m_Ids[0]) >> 4;
+            return (RecordBase(packed.m_Ids[length - 1]) >> 4) - first + 1 == length ? first : -1;
+        }
+        private void CopyPackedToDense(RuntimeTagSet packed)
+        {
+            int read = 0, cleared = 0, length = packed.m_PackedUsed;
+            int firstBlock = PackedContiguousStart(packed);
+            int[] records = packed.m_Ids; ulong[] words = m_Words;
+            while (read < length)
+            {
+                ulong mask = ReadPackedWord(records, length, firstBlock, ref read, out int word);
+                if (word > cleared) Array.Clear(words, cleared, word - cleared);
+                words[word] = mask; cleared = word + 1;
+            }
+            if (cleared < words.Length) Array.Clear(words, cleared, words.Length - cleared);
+            m_Count = packed.m_Count;
+        }
+        private void ApplyPackedToDense(RuntimeTagSet packed, bool remove)
+        {
+            int read = 0, changed = 0, length = packed.m_PackedUsed;
+            int firstBlock = PackedContiguousStart(packed);
+            int[] records = packed.m_Ids; ulong[] words = m_Words;
+            while (read < length)
+            {
+                ulong mask = ReadPackedWord(records, length, firstBlock, ref read, out int word), old = words[word];
+                changed += Bits.Count(remove ? old & mask : mask & ~old);
+                words[word] = remove ? old & ~mask : old | mask;
+            }
+            m_Count += remove ? -changed : changed;
+        }
+        private static void FilterPackedToDense(RuntimeTagSet packed, RuntimeTagSet dense, RuntimeTagSet result, bool difference)
+        {
+            int read = 0, cleared = 0, count = 0, length = packed.m_PackedUsed;
+            int firstBlock = PackedContiguousStart(packed);
+            int[] records = packed.m_Ids; ulong[] words = result.m_Words, conditions = dense.m_Words;
+            while (read < length)
+            {
+                ulong mask = ReadPackedWord(records, length, firstBlock, ref read, out int word);
+                // Consume this original condition word before any aliased output write.
+                ulong kept = mask & (difference ? ~conditions[word] : conditions[word]);
+                if (word > cleared) Array.Clear(words, cleared, word - cleared);
+                words[word] = kept; cleared = word + 1; count += Bits.Count(kept);
+            }
+            if (cleared < words.Length) Array.Clear(words, cleared, words.Length - cleared);
+            result.m_Count = count;
         }
         private static bool TinyPackedIntersection(RuntimeTagSet left, RuntimeTagSet right, RuntimeTagSet result)
         {

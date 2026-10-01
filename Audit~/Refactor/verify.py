@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Real managed compilation/tests. Native Unity/IL2CPP acceptance remains separate."""
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -13,6 +14,27 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
 sys.path.insert(0, str(ROOT / 'Audit~'))
 from checks import verify_package, compile_documentation, compile_split_assemblies
+
+def verify_reference_bindings(host, references, report):
+    """Check copied reference bytes immediately before execution; preserve failed evidence."""
+    bindings = []
+    for intended in references:
+        intended = Path(intended).resolve()
+        deployed = Path(host).resolve().parent / intended.name
+        row = {'intended_path': str(intended), 'deployed_path': str(deployed)}
+        for label, path in [('intended', intended), ('deployed', deployed)]:
+            try:
+                row[label + '_sha256'] = hashlib.sha256(path.read_bytes()).hexdigest()
+            except OSError as error:
+                row[label + '_sha256'] = None
+                row[label + '_error'] = str(error)
+        row['matches'] = row['intended_sha256'] is not None and row['intended_sha256'] == row['deployed_sha256']
+        bindings.append(row)
+    result = {'host_path': str(Path(host).resolve()), 'passed': all(row['matches'] for row in bindings), 'references': bindings}
+    Path(report).write_text(json.dumps(result, indent=2) + '\n')
+    if not result['passed']:
+        raise RuntimeError('Reference DLL verification failed before execution; evidence: ' + str(report))
+    return result
 
 def project(path, includes, framework='net8.0', executable=True, references=(), name=None, defines='', checked=False):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -34,7 +56,7 @@ def main():
         ap.error('Output must be a new or empty directory; preserve prior verification evidence')
     out.mkdir(parents=True,exist_ok=True)
     env=dict(os.environ,DOTNET_gcConcurrent='0',DOTNET_CLI_TELEMETRY_OPTOUT='1',DOTNET_NOLOGO='1',DOTNET_TieredCompilation='0')
-    results=[]
+    results=[];references_by_host={};reference_checks=[]
     def run(cmd,log,cwd=ROOT,extra=None):
         result=subprocess.run(list(map(str,cmd)),cwd=cwd,env=dict(env,**(extra or {})),text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         (out/log).write_text(result.stdout);print(result.stdout,flush=True)
@@ -44,8 +66,14 @@ def main():
         shutil.copy2(ROOT/'Audit~/NuGet.Config',path/'NuGet.Config')
         proj=path/(folder+'.csproj');project(proj,includes,framework,executable,references,name,defines,checked)
         run([args.dotnet,'build',proj,'-c','Release','-o',path/'bin'],folder+'-build.log',path)
-        return path/'bin'/((name or folder)+'.dll')
+        dll=path/'bin'/((name or folder)+'.dll')
+        references_by_host[dll]=tuple(references)
+        return dll
     def execute(dll,label,arguments=(),extra=None):
+        references=references_by_host.get(dll,())
+        if references:
+            report=out/(label+'-reference-bindings.json')
+            reference_checks.append(verify_reference_bindings(dll,references,report))
         run([args.dotnet,'exec',dll,*arguments],label+'.log',out,extra)
         results.append({'name':label,'passed':True})
     package=verify_package(ROOT);(out/'package-checks.json').write_text(json.dumps(package,indent=2))
@@ -77,7 +105,7 @@ def main():
     for name in ('UnityStubs.cs','NativeTestStubs.cs','NuGet.Config'):shutil.copy2(ROOT/'Audit~'/name,host/name)
     docs=compile_documentation(ROOT,host,integer,args.dotnet,run)
     assemblies=compile_split_assemblies(ROOT,host,args.dotnet,run)
-    summary={'measurement_gc_concurrent':'0','package':package,'executed_managed_suites':results,'documentation':docs,'assemblies':assemblies,
+    summary={'measurement_gc_concurrent':'0','package':package,'executed_managed_suites':results,'reference_dll_checks':reference_checks,'documentation':docs,'assemblies':assemblies,
              'native_unity':'not_executed','native_il2cpp':'not_executed','release_approved':False}
     (out/'verification.json').write_text(json.dumps(summary,indent=2)+'\n')
     print('VERIFICATION PASS: managed only; native release gates remain open',flush=True)

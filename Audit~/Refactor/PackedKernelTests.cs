@@ -6,8 +6,9 @@ using GameplayTags;
 
 internal static class PackedKernelTests
 {
-    private static long assertions, allocatedBytes, allocationPositiveControl;
+    private static long assertions, allocatedBytes, allocationPositiveControl, maskPackingAssertions, maskPackingAllocatedBytes;
     private static int sink;
+    private static ulong maskPackingSink;
     private static object allocationSink;
     private static void Check(bool value, string detail)
     { assertions++; if (!value) throw new InvalidOperationException("Packed kernel invariant: " + detail); }
@@ -15,6 +16,62 @@ internal static class PackedKernelTests
     { int count = 0; for (int bit = 0; bit < 16; bit++) if ((mask & (1 << bit)) != 0) count++; return count; }
     private static int Key(int block) => unchecked((block << 16) ^ int.MinValue);
     private static int NextMask(Random random) => random.Next(1, 65536);
+    private static ulong FourMasksOracle(int[] records, int offset)
+    {
+        ulong result = 0;
+        // Independent bit assembly: never narrow or vector-pack the expected result.
+        for (int lane = 0; lane < 4; lane++) for (int bit = 0; bit < 16; bit++)
+            if ((records[offset + lane] & (1 << bit)) != 0) result |= 1UL << (lane * 16 + bit);
+        return result;
+    }
+    private static void VerifyFourMasks(int[] records, int offset)
+    {
+        int a = records[offset], b = records[offset + 1], c = records[offset + 2], d = records[offset + 3];
+        int prefix = offset == 0 ? 0 : records[offset - 1];
+        int tail = offset + 4 == records.Length ? 0 : records[offset + 4];
+        ulong expected = FourMasksOracle(records, offset);
+        Check(RuntimeBitOperations.PackFourRecordMasks(records, offset) == expected, "four-mask lane/low16 oracle");
+        Check(records[offset] == a && records[offset + 1] == b && records[offset + 2] == c && records[offset + 3] == d,
+            "four-mask input records unchanged");
+        Check((offset == 0 || records[offset - 1] == prefix) && (offset + 4 == records.Length || records[offset + 4] == tail),
+            "four-mask surrounding canaries");
+    }
+    private static void CheckFourMasks()
+    {
+        long startAssertions = assertions;
+        Check(System.Runtime.GCSettings.LatencyMode == System.Runtime.GCLatencyMode.Batch, "Batch GC required for packing allocation assertion");
+        foreach (int offset in new[] { 0, 1, 3, 7 })
+        {
+            var records = new int[offset + 5];
+            Array.Fill(records, unchecked((int)0xCDEF1234));
+            for (int lane = 0; lane < 4; lane++)
+                records[offset + lane] = unchecked((int)(0x80000000U + (uint)(lane * 0x11110000))) | (lane % 2 == 0 ? 0x8001 : 0x7FFE);
+            for (int lane = 0; lane < 4; lane++)
+            {
+                int original = records[offset + lane], key = original & ~65535;
+                for (int mask = 0; mask < 65536; mask++)
+                { records[offset + lane] = key | mask; VerifyFourMasks(records, offset); }
+                records[offset + lane] = original;
+            }
+            var random = new Random(90210 + offset);
+            // An exact four-record tail also exercises loads at the physical array boundary.
+            var exactTail = new int[offset + 4];
+            Array.Fill(exactTail, unchecked((int)0xCDEF1234));
+            for (int i = 0; i < 10000; i++)
+            {
+                for (int lane = 0; lane < 4; lane++)
+                    records[offset + lane] = exactTail[offset + lane] = unchecked((int)((uint)random.Next() << 1)) | random.Next(2);
+                VerifyFourMasks(records, offset); VerifyFourMasks(exactTail, offset);
+            }
+            for (int i = 0; i < 20; i++) maskPackingSink ^= RuntimeBitOperations.PackFourRecordMasks(records, offset);
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            for (int i = 0; i < 10000; i++) maskPackingSink ^= RuntimeBitOperations.PackFourRecordMasks(records, offset);
+            long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            maskPackingAllocatedBytes += allocated;
+            Check(allocated == 0, "four-mask prepared allocation");
+        }
+        maskPackingAssertions = assertions - startAssertions;
+    }
     private static int RunOperation(int operation, int[] a, int ao, int[] b, int bo,
         int[] output, int oo, int length, bool backwards, out int written)
     {
@@ -142,7 +199,8 @@ internal static class PackedKernelTests
     }
     internal static long Run()
     {
-        assertions = 0; var random = new Random(20261001);
+        assertions = maskPackingAllocatedBytes = 0; var random = new Random(20261001);
+        CheckFourMasks();
         CheckWordMasks();
         for (int length = 0; length <= 65; length++) CheckBuffers(length, random);
         foreach (int length in new[] { 127, 128, 129, 255, 256, 257, 511, 512, 513, 1023, 1024, 1025, 4095, 4096, 4097 }) CheckBuffers(length, random, false);
@@ -155,6 +213,7 @@ internal static class PackedKernelTests
     {
         Run();
         string json = "{\"assertions\":" + assertions + ",\"failures\":0,\"allocatedBytes\":" + allocatedBytes
+            + ",\"maskPackingAssertions\":" + maskPackingAssertions + ",\"maskPackingAllocatedBytes\":" + maskPackingAllocatedBytes
             + ",\"allocationPositiveControl\":" + allocationPositiveControl + ",\"gcMode\":\"" + System.Runtime.GCSettings.LatencyMode + "\"}";
         Console.WriteLine("PACKED_KERNEL_TESTS " + json);
         if (args.Length != 0) File.WriteAllText(args[0], json);

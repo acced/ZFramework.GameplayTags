@@ -9,6 +9,25 @@ namespace GameplayTags
 {
     internal static partial class RuntimeBitOperations
     {
+        // The caller proved four aligned, consecutive occupied16-ID blocks. Narrowing
+        // discards each key and packs their low16 masks into one logical64-bit word.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ulong PackFourRecordMasks(int[] records, int index)
+        {
+#if NET8_0_OR_GREATER && !GAMEPLAYTAGS_FORCE_PORTABLE
+            if (AdvSimd.Arm64.IsSupported)
+                return AdvSimd.ExtractNarrowingLower(Vector128.LoadUnsafe(ref records[index]).AsUInt32()).AsUInt64().ToScalar();
+            if (Sse41.IsSupported)
+            {
+                var low = Sse2.And(Vector128.LoadUnsafe(ref records[index]), Vector128.Create(0xFFFF));
+                return Sse41.PackUnsignedSaturate(low, Vector128<int>.Zero).AsUInt64().ToScalar();
+            }
+#endif
+            return (ulong)(uint)(records[index] & 0xFFFF) |
+                ((ulong)(uint)(records[index + 1] & 0xFFFF) << 16) |
+                ((ulong)(uint)(records[index + 2] & 0xFFFF) << 32) |
+                ((ulong)(uint)(records[index + 3] & 0xFFFF) << 48);
+        }
         /// <summary>
         /// Unions aligned packed-record ranges and returns the shared member count.
         /// Corresponding records must have identical high-16 keys. All ranges must be valid.

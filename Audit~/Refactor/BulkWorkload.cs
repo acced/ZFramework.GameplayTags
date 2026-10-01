@@ -366,7 +366,7 @@ internal static class BulkWorkload
             gcMode = GCSettings.LatencyMode.ToString(), serverGC = GCSettings.IsServerGC,
             vectorHardwareAccelerated = System.Numerics.Vector.IsHardwareAccelerated, vectorIntWidth = System.Numerics.Vector<int>.Count,
             denseWordsPerPackedRecord = DenseWordsPerPackedRecord,
-            portable_backend_scope = "Forced portable disables explicit dense intrinsics only; System.Numerics.Vector query paths and CoreCLR/BCL SIMD can remain active. Availability is host capability, not proof a particular path executed.", controls, failures, assertions, checksum, rows,
+            portable_backend_scope = "Forced portable disables explicit System.Runtime.Intrinsics kernels; System.Numerics.Vector and BCL acceleration may remain. Availability is host capability, not proof a particular path executed.", controls, failures, assertions, checksum, rows,
             validation_protocol = "actual-timed-output-before-reset-BatchGC-v1", workload_protocol = "direct-existing-conversion-v2",
             study_role = suite == "boundary" ? "predeclared boundary holdout; do not retune policy from these rows or merge with development gates" : suite == "regression" ? "fixed regression suite with independent same-executable Auto A/A controls" : "development matrix",
             boundary_definition = suite == "boundary" ? "N at2W,4W,8W,16W minus/plus1, clamped8..U/2; W includes implicit parents. These are cardinality bounds; parent gaps change actual occupied records. New fixed seed20261029; localized/scattered/mixed,50% overlap,spread/suffix; preparation and h0/h1/h32 fresh/existing only." : null,
