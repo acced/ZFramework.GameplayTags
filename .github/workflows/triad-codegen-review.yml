@@ -1,0 +1,31 @@
+name: Triad codegen review - no new benchmark or production promotion
+on:
+  push:
+    branches: [experiment/robin-simd-dense-20261001]
+    paths: ['Audit~/TriadReview/**', '.github/workflows/triad-codegen-review.yml']
+permissions:
+  contents: read
+concurrency:
+  group: triad-codegen-review-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: 8.0.425
+      - name: Review unchanged measured methods without recording new timings
+        run: python3 'Audit~/TriadReview/run_review.py' --output artifacts/codegen-review
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: triad-codegen-review-${{ github.run_id }}
+          path: artifacts/
+          retention-days: 30
+          if-no-files-found: error
