@@ -67,26 +67,39 @@ namespace GameplayTags
                 var errors = new List<string>();
                 if (!settings.Validate(errors)) throw new GameplayTagRegistryException(errors);
             }
-            var nodes = new Dictionary<string, BuildNode>(StringComparer.Ordinal);
+            var nodes = new Dictionary<string, BuildNode>(settings?.Tags.Count ?? 0, StringComparer.Ordinal);
             var root = new BuildNode(string.Empty, null) { Id = -1 };
+            // Reuse the previous definition's validated prefix nodes. Authoring tables commonly
+            // group siblings; this avoids allocating the same parent substring for each leaf.
+            // Arbitrary order still falls back to the canonical node dictionary.
+            var previousPath = new List<BuildNode>();
             if (settings != null)
             {
                 for (int i = 0; i < settings.Tags.Count; i++)
                 {
                     string name = settings.Tags[i].Name;
                     BuildNode parent = root;
-                    int offset = 0;
+                    int offset = 0, depth = 0;
                     while (offset < name.Length)
                     {
                         int separator = name.IndexOf('.', offset);
-                        string prefix = separator < 0 ? name : name.Substring(0, separator);
-                        if (!nodes.TryGetValue(prefix, out BuildNode node))
+                        int prefixLength = separator < 0 ? name.Length : separator;
+                        BuildNode node = depth < previousPath.Count ? previousPath[depth] : null;
+                        if (node == null || !ReferenceEquals(node.Parent, parent) || node.Name.Length != prefixLength ||
+                            string.CompareOrdinal(name, 0, node.Name, 0, prefixLength) != 0)
                         {
-                            node = new BuildNode(prefix, parent);
-                            nodes.Add(prefix, node);
-                            if (parent.Children == null) parent.Children = new List<BuildNode>();
-                            parent.Children.Add(node);
+                            string prefix = separator < 0 ? name : name.Substring(0, separator);
+                            if (!nodes.TryGetValue(prefix, out node))
+                            {
+                                node = new BuildNode(prefix, parent);
+                                nodes.Add(prefix, node);
+                                if (parent.Children == null) parent.Children = new List<BuildNode>();
+                                parent.Children.Add(node);
+                            }
+                            if (depth < previousPath.Count) previousPath[depth] = node;
+                            else previousPath.Add(node);
                         }
+                        depth++;
                         parent = node;
                         if (separator < 0) break;
                         offset = separator + 1;

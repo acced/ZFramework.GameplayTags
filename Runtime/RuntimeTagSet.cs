@@ -31,7 +31,97 @@ namespace GameplayTags
             else m_Ids = capacity == 0 ? Array.Empty<int>() : new int[capacity];
         }
         public RuntimeTagSet(RuntimeTagSet source)
-            : this(Required(source).Registry, source.Capacity, source.Storage) { CopyFrom(source); }
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            Registry = source.Registry;
+            m_Count = source.m_Count;
+            if (source.m_Words != null)
+            {
+                m_Words = new ulong[source.m_Words.Length];
+                Array.Copy(source.m_Words, m_Words, m_Words.Length);
+            }
+            else
+            {
+                m_Ids = source.m_Ids.Length == 0 ? Array.Empty<int>() : new int[source.m_Ids.Length];
+                Array.Copy(source.m_Ids, m_Ids, m_Count);
+            }
+        }
+        /// <summary>
+        /// Load resolved handles in one pass, sorting once when needed. The new set owns its
+        /// storage; invalid default handles are ignored and foreign handles are rejected.
+        /// </summary>
+        public static RuntimeTagSet FromTags(TagRegistry registry, ReadOnlySpan<RuntimeTag> tags,
+            int capacity = 0, TagSetStorage storage = TagSetStorage.Auto)
+        {
+            if (registry == null) throw new ArgumentNullException(nameof(registry));
+            if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
+            var result = new RuntimeTagSet(registry, Math.Max(tags.Length, capacity), storage);
+            if (result.m_Words != null || tags.Length > result.m_Ids.Length)
+            {
+                for (int i = 0; i < tags.Length; i++) result.AddTag(tags[i]);
+                return result;
+            }
+            int count = 0;
+            bool ordered = true;
+            for (int i = 0; i < tags.Length; i++)
+            {
+                RuntimeTag tag = tags[i];
+                if (!result.Accept(tag)) continue;
+                if (count != 0 && tag.Id <= result.m_Ids[count - 1]) ordered = false;
+                result.m_Ids[count++] = tag.Id;
+            }
+            if (ordered) { result.m_Count = count; return result; }
+            Array.Sort(result.m_Ids, 0, count);
+            int write = 0;
+            for (int i = 0; i < count; i++)
+                if (write == 0 || result.m_Ids[i] != result.m_Ids[write - 1]) result.m_Ids[write++] = result.m_Ids[i];
+            result.m_Count = write;
+            return result;
+        }
+        /// <summary>Explicit allocating conversion. Existing sets never change storage implicitly.</summary>
+        public RuntimeTagSet ToStorage(TagSetStorage storage, int capacity = 0)
+        {
+            if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
+            var result = new RuntimeTagSet(Registry, Math.Max(m_Count, capacity), storage);
+            result.CopyFrom(this);
+            return result;
+        }
+        /// <summary>Resolve once, sort once, and deduplicate at the authoring/loading boundary.</summary>
+        internal void LoadAuthoring(GameplayTagContainer source)
+        {
+            if (m_Words != null)
+            {
+                int count = 0;
+                for (int i = 0; i < source.Count; i++)
+                {
+                    int id = Registry.Resolve(source[i].Name).Id, word = id >> 6;
+                    ulong bit = 1UL << (id & 63), before = m_Words[word];
+                    if ((before & bit) == 0) { m_Words[word] = before | bit; count++; }
+                }
+                m_Count = count;
+                return;
+            }
+            EnsureCapacity(source.Count);
+            // More authoring aliases than canonical IDs cannot fit in a universe-bounded buffer.
+            if (source.Count > m_Ids.Length)
+            {
+                for (int i = 0; i < source.Count; i++) AddId(Registry.Resolve(source[i].Name).Id);
+                return;
+            }
+            bool ordered = true;
+            for (int i = 0; i < source.Count; i++)
+            {
+                int id = Registry.Resolve(source[i].Name).Id;
+                if (i != 0 && id <= m_Ids[i - 1]) ordered = false;
+                m_Ids[i] = id;
+            }
+            if (ordered) { m_Count = source.Count; return; }
+            Array.Sort(m_Ids, 0, source.Count);
+            int write = 0;
+            for (int i = 0; i < source.Count; i++)
+                if (write == 0 || m_Ids[i] != m_Ids[write - 1]) m_Ids[write++] = m_Ids[i];
+            m_Count = write;
+        }
         private static RuntimeTagSet Required(RuntimeTagSet value) => value ?? throw new ArgumentNullException(nameof(value));
         private void Require(RuntimeTagSet other)
         {
@@ -67,6 +157,7 @@ namespace GameplayTags
         public bool HasTag(RuntimeTag tag) => Accept(tag) && AnyInRange(tag.Id, Registry.Ends[tag.Id]);
         public bool AddTag(RuntimeTag tag) => Accept(tag) && AddId(tag.Id);
         public bool RemoveTag(RuntimeTag tag) => Accept(tag) && RemoveId(tag.Id);
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         internal bool AddId(int id)
         {
             if (m_Words != null)
@@ -78,6 +169,17 @@ namespace GameplayTags
                 m_Count++;
                 return true;
             }
+            return AddSparseId(id);
+        }
+        private bool AddSparseId(int id)
+        {
+            // Ordered loading and append-heavy mutation should not binary-search existing members.
+            if (m_Count == 0 || id > m_Ids[m_Count - 1])
+            {
+                EnsureCapacity(m_Count + 1);
+                m_Ids[m_Count++] = id;
+                return true;
+            }
             int index = IndexOf(id);
             if (index >= 0) return false;
             index = ~index;
@@ -87,6 +189,7 @@ namespace GameplayTags
             m_Count++;
             return true;
         }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         private bool RemoveId(int id)
         {
             if (m_Words != null)
@@ -98,6 +201,10 @@ namespace GameplayTags
                 m_Count--;
                 return true;
             }
+            return RemoveSparseId(id);
+        }
+        private bool RemoveSparseId(int id)
+        {
             int index = IndexOf(id);
             if (index < 0) return false;
             m_Count--;
@@ -179,14 +286,7 @@ namespace GameplayTags
             {
                 if (other.m_Words != null)
                 {
-                    int added = 0;
-                    for (int i = 0; i < m_Words.Length; i++)
-                    {
-                        ulong before = m_Words[i], incoming = other.m_Words[i];
-                        added += Bits.Count(incoming & ~before);
-                        m_Words[i] = before | incoming;
-                    }
-                    m_Count += added;
+                    m_Count = RuntimeBitOperations.Union(m_Words, other.m_Words, m_Words);
                 }
                 else for (int i = 0; i < other.m_Count; i++) AddId(other.m_Ids[i]);
                 return;
@@ -200,6 +300,14 @@ namespace GameplayTags
             }
             if (other.m_Words == null)
             {
+                if (other.m_Ids[other.m_Count - 1] < m_Ids[0])
+                {
+                    EnsureCapacity(m_Count + other.m_Count);
+                    Array.Copy(m_Ids, 0, m_Ids, other.m_Count, m_Count);
+                    Array.Copy(other.m_Ids, 0, m_Ids, 0, other.m_Count);
+                    m_Count += other.m_Count;
+                    return;
+                }
                 AppendSparse(other);
                 return;
             }
@@ -221,6 +329,9 @@ namespace GameplayTags
         }
         private void AppendSparse(RuntimeTagSet other)
         {
+            if ((long)m_Count * 32 < other.m_Count && SparseAll(other, this))
+            { CopyFrom(other); return; }
+            if ((long)other.m_Count * 32 < m_Count && SparseAll(this, other)) return;
             int count = CountUnionSparse(this, other);
             if (count == m_Count) return;
             EnsureCapacity(count);
@@ -238,6 +349,10 @@ namespace GameplayTags
         }
         private static int CountUnionSparse(RuntimeTagSet left, RuntimeTagSet right)
         {
+            if (left.m_Count == 0) return right.m_Count;
+            if (right.m_Count == 0) return left.m_Count;
+            if (left.m_Ids[left.m_Count - 1] < right.m_Ids[0] || right.m_Ids[right.m_Count - 1] < left.m_Ids[0])
+                return checked(left.m_Count + right.m_Count);
             int a = 0, b = 0, duplicates = 0;
             int[] x = left.m_Ids, y = right.m_Ids;
             while (a < left.m_Count && b < right.m_Count)
@@ -258,14 +373,7 @@ namespace GameplayTags
             {
                 if (other.m_Words != null)
                 {
-                    int removed = 0;
-                    for (int i = 0; i < m_Words.Length; i++)
-                    {
-                        ulong old = m_Words[i], incoming = other.m_Words[i];
-                        removed += Bits.Count(old & incoming);
-                        m_Words[i] = old & ~incoming;
-                    }
-                    m_Count -= removed;
+                    m_Count = RuntimeBitOperations.Except(m_Words, other.m_Words, m_Words);
                 }
                 else for (int i = 0; i < other.m_Count; i++) RemoveId(other.m_Ids[i]);
             }
@@ -278,6 +386,11 @@ namespace GameplayTags
                 }
                 else
                 {
+                    if ((long)m_Count * 32 < other.m_Count || (long)other.m_Count * 32 < m_Count)
+                    {
+                        SparseDifference(this, other, this);
+                        return beforeCount != m_Count;
+                    }
                     int i = 0, j = 0;
                     while (i < m_Count && j < other.m_Count)
                     {
@@ -297,9 +410,9 @@ namespace GameplayTags
             Require(other);
             if (m_Words != null && other.m_Words != null)
             {
-                for (int i = 0; i < m_Words.Length; i++) if ((m_Words[i] & other.m_Words[i]) != 0) return true;
-                return false;
+                return RuntimeBitOperations.IsAny(m_Words, other.m_Words);
             }
+            if (m_Ids != null && other.m_Ids != null) return SparseAny(this, other);
             RuntimeTagSet small = m_Count <= other.m_Count ? this : other;
             RuntimeTagSet large = ReferenceEquals(small, this) ? other : this;
             var iterator = new IdEnumerator(small);
@@ -312,9 +425,9 @@ namespace GameplayTags
             if (other.m_Count > m_Count) return false;
             if (m_Words != null && other.m_Words != null)
             {
-                for (int i = 0; i < m_Words.Length; i++) if ((m_Words[i] & other.m_Words[i]) != other.m_Words[i]) return false;
-                return true;
+                return RuntimeBitOperations.IsSubset(other.m_Words, m_Words);
             }
+            if (m_Ids != null && other.m_Ids != null) return SparseAll(this, other);
             var iterator = new IdEnumerator(other);
             while (iterator.MoveNext()) if (!ContainsId(iterator.Current)) return false;
             return true;
@@ -348,22 +461,17 @@ namespace GameplayTags
             left.Require(result);
             if (ReferenceEquals(result, left)) { result.AppendTags(right); return; }
             if (ReferenceEquals(result, right)) { result.AppendTags(left); return; }
+            if (ReferenceEquals(left, right) || right.m_Count == 0) { result.CopyFrom(left); return; }
+            if (left.m_Count == 0) { result.CopyFrom(right); return; }
             if (result.m_Words != null)
             {
                 if (left.m_Words != null && right.m_Words != null)
                 {
-                    int count = 0;
-                    for (int i = 0; i < result.m_Words.Length; i++)
-                    {
-                        ulong word = left.m_Words[i] | right.m_Words[i];
-                        result.m_Words[i] = word;
-                        count += Bits.Count(word);
-                    }
-                    result.m_Count = count;
+                    result.m_Count = RuntimeBitOperations.Union(left.m_Words, right.m_Words, result.m_Words);
                 }
-                else if (left.m_Words != null) { result.CopyFrom(left); result.AppendTags(right); }
-                else if (right.m_Words != null) { result.CopyFrom(right); result.AppendTags(left); }
-                else { result.CopyFrom(left); result.AppendTags(right); }
+                else if (left.m_Words != null) WriteDenseUnion(left, right, result);
+                else if (right.m_Words != null) WriteDenseUnion(right, left, result);
+                else WriteDenseUnion(left, right, result);
                 return;
             }
             if (left.m_Words == null && right.m_Words == null)
@@ -372,6 +480,15 @@ namespace GameplayTags
                 if (result.Capacity < upper) result.EnsureCapacity(CountUnionSparse(left, right));
                 int leftIndex = 0, rightIndex = 0, write = 0;
                 int[] x = left.m_Ids, y = right.m_Ids, destination = result.m_Ids;
+                if (x[left.m_Count - 1] < y[0] || y[right.m_Count - 1] < x[0])
+                {
+                    RuntimeTagSet first = x[0] < y[0] ? left : right;
+                    RuntimeTagSet second = ReferenceEquals(first, left) ? right : left;
+                    Array.Copy(first.m_Ids, 0, destination, 0, first.m_Count);
+                    Array.Copy(second.m_Ids, 0, destination, first.m_Count, second.m_Count);
+                    result.m_Count = first.m_Count + second.m_Count;
+                    return;
+                }
                 while (leftIndex < left.m_Count && rightIndex < right.m_Count)
                 {
                     int first = x[leftIndex], second = y[rightIndex];
@@ -401,6 +518,29 @@ namespace GameplayTags
             }
             while (hasA) { result.m_Ids[result.m_Count++] = a.Current; hasA = a.MoveNext(); }
             while (hasB) { result.m_Ids[result.m_Count++] = b.Current; hasB = b.MoveNext(); }
+        }
+        // Independent output has already passed identity/alias checks. Fuse dense copy (or
+        // sparse materialization) with incoming sparse members and publish Count just once.
+        private static void WriteDenseUnion(RuntimeTagSet first, RuntimeTagSet second, RuntimeTagSet result)
+        {
+            ulong[] words = result.m_Words;
+            if (first.m_Words != null) Array.Copy(first.m_Words, words, words.Length);
+            else
+            {
+                if (result.m_Count != 0) Array.Clear(words, 0, words.Length);
+                int[] ids = first.m_Ids;
+                for (int i = 0; i < first.m_Count; i++)
+                { int id = ids[i]; words[id >> 6] |= 1UL << (id & 63); }
+            }
+            int count = first.m_Count;
+            int[] incoming = second.m_Ids;
+            for (int i = 0; i < second.m_Count; i++)
+            {
+                int id = incoming[i], word = id >> 6;
+                ulong bit = 1UL << (id & 63), before = words[word];
+                if ((before & bit) == 0) { words[word] = before | bit; count++; }
+            }
+            result.m_Count = count;
         }
         private static int CountUnion(RuntimeTagSet left, RuntimeTagSet right)
         {
@@ -436,17 +576,15 @@ namespace GameplayTags
             if (ReferenceEquals(result, right)) { result.IntersectWith(left); return; }
             if (result.m_Words != null && left.m_Words != null && right.m_Words != null)
             {
-                int count = 0;
-                for (int i = 0; i < result.m_Words.Length; i++)
-                {
-                    ulong word = left.m_Words[i] & right.m_Words[i];
-                    result.m_Words[i] = word;
-                    count += Bits.Count(word);
-                }
-                result.m_Count = count;
+                result.m_Count = RuntimeBitOperations.Intersect(left.m_Words, right.m_Words, result.m_Words);
                 return;
             }
             result.Clear();
+            if (left.m_Ids != null && right.m_Ids != null)
+            {
+                SparseIntersection(left, right, result);
+                return;
+            }
             RuntimeTagSet small = left.Count <= right.Count ? left : right;
             RuntimeTagSet large = ReferenceEquals(small, left) ? right : left;
             var iterator = new IdEnumerator(small);
@@ -458,12 +596,19 @@ namespace GameplayTags
             if (other.m_Count == 0) { Clear(); return; }
             if (m_Words == null)
             {
+                if (other.m_Ids != null && (long)m_Count * 32 >= other.m_Count)
+                { SparseIntersection(this, other, this); return; }
                 int write = 0;
                 for (int i = 0; i < m_Count; i++) if (other.ContainsId(m_Ids[i])) m_Ids[write++] = m_Ids[i];
                 m_Count = write;
             }
             else
             {
+                if (other.m_Words != null)
+                {
+                    m_Count = RuntimeBitOperations.Intersect(m_Words, other.m_Words, m_Words);
+                    return;
+                }
                 int count = 0, cursor = 0;
                 for (int i = 0; i < m_Words.Length; i++)
                 {
@@ -478,6 +623,160 @@ namespace GameplayTags
                 m_Count = count;
             }
         }
+        /// <summary>Independent exact difference; unlike copy+remove this is a direct output operation.</summary>
+        public static RuntimeTagSet DifferenceExact(RuntimeTagSet left, RuntimeTagSet right, TagSetStorage storage = TagSetStorage.Auto)
+        {
+            Required(left).Require(right);
+            var result = new RuntimeTagSet(left.Registry, left.Count, storage);
+            DifferenceExactInto(left, right, result);
+            return result;
+        }
+        /// <summary>
+        /// Writes exact difference. Both input aliases are supported. A separate right-output
+        /// alias allocates a preserving copy unless all three sets use dense storage.
+        /// </summary>
+        public static void DifferenceExactInto(RuntimeTagSet left, RuntimeTagSet right, RuntimeTagSet result)
+        {
+            Required(left).Require(right);
+            left.Require(result);
+            if (ReferenceEquals(left, right)) { result.Clear(); return; }
+            if (ReferenceEquals(result, left)) { result.RemoveTags(right); return; }
+            if (left.m_Words != null && right.m_Words != null && result.m_Words != null)
+            {
+                result.m_Count = RuntimeBitOperations.Except(left.m_Words, right.m_Words, result.m_Words);
+                return;
+            }
+            // Overwriting the right operand can invalidate membership tests. Preserve it explicitly.
+            if (ReferenceEquals(result, right))
+            {
+                var preserved = new RuntimeTagSet(right);
+                DifferenceExactInto(left, preserved, result);
+                return;
+            }
+            result.Clear();
+            if (left.m_Ids != null && right.m_Ids != null)
+            {
+                SparseDifference(left, right, result);
+                return;
+            }
+            var iterator = new IdEnumerator(left);
+            while (iterator.MoveNext())
+                if (!right.ContainsId(iterator.Current)) result.AppendOrdered(iterator.Current);
+        }
+        // Lower bound from a monotone cursor. No per-member binary search of already-consumed data.
+        private static int LowerBound(int[] values, int from, int count, int target)
+        {
+            int high = count;
+            while (from < high)
+            {
+                int mid = from + ((high - from) >> 1);
+                if (values[mid] < target) from = mid + 1; else high = mid;
+            }
+            return from;
+        }
+        private static bool SparseAny(RuntimeTagSet left, RuntimeTagSet right)
+        {
+            if (left.m_Count == 0 || right.m_Count == 0) return false;
+            if (left.m_Ids[left.m_Count - 1] < right.m_Ids[0] || right.m_Ids[right.m_Count - 1] < left.m_Ids[0]) return false;
+            if (left.m_Count > right.m_Count) { var swap = left; left = right; right = swap; }
+            int i = 0, j = 0;
+            bool skew = (long)left.m_Count * 32 < right.m_Count;
+            while (i < left.m_Count && j < right.m_Count)
+            {
+                int a = left.m_Ids[i], b = right.m_Ids[j];
+                if (a == b) return true;
+                if (a < b) i++;
+                else j = skew ? LowerBound(right.m_Ids, j + 1, right.m_Count, a) : j + 1;
+            }
+            return false;
+        }
+        private static bool SparseAll(RuntimeTagSet left, RuntimeTagSet right)
+        {
+            int i = 0, j = 0;
+            bool skew = (long)right.m_Count * 32 < left.m_Count;
+            while (j < right.m_Count)
+            {
+                if (i == left.m_Count) return false;
+                int a = left.m_Ids[i], b = right.m_Ids[j];
+                if (a > b) return false;
+                if (a == b) { i++; j++; }
+                else i = skew ? LowerBound(left.m_Ids, i + 1, left.m_Count, b) : i + 1;
+            }
+            return true;
+        }
+        private static void SparseIntersection(RuntimeTagSet left, RuntimeTagSet right, RuntimeTagSet result)
+        {
+            // Compaction is safe when result aliases either input: write never overtakes a read.
+            if (left.m_Count > right.m_Count) { var swap = left; left = right; right = swap; }
+            int n = left.m_Count, m = right.m_Count, i = 0, j = 0, write = 0;
+            if (n == 0 || m == 0 || left.m_Ids[n - 1] < right.m_Ids[0] || right.m_Ids[m - 1] < left.m_Ids[0])
+            { result.m_Count = 0; return; }
+            bool skew = (long)n * 32 < m;
+            while (i < n && j < m)
+            {
+                int a = left.m_Ids[i], b = right.m_Ids[j];
+                if (a < b) i++;
+                else if (a > b) j = skew ? LowerBound(right.m_Ids, j + 1, m, a) : j + 1;
+                else
+                {
+                    if (result.m_Ids != null)
+                    {
+                        if (write == result.m_Ids.Length) result.EnsureCapacity(write + 1);
+                        result.m_Ids[write++] = a;
+                    }
+                    else { result.m_Words[a >> 6] |= 1UL << (a & 63); write++; }
+                    i++; j++;
+                }
+            }
+            result.m_Count = write;
+        }
+        private static void SparseDifference(RuntimeTagSet left, RuntimeTagSet right, RuntimeTagSet result)
+        {
+            int n = left.m_Count, m = right.m_Count, i = 0, j = 0, write = 0;
+            if (n == 0 || m == 0 || left.m_Ids[n - 1] < right.m_Ids[0] || right.m_Ids[m - 1] < left.m_Ids[0])
+            { result.CopyFrom(left); return; }
+            bool skipLeft = (long)m * 32 < n;
+            bool skipRight = (long)n * 32 < m;
+            if (!skipLeft && !skipRight && result.m_Ids != null && result.m_Ids.Length >= n)
+            {
+                int[] x = left.m_Ids, y = right.m_Ids, destination = result.m_Ids;
+                while (i < n && j < m)
+                {
+                    int a = x[i], b = y[j];
+                    if (a < b) { destination[write++] = a; i++; }
+                    else if (a > b) j++;
+                    else { i++; j++; }
+                }
+                if (i < n) { Array.Copy(x, i, destination, write, n - i); write += n - i; }
+                result.m_Count = write;
+                return;
+            }
+            while (i < n)
+            {
+                int end;
+                if (j == m) end = n;
+                else if (left.m_Ids[i] < right.m_Ids[j])
+                    end = skipLeft ? LowerBound(left.m_Ids, i + 1, n, right.m_Ids[j]) : i + 1;
+                else if (left.m_Ids[i] > right.m_Ids[j])
+                { j = skipRight ? LowerBound(right.m_Ids, j + 1, m, left.m_Ids[i]) : j + 1; continue; }
+                else { i++; j++; continue; }
+                if (result.m_Ids != null)
+                {
+                    result.EnsureCapacity(write + end - i);
+                    if (end - i == 1) result.m_Ids[write] = left.m_Ids[i];
+                    else if (!ReferenceEquals(left, result) || i != write)
+                        Array.Copy(left.m_Ids, i, result.m_Ids, write, end - i);
+                    write += end - i;
+                }
+                else
+                {
+                    for (int k = i; k < end; k++)
+                    { int id = left.m_Ids[k]; result.m_Words[id >> 6] |= 1UL << (id & 63); write++; }
+                }
+                i = end;
+            }
+            result.m_Count = write;
+        }
         /// <summary>Hierarchy filter. Output may alias the source, but not a separate condition set.</summary>
         public void FilterInto(RuntimeTagSet conditions, RuntimeTagSet result)
         {
@@ -486,7 +785,31 @@ namespace GameplayTags
             if (ReferenceEquals(result, conditions) && !ReferenceEquals(result, this))
                 throw new ArgumentException("Hierarchy filter cannot overwrite its separate condition set.", nameof(result));
             if (ReferenceEquals(this, conditions)) { result.CopyFrom(this); return; }
+            if (m_Count == 0 || conditions.m_Count == 0) { result.Clear(); return; }
             bool alias = ReferenceEquals(this, result);
+            // DFS condition intervals are ordered and may nest. Carry the furthest covered
+            // endpoint instead of walking each member's parent chain repeatedly.
+            if (conditions.m_Ids != null && conditions.m_Count <= m_Count)
+            {
+                var scan = new IdEnumerator(this);
+                if (!alias) result.Clear();
+                int condition = 0, end = -1, destination = 0;
+                while (scan.MoveNext())
+                {
+                    int id = scan.Current;
+                    while (condition < conditions.m_Count && conditions.m_Ids[condition] <= id)
+                    {
+                        int next = Registry.Ends[conditions.m_Ids[condition++]];
+                        if (next > end) end = next;
+                    }
+                    bool keep = id < end;
+                    if (!alias) { if (keep) result.AppendOrdered(id); }
+                    else if (m_Words != null) { if (!keep) RemoveId(id); }
+                    else if (keep) m_Ids[destination++] = id;
+                }
+                if (alias && m_Words == null) m_Count = destination;
+                return;
+            }
             var iterator = new IdEnumerator(this);
             if (!alias) result.Clear();
             int write = 0;
@@ -566,27 +889,8 @@ namespace GameplayTags
         }
         private static class Bits
         {
-            // Portable SWAR: the same code is benchmarked and shipped on .NET Standard 2.1 / IL2CPP.
-            internal static int Count(ulong value)
-            {
-                unchecked
-                {
-                    value -= (value >> 1) & 0x5555555555555555UL;
-                    value = (value & 0x3333333333333333UL) + ((value >> 2) & 0x3333333333333333UL);
-                    value = (value + (value >> 4)) & 0x0F0F0F0F0F0F0F0FUL;
-                    return (int)((value * 0x0101010101010101UL) >> 56);
-                }
-            }
-            internal static int Lowest(ulong value)
-            {
-                int shift = 0;
-                if ((value & 0xFFFFFFFFUL) == 0) { value >>= 32; shift += 32; }
-                if ((value & 0xFFFFUL) == 0) { value >>= 16; shift += 16; }
-                if ((value & 0xFFUL) == 0) { value >>= 8; shift += 8; }
-                if ((value & 0xFUL) == 0) { value >>= 4; shift += 4; }
-                if ((value & 3UL) == 0) { value >>= 2; shift += 2; }
-                return shift + ((value & 1UL) == 0 ? 1 : 0);
-            }
+            internal static int Count(ulong value) => RuntimeBitOperations.PopCount(value);
+            internal static int Lowest(ulong value) => RuntimeBitOperations.TrailingZeroCount(value);
             internal static int Highest(ulong value)
             {
                 int shift = 0;

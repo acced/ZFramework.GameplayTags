@@ -18,7 +18,7 @@ The manager is a loading/editor service, not a runtime lookup dependency. A game
 
 A true tree DFS assigns contiguous half-open intervals [id,end) to every subtree. Sibling names are ordered deterministically before traversal. This differs from simply sorting complete strings: punctuation such as A!x must not split A's subtree. A tag-to-tag hierarchy test is an integer interval check. Sparse set hierarchy lookup uses lower-bound; dense lookup checks masked boundary words and any full words between them. The latter is O(interval word count) worst case, not O(1).
 
-Sparse exact membership is O(log n). Dense exact membership is O(1). Dense union/intersection/difference are O(ceil(U/64)); dense-versus-sparse mutation visits sparse IDs. Sparse union uses sorted merges and reverse in-place merging for aliases. Dense popcount uses portable SWAR in both the .NET benchmark and Unity-targeted source; no host-only hardware fast path is used to claim IL2CPP performance.
+Sparse exact membership is O(log n). Dense exact membership is O(1). Dense union/intersection/difference are O(ceil(U/64)); dense-versus-sparse mutation visits sparse IDs. Sparse union uses sorted merges and reverse in-place merging for aliases. Sparse pair kernels use monotone merge scans, range rejection and bounded searches for highly unequal operands. Dense operations use an allocation-free shared backend: .NET 8+ can select AVX2/ARM64 intrinsics, while Unity/.NET Standard 2.1 uses portable SWAR scalar code. GAMEPLAYTAGS_FORCE_PORTABLE forces that source path in managed benchmark hosts. Hardware and portable results must be reported separately; neither proves native Unity/IL2CPP performance.
 
 Independent UnionInto output is constructed directly. Input aliases route to their proper in-place operations. Sparse output counts first only when its capacity cannot hold the input-count upper bound, so existing actual-result-sized output does not unexpectedly allocate. Integer growth is amortized. Allocating convenience APIs reserve a documented upper bound; this is reported as memory, not silently excluded.
 
@@ -61,3 +61,13 @@ Native Unity 2021.3/Unity 6, asset round-trips, Undo/PlayMode and Android/iOS IL
 - Roaring official format, why a full adaptive 16-bit block system is not being imported: https://github.com/RoaringBitmap/RoaringFormatSpec
 
 These are design references, not benchmark evidence for this implementation.
+
+## Iterative runtime refactor (local, unpublished)
+
+The new APIs are `RuntimeTagSet.FromTags(registry, handles, capacity, storage)` for bulk resolved loading, `set.ToStorage(storage, capacity)` for an explicit independent conversion, and `DifferenceExact` / `DifferenceExactInto` for direct difference output. Bulk loading sorts once when input DFS order is not strictly increasing; ordinary incremental AddTag retains ordered-set semantics. Authoring loading now resolves once and sorts once instead of repeatedly shifting arbitrary DFS IDs. Registry construction reuses the previous definition's prefix path locally; shuffled input retains the canonical dictionary fallback.
+
+Direct difference is a separate contract from copy+remove. Into supports both input aliases, but overwriting a separate right operand in a non-all-dense operation explicitly copies that operand and therefore allocates. The left alias and all-dense aliases do not need that copy. This cost must not be hidden under the prepared-zero-allocation label.
+
+A sparse-condition hierarchy filter can sweep ordered DFS intervals and carry their maximum endpoint. The parent-chain path remains for comparatively large condition sets. All counts are exact before return; no automatic storage conversion, hidden cache, pool, shared mutable output or deferred repair is added.
+
+See `Audit~/Refactor/` for actual C# lifecycle benchmarks and source snapshots. The offline Lifecycle simulator remains historical research and is not evidence that these runtime edits passed native acceptance.

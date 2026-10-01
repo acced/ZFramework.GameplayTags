@@ -95,3 +95,9 @@ python3 Audit~/integer_audit.py --references artifacts --output artifacts/result
 原 `run.py` 和旧性能脚本针对 2.x 名称容器，仅供历史复现；本分支主入口为 `integer_audit.py`。原生入口 `unity_acceptance.py` 保留，必须用新源码在隔离项目运行测试，并获取同一版本的设备结果；旧版本的原生报告不能替代。
 
 [MIT 许可证](LICENSE)。完整设计、成本与算法出处见 [RUNTIME_INDEX.md](Documentation~/RUNTIME_INDEX.md)。
+
+## 本地运行时重构（未发布）
+
+新增 `RuntimeTagSet.FromTags(registry, handles)` 批量加载已解析句柄、`ToStorage(storage, capacity)` 显式转换，以及 `DifferenceExact` / `DifferenceExactInto` 直接差集 API。差集不是复制后删除的替代计时；右输入兼作输出时，非全 Dense 组合会分配保护性副本。Sparse/Dense 的原始计时合同分别保留。
+
+.NET 8 的 AVX2/ARM64 优化与 Unity/.NET Standard 2.1 标量实现分开报告。`GAMEPLAYTAGS_FORCE_PORTABLE` 可在托管测试中强制后者；这不等于运行 Unity/IL2CPP。详见 `Documentation~/RUNTIME_INDEX.md` 与 `Audit~/Refactor/`。

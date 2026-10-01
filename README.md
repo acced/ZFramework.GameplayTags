@@ -66,11 +66,11 @@ Resolve `registry.Resolve("State.Debuff.Burning")` at loading time and retain th
 
 `RuntimeTagSet.UnionInto(left, right, output)` and `IntersectionExactInto` overwrite caller-owned output and allow either input as output. `FilterInto` is hierarchical: it allows the source as output but rejects a different condition set as output. `CopyFrom`, `AppendTags` and `RemoveTags` preserve storage mode and never modify another input. Default `RuntimeTag.None` is not a member; foreign non-default handles/sets/queries throw before mutating output. Runtime set arguments must be non-null.
 
-`Union` and `IntersectionExact` allocate independent results. A copy constructor performs a real independent copy, not copy-on-write.
+`Union`, `IntersectionExact`, and `DifferenceExact` allocate independent results. `DifferenceExactInto` also supports input aliases; a separate right-output alias allocates a preserving copy unless all three sets are dense. A copy constructor performs a real independent copy, not copy-on-write.
 
 ## Storage and zero allocation
 
-A set owns **one** sorted `int[]` or one `ulong[]`, never both live representations. `TagSetStorage.Auto` selects at construction using expected capacity and data-buffer size. Sparse storage grows amortized when necessary; dense storage allocates the bounded registry bitmap once. `EnsureCapacity` never silently switches representation. To convert, explicitly create another set in the desired mode and `CopyFrom` it.
+A set owns **one** sorted `int[]` or one `ulong[]`, never both live representations. `TagSetStorage.Auto` selects at construction using expected capacity and data-buffer size. Sparse storage grows amortized when necessary; dense storage allocates the bounded registry bitmap once. `EnsureCapacity` never silently switches representation. To convert, use `ToStorage(storage, capacity)` or explicitly create another set in the desired mode and `CopyFrom` it. `RuntimeTagSet.FromTags(registry, handles)` bulk-loads resolved handles and sorts once when necessary.
 
 Prepared handles, frozen queries and sufficiently sized output/member buffers support allocation-free runtime queries and mutations. Initialization, definition conversion, `Freeze`, growth and allocating convenience APIs are outside that promise. Into never resizes solely because an input-count upper bound is larger than an already sufficient actual-result capacity. Popcount/cardinality work is included in mutations, not postponed until after measurement.
 

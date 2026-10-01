@@ -61,7 +61,7 @@ namespace GameplayTags
             if (registry == null) throw new ArgumentNullException(nameof(registry));
             if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
             var result = new RuntimeTagSet(registry, Math.Max(Count, capacity), storage);
-            for (int i = 0; i < Count; i++) result.AddId(registry.Resolve(m_GameplayTags[i].Name).Id);
+            result.LoadAuthoring(this);
             return result;
         }
         public RuntimeTagSet ToRuntime() => ToRuntime(GameplayTagManager.CurrentRegistry);

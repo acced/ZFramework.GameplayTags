@@ -1,0 +1,70 @@
+name: Runtime refactor correctness and lifecycle evidence
+on:
+  push:
+    branches: [refactor/runtime-adaptive-20261001]
+    paths:
+      - 'Runtime/**'
+      - 'Tests/**'
+      - 'Audit~/Refactor/**'
+      - '.github/workflows/runtime-refactor.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-and-measure:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      DOTNET_TieredCompilation: '0'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: 8.0.425
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: Alex-Rachel/GameplayTags
+          ref: 28e4218f459ecf0e9fb4f0bca90805c05eb962c2
+          path: .refactor-alex
+          persist-credentials: false
+      - name: Preserve source and original production baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts .refactor-original
+          git archive --format=zip HEAD > artifacts/source.zip
+          git rev-parse HEAD > artifacts/source-commit.txt
+          git rev-parse 'HEAD^{tree}' > artifacts/source-tree.txt
+          git archive 0587201567aa21edb60055acf5028faf8d659b39 | tar -x -C .refactor-original
+          git -C .refactor-alex rev-parse HEAD > artifacts/alex-commit.txt
+          git -C .refactor-alex rev-parse 'HEAD^{tree}' > artifacts/alex-tree.txt
+          dotnet --info > artifacts/dotnet-info.txt
+      - name: Full managed correctness and actual Standard 2.1 binary checks
+        run: python3 'Audit~/Refactor/verify.py' --output artifacts/correctness
+      - name: Full lifecycle, A-A noise floor, portable backend, and pinned competitors
+        run: >-
+          python3 'Audit~/Refactor/run.py'
+          --original .refactor-original
+          --output artifacts/benchmarks
+          --suite full --rounds 3 --samples 11 --target-ms 1
+          --aa --portable --legacy --alex-source .refactor-alex
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: runtime-refactor-${{ matrix.arch }}-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30
