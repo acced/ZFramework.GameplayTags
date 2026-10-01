@@ -1,0 +1,30 @@
+name: Single-bit cross-architecture review and delivery
+on:
+  push:
+    branches: ['experiment/single-bit-records-20261001']
+    paths: ['Audit~/SingleBitReview/**', '.github/workflows/single-bit-review.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Download fixed run, verify both sources and recompute raw results
+        run: python3 'Audit~/SingleBitReview/collect.py'
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: singleton-reviewed-${{ github.run_id }}
+          path: |
+            single-review/deliverables/
+            single-review/GameplayTags_SingleBit_SourceAndEvidence.zip
+          if-no-files-found: error
+          retention-days: 30
