@@ -149,6 +149,16 @@ namespace GameplayTags.Experiments
         {
             if (source.slots != null && slots != null && slots.Length == source.slots.Length)
             { Array.Copy(source.slots, slots, slots.Length); used = source.used; count = source.count; return; }
+            // The source may have an allocated table but only one live record.
+            // ReserveRecords(1) leaves an inline destination; do not call PlaceUnique on it.
+            if (source.used == 1 && slots == null)
+            {
+                inline = source.inline;
+                if (source.slots != null)
+                    for (int i = 0; i < source.slots.Length; i++)
+                        if (source.slots[i] != 0) { inline = source.slots[i]; break; }
+                used = 1; count = source.count; return;
+            }
             Clear(); ReserveRecords(source.used);
             if (source.used == 0) return;
             if (source.slots == null)

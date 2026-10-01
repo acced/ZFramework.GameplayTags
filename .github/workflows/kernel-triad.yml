@@ -30,8 +30,8 @@ jobs:
           git rev-parse 'HEAD^{tree}' > artifacts/SOURCE_TREE.txt
           git archive --format=zip 84729cc3b6e1b4681328806df2d7c8a1d8f568f6 > artifacts/references/auto.zip
           git archive --format=zip 9be85fcd1f8d1f594ceb5bc98f2ce234b398e0e0 > artifacts/references/micro.zip
-      - name: Compile test disassemble and measure three isolated experiments
-        run: python3 'Audit~/Triad/run_triad.py' --output artifacts/triad --rounds 3
+      - name: Reproduce old copy defect then compile test disassemble and measure
+        run: python3 'Audit~/Triad/regression_first.py' --output artifacts/triad --rounds 3
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
