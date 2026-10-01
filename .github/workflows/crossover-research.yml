@@ -1,0 +1,50 @@
+name: Query and representation crossover research
+on:
+  push:
+    branches: ['experiment/crossover-locality-20261001']
+    paths: ['Audit~/Crossover/**', '.github/workflows/crossover-research.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: x64, os: ubuntu-24.04 }
+          - { arch: arm64, os: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with: { dotnet-version: '8.0.425' }
+      - name: Pin full source and verify unchanged production
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          git diff --exit-code 84729cc3b6e1b4681328806df2d7c8a1d8f568f6 HEAD -- Runtime Editor Samples~ Tests package.json
+          git archive --format=zip HEAD > artifacts/source.zip
+          git rev-parse HEAD > artifacts/SOURCE_COMMIT.txt
+          git rev-parse HEAD^{tree} > artifacts/SOURCE_TREE.txt
+      - name: Execute full caller, forced layout, inline and ratio experiments
+        run: python3 'Audit~/Crossover/run.py' --output artifacts/results --rounds 3
+      - name: Independently reconstruct raw samples and actual caller codegen
+        run: |
+          python3 'Audit~/Crossover/review.py' artifacts/results
+          python3 - <<'PY'
+          import sys,pathlib,zipfile
+          sys.path.insert(0,'Audit~')
+          from integer_audit import archive_tree
+          with zipfile.ZipFile('artifacts/source.zip') as z:
+              assert archive_tree(z)==pathlib.Path('artifacts/SOURCE_TREE.txt').read_text().strip()
+          print('Exact source tree verified')
+          PY
+          rm -rf artifacts/results/build
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: crossover-${{ matrix.arch }}-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30
