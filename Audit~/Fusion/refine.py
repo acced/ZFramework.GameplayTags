@@ -78,7 +78,10 @@ def main():
             dll=build(w/source.stem,source.stem+'Tests',common+[source,HERE/'DenseFusion.cs',t])
             run(['dotnet','exec',dll,out/(source.stem+'-tests.json')],source.stem+'-tests.log',w)
             run(['dotnet','exec',dll,out/(source.stem+'-tests-nohw.json')],source.stem+'-tests-nohw.log',w,{'DOTNET_EnableHWIntrinsic':'0'})
-        portable=build(w/'portable','PortableFusion',common+[fused,HERE/'DenseFusion.cs'],framework='netstandard2.1',exe=False)
+        # Test setup uses internal ReplaceAll; grant access only in the temporary test library.
+        friend=gen/'PortableTestAccess.cs'
+        friend.write_text('[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("PortableFusionTests")]\n')
+        portable=build(w/'portable','PortableFusion',common+[fused,HERE/'DenseFusion.cs',friend],framework='netstandard2.1',exe=False)
         # Actually execute the separately compiled Standard 2.1 scalar backend, not just compile it.
         portabletest=build(w/'portable-tests','PortableFusionTests',[gen/'FusedBitmapSetTests.cs'],reference=portable)
         run(['dotnet','exec',portabletest,out/'portable-full-tests.json'],'portable-full-tests.log',w)
