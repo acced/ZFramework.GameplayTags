@@ -62,7 +62,8 @@ jobs:
       fail-fast: false
       matrix:
         arch: [x64, arm64]
-        suite: [lifecycle, frontier-hardware, frontier-portable, bulk]
+        # Workflow-only bulk retries reuse valid sibling evidence from the identical Runtime.
+        suite: ${{ contains(github.event.head_commit.message, '[bulk-only]') && fromJSON('["bulk"]') || fromJSON('["lifecycle", "frontier-hardware", "frontier-portable", "bulk"]') }}
         include:
           - arch: x64
             runner: ubuntu-24.04
@@ -133,7 +134,7 @@ jobs:
           python3 'Audit~/Refactor/bulk_workload.py' \
             --original .refactor-original --previous .refactor-previous \
             --output artifacts/bulk --suite "$suite" --rounds "$rounds" --samples "$samples" --target-ms 1 \
-            --portable --original-forced --aa
+            --portable --original-forced --current-aa
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
