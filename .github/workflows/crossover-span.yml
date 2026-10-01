@@ -1,0 +1,40 @@
+name: Standard-library query crossover supplement
+on:
+  push:
+    branches: ['experiment/crossover-locality-20261001']
+    paths: ['Audit~/CrossoverSpan/**', '.github/workflows/crossover-span.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: x64, os: ubuntu-24.04 }
+          - { arch: arm64, os: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with: { dotnet-version: '8.0.425' }
+      - name: Verify original experiment is unchanged
+        run: |
+          mkdir -p artifacts
+          git diff --exit-code c3ef276e3fb10760875cf83a29cd27b2ff63d331 HEAD -- Audit~/Crossover Runtime Editor Samples~ Tests package.json
+          git archive --format=zip HEAD > artifacts/source.zip
+          git rev-parse HEAD > artifacts/SOURCE_COMMIT.txt
+      - name: Measure public Span and fixed query controls
+        run: python3 'Audit~/CrossoverSpan/run.py' --output artifacts/results --rounds 3
+      - name: Recompute all query samples
+        run: |
+          python3 'Audit~/Crossover/review.py' artifacts/results
+          rm -rf artifacts/results/build
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: crossover-span-${{ matrix.arch }}-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30
