@@ -1,0 +1,79 @@
+name: Adaptive fixed-result analysis
+on:
+  push:
+    branches: [experiment/adaptive-unrestricted-20261001]
+    paths: ['.github/workflows/adaptive-result-analysis.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  analyze:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Reanalyze fixed completed samples without changing or rerunning kernels
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          mkdir result-analysis
+          python3 - <<'PY'
+          import csv,hashlib,io,json,os,pathlib,re,statistics,subprocess,zipfile
+          out=pathlib.Path('result-analysis'); report={}
+          refs={'x64':(11156772421,'b3d6a8919d17a161afea26de867a483ca8b829329cb4400237b007de87c1c572'),
+                'arm64':(11156399318,'f66ac4eb8331b23ffe3935a2da2cbb20ae6a558964083fc75399abbb0ae628ac')}
+          for cpu,(artifact,digest) in refs.items():
+              data=subprocess.check_output(['gh','api',f'/repos/{os.environ["REPO"]}/actions/artifacts/{artifact}/zip'])
+              assert hashlib.sha256(data).hexdigest()==digest
+              with zipfile.ZipFile(io.BytesIO(data)) as z:
+                  source=json.loads(z.read('results/sources.json'))
+                  assert source['head']=='e29f169bb98bc3f4b108b05da1edc53d457eee2e'
+                  rows=json.loads(z.read('results/comparison.json'))
+                  index={tuple(r[k] for k in ('variant','contract','operation','members','definitions','distribution')):r for r in rows}
+                  groups={}; aa=[]; focus=[]; checks={}
+                  for name in z.namelist():
+                      if name.startswith('results/') and name.endswith('-checks.json'):
+                          checks[pathlib.PurePosixPath(name).name]=json.loads(z.read(name))
+                  for row in rows:
+                      if row['variant']=='auto' and row['aa']['persistent_shift5']:aa.append(row)
+                      if row['variant'] not in ('copy','simd','dense','combined'):continue
+                      key=tuple(row[k] for k in ('variant','contract','operation','members','definitions','distribution'))
+                      controls=[index[(v,*key[1:])]['value'] for v in ('auto','autoAA')]
+                      vals=row['value']['rounds']
+                      fast=all(vals[i]<=0.95*min(x['rounds'][i] for x in controls) for i in range(3))
+                      slow=all(vals[i]>1.05*max(x['rounds'][i] for x in controls) for i in range(3))
+                      group='/'.join([row['variant'],row['contract'],row['operation'],row['value']['input_storage'],'small' if row['members']<=128 else 'large'])
+                      g=groups.setdefault(group,{'cases':0,'faster5_both_every_round':0,'slower5_both_every_round':0,'AA_within5':0})
+                      g['cases']+=1;g['faster5_both_every_round']+=int(fast);g['slower5_both_every_round']+=int(slow);g['AA_within5']+=int(row['aa']['every_round_within5'])
+                  for name in z.namelist():
+                      if not re.match(r'results/(auto|autoAA|dense|simd|copy|combined|direct)-fresh-r[012]\.json$',name):continue
+                      raw=json.loads(z.read(name))
+                      for row in raw['rows']:
+                          if (row['universe'],row['size']) not in ((10000,1024),(262144,8)):continue
+                          if row['operation'] not in ('union','copy_append','copy_remove'):continue
+                          focus.append(dict(file=name,operation=row['operation'],members=row['size'],definitions=row['universe'],distribution=row['distribution'],
+                              ns=row['ns'],gc0=row['gc0'],gc1=row['gc1'],gc2=row['gc2'],allocated_bytes=row['allocated_bytes']))
+                  code=z.read('results/codegen.log').decode()
+                  headers=[l for l in code.splitlines() if 'Assembly listing' in l or 'Total bytes of code' in l]
+                  matches=[l for l in code.splitlines() if re.search(r'\b(vpcmpeqd|vptest|vpshufb|vpsadbw|popcnt|cnt|uaddlp|addv|cmeq|umaxv)\b',l.lower())]
+                  summary={'artifact_sha256':digest,'source':source['head'],'groups':groups,'aa_persistent':aa,'checks':checks,
+                      'codegen_headers':headers,'instruction_examples':matches[:40],'focused_raw_samples':focus,
+                      'environment':z.read('results/environment.txt').decode(),'native_unity':'not_run',
+                      'note':'Post-hoc fixed-data diagnosis. No sample removed. GC occurrence is not proof of causation. Same-binary AA does not measure all code layout bias.'}
+                  report[cpu]=summary
+                  (out/(cpu+'-analysis.json')).write_text(json.dumps(summary,indent=2))
+                  print('OPERATION_GROUPS '+json.dumps({'cpu':cpu,'groups':groups}))
+                  print('AA_PERSISTENT '+json.dumps({'cpu':cpu,'rows':aa}))
+                  print('CODEGEN '+json.dumps({'cpu':cpu,'headers':headers,'instructions':matches[:15]}))
+                  for variant in ('auto','autoAA','dense','simd','copy','combined','direct'):
+                      for distribution in ('contiguous','scattered'):
+                          selected=[r for r in focus if r['members']==1024 and r['distribution']==distribution and r['operation']=='copy_append' and '/'+variant+'-' in r['file']]
+                          print('COPY_APPEND_GC '+json.dumps({'cpu':cpu,'variant':variant,'distribution':distribution,'rows':selected}))
+          (out/'README.txt').write_text('Independent post-hoc inspection of fixed PR10 measured commit e29f169. Original complete samples retained in the primary evidence bundle. No new benchmark, candidate or production change.\n')
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: adaptive-fixed-result-analysis-${{ github.run_id }}
+          path: result-analysis/
+          retention-days: 30
+          if-no-files-found: error
