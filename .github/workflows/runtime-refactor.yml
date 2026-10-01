@@ -34,6 +34,8 @@ jobs:
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
         with:
           dotnet-version: 8.0.425
+      - name: Full managed correctness and actual Standard 2.1 binary checks
+        run: python3 'Audit~/Refactor/verify.py' --output artifacts/correctness
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: Alex-Rachel/GameplayTags
@@ -52,8 +54,6 @@ jobs:
           git -C .refactor-alex rev-parse HEAD > artifacts/alex-commit.txt
           git -C .refactor-alex rev-parse 'HEAD^{tree}' > artifacts/alex-tree.txt
           dotnet --info > artifacts/dotnet-info.txt
-      - name: Full managed correctness and actual Standard 2.1 binary checks
-        run: python3 'Audit~/Refactor/verify.py' --output artifacts/correctness
       - name: Full lifecycle, A-A noise floor, portable backend, and pinned competitors
         run: >-
           python3 'Audit~/Refactor/run.py'
