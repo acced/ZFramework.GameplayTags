@@ -1,0 +1,30 @@
+name: Cross-architecture micro array review and delivery
+on:
+  push:
+    branches: [experiment/micro-direct-build-20261001]
+    paths: ['Audit~/ArrayReview/**', '.github/workflows/array-review.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Download exact completed run and independently audit both CPUs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/ArrayReview/review.py'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: reviewed-micro-array-${{ github.run_id }}
+          path: |
+            review-artifacts/deliverables/
+            review-artifacts/GameplayTags_MicroArray_SourceAndEvidence.zip
+          retention-days: 30
+          if-no-files-found: error
