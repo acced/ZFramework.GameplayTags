@@ -1,14 +1,16 @@
 using System;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace GameplayTags
 {
-    public enum TagSetStorage { Auto, Sparse, Dense }
+    public enum TagSetStorage { Auto, Sparse, Dense, Compressed }
 
     /// <summary>
-    /// Single-owner runtime set. Exactly one member buffer is live: sorted int[] or ulong[].
+    /// Single-owner runtime set. Exactly one member buffer is live: sorted IDs/packed records in int[], or dense ulong[].
     /// Storage is chosen at construction and never changes implicitly. No concurrent mutation or mutation during enumeration.
     /// </summary>
-    public sealed class RuntimeTagSet
+    public sealed partial class RuntimeTagSet
     {
         private int[] m_Ids;
         private readonly ulong[] m_Words;
@@ -16,16 +18,24 @@ namespace GameplayTags
         public TagRegistry Registry { get; }
         public int Count => m_Count;
         public bool IsEmpty => m_Count == 0;
-        public TagSetStorage Storage => m_Words == null ? TagSetStorage.Sparse : TagSetStorage.Dense;
-        public int Capacity => m_Words == null ? m_Ids.Length : Registry.Count;
+        public TagSetStorage Storage => m_PackedUsed >= 0 ? TagSetStorage.Compressed : m_Words == null ? TagSetStorage.Sparse : TagSetStorage.Dense;
+        public int Capacity => m_PackedUsed >= 0 ? Math.Max(m_Count, ReservedMemberCapacity) : m_Words == null ? m_Ids.Length : Registry.Count;
         public long BufferBytes => m_Words == null ? 4L * m_Ids.Length : 8L * m_Words.Length;
 
         public RuntimeTagSet(TagRegistry registry, int capacity = 0, TagSetStorage storage = TagSetStorage.Auto)
         {
             Registry = registry ?? throw new ArgumentNullException(nameof(registry));
             if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
-            if (storage < TagSetStorage.Auto || storage > TagSetStorage.Dense) throw new ArgumentOutOfRangeException(nameof(storage));
+            if (storage < TagSetStorage.Auto || storage > TagSetStorage.Compressed) throw new ArgumentOutOfRangeException(nameof(storage));
             capacity = Math.Min(capacity, registry.Count);
+            if (storage == TagSetStorage.Compressed)
+            {
+                if (registry.Count > PackedUniverseLimit) throw new ArgumentOutOfRangeException(nameof(registry), "Compressed storage supports at most 2^20 registry IDs.");
+                m_PackedUsed = 0;
+                capacity = Math.Min(capacity, PackedMaximum);
+                m_Ids = capacity == 0 ? Array.Empty<int>() : new int[capacity];
+                return;
+            }
             bool dense = storage == TagSetStorage.Dense || (storage == TagSetStorage.Auto && registry.Count != 0 && 8L * registry.WordCount <= 4L * capacity);
             if (dense) m_Words = registry.WordCount == 0 ? Array.Empty<ulong>() : new ulong[registry.WordCount];
             else m_Ids = capacity == 0 ? Array.Empty<int>() : new int[capacity];
@@ -35,15 +45,16 @@ namespace GameplayTags
             if (source == null) throw new ArgumentNullException(nameof(source));
             Registry = source.Registry;
             m_Count = source.m_Count;
+            m_PackedUsed = source.m_PackedUsed;
             if (source.m_Words != null)
             {
-                m_Words = new ulong[source.m_Words.Length];
+                m_Words = source.m_Words.Length == 0 ? Array.Empty<ulong>() : new ulong[source.m_Words.Length];
                 Array.Copy(source.m_Words, m_Words, m_Words.Length);
             }
             else
             {
                 m_Ids = source.m_Ids.Length == 0 ? Array.Empty<int>() : new int[source.m_Ids.Length];
-                Array.Copy(source.m_Ids, m_Ids, m_Count);
+                Array.Copy(source.m_Ids, m_Ids, m_PackedUsed >= 0 ? m_PackedUsed : m_Count);
             }
         }
         /// <summary>
@@ -56,7 +67,7 @@ namespace GameplayTags
             if (registry == null) throw new ArgumentNullException(nameof(registry));
             if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
             var result = new RuntimeTagSet(registry, Math.Max(tags.Length, capacity), storage);
-            if (result.m_Words != null || tags.Length > result.m_Ids.Length)
+            if (result.m_PackedUsed >= 0 || result.m_Words != null || tags.Length > result.m_Ids.Length)
             {
                 for (int i = 0; i < tags.Length; i++) result.AddTag(tags[i]);
                 return result;
@@ -89,6 +100,8 @@ namespace GameplayTags
         /// <summary>Resolve once, sort once, and deduplicate at the authoring/loading boundary.</summary>
         internal void LoadAuthoring(GameplayTagContainer source)
         {
+            if (m_PackedUsed >= 0)
+            { for (int i = 0; i < source.Count; i++) AddId(Registry.Resolve(source[i].Name).Id); return; }
             if (m_Words != null)
             {
                 int count = 0;
@@ -137,11 +150,13 @@ namespace GameplayTags
         public void EnsureCapacity(int capacity)
         {
             if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
+            if (m_PackedUsed >= 0) { ReservePacked(Math.Min(capacity, PackedMaximum)); return; }
             if (m_Words != null || capacity <= m_Ids.Length) return;
             capacity = Math.Min(capacity, Registry.Count);
             int grown = (int)Math.Min(Registry.Count, Math.Max(4L, 2L * m_Ids.Length));
             Array.Resize(ref m_Ids, Math.Max(capacity, grown));
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool HasTagExact(RuntimeTag tag)
         {
             if (!ReferenceEquals(Registry, tag.Owner))
@@ -151,15 +166,17 @@ namespace GameplayTags
             }
             return ContainsId(tag.Id);
         }
-        internal bool ContainsId(int id) => m_Words != null
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal bool ContainsId(int id) => m_PackedUsed >= 0 ? PackedContains(id) : m_Words != null
             ? (m_Words[id >> 6] & (1UL << (id & 63))) != 0
-            : IndexOf(id) >= 0;
+            : ContainsSparseId(id);
         public bool HasTag(RuntimeTag tag) => Accept(tag) && AnyInRange(tag.Id, Registry.Ends[tag.Id]);
         public bool AddTag(RuntimeTag tag) => Accept(tag) && AddId(tag.Id);
         public bool RemoveTag(RuntimeTag tag) => Accept(tag) && RemoveId(tag.Id);
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         internal bool AddId(int id)
         {
+            if (m_PackedUsed >= 0) return PackedAdd(id);
             if (m_Words != null)
             {
                 int word = id >> 6;
@@ -192,6 +209,7 @@ namespace GameplayTags
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         private bool RemoveId(int id)
         {
+            if (m_PackedUsed >= 0) return PackedRemove(id);
             if (m_Words != null)
             {
                 int word = id >> 6;
@@ -211,6 +229,34 @@ namespace GameplayTags
             Array.Copy(m_Ids, index + 1, m_Ids, index, m_Count - index);
             return true;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ContainsSparseId(int id)
+        {
+            int n = m_Count;
+            if (n > 32) return IndexOf(id) >= 0;
+            int[] values = m_Ids;
+            if (n <= 2)
+                return n == 2 ? (values[0] == id | values[1] == id) : n == 1 && values[0] == id;
+            int width = Vector<int>.Count;
+            if (n < width)
+            {
+                bool found = false;
+                for (int i = 0; i < n; i++) found |= values[i] == id;
+                return found;
+            }
+            if (Vector.IsHardwareAccelerated)
+            {
+                var target = new Vector<int>(id);
+                var found = Vector<int>.Zero;
+                int i = 0;
+                for (; i <= n - width; i += width)
+                    found = Vector.BitwiseOr(found, Vector.Equals(new Vector<int>(values, i), target));
+                if (!Vector.EqualsAll(found, Vector<int>.Zero)) return true;
+                for (; i < n; i++) if (values[i] == id) return true;
+                return false;
+            }
+            return IndexOf(id) >= 0;
+        }
         private int IndexOf(int id)
         {
             int low = 0, high = m_Count - 1;
@@ -225,6 +271,7 @@ namespace GameplayTags
         internal bool AnyInRange(int start, int end)
         {
             if (m_Count == 0 || start == end) return false;
+            if (m_PackedUsed >= 0) return PackedRange(start, end);
             if (m_Words == null)
             {
                 int at = IndexOf(start);
@@ -243,6 +290,7 @@ namespace GameplayTags
         public void Clear()
         {
             if (m_Count == 0) return;
+            if (m_PackedUsed >= 0) m_PackedUsed = 0;
             if (m_Words != null) Array.Clear(m_Words, 0, m_Words.Length);
             m_Count = 0;
         }
@@ -250,6 +298,7 @@ namespace GameplayTags
         {
             Require(other);
             if (ReferenceEquals(this, other)) return;
+            if (m_PackedUsed >= 0 || other.m_PackedUsed >= 0) { CopyPackedAware(other); return; }
             if (m_Words != null && other.m_Words != null)
                 Array.Copy(other.m_Words, m_Words, m_Words.Length);
             else if (m_Words == null && other.m_Words == null)
@@ -269,6 +318,13 @@ namespace GameplayTags
         // Used only for known unique ascending IDs, not an external admission API.
         private void AppendOrdered(int id)
         {
+            if (m_PackedUsed >= 0)
+            {
+                int key = PackedKey(id), bit = 1 << (id & 15);
+                if (m_PackedUsed != 0 && RecordKey(m_Ids[m_PackedUsed - 1]) == key) m_Ids[m_PackedUsed - 1] |= bit;
+                else { ReservePacked(m_PackedUsed + 1); m_Ids[m_PackedUsed++] = key | bit; }
+                m_Count++; return;
+            }
             if (m_Words != null) m_Words[id >> 6] |= 1UL << (id & 63);
             else
             {
@@ -282,6 +338,7 @@ namespace GameplayTags
             Require(other);
             if (other.m_Count == 0 || ReferenceEquals(this, other)) return;
             if (m_Count == 0) { CopyFrom(other); return; }
+            if (m_PackedUsed >= 0 || other.m_PackedUsed >= 0) { AppendPackedAware(other); return; }
             if (m_Words != null)
             {
                 if (other.m_Words != null)
@@ -368,6 +425,7 @@ namespace GameplayTags
             Require(other);
             if (m_Count == 0 || other.m_Count == 0) return false;
             if (ReferenceEquals(this, other)) { Clear(); return true; }
+            if (m_PackedUsed >= 0 || other.m_PackedUsed >= 0) return RemovePackedAware(other);
             int beforeCount = m_Count;
             if (m_Words != null)
             {
@@ -408,11 +466,13 @@ namespace GameplayTags
         public bool HasAnyExact(RuntimeTagSet other)
         {
             Require(other);
+            if (m_Count == 0 || other.m_Count == 0) return false;
+            if (m_PackedUsed >= 0 && other.m_PackedUsed >= 0) return PackedAnyDirect(this, other);
             if (m_Words != null && other.m_Words != null)
             {
                 return RuntimeBitOperations.IsAny(m_Words, other.m_Words);
             }
-            if (m_Ids != null && other.m_Ids != null) return SparseAny(this, other);
+            if (m_PackedUsed < 0 && other.m_PackedUsed < 0 && m_Ids != null && other.m_Ids != null) return SparseAny(this, other);
             RuntimeTagSet small = m_Count <= other.m_Count ? this : other;
             RuntimeTagSet large = ReferenceEquals(small, this) ? other : this;
             var iterator = new IdEnumerator(small);
@@ -422,12 +482,14 @@ namespace GameplayTags
         public bool HasAllExact(RuntimeTagSet other)
         {
             Require(other);
+            if (other.m_Count == 0) return true;
             if (other.m_Count > m_Count) return false;
+            if (m_PackedUsed >= 0 && other.m_PackedUsed >= 0) return PackedAllDirect(this, other);
             if (m_Words != null && other.m_Words != null)
             {
                 return RuntimeBitOperations.IsSubset(other.m_Words, m_Words);
             }
-            if (m_Ids != null && other.m_Ids != null) return SparseAll(this, other);
+            if (m_PackedUsed < 0 && other.m_PackedUsed < 0 && m_Ids != null && other.m_Ids != null) return SparseAll(this, other);
             var iterator = new IdEnumerator(other);
             while (iterator.MoveNext()) if (!ContainsId(iterator.Current)) return false;
             return true;
@@ -451,7 +513,16 @@ namespace GameplayTags
         {
             Required(left).Require(right);
             int maximum = (int)Math.Min(left.Registry.Count, (long)left.m_Count + right.m_Count);
-            var result = new RuntimeTagSet(left.Registry, maximum, storage);
+            var result = new RuntimeTagSet(left.Registry, storage == TagSetStorage.Compressed ? 0 : maximum, storage);
+            if (maximum == 0) return result;
+            if (storage == TagSetStorage.Compressed)
+            {
+                result.ReservePacked(Math.Min(result.PackedMaximum, CountPackedRecords(left) + CountPackedRecords(right)));
+                if (ReferenceEquals(left, right) || right.m_Count == 0) result.CopyFrom(left);
+                else if (left.m_Count == 0) result.CopyFrom(right);
+                else PackedBinaryInto(left, right, result, 0);
+                return result;
+            }
             UnionInto(left, right, result);
             return result;
         }
@@ -463,6 +534,8 @@ namespace GameplayTags
             if (ReferenceEquals(result, right)) { result.AppendTags(left); return; }
             if (ReferenceEquals(left, right) || right.m_Count == 0) { result.CopyFrom(left); return; }
             if (left.m_Count == 0) { result.CopyFrom(right); return; }
+            if (left.m_PackedUsed >= 0 || right.m_PackedUsed >= 0 || result.m_PackedUsed >= 0)
+            { PackedBinaryInto(left, right, result, 0); return; }
             if (result.m_Words != null)
             {
                 if (left.m_Words != null && right.m_Words != null)
@@ -563,7 +636,8 @@ namespace GameplayTags
         public static RuntimeTagSet IntersectionExact(RuntimeTagSet left, RuntimeTagSet right, TagSetStorage storage = TagSetStorage.Auto)
         {
             Required(left).Require(right);
-            var result = new RuntimeTagSet(left.Registry, Math.Min(left.Count, right.Count), storage);
+            var result = new RuntimeTagSet(left.Registry, storage == TagSetStorage.Compressed ? 0 : Math.Min(left.Count, right.Count), storage);
+            if (storage == TagSetStorage.Compressed) result.ReservePacked(Math.Min(CountPackedRecords(left), CountPackedRecords(right)));
             IntersectionExactInto(left, right, result);
             return result;
         }
@@ -572,8 +646,11 @@ namespace GameplayTags
         {
             Required(left).Require(right);
             left.Require(result);
+            if (left.m_Count == 0 || right.m_Count == 0) { result.Clear(); return; }
             if (ReferenceEquals(result, left)) { result.IntersectWith(right); return; }
             if (ReferenceEquals(result, right)) { result.IntersectWith(left); return; }
+            if (left.m_PackedUsed >= 0 || right.m_PackedUsed >= 0 || result.m_PackedUsed >= 0)
+            { PackedBinaryInto(left, right, result, 1); return; }
             if (result.m_Words != null && left.m_Words != null && right.m_Words != null)
             {
                 result.m_Count = RuntimeBitOperations.Intersect(left.m_Words, right.m_Words, result.m_Words);
@@ -592,8 +669,9 @@ namespace GameplayTags
         }
         private void IntersectWith(RuntimeTagSet other)
         {
-            if (ReferenceEquals(this, other)) return;
+            if (m_Count == 0 || ReferenceEquals(this, other)) return;
             if (other.m_Count == 0) { Clear(); return; }
+            if (m_PackedUsed >= 0 || other.m_PackedUsed >= 0) { PackedBinaryInto(this, other, this, 1); return; }
             if (m_Words == null)
             {
                 if (other.m_Ids != null && (long)m_Count * 32 >= other.m_Count)
@@ -627,30 +705,44 @@ namespace GameplayTags
         public static RuntimeTagSet DifferenceExact(RuntimeTagSet left, RuntimeTagSet right, TagSetStorage storage = TagSetStorage.Auto)
         {
             Required(left).Require(right);
-            var result = new RuntimeTagSet(left.Registry, left.Count, storage);
+            var result = new RuntimeTagSet(left.Registry, storage == TagSetStorage.Compressed ? 0 : left.Count, storage);
+            if (storage == TagSetStorage.Compressed) result.ReservePacked(CountPackedRecords(left));
             DifferenceExactInto(left, right, result);
             return result;
         }
         /// <summary>
         /// Writes exact difference. Both input aliases are supported. A separate right-output
-        /// alias allocates a preserving copy unless all three sets use dense storage.
+        /// alias with sparse output uses its own reserved tail to preserve exclusions. Reserve
+        /// union-sized capacity to make that alias allocation-free; otherwise its buffer grows.
         /// </summary>
         public static void DifferenceExactInto(RuntimeTagSet left, RuntimeTagSet right, RuntimeTagSet result)
         {
             Required(left).Require(right);
             left.Require(result);
+            if (left.m_Count == 0) { result.Clear(); return; }
+            if (right.m_Count == 0) { result.CopyFrom(left); return; }
             if (ReferenceEquals(left, right)) { result.Clear(); return; }
             if (ReferenceEquals(result, left)) { result.RemoveTags(right); return; }
+            if (left.m_PackedUsed >= 0 || right.m_PackedUsed >= 0 || result.m_PackedUsed >= 0)
+            {
+                if (ReferenceEquals(result, right))
+                {
+                    if (result.m_PackedUsed >= 0) PackedDifferenceRight(left, result);
+                    else if (result.m_Words != null) PackedBinaryInto(left, right, result, 2);
+                    else DifferenceIntoSparseRight(left, result);
+                }
+                else PackedBinaryInto(left, right, result, 2);
+                return;
+            }
             if (left.m_Words != null && right.m_Words != null && result.m_Words != null)
             {
                 result.m_Count = RuntimeBitOperations.Except(left.m_Words, right.m_Words, result.m_Words);
                 return;
             }
-            // Overwriting the right operand can invalidate membership tests. Preserve it explicitly.
             if (ReferenceEquals(result, right))
             {
-                var preserved = new RuntimeTagSet(right);
-                DifferenceExactInto(left, preserved, result);
+                if (result.m_Words != null) DifferenceIntoDenseRight(left, result);
+                else DifferenceIntoSparseRight(left, result);
                 return;
             }
             result.Clear();
@@ -662,6 +754,83 @@ namespace GameplayTags
             var iterator = new IdEnumerator(left);
             while (iterator.MoveNext())
                 if (!right.ContainsId(iterator.Current)) result.AppendOrdered(iterator.Current);
+        }
+        private static void DifferenceIntoDenseRight(RuntimeTagSet left, RuntimeTagSet right)
+        {
+            // Dense/dense was handled by the word kernel. Here the left input is sparse.
+            // Read each old exclusion word before overwriting it; zero untouched word gaps.
+            int[] ids = left.m_Ids;
+            ulong[] words = right.m_Words;
+            int i = 0, cleared = 0, count = 0;
+            while (i < left.m_Count)
+            {
+                int wordIndex = ids[i] >> 6;
+                if (wordIndex > cleared) Array.Clear(words, cleared, wordIndex - cleared);
+                ulong mask = 0;
+                do { mask |= 1UL << (ids[i++] & 63); }
+                while (i < left.m_Count && (ids[i] >> 6) == wordIndex);
+                ulong word = mask & ~words[wordIndex];
+                words[wordIndex] = word;
+                count += Bits.Count(word);
+                cleared = wordIndex + 1;
+            }
+            if (cleared < words.Length) Array.Clear(words, cleared, words.Length - cleared);
+            right.m_Count = count;
+        }
+        private static int CountExactIntersection(RuntimeTagSet left, RuntimeTagSet right)
+        {
+            if (left.m_Count == 0 || right.m_Count == 0) return 0;
+            if (left.m_Count > right.m_Count) { var swap = left; left = right; right = swap; }
+            int count = 0;
+            if (left.m_PackedUsed < 0 && right.m_PackedUsed < 0 && left.m_Ids != null && right.m_Ids != null)
+            {
+                int i = 0, j = 0;
+                bool skew = (long)left.m_Count * 32 < right.m_Count;
+                while (i < left.m_Count && j < right.m_Count)
+                {
+                    int a = left.m_Ids[i], b = right.m_Ids[j];
+                    if (a < b) i++;
+                    else if (a > b) j = skew ? LowerBound(right.m_Ids, j + 1, right.m_Count, a) : j + 1;
+                    else { count++; i++; j++; }
+                }
+                return count;
+            }
+            var scan = new IdEnumerator(left);
+            while (scan.MoveNext()) if (right.ContainsId(scan.Current)) count++;
+            return count;
+        }
+        private static void DifferenceIntoSparseRight(RuntimeTagSet left, RuntimeTagSet right)
+        {
+            if (left.m_Count == 0) { right.Clear(); return; }
+            if (right.m_Count == 0) { right.CopyFrom(left); return; }
+            int exclusions = right.m_Count;
+            int upper = (int)Math.Min(right.Registry.Count, (long)left.m_Count + exclusions);
+            int offset;
+            if (right.m_Ids.Length >= upper)
+            {
+                // Existing spare capacity proves the regions cannot overlap. Avoid a count
+                // pass when the caller has already paid for the union's upper bound.
+                offset = right.m_Ids.Length - exclusions;
+            }
+            else
+            {
+                int differenceCount = left.m_Count - CountExactIntersection(left, right);
+                if (differenceCount == 0) { right.Clear(); return; }
+                // (A \ B) and original B are disjoint; |A\B|+|B|=|A union B| <= U.
+                right.EnsureCapacity(differenceCount + exclusions);
+                offset = differenceCount;
+            }
+            int[] destination = right.m_Ids;
+            Array.Copy(destination, 0, destination, offset, exclusions);
+            int at = offset, end = offset + exclusions, write = 0;
+            var scan = new IdEnumerator(left);
+            while (scan.MoveNext())
+            {
+                int id = scan.Current;
+                while (at < end && destination[at] < id) at++;
+                if (at == end || destination[at] != id) destination[write++] = id;
+            }
+            right.m_Count = write;
         }
         // Lower bound from a monotone cursor. No per-member binary search of already-consumed data.
         private static int LowerBound(int[] values, int from, int count, int target)
@@ -787,9 +956,10 @@ namespace GameplayTags
             if (ReferenceEquals(this, conditions)) { result.CopyFrom(this); return; }
             if (m_Count == 0 || conditions.m_Count == 0) { result.Clear(); return; }
             bool alias = ReferenceEquals(this, result);
+            if (alias && m_PackedUsed >= 0) { FilterPackedInPlace(conditions); return; }
             // DFS condition intervals are ordered and may nest. Carry the furthest covered
             // endpoint instead of walking each member's parent chain repeatedly.
-            if (conditions.m_Ids != null && conditions.m_Count <= m_Count)
+            if (conditions.m_PackedUsed < 0 && conditions.m_Ids != null && conditions.m_Count <= m_Count)
             {
                 var scan = new IdEnumerator(this);
                 if (!alias) result.Clear();
@@ -853,6 +1023,7 @@ namespace GameplayTags
             private readonly ulong[] m_Bitmap;
             private readonly int m_Length;
             private readonly bool m_Reverse;
+            private readonly bool m_Packed;
             private int m_Cursor;
             private ulong m_Bits;
             internal int Current { get; private set; }
@@ -860,7 +1031,8 @@ namespace GameplayTags
             {
                 m_Values = set.m_Ids;
                 m_Bitmap = set.m_Words;
-                m_Length = set.m_Count;
+                m_Packed = set.m_PackedUsed >= 0;
+                m_Length = m_Packed ? set.m_PackedUsed : set.m_Count;
                 m_Reverse = reverse;
                 m_Cursor = reverse ? (m_Bitmap == null ? m_Length : m_Bitmap.Length) : -1;
                 m_Bits = 0;
@@ -868,6 +1040,19 @@ namespace GameplayTags
             }
             internal bool MoveNext()
             {
+                if (m_Packed)
+                {
+                    while (m_Bits == 0)
+                    {
+                        m_Cursor += m_Reverse ? -1 : 1;
+                        if ((uint)m_Cursor >= (uint)m_Length) return false;
+                        m_Bits = (uint)(m_Values[m_Cursor] & PackedMask);
+                    }
+                    int packedBit = m_Reverse ? Bits.Highest(m_Bits) : Bits.Lowest(m_Bits);
+                    m_Bits &= ~(1UL << packedBit);
+                    Current = RecordBase(m_Values[m_Cursor]) + packedBit;
+                    return true;
+                }
                 if (m_Values != null)
                 {
                     m_Cursor += m_Reverse ? -1 : 1;

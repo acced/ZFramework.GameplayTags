@@ -1,0 +1,52 @@
+{
+  "plan_version": 1,
+  "declared_before_gate3_results": true,
+  "seed": 20261029,
+  "role": "fixed boundary holdout; never policy training or per-row oracle",
+  "registered_definitions": [
+    65536,
+    262144
+  ],
+  "registry_shape": "Bulk.G{leaf/64}.T{leaf}; implicit groups and root included in actual registry count",
+  "word_count": "ceil(actual registry count / 64)",
+  "member_counts": "For each multiplier2,4,8,16, take multiplier*W-1 and multiplier*W+1; clamp8..definitions/2; deduplicate",
+  "boundary_meanings": {
+    "2W": "ordinary Auto memory crossover",
+    "4W": "AVX2 bulk cardinality bound",
+    "8W": "ARM64 bulk cardinality bound",
+    "16W": "portable dense-backend cardinality bound"
+  },
+  "qualification": "These are bounds, not exact observed layout transitions; ceiling and implicit-parent gaps alter occupied records",
+  "operand_patterns": [
+    [
+      "contiguous",
+      "contiguous"
+    ],
+    [
+      "scattered",
+      "scattered"
+    ],
+    [
+      "contiguous",
+      "scattered"
+    ]
+  ],
+  "overlap_percent": 50,
+  "shared_positions": [
+    "spread",
+    "suffix"
+  ],
+  "operations": [
+    "prepare.from_resolved",
+    "convert.from_existing",
+    "fresh.lifecycle.h0",
+    "fresh.lifecycle.h1",
+    "fresh.lifecycle.h32",
+    "existing.lifecycle.h0",
+    "existing.lifecycle.h1",
+    "existing.lifecycle.h32"
+  ],
+  "fixtures": 96,
+  "rows_per_process": 768,
+  "source_requirement": "Use the exact immutable Runtime snapshots from gate3; report separately and do not retune policy after observing this holdout"
+}

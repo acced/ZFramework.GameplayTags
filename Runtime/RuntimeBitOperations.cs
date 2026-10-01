@@ -18,7 +18,7 @@ namespace GameplayTags
     /// uses hardware intrinsics when supported by the executing CPU. Define
     /// GAMEPLAYTAGS_FORCE_PORTABLE to validate or benchmark the portable path on .NET 8+.
     /// </remarks>
-    internal static class RuntimeBitOperations
+    internal static partial class RuntimeBitOperations
     {
 #if NET8_0_OR_GREATER && !GAMEPLAYTAGS_FORCE_PORTABLE
         // Constant, loaded before the loop. No per-container state or per-word cctor check.
@@ -36,6 +36,35 @@ namespace GameplayTags
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int Sum(Vector256<ulong> x) => (int)(x.GetElement(0) + x.GetElement(1) + x.GetElement(2) + x.GetElement(3));
 #endif
+        // A preparation-policy hint only. Actual mixed-operation kernels remain independent
+        // of this threshold; it is not a claim that every workload prefers this layout.
+        internal static int DenseWordsPerPackedRecord
+        {
+            get
+            {
+#if NET8_0_OR_GREATER && !GAMEPLAYTAGS_FORCE_PORTABLE
+                if (Avx2.IsSupported) return 4;
+                if (AdvSimd.Arm64.IsSupported) return 2;
+#endif
+                return 1;
+            }
+        }
+        // A marker per nonempty 16-bit quarter; no cross-quarter carry is possible.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int CountNonEmptyQuarters(ulong word)
+        {
+            unchecked
+            {
+                ulong markers = ((word & 0x7FFF7FFF7FFF7FFFUL) + 0x7FFF7FFF7FFF7FFFUL) | word;
+#if NET8_0_OR_GREATER && !GAMEPLAYTAGS_FORCE_PORTABLE
+                if (Popcnt.X64.IsSupported)
+                    return BitOperations.PopCount(markers & 0x8000800080008000UL);
+#endif
+                // Four base-65536 digits, each 0 or 1; their sum fits in the high digit.
+                ulong lanes = (markers >> 15) & 0x0001000100010001UL;
+                return (int)((lanes * 0x0001000100010001UL) >> 48);
+            }
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static int PopCount(ulong x)
         {

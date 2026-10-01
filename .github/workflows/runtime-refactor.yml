@@ -1,17 +1,32 @@
-name: Runtime refactor correctness and lifecycle evidence
+name: Runtime refactor correctness and complete evidence
 on:
   push:
     branches: [refactor/runtime-adaptive-20261001]
     paths:
       - 'Runtime/**'
       - 'Tests/**'
+      - 'Audit~/IntegerTests.cs'
       - 'Audit~/Refactor/**'
       - '.github/workflows/runtime-refactor.yml'
   workflow_dispatch:
+    inputs:
+      full:
+        description: Run the full measurement matrix instead of a smoke milestone
+        type: boolean
+        default: false
 permissions:
   contents: read
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+  DOTNET_TieredCompilation: '0'
+  DOTNET_ReadyToRun: '0'
+  # Explicit measurement cohort, not a production-GC recommendation. Retain old BGC evidence.
+  DOTNET_gcConcurrent: '0'
+  # A normal source checkpoint runs small architecture gates; explicit full markers opt in.
+  FULL_BENCHMARK: ${{ inputs.full == true || contains(github.event.head_commit.message, '[full-benchmark]') }}
 jobs:
-  verify-and-measure:
+  verify:
     strategy:
       fail-fast: false
       matrix:
@@ -21,11 +36,7 @@ jobs:
           - arch: arm64
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 60
-    env:
-      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
-      DOTNET_NOLOGO: '1'
-      DOTNET_TieredCompilation: '0'
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -34,37 +45,100 @@ jobs:
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
         with:
           dotnet-version: 8.0.425
+      - name: Runner integrity tests
+        run: python3 -m unittest discover -s 'Audit~/Refactor' -p 'test_*.py' -v
       - name: Full managed correctness and actual Standard 2.1 binary checks
         run: python3 'Audit~/Refactor/verify.py' --output artifacts/correctness
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: runtime-correctness-${{ matrix.arch }}-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30
+  measure:
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, arm64]
+        suite: [lifecycle, frontier-hardware, frontier-portable, bulk]
+        include:
+          - arch: x64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: 8.0.425
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: matrix.suite == 'lifecycle'
         with:
           repository: Alex-Rachel/GameplayTags
           ref: 28e4218f459ecf0e9fb4f0bca90805c05eb962c2
           path: .refactor-alex
           persist-credentials: false
-      - name: Preserve source and original production baseline
+      - name: Preserve exact source and comparison baselines
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p artifacts .refactor-original
+          mkdir -p artifacts .refactor-original .refactor-previous
           git archive --format=zip HEAD > artifacts/source.zip
           git rev-parse HEAD > artifacts/source-commit.txt
           git rev-parse 'HEAD^{tree}' > artifacts/source-tree.txt
           git archive 0587201567aa21edb60055acf5028faf8d659b39 | tar -x -C .refactor-original
-          git -C .refactor-alex rev-parse HEAD > artifacts/alex-commit.txt
-          git -C .refactor-alex rev-parse 'HEAD^{tree}' > artifacts/alex-tree.txt
+          git archive 405ff36367dcd97f205f9f1591c4ff54f7c5d7ee | tar -x -C .refactor-previous
+          if [ -d .refactor-alex ]; then
+            git -C .refactor-alex rev-parse HEAD > artifacts/alex-commit.txt
+            git -C .refactor-alex rev-parse 'HEAD^{tree}' > artifacts/alex-tree.txt
+          fi
           dotnet --info > artifacts/dotnet-info.txt
-      - name: Full lifecycle, A-A noise floor, portable backend, and pinned competitors
-        run: >-
-          python3 'Audit~/Refactor/run.py'
-          --original .refactor-original
-          --output artifacts/benchmarks
-          --suite full --rounds 3 --samples 11 --target-ms 1
-          --aa --portable --legacy --alex-source .refactor-alex
+      - name: Full lifecycle, A-A noise floor, portable backend and pinned competitors
+        if: matrix.suite == 'lifecycle'
+        shell: bash
+        run: |
+          suite=smoke; rounds=1; samples=7
+          if [ "$FULL_BENCHMARK" = true ]; then suite=full; rounds=3; samples=11; fi
+          python3 'Audit~/Refactor/run.py' \
+            --original .refactor-original --output artifacts/benchmarks \
+            --suite "$suite" --rounds "$rounds" --samples "$samples" --target-ms 1 \
+            --aa --portable --legacy --alex-source .refactor-alex
+      - name: Full retained research frontier including forced compressed mode
+        if: matrix.suite == 'frontier-hardware'
+        shell: bash
+        run: |
+          args=(--smoke --rounds 1)
+          if [ "$FULL_BENCHMARK" = true ]; then args=(--rounds 3); fi
+          python3 'Audit~/Refactor/research.py' --output artifacts/frontier "${args[@]}"
+      - name: Full retained research frontier with portable dense kernels
+        if: matrix.suite == 'frontier-portable'
+        shell: bash
+        run: |
+          args=(--smoke --rounds 1)
+          if [ "$FULL_BENCHMARK" = true ]; then args=(--rounds 3); fi
+          python3 'Audit~/Refactor/research.py' --output artifacts/frontier --portable-only "${args[@]}"
+      - name: Full bulk preparation, conversion and h0-h1-h32 workloads
+        if: matrix.suite == 'bulk'
+        shell: bash
+        run: |
+          suite=smoke; rounds=1; samples=7
+          if [ "$FULL_BENCHMARK" = true ]; then suite=full; rounds=3; samples=11; fi
+          python3 'Audit~/Refactor/bulk_workload.py' \
+            --original .refactor-original --previous .refactor-previous \
+            --output artifacts/bulk --suite "$suite" --rounds "$rounds" --samples "$samples" --target-ms 1 \
+            --portable --original-forced --aa
+
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: runtime-refactor-${{ matrix.arch }}-${{ github.run_id }}
+          name: runtime-${{ matrix.suite }}-${{ matrix.arch }}-${{ github.run_id }}
           path: artifacts/
           if-no-files-found: error
           retention-days: 30

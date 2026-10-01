@@ -23,6 +23,8 @@ LEGACY_TREES = {'main':'936bb858731b7ae0d1ec0a087de8afe1d96b1b40','optimize':'8a
 ALEX_COMMIT = '28e4218f459ecf0e9fb4f0bca90805c05eb962c2'
 ALEX_CORE = ['BinarySearchUtility.cs','GameplayTag.cs','GameplayTagAttribute.cs','GameplayTagContainer.cs','GameplayTagContainerDebugView.cs','GameplayTagContainerExtensionMethods.cs','GameplayTagContainerUtility.cs','GameplayTagCountContainer.cs','GameplayTagDefinition.cs','GameplayTagEnumerator.cs','GameplayTagFlags.cs','GameplayTagManager.cs','GameplayTagRegistrationContext.cs','GameplayTagUtility.cs']
 KEYS = ('stage', 'operation', 'universe', 'leftCount', 'rightCount', 'distribution', 'overlap', 'relation')
+BENCHMARK_SEED = 20261001
+LEGACY_SEED = 20260920
 
 def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -44,19 +46,97 @@ def validate_samples(payload, rows):
         ns=row['ns'];allocated=row['allocated_bytes']
         expected=payload.get('samples',len(ns))
         if len(ns)!=expected or len(allocated)!=expected or expected<3: raise ValueError('Wrong raw sample count')
+        if payload.get('validation_protocol') == 'actual-timed-output-before-reset-v2':
+            returned = row.get('returned_values')
+            if row.get('timed_output_validated') is not True or not isinstance(returned, list) or len(returned) != expected:
+                raise ValueError('Missing actual timed-output validation evidence')
+            if any(type(value) is not int for value in returned):
+                raise ValueError('Invalid actual timed returned value')
         if any(not math.isfinite(x) or x<=0 for x in ns): raise ValueError('Invalid timing sample')
         if any(not math.isfinite(x) or x<0 for x in allocated): raise ValueError('Invalid allocation sample')
 
 
-def aggregate(output, variants, rounds):
+def runtime_environment(output):
+    env = dict(os.environ, DOTNET_gcConcurrent='0', DOTNET_TieredCompilation='0', DOTNET_ReadyToRun='0',
+        DOTNET_CLI_TELEMETRY_OPTOUT='1', DOTNET_NOLOGO='1', DOTNET_SKIP_FIRST_TIME_EXPERIENCE='1')
+    env.setdefault('DOTNET_CLI_HOME',str(output/'dotnet-home'))
+    return env
+
+
+def gc_metadata(payload, allow_historical=False):
+    present = ('gcLatencyMode' in payload, 'gcConcurrent' in payload)
+    if not any(present) and allow_historical:
+        return {'gcProtocol':'historical-unrecorded','gcLatencyMode':None,'gcConcurrent':None}
+    if not all(present):
+        raise ValueError('Missing GC metadata; use --historical-gc only for unrecorded historical reaggregation')
+    if payload['gcLatencyMode'] != 'Batch' or payload['gcConcurrent'] != '0':
+        raise ValueError('GC protocol mismatch: new payloads require Batch and DOTNET_gcConcurrent=0')
+    return {'gcProtocol':'BatchGC','gcLatencyMode':'Batch','gcConcurrent':'0'}
+
+
+def legacy_gc_metadata(output, allow_historical=False):
+    # FourWay stays byte-identical. Its launch environment is evidence of the requested
+    # setting, not an invented runtime observation from that historical executable.
+    path=output/'environment.json'
+    environment=json.loads(path.read_text()).get('environment',{}) if path.exists() else {}
+    value=environment.get('DOTNET_gcConcurrent')
+    if value != '0' and not (value is None and allow_historical):
+        raise ValueError('Missing or invalid legacy GC launch metadata')
+    return {'source':'runner_environment_only' if value=='0' else 'historical-unrecorded',
+        'gcConcurrent':value,'gcLatencyMode':'not_recorded_by_legacy_harness'}
+
+
+def validate_payload_metadata(payload, label, storage, cohort, *, only_new_apis=False, args=None):
+    """Reject mislabeled or mixed-host/protocol payloads before calculating ratios."""
+    gc = gc_metadata(payload, getattr(args,'historical_gc',False))
+    for field,value in gc.items():
+        if field in cohort and cohort[field] != value: raise ValueError('Payload cohort mismatch: ' + field)
+        cohort[field] = value
+    expected = {'variant': label, 'requestedStorage': storage,
+                'portableKernelsForced': label == 'candidate_portable',
+                'onlyNewApis': only_new_apis, 'seed': BENCHMARK_SEED}
+    for field, value in expected.items():
+        if field not in payload or type(payload[field]) is not type(value) or payload[field] != value:
+            raise ValueError('Payload metadata mismatch: ' + field + ' for ' + label + '-' + storage)
+    for field in ('runtime', 'architecture'):
+        if not isinstance(payload.get(field), str) or not payload[field].strip():
+            raise ValueError('Missing or invalid payload metadata: ' + field)
+    if payload.get('suite') not in ('smoke', 'full'):
+        raise ValueError('Missing or invalid payload metadata: suite')
+    if type(payload.get('samples')) is not int or payload['samples'] < 3:
+        raise ValueError('Missing or invalid payload metadata: samples')
+    target = payload.get('targetMs')
+    if type(target) not in (int, float) or not math.isfinite(target) or target <= 0:
+        raise ValueError('Missing or invalid payload metadata: targetMs')
+    if args is not None:
+        for field, argument in (('suite', 'suite'), ('samples', 'samples'), ('targetMs', 'target_ms')):
+            if hasattr(args, argument) and payload[field] != getattr(args, argument):
+                raise ValueError('Payload metadata differs from requested protocol: ' + field)
+    for field in ('runtime', 'architecture', 'seed', 'suite', 'samples', 'targetMs'):
+        if field in cohort and cohort[field] != payload[field]:
+            raise ValueError('Payload cohort mismatch: ' + field)
+        cohort[field] = payload[field]
+    validation_protocol = payload.get('validation_protocol', 'preflight-v1-unversioned')
+    if not isinstance(validation_protocol, str) or not validation_protocol.strip():
+        raise ValueError('Missing or invalid payload metadata: validation_protocol')
+    if 'validation_protocol' in cohort and cohort['validation_protocol'] != validation_protocol:
+        raise ValueError('Payload cohort mismatch: validation_protocol')
+    cohort['validation_protocol'] = validation_protocol
+
+
+def aggregate(output, variants, rounds, cohort=None, args=None):
+    cohort = {} if cohort is None else cohort
     by_variant = {}; expected = None; digests = {}
     failures = []
     for variant in variants:
         groups = {}
         for round_id in range(rounds):
             payload = json.loads((output / f'{variant}-r{round_id}.json').read_text())
+            label, storage = variant.rsplit('-', 1)
+            validate_payload_metadata(payload, label, storage, cohort, args=args)
             rows = payload['rows']; validate_samples(payload,rows); keys = [key(row) for row in rows]
             if len(set(keys)) != len(keys): raise ValueError('Duplicate benchmark row in ' + variant)
+            if not keys: raise ValueError('Missing or extra benchmark rows in ' + variant)
             if expected is None: expected = set(keys)
             if set(keys) != expected: raise ValueError('Missing or extra benchmark rows in ' + variant)
             for row in rows:
@@ -93,12 +173,12 @@ def aggregate(output, variants, rounds):
         if 'original_aa-Auto' in variants:
             row['original_aa_over_original'] = {m:row['variants']['original_aa-'+m]['median_ns']/row['variants']['original-'+m]['median_ns']
                 for m in ('Auto','Sparse','Dense') if row['variants']['original_aa-'+m]['status']==row['variants']['original-'+m]['status']=='measured'}
-        forced = [(row['variants']['candidate-'+m].get('median_ns', float('inf')), m) for m in ('Sparse','Dense')]
-        row['fastest_forced_candidate'] = min(forced)[1]
+        forced = [(row['variants']['candidate-'+m]['median_ns'], m) for m in ('Sparse','Dense') if row['variants']['candidate-'+m]['status']=='measured']
+        row['fastest_forced_candidate'] = min(forced)[1] if len(forced)==2 else None
         comparisons.append(row)
     return comparisons, failures
 
-def report(output, comparisons, failures, args):
+def report(output, comparisons, failures, args, legacy_failures=None):
     (output/'comparison.json').write_text(json.dumps(comparisons, indent=2) + '\n')
     summaries = {}
     for mode in ('Auto', 'Sparse', 'Dense'):
@@ -106,8 +186,8 @@ def report(output, comparisons, failures, args):
         ratios = [r['candidate_over_original'][mode] for r in usable]
         worst = sorted(usable, key=lambda r:r['candidate_over_original'][mode], reverse=True)[:25]
         summaries[mode] = {
-            'rows': len(usable), 'median_ratio': statistics.median(ratios),
-            'p95_ratio': percentile(ratios,.95), 'max_ratio': max(ratios),
+            'rows': len(usable), 'median_ratio': statistics.median(ratios) if ratios else None,
+            'p95_ratio': percentile(ratios,.95) if ratios else None, 'max_ratio': max(ratios) if ratios else None,
             'wins_by_5_percent': sum(r <= .95 for r in ratios), 'regressions_over_5_percent': sum(r > 1.05 for r in ratios),
             'worst': [{**{k:r[k] for k in KEYS}, 'ratio':r['candidate_over_original'][mode],
                 'original_ns':r['variants']['original-'+mode]['median_ns'],
@@ -118,7 +198,7 @@ def report(output, comparisons, failures, args):
             usable=[r for r in comparisons if mode in r.get('candidate_portable_over_original',{})]
             ratios=[r['candidate_portable_over_original'][mode] for r in usable]
             worst=sorted(usable,key=lambda r:r['candidate_portable_over_original'][mode],reverse=True)[:25]
-            summaries['Portable-'+mode]={'rows':len(usable),'median_ratio':statistics.median(ratios),'p95_ratio':percentile(ratios,.95),'max_ratio':max(ratios),
+            summaries['Portable-'+mode]={'rows':len(usable),'median_ratio':statistics.median(ratios) if ratios else None,'p95_ratio':percentile(ratios,.95) if ratios else None,'max_ratio':max(ratios) if ratios else None,
                 'wins_by_5_percent':sum(r<=.95 for r in ratios),'regressions_over_5_percent':sum(r>1.05 for r in ratios),
                 'worst':[{**{k:r[k] for k in KEYS},'ratio':r['candidate_portable_over_original'][mode],
                     'original_ns':r['variants']['original-'+mode]['median_ns'],'candidate_ns':r['variants']['candidate_portable-'+mode]['median_ns']} for r in worst]}
@@ -126,19 +206,32 @@ def report(output, comparisons, failures, args):
     for mode in ('Auto','Sparse','Dense'):
         values=[r['original_aa_over_original'][mode] for r in comparisons if mode in r.get('original_aa_over_original',{})]
         if values: aa[mode]={'rows':len(values),'median_ratio':statistics.median(values),'p05_ratio':percentile(values,.05),'p95_ratio':percentile(values,.95),'min_ratio':min(values),'max_ratio':max(values)}
-    architecture=json.loads((output/'original-Auto-r0.json').read_text()).get('architecture','unknown')
-    result = {'architecture':architecture,'aa_original_repetition':aa, 'suite':args.suite, 'rounds':args.rounds, 'samples_per_process':args.samples,
-        'managed_benchmark_failures':failures, 'layouts':summaries,
+    metadata=json.loads((output/'original-Auto-r0.json').read_text())
+    architecture=metadata['architecture']
+    validation_protocol=metadata.get('validation_protocol','preflight-v1-unversioned')
+    gc=gc_metadata(metadata,getattr(args,'historical_gc',False))
+    result = {'architecture':architecture,'runtime':metadata['runtime'],'seed':metadata['seed'],'validation_protocol':validation_protocol,**gc,
+        'legacy_gc_metadata':None if legacy_failures is None else legacy_gc_metadata(output,getattr(args,'historical_gc',False)),'aa_original_repetition':aa, 'suite':args.suite, 'rounds':args.rounds, 'samples_per_process':args.samples,
+        'managed_benchmark_failures':failures, 'managed_benchmark_status':'failed' if failures else 'passed',
+        'legacy_benchmark_status':'not_run' if legacy_failures is None else ('failed' if legacy_failures else 'passed'),
+        'legacy_benchmark_failures':{role:[f for f in (legacy_failures or []) if f['role']==role] for role in ('candidate','reference')},
+        'layouts':summaries,
         'release_approved':False, 'unity_il2cpp':'not_run', 'arm64':'measured_coreclr_host' if architecture.lower() in ('arm64','aarch64') else 'not_run',
         'x64':'measured_coreclr_host' if architecture.lower() in ('x64','x86_64','amd64') else 'not_run',
         'warning':'Row ratios describe this finite matrix on this managed host. Batch tails are not individual-operation tails. Multiple raw samples in one process are not independent processes. No universal winning-layout or shipping claim.'}
     (output/'summary.json').write_text(json.dumps(result, indent=2)+'\n')
     lines = ['# Measured refactor comparison', '',
         f'{args.rounds} fresh process round(s), {args.samples} raw samples per row/process; suite: {args.suite}. All raw data retained.', '',
+        f'Validation protocol: {validation_protocol}. GC protocol: {gc["gcProtocol"]}; historical unrecorded data is not relabeled as BatchGC.', '',
         f'CoreCLR managed host only; architecture {architecture}. No Unity/IL2CPP run. Other architectures are outside this run. p95/max are batch-mean tails, not individual-operation latency. Ratios < 1 favor candidate.', '',
         '| storage | rows | median ratio | p95 ratio | worst ratio | >5% regression rows |',
         '|---|---:|---:|---:|---:|---:|']
-    for m,s in summaries.items(): lines.append(f"| {m} | {s['rows']} | {s['median_ratio']:.3f} | {s['p95_ratio']:.3f} | {s['max_ratio']:.3f} | {s['regressions_over_5_percent']} |")
+    def ratio_text(value): return 'FAILED' if value is None else f'{value:.3f}'
+    for m,s in summaries.items(): lines.append(f"| {m} | {s['rows']} | {ratio_text(s['median_ratio'])} | {ratio_text(s['p95_ratio'])} | {ratio_text(s['max_ratio'])} | {s['regressions_over_5_percent']} |")
+    if failures:
+        lines += ['', f"Validation failed: {len(failures)} failed row occurrence(s). See summary.json for the complete inventory; failed rows cannot rank."]
+    if legacy_failures is not None:
+        lines += ['', f"Historical protocol: {len(legacy_failures)} failed row occurrence(s), split by candidate/reference in summary.json and legacy-failures.json."]
     if aa:
         lines += ['', '## A/A original-executable repetition', '', 'Same original executable, independently labeled fresh processes; this measures host/process noise without any source change.', '']
         for mode,s in aa.items(): lines.append(f"- {mode}: median {s['median_ratio']:.3f}, p05 {s['p05_ratio']:.3f}, p95 {s['p95_ratio']:.3f}, range {s['min_ratio']:.3f}–{s['max_ratio']:.3f}")
@@ -149,24 +242,34 @@ def report(output, comparisons, failures, args):
     (output/'REPORT.md').write_text('\n'.join(lines)+'\n')
     return result
 
-def candidate_api_summary(output, comparisons, args):
+def candidate_api_summary(output, comparisons, args, cohort=None):
     """Compare candidate-only APIs to equivalent existing workflows; never invent absent baselines."""
+    cohort = {} if cohort is None else cohort
+    # Also link a standalone reaggregation to the common cohort, when present.
+    anchor = output/'original-Auto-r0.json'
+    if anchor.exists():
+        validate_payload_metadata(json.loads(anchor.read_text()), 'original', 'Auto', cohort, args=args)
     operations={'build.FromTags.sorted':'build.resolved_sorted','build.FromTags.reverse':'build.resolved_reverse',
         'difference.direct_new':'difference.copy_remove','difference.direct_into':'difference.reuse',
         'conversion.ToStorage.from_Sparse':'convert.Sparse_to_requested','conversion.ToStorage.from_Dense':'convert.Dense_to_requested'}
     coordinate=lambda r:tuple(r[k] for k in KEYS if k not in ('stage','operation'))
     paired={(coordinate(r),r['operation']):r for r in comparisons}
-    groups={};failures=[]
+    groups={};failures=[];expected_all=None;all_digests={}
     for label in ('candidate','candidate_portable') if args.portable else ('candidate',):
         for mode in ('Auto','Sparse','Dense'):
-            expected=None
             for round_id in range(args.rounds):
                 p=output/f'{label}-newapis-{mode}-r{round_id}.json'
-                payload=json.loads(p.read_text());rows=payload['candidate_only_rows'];validate_samples(payload,rows);keys=[key(r) for r in rows]
+                payload=json.loads(p.read_text())
+                validate_payload_metadata(payload,label,mode,cohort,only_new_apis=True,args=args)
+                rows=payload['candidate_only_rows'];validate_samples(payload,rows);keys=[key(r) for r in rows]
                 if len(keys)!=len(set(keys)): raise ValueError('Duplicate candidate-only row')
-                if expected is None: expected=set(keys)
-                if set(keys)!=expected: raise ValueError('Candidate-only row matrix differs between rounds')
+                if not rows: raise ValueError('Missing all candidate-only benchmark rows')
+                if expected_all is None: expected_all=set(keys)
+                if set(keys)!=expected_all: raise ValueError('Candidate-only row matrix differs across modes, labels or rounds')
                 for r in rows:
+                    k=key(r)
+                    if k in all_digests and all_digests[k]!=r['digest']: raise ValueError('Candidate-only fixture differs across modes, labels or rounds')
+                    all_digests[k]=r['digest']
                     group=groups.setdefault((label,mode,key(r)),[])
                     if group and group[0]['digest']!=r['digest']: raise ValueError('Candidate-only fixture differs between rounds')
                     group.append(r)
@@ -189,18 +292,37 @@ def candidate_api_summary(output, comparisons, args):
     (output/'candidate-api-comparison.json').write_text(json.dumps(result,indent=2)+'\n')
     return failures
 
-def legacy_summary(output, variants, rounds):
-    groups={}; digests={}; expected=None
+def legacy_summary(output, variants, rounds, args=None):
+    legacy_gc_metadata(output,getattr(args,'historical_gc',False))
+    groups={}; digests={}; expected=None; failures=[]; cohort={}
+    anchor=output/'original-Auto-r0.json'
+    if anchor.exists():
+        common=json.loads(anchor.read_text())
+        cohort={field:common[field] for field in ('runtime','architecture')}
     for variant in variants:
         for round_id in range(rounds):
-            payload=json.loads((output/f'legacy-{variant}-r{round_id}.json').read_text())
-            rowkeys={(r['operation'],r['size'],r['universe'],r['distribution']) for r in payload['rows']}
-            if expected is None: expected=rowkeys
-            if rowkeys != expected: raise ValueError('Legacy row matrix mismatch')
-            for row in payload['rows']:
-                k=(row['operation'],row['size'],row['universe'],row['distribution'])
+            path=output/f'legacy-{variant}-r{round_id}.json'
+            payload=json.loads(path.read_text())
+            if payload.get('variant') != variant or type(payload.get('seed')) is not int or payload['seed'] != LEGACY_SEED:
+                raise ValueError('Legacy payload metadata mismatch: ' + path.name)
+            for field in ('runtime','architecture'):
+                value=payload.get(field)
+                if not isinstance(value,str) or not value.strip(): raise ValueError('Missing legacy payload metadata: ' + field)
+                if field in cohort and cohort[field]!=value: raise ValueError('Legacy payload cohort mismatch: ' + field)
+                cohort[field]=value
+            # The immutable historical FourWay protocol records exactly seven samples.
+            validate_samples({'samples':7},payload['rows'])
+            rowkeys=[(r['operation'],r['size'],r['universe'],r['distribution']) for r in payload['rows']]
+            if len(set(rowkeys))!=len(rowkeys): raise ValueError('Duplicate legacy benchmark row: ' + path.name)
+            if not rowkeys: raise ValueError('Missing all legacy benchmark rows: ' + path.name)
+            if expected is None: expected=set(rowkeys)
+            if set(rowkeys) != expected: raise ValueError('Legacy row matrix mismatch')
+            for row,k in zip(payload['rows'],rowkeys):
                 if k in digests and digests[k]!=row['inputDigest']: raise ValueError('Legacy input mismatch')
                 digests[k]=row['inputDigest'];groups.setdefault(k,{}).setdefault(variant,[]).append(row)
+                if row['status']!='measured':
+                    failures.append({'protocol':'legacy','role':'candidate' if variant=='candidate' else 'reference',
+                        'variant':variant,'round':round_id,'file':path.name,'key':k,'error':row.get('error')})
     result=[]
     for k,group in sorted(groups.items()):
         entry=dict(zip(('operation','size','universe','distribution'),k));entry['variants']={}
@@ -210,11 +332,13 @@ def legacy_summary(output, variants, rounds):
                 'allocated_bytes':statistics.median(statistics.median(r['allocated_bytes']) for r in rows)}
         candidate=entry['variants']['candidate']
         references=[entry['variants'][v] for v in ('main','optimize','alex') if v in entry['variants']]
-        if candidate['status']=='measured' and all(r['status']=='measured' for r in references):
+        if candidate['status']=='measured' and references and all(r['status']=='measured' for r in references):
             entry['candidate_over_best_legacy']=candidate['median_ns']/min(r['median_ns'] for r in references)
         result.append(entry)
     (output/'legacy-comparison.json').write_text(json.dumps(result,indent=2)+'\n')
-    return result
+    (output/'legacy-failures.json').write_text(json.dumps({role:[f for f in failures if f['role']==role] for role in ('candidate','reference')},indent=2)+'\n')
+    return result, failures
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -231,7 +355,9 @@ def main():
     parser.add_argument('--aa', action='store_true', help='Include same-original-executable independent A/A repetition in every mode/round')
     parser.add_argument('--alex-source', type=Path, help='Local Git repository containing pinned Alex commit; used with --legacy')
     parser.add_argument('--summarize-only', action='store_true')
+    parser.add_argument('--historical-gc', action='store_true', help='Only with --summarize-only: accept uniform historical payloads without GC metadata, explicitly marked unrecorded')
     args = parser.parse_args()
+    if args.historical_gc and not args.summarize_only: parser.error('--historical-gc is only supported with --summarize-only')
     if args.rounds < 1 or args.samples < 3 or args.target_ms <= 0: parser.error('positive rounds/duration and >=3 samples required')
     output = args.output.resolve(); output.mkdir(parents=True, exist_ok=True)
     labels=['original','candidate']
@@ -239,12 +365,18 @@ def main():
     if args.aa: labels.append('original_aa')
     variants = [f'{v}-{m}' for m in ('Auto','Sparse','Dense') for v in labels]
     if args.summarize_only:
-        comparisons, failures = aggregate(output, variants, args.rounds)
-        failures += candidate_api_summary(output,comparisons,args)
-        report(output, comparisons, failures, args); return 1 if failures else 0
+        cohort={}
+        comparisons, failures = aggregate(output, variants, args.rounds, cohort, args)
+        failures += candidate_api_summary(output,comparisons,args,cohort)
+        legacy_failures=None
+        if args.legacy or (output/'legacy-source-inventory.json').exists() or any(output.glob('legacy-*-r*.json')):
+            legacy_variants=['original','candidate',*LEGACY]
+            if args.alex_source or (output/'legacy-alex-r0.json').exists(): legacy_variants.append('alex')
+            _,legacy_failures=legacy_summary(output,legacy_variants,args.rounds,args)
+            failures += legacy_failures
+        report(output, comparisons, failures, args, legacy_failures); return 1 if failures else 0
     if (output/'source-inventory.json').exists(): parser.error('Output already contains a run; use a fresh directory to preserve evidence')
-    env = dict(os.environ, DOTNET_TieredCompilation='0', DOTNET_ReadyToRun='0', DOTNET_CLI_TELEMETRY_OPTOUT='1', DOTNET_NOLOGO='1', DOTNET_SKIP_FIRST_TIME_EXPERIENCE='1')
-    env.setdefault('DOTNET_CLI_HOME',str(output/'dotnet-home'))
+    env = runtime_environment(output)
     affinity={'supported':hasattr(os,'sched_setaffinity')}
     if affinity['supported']:
         previous=sorted(os.sched_getaffinity(0))
@@ -282,9 +414,10 @@ def main():
         run([args.dotnet,'build',harness/'Refactor.csproj','-c','Release','--configfile',harness.parent/'NuGet.Config',
             '-p:SourceRoot='+str(snapshot),'-p:RefactorApi='+str(label.startswith('candidate')).lower(),'-p:AdditionalDefineConstants='+('GAMEPLAYTAGS_FORCE_PORTABLE' if label=='candidate_portable' else ''),'-p:BaseIntermediateOutputPath='+str(build/'obj')+'/', '-o',build/'bin'],label+'-build')
         builds[label]=build/'bin/Refactor.dll'
+        run([args.dotnet,'exec',builds[label],'--validation-self-test'],label+'-validation-self-test')
     inventories['harness']={str(p.relative_to(harness.parent)):sha(p) for p in harness.parent.rglob('*') if p.is_file()}
     (output/'source-inventory.json').write_text(json.dumps(inventories,indent=2)+'\n')
-    (output/'environment.json').write_text(json.dumps({'platform':platform.platform(),'machine':platform.machine(),'python':sys.version,'dotnet_sdk_version':sdk_version,'cpu_affinity':affinity,'environment':{k:env[k] for k in ('DOTNET_TieredCompilation','DOTNET_ReadyToRun','DOTNET_CLI_TELEMETRY_OPTOUT')},'command':sys.argv},indent=2)+'\n')
+    (output/'environment.json').write_text(json.dumps({'platform':platform.platform(),'machine':platform.machine(),'python':sys.version,'dotnet_sdk_version':sdk_version,'cpu_affinity':affinity,'environment':{k:env[k] for k in ('DOTNET_gcConcurrent','DOTNET_TieredCompilation','DOTNET_ReadyToRun','DOTNET_CLI_TELEMETRY_OPTOUT')},'command':sys.argv},indent=2)+'\n')
     for round_id in range(args.rounds):
         # Offset and reverse process order across rounds, no concurrent timing processes.
         order=variants[round_id%len(variants):]+variants[:round_id%len(variants)]
@@ -298,9 +431,10 @@ def main():
         for label in ('candidate','candidate_portable') if args.portable else ('candidate',):
             for storage in ('Auto','Sparse','Dense'):
                 run([args.dotnet,'exec',builds[label],output/f'{label}-newapis-{storage}-r{round_id}.json',label,storage,args.suite,args.samples,args.target_ms,'newapis'],f'{label}-newapis-{storage}-r{round_id}',permit_failure=True)
-    comparisons, failures = aggregate(output, variants, args.rounds)
-    failures += candidate_api_summary(output,comparisons,args)
-    summary=report(output,comparisons,failures,args)
+    cohort={}
+    comparisons, failures = aggregate(output, variants, args.rounds, cohort, args)
+    failures += candidate_api_summary(output,comparisons,args,cohort)
+    legacy_failures=None
     if args.legacy:
         # A separate same-input legacy protocol, never mixed into lifecycle comparisons.
         legacy_roots = {label:output/'sources'/label for label in ('original','candidate')}
@@ -334,7 +468,9 @@ def main():
             for name in order:
                 run([args.dotnet,'exec',output/'legacy-build'/name/'bin/Legacy.dll',output/f'legacy-{name}-r{round_id}.json',name,'Auto'],f'legacy-{name}-r{round_id}')
         (output/'legacy-source-inventory.json').write_text(json.dumps(legacy_manifest,indent=2)+'\n')
-        legacy_summary(output,legacy_order,args.rounds)
+        _,legacy_failures=legacy_summary(output,legacy_order,args.rounds,args)
+        failures += legacy_failures
+    summary=report(output,comparisons,failures,args,legacy_failures)
     print(json.dumps({m:{k:v for k,v in s.items() if k!='worst'} for m,s in summary['layouts'].items()},indent=2))
     return 1 if failures else 0
 if __name__=='__main__': raise SystemExit(main())

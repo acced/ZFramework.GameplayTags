@@ -29,7 +29,7 @@ def main():
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--dotnet',default='dotnet');ap.add_argument('--output',type=Path,required=True)
     args=ap.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
-    env=dict(os.environ,DOTNET_CLI_TELEMETRY_OPTOUT='1',DOTNET_NOLOGO='1',DOTNET_TieredCompilation='0')
+    env=dict(os.environ,DOTNET_gcConcurrent='0',DOTNET_CLI_TELEMETRY_OPTOUT='1',DOTNET_NOLOGO='1',DOTNET_TieredCompilation='0')
     results=[]
     def run(cmd,log,cwd=ROOT,extra=None):
         result=subprocess.run(list(map(str,cmd)),cwd=cwd,env=dict(env,**(extra or {})),text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
@@ -48,22 +48,24 @@ def main():
     runtime=[ROOT/'Runtime/**/*.cs'];facade=ROOT/'Audit~/UnityStubs.cs'
     integer=build('IntegerTests',runtime+[ROOT/'Editor/**/*.cs',ROOT/'Samples~/**/*.cs',facade,ROOT/'Audit~/IntegerTests.cs',ROOT/'Audit~/IntegerTestSupport.cs'])
     execute(integer,'integer-hardware',[out/'integer-hardware']);execute(integer,'integer-nohw',[out/'integer-nohw'],{'DOTNET_EnableHWIntrinsic':'0'})
-    for label,source in [('RefactorTests',HERE/'RuntimeRefactorTests.cs'),('DenseTests',HERE/'DenseKernelTests.cs')]:
+    for label,source in [('RefactorTests',HERE/'RuntimeRefactorTests.cs'),('DenseTests',HERE/'DenseKernelTests.cs'),('PackedTests',HERE/'PackedKernelTests.cs')]:
         dll=build(label,runtime+[facade,source],name='GameplayTags.Tests')
-        execute(dll,label+'-hardware',[out/(label+'-hardware'+('.json' if label.startswith('Dense') else ''))]);execute(dll,label+'-nohw',[out/(label+'-nohw'+('.json' if label.startswith('Dense') else ''))],{'DOTNET_EnableHWIntrinsic':'0'})
+        execute(dll,label+'-hardware',[out/(label+'-hardware'+('.json' if label.startswith(('Dense','Packed')) else ''))]);execute(dll,label+'-nohw',[out/(label+'-nohw'+('.json' if label.startswith(('Dense','Packed')) else ''))],{'DOTNET_EnableHWIntrinsic':'0'})
     # Compile the shipped fallback as an actual Standard 2.1 library, then execute
     # independent public-API and kernel tests against that binary from a net8 host.
     portable=build('RuntimePortable',runtime+[facade],framework='netstandard2.1',executable=False,name='GameplayTags')
-    for label,source in [('RefactorPortableTests',HERE/'RuntimeRefactorTests.cs'),('DensePortableTests',HERE/'DenseKernelTests.cs')]:
-        dll=build(label,[source],references=[portable],name='GameplayTags.Tests')
-        execute(dll,label,[out/(label+('.json' if label.startswith('Dense') else ''))])
+    for label,source in [('RefactorPortableTests',HERE/'RuntimeRefactorTests.cs'),('DensePortableTests',HERE/'DenseKernelTests.cs'),('PackedPortableTests',HERE/'PackedKernelTests.cs')]:
+        dll=build(label,[source],references=[portable],name='GameplayTags.Tests',defines='GAMEPLAYTAGS_EXPECT_PORTABLE_RUNTIME')
+        execute(dll,label,[out/(label+('.json' if label.startswith(('Dense','Packed')) else ''))])
     forced=build('DenseForcedTests',runtime+[facade,HERE/'DenseKernelTests.cs'],name='GameplayTags.Tests',defines='GAMEPLAYTAGS_FORCE_PORTABLE')
     execute(forced,'dense-forced-portable')
+    forced_packed=build('PackedForcedTests',runtime+[facade,HERE/'PackedKernelTests.cs'],name='GameplayTags.Tests',defines='GAMEPLAYTAGS_FORCE_PORTABLE')
+    execute(forced_packed,'packed-forced-portable',[out/'packed-forced-portable.json'])
     host=out/'assembly-checks';host.mkdir(exist_ok=True)
     for name in ('UnityStubs.cs','NativeTestStubs.cs','NuGet.Config'):shutil.copy2(ROOT/'Audit~'/name,host/name)
     docs=compile_documentation(ROOT,host,integer,args.dotnet,run)
     assemblies=compile_split_assemblies(ROOT,host,args.dotnet,run)
-    summary={'package':package,'executed_managed_suites':results,'documentation':docs,'assemblies':assemblies,
+    summary={'measurement_gc_concurrent':'0','package':package,'executed_managed_suites':results,'documentation':docs,'assemblies':assemblies,
              'native_unity':'not_executed','native_il2cpp':'not_executed','release_approved':False}
     (out/'verification.json').write_text(json.dumps(summary,indent=2)+'\n')
     print('VERIFICATION PASS: managed only; native release gates remain open',flush=True)

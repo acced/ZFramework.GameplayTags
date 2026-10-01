@@ -18,7 +18,7 @@ internal static class IntegerTests
     private static object sink;
     private static readonly List<object> results = new List<object>();
     private static readonly string[] Domain = { "A", "A.B", "A.B.C", "A!x", "A-x", "Z" };
-    private static readonly TagSetStorage[] Modes = { TagSetStorage.Sparse, TagSetStorage.Dense };
+    private static readonly TagSetStorage[] Modes = { TagSetStorage.Sparse, TagSetStorage.Dense, TagSetStorage.Compressed };
     private static void Check(bool value, string message = "assertion") { assertions++; if (!value) throw new Exception(message); }
     private static void Throws<T>(Action action) where T : Exception
     { assertions++; try { action(); } catch (T) { return; } throw new Exception("Expected " + typeof(T).Name); }
@@ -163,7 +163,7 @@ internal static class IntegerTests
                         case 2:
                         case 3:
                             string[] subset = names.Where(_ => random.Next(12) == 0).ToArray();
-                            var other = Set(registry, subset, Modes[random.Next(2)]);
+                            var other = Set(registry, subset, Modes[random.Next(Modes.Length)]);
                             if ((i & 1) == 0) { set.AppendTags(other); reference.UnionWith(subset); }
                             else { set.RemoveTags(other); reference.ExceptWith(subset); }
                             break;

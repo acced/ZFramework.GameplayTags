@@ -26,7 +26,7 @@ internal static class RuntimeBenchmarks
     static object sink;
     static int checksum, assertions, failures, samples = 11;
     static string variant, suite = "full";
-    static bool onlyNewApis;
+    static bool onlyNewApis, validationSelfTest;
     static TagSetStorage mode;
     static double targetMs = 1.0;
     static void Check(bool value, string message) { assertions++; if (!value) throw new InvalidOperationException(message); }
@@ -100,7 +100,7 @@ internal static class RuntimeBenchmarks
         f.work = new Set(registry, Math.Min(registry.Count, n + m), mode);
         Verify(f.a, x); Verify(f.b, y); return f;
     }
-    static void Measure(string stage, string operation, Fixture f, Func<int, int> body, Action verify,
+    static void Measure(string stage, string operation, Fixture f, Func<int, int> body, Action verify, Action<int, int> validateActual,
         int units = 1, bool expectZero = false, object detail = null, int iterationCap = 1 << 20)
     {
         try
@@ -117,22 +117,26 @@ internal static class RuntimeBenchmarks
                 if (elapsedMs >= targetMs || iterations >= limit) break;
                 iterations = Math.Min(limit, iterations * 2);
             }
-            var ns = new double[samples]; var allocated = new double[samples]; var durations = new double[samples]; var gc = new int[samples][];
+            var ns = new double[samples]; var allocated = new double[samples]; var durations = new double[samples]; var gc = new int[samples][]; var returnedValues = new int[samples];
             for (int sample = 0; sample < samples; sample++)
             {
                 int g0 = GC.CollectionCount(0), g1 = GC.CollectionCount(1), g2 = GC.CollectionCount(2);
                 long bytes = GC.GetAllocatedBytesForCurrentThread(), before = Stopwatch.GetTimestamp();
-                checksum ^= body(iterations);
+                int actual = body(iterations); checksum ^= actual;
                 long elapsed = Stopwatch.GetTimestamp() - before;
                 allocated[sample] = (GC.GetAllocatedBytesForCurrentThread() - bytes) / (iterations * (double)units);
                 durations[sample] = elapsed * 1000.0 / Stopwatch.Frequency;
                 ns[sample] = elapsed * (1e9 / Stopwatch.Frequency) / (iterations * (double)units);
                 gc[sample] = new[] { GC.CollectionCount(0) - g0, GC.CollectionCount(1) - g1, GC.CollectionCount(2) - g2 };
+                returnedValues[sample] = actual;
                 if (expectZero) Check(allocated[sample] == 0, "Prepared operation allocated " + allocated[sample] + " bytes/unit");
+                // Validate the final value/object produced by THIS measured batch before any reset,
+                // warmup, new operation, or preflight callback can overwrite it. Not timed/allocated.
+                validateActual(actual, iterations);
             }
             verify(); GC.KeepAlive(sink);
             Rows.Add(new { stage, operation, f.universe, f.leftCount, f.rightCount, f.distribution, f.overlap, f.relation, f.digest,
-                status = "measured", iterations, units, ns, allocated_bytes = allocated, batch_ms = durations, gc_collections = gc,
+                status = "measured", iterations, units, returned_values = returnedValues, timed_output_validated = true, ns, allocated_bytes = allocated, batch_ms = durations, gc_collections = gc,
                 median_ns = Percentile(ns, .5), p95_batch_mean_ns = Percentile(ns, .95), max_batch_mean_ns = ns.Max(),
                 median_allocated_bytes = Percentile(allocated, .5), details = detail ?? f.Detail });
         }
@@ -141,8 +145,50 @@ internal static class RuntimeBenchmarks
             failures++;
             Rows.Add(new { stage, operation, f.universe, f.leftCount, f.rightCount, f.distribution, f.overlap, f.relation, f.digest,
                 status = "failed", error = e.ToString() });
-            Console.WriteLine("FAILED " + operation + " " + f.leftCount + "/" + f.rightCount + ": " + e.Message);
+            Console.WriteLine((validationSelfTest ? "EXPECTED VALIDATION FAILURE " : "FAILED ") + operation + " " + f.leftCount + "/" + f.rightCount + ": " + e.Message);
         }
+    }
+    static void VerifyOrdered(Set set, int[] expected)
+    {
+        Check(set.Count == expected.Length, "Actual timed Count mismatch"); int cursor = 0;
+        foreach (var tag in set)
+            Check(cursor < expected.Length && tag.RuntimeIndex == expected[cursor++], "Actual timed membership/order mismatch");
+        Check(cursor == expected.Length, "Actual timed enumeration length mismatch");
+    }
+    static void VerifyTimedSet(Fixture f, int[] expected, int returned)
+    {
+        var actual = sink as Set;
+        Check(actual != null && ReferenceEquals(actual.Registry, f.registry), "Actual timed result/registry mismatch");
+        Check(!ReferenceEquals(actual, f.a) && !ReferenceEquals(actual, f.b), "Timed output aliases immutable input");
+        Check(returned == expected.Length, "Actual timed returned Count mismatch");
+        VerifyOrdered(actual, expected); VerifyOrdered(f.a, f.x); VerifyOrdered(f.b, f.y);
+    }
+    static void VerifyMutationPreflight(Set set, RuntimeTag tag, int[] expected)
+    {
+        VerifyOrdered(set, expected); Check(!set.HasTagExact(tag), "Mutation precondition");
+        Check(set.AddTag(tag), "Add must return true");
+        Check(set.Count == expected.Length + 1 && set.HasTagExact(tag), "Mutation add intermediate membership");
+        Check(set.RemoveTag(tag), "Remove must return true");
+        Check(set.Count == expected.Length && !set.HasTagExact(tag), "Mutation remove intermediate membership");
+        VerifyOrdered(set, expected);
+    }
+    static void VerifyTimedMutation(Set set, RuntimeTag tag, int[] expected, int returned, int repeats)
+    {
+        Check(returned == 2 * repeats, "Actual timed mutation checksum: add/remove must each succeed");
+        VerifyOrdered(set, expected); Check(!set.HasTagExact(tag), "Actual timed mutation did not restore input");
+    }
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    static int EnumerateLoop(Set set, int repeats)
+    {
+        int total = 0;
+        for (int r = 0; r < repeats; r++)
+        {
+            int hash = 0, count = 0;
+            foreach (var tag in set) { hash ^= tag.RuntimeIndex; count++; }
+            // Odd per-pass checksum cannot cancel to zero for the <=2^20 calibrated repeats.
+            total = unchecked(total + ((hash * 31 + count) | 1));
+        }
+        return total;
     }
     static void Bulk(Fixture f)
     {
@@ -155,6 +201,7 @@ internal static class RuntimeBenchmarks
             Measure("bulk", names[op], f,
                 r => BulkLoop(f, op, r),
                 () => { BulkLoop(f, op, 1); Verify((Set)sink, expected); Verify(f.a, f.x); Verify(f.b, f.y); },
+                (value, repeats) => VerifyTimedSet(f, expected, value),
                 expectZero: op == 1 || op == 3 || op == 5 || op == 7 || op == 8);
         }
     }
@@ -201,17 +248,18 @@ internal static class RuntimeBenchmarks
         foreach (var tag in tags) authoring.AddTag(tag.Name);
         Action verifySink = () => Verify((Set)sink, f.x);
         Measure("prepare", "build.resolved_sorted", f, r => { for (int i = 0; i < r; i++) { var s = new Set(f.registry, tags.Length, mode); foreach (var t in tags) s.AddTag(t); sink = s; } return ((Set)sink).Count; },
-            () => { sink = Input(f.registry, f.x, mode); verifySink(); });
+            () => { sink = Input(f.registry, f.x, mode); verifySink(); }, (value, repeats) => VerifyTimedSet(f, f.x, value));
         Measure("prepare", "build.resolved_reverse", f, r => { for (int i = 0; i < r; i++) { var s = new Set(f.registry, tags.Length, mode); foreach (var t in reversed) s.AddTag(t); sink = s; } return ((Set)sink).Count; },
-            () => { sink = Input(f.registry, f.x.Reverse().ToArray(), mode); verifySink(); });
+            () => { sink = Input(f.registry, f.x.Reverse().ToArray(), mode); verifySink(); }, (value, repeats) => VerifyTimedSet(f, f.x, value));
         Measure("prepare", "convert.authoring", f, r => { for (int i = 0; i < r; i++) sink = authoring.ToRuntime(f.registry, tags.Length, mode); return ((Set)sink).Count; },
-            () => { sink = authoring.ToRuntime(f.registry, tags.Length, mode); verifySink(); });
+            () => { sink = authoring.ToRuntime(f.registry, tags.Length, mode); verifySink(); }, (value, repeats) => VerifyTimedSet(f, f.x, value));
         foreach (TagSetStorage sourceMode in new[] { TagSetStorage.Sparse, TagSetStorage.Dense })
         {
             Set source = Input(f.registry, f.x, sourceMode);
             Measure("conversion", "convert." + sourceMode + "_to_requested", f,
                 r => { for (int i = 0; i < r; i++) { var s = new Set(f.registry, f.leftCount, mode); s.CopyFrom(source); sink = s; } return ((Set)sink).Count; },
                 () => { var s = new Set(f.registry, f.leftCount, mode); s.CopyFrom(source); sink = s; verifySink(); },
+                (value, repeats) => { VerifyTimedSet(f, f.x, value); VerifyOrdered(source, f.x); },
                 detail: new { sourceStorage = source.Storage.ToString(), targetRequested = mode.ToString(), sourceBufferBytes = source.BufferBytes });
         }
         int[] missing = leaves.Except(f.x).Take(128).ToArray();
@@ -222,40 +270,71 @@ internal static class RuntimeBenchmarks
         foreach (var entry in new[] { ("exact.mixed", mixed, false), ("exact.hits", hits, false), ("exact.misses", misses, false), ("hierarchy.mixed_parent", parentMixed, true) })
         {
             var item = entry;
-            int expected = item.Item2.Count(t => item.Item3 ? f.x.Any(id => f.registry.GetTagAt(id).MatchesTag(t)) : f.x.Contains(t.RuntimeIndex));
+            bool[] expectedProbes = item.Item2.Select(t => item.Item3 ? f.x.Any(id => f.registry.GetTagAt(id).MatchesTag(t)) : f.x.Contains(t.RuntimeIndex)).ToArray();
+            int expected = expectedProbes.Count(value => value);
             Measure("lookup", item.Item1, f, r => ProbeLoop(f.a, item.Item2, item.Item3, r),
-                () => Check(ProbeLoop(f.a, item.Item2, item.Item3, 1) == expected, "Probe mismatch"), 256, true);
+                () => { for (int i = 0; i < item.Item2.Length; i++) Check((item.Item3 ? f.a.HasTag(item.Item2[i]) : f.a.HasTagExact(item.Item2[i])) == expectedProbes[i], "Individual probe mismatch"); },
+                (value, repeats) => { Check(value == expected * repeats, "Actual timed probe checksum"); VerifyOrdered(f.a, f.x); }, 256, true);
         }
         var query = Query(tags.Select(t => t.Name).ToArray()); var frozen = query.Freeze(f.registry);
         bool queryExpected = tags.Length != 0;
         Measure("query", "query.freeze", f, r => { for (int i = 0; i < r; i++) sink = query.Freeze(f.registry); return ((FrozenGameplayTagQuery)sink).NodeCount; },
-            () => Check(query.Freeze(f.registry).Matches(f.a) == queryExpected, "Frozen query mismatch"));
+            () => Check(query.Freeze(f.registry).Matches(f.a) == queryExpected, "Frozen query mismatch"),
+            (value, repeats) => { var actual = (FrozenGameplayTagQuery)sink; Check(ReferenceEquals(actual.Registry, f.registry) && actual.Matches(f.a) == queryExpected && actual.NodeCount == value, "Actual frozen query result"); });
         Measure("query", "query.matches", f, r => { int sum = 0; for (int i = 0; i < r; i++) sum += frozen.Matches(f.a) ? 1 : 0; return sum; },
-            () => Check(frozen.Matches(f.a) == queryExpected, "Frozen query mismatch"), expectZero: true);
+            () => Check(frozen.Matches(f.a) == queryExpected, "Frozen query mismatch"),
+            (value, repeats) => { Check(value == (queryExpected ? repeats : 0), "Actual timed frozen query checksum"); VerifyOrdered(f.a, f.x); }, expectZero: true);
         var absentExpression = GameplayTagQueryExpression.AnyTagsMatch();
         foreach (int id in missing.Take(8)) absentExpression.AddTag(GameplayTagManager.RequestTag(f.registry.GetTagAt(id).Name));
         var absent = new GameplayTagQuery(absentExpression).Freeze(f.registry);
         Measure("query", "query.matches_miss", f, r => { int sum = 0; for (int i = 0; i < r; i++) sum += absent.Matches(f.a) ? 1 : 0; return sum; },
-            () => Check(!absent.Matches(f.a), "Absent frozen query mismatch"), expectZero: true);
+            () => Check(!absent.Matches(f.a), "Absent frozen query mismatch"),
+            (value, repeats) => { Check(value == 0, "Actual timed absent query checksum"); VerifyOrdered(f.a, f.x); }, expectZero: true);
         var presentExpression = GameplayTagQueryExpression.AnyTagsMatch();
         foreach (var t in tags.Take(4)) presentExpression.AddTag(GameplayTagManager.RequestTag(t.Name));
         var excludedExpression = GameplayTagQueryExpression.NoTagsMatch();
         foreach (int id in missing.Take(4)) excludedExpression.AddTag(GameplayTagManager.RequestTag(f.registry.GetTagAt(id).Name));
         var nested = new GameplayTagQuery(GameplayTagQueryExpression.AllExpressionsMatch().AddExpression(presentExpression).AddExpression(excludedExpression)).Freeze(f.registry);
         Measure("query", "query.matches_nested", f, r => { int sum = 0; for (int i = 0; i < r; i++) sum += nested.Matches(f.a) ? 1 : 0; return sum; },
-            () => Check(nested.Matches(f.a) == queryExpected, "Nested frozen query mismatch"), expectZero: true,
+            () => Check(nested.Matches(f.a) == queryExpected, "Nested frozen query mismatch"),
+            (value, repeats) => { Check(value == (queryExpected ? repeats : 0), "Actual timed nested query checksum"); VerifyOrdered(f.a, f.x); }, expectZero: true,
             detail: new { nodeCount = nested.NodeCount, rangeCount = nested.RangeCount });
+        int[] parentIds = f.y.Select(id => f.registry.GetTagAt(id).GetDirectParent().RuntimeIndex).Distinct().OrderBy(id => id).ToArray();
+        var parentMembership = new HashSet<int>(parentIds);
+        int[] filteredExpected = f.x.Where(id => parentMembership.Contains(f.registry.GetTagAt(id).GetDirectParent().RuntimeIndex)).ToArray();
+        Set conditions = Input(f.registry, parentIds, mode);
+        Set filtered = new Set(f.registry, f.leftCount, mode);
+        Measure("hierarchy", "hierarchy.filter_into", f,
+            r => { for (int i = 0; i < r; i++) f.a.FilterInto(conditions, filtered); sink = filtered; return filtered.Count; },
+            () => { f.a.FilterInto(conditions, filtered); Verify(filtered, filteredExpected); Verify(f.a, f.x); Verify(conditions, parentIds); },
+            (value, repeats) => { VerifyTimedSet(f, filteredExpected, value); VerifyOrdered(conditions, parentIds); }, expectZero: true,
+            detail: new { conditionCount = conditions.Count, conditionStorage = conditions.Storage.ToString(), outputStorage = filtered.Storage.ToString(),
+                outputBufferBytes = filtered.BufferBytes, expectedCount = filteredExpected.Length, conditions = "direct parents of right operand leaves" });
+        Measure("hierarchy", "hierarchy.filter_alias", f,
+            r => { for (int i = 0; i < r; i++) { filtered.CopyFrom(f.a); filtered.FilterInto(conditions, filtered); } sink = filtered; return filtered.Count; },
+            () => { filtered.CopyFrom(f.a); filtered.FilterInto(conditions, filtered); Verify(filtered, filteredExpected); Verify(f.a, f.x); Verify(conditions, parentIds); },
+            (value, repeats) => { VerifyTimedSet(f, filteredExpected, value); VerifyOrdered(conditions, parentIds); }, expectZero: true,
+            detail: new { conditionCount = conditions.Count, conditionStorage = conditions.Storage.ToString(), outputStorage = filtered.Storage.ToString(),
+                outputBufferBytes = filtered.BufferBytes, expectedCount = filteredExpected.Length, resetIncluded = "CopyFrom left" });
         RuntimeTag mutate = f.registry.GetTagAt(missing[0]);
         Set mutable = Input(f.registry, f.x, mode, f.x.Length + 1);
         Measure("mutation", "mutation.add_remove", f, r => { int sum = 0; for (int i = 0; i < r; i++) { if (mutable.AddTag(mutate)) sum++; if (mutable.RemoveTag(mutate)) sum++; } return sum; },
-            () => { Verify(mutable, f.x); Check(!mutable.HasTagExact(mutate), "Mutation reset"); }, expectZero: true);
-        Measure("enumeration", "enumerate", f, r => { int sum = 0; for (int i = 0; i < r; i++) foreach (var t in f.a) sum ^= t.RuntimeIndex; return sum; },
-            () => Verify(f.a, f.x), expectZero: true);
+            () => VerifyMutationPreflight(mutable, mutate, f.x),
+            (value, repeats) => VerifyTimedMutation(mutable, mutate, f.x, value, repeats), expectZero: true);
+        int enumerationHash = 0; foreach (int id in f.x) enumerationHash ^= id;
+        enumerationHash = (enumerationHash * 31 + f.x.Length) | 1;
+        Measure("enumeration", "enumerate", f, r => EnumerateLoop(f.a, r),
+            () => Verify(f.a, f.x),
+            (value, repeats) => { Check(value == unchecked(enumerationHash * repeats), "Actual timed enumeration checksum"); VerifyOrdered(f.a, f.x); }, expectZero: true);
+        int[] lifecycleExpected = f.x.Except(f.y).ToArray();
+        int lifecycleStepValue = f.x.Union(f.y).Count() + 3 * f.x.Intersect(f.y).Count() + 5 * lifecycleExpected.Length
+            + mixed.Take(32).Count(t => f.x.Contains(t.RuntimeIndex)) + (queryExpected ? 1 : 0);
         foreach (int horizon in new[] { 1, 32 })
         {
             int h = horizon;
             Measure("lifecycle", "lifecycle.build_bulk_query.h" + h, f, r => Lifecycle(f, tags, rightTags, frozen, mixed, h, r),
-                () => { Lifecycle(f, tags, rightTags, frozen, mixed, h, 1); Verify((Set)sink, f.x.Except(f.y)); },
+                () => { Lifecycle(f, tags, rightTags, frozen, mixed, h, 1); Verify((Set)sink, lifecycleExpected); },
+                (value, repeats) => { VerifyTimedSet(f, lifecycleExpected, ((Set)sink).Count); Check(value == unchecked(lifecycleStepValue * h * repeats), "Actual timed lifecycle checksum"); },
                 detail: new { buildOperands = 2, reserveDestination = true, horizon = h, perStep = "union_into + intersection_into + copy_remove + 32 exact probes + frozen query", registryBuildExcluded = true });
         }
     }
@@ -270,9 +349,9 @@ internal static class RuntimeBenchmarks
             var work = new Set(f.registry, left.Length + right.Length, mode);
             for (int h = 0; h < horizon; h++)
             {
-                Set.UnionInto(a, b, work); sum ^= work.Count;
-                Set.IntersectionExactInto(a, b, work); sum ^= work.Count;
-                work.CopyFrom(a); work.RemoveTags(b); sum ^= work.Count;
+                Set.UnionInto(a, b, work); sum += work.Count;
+                Set.IntersectionExactInto(a, b, work); sum += 3 * work.Count;
+                work.CopyFrom(a); work.RemoveTags(b); sum += 5 * work.Count;
                 for (int p = 0; p < 32; p++) sum += a.HasTagExact(probes[p]) ? 1 : 0;
                 sum += query.Matches(a) ? 1 : 0;
             }
@@ -292,20 +371,32 @@ internal static class RuntimeBenchmarks
             var item = input;
             Measure("candidate_only", "build.FromTags." + item.Item1, f,
                 r => { for (int i = 0; i < r; i++) sink = Set.FromTags(f.registry, item.Item2, item.Item2.Length, mode); return ((Set)sink).Count; },
-                () => Verify(Set.FromTags(f.registry, item.Item2, item.Item2.Length, mode), f.x));
+                () => Verify(Set.FromTags(f.registry, item.Item2, item.Item2.Length, mode), f.x),
+                (value, repeats) => VerifyTimedSet(f, f.x, value));
         }
         Measure("candidate_only", "difference.direct_new", f,
             r => { for (int i = 0; i < r; i++) sink = Set.DifferenceExact(f.a, f.b, mode); return ((Set)sink).Count; },
-            () => Verify(Set.DifferenceExact(f.a, f.b, mode), expected));
+            () => Verify(Set.DifferenceExact(f.a, f.b, mode), expected),
+            (value, repeats) => VerifyTimedSet(f, expected, value));
         Measure("candidate_only", "difference.direct_into", f,
             r => { for (int i = 0; i < r; i++) Set.DifferenceExactInto(f.a, f.b, f.work); sink = f.work; return f.work.Count; },
-            () => { Set.DifferenceExactInto(f.a, f.b, f.work); Verify(f.work, expected); Verify(f.a, f.x); Verify(f.b, f.y); }, expectZero: true);
+            () => { Set.DifferenceExactInto(f.a, f.b, f.work); Verify(f.work, expected); Verify(f.a, f.x); Verify(f.b, f.y); },
+            (value, repeats) => VerifyTimedSet(f, expected, value), expectZero: true);
+        int exactUnionCapacity = f.x.Union(f.y).Count();
+        Set rightAlias = Input(f.registry, f.y, mode, exactUnionCapacity);
+        Measure("candidate_only", "difference.right_alias_prepared", f,
+            r => { for (int i = 0; i < r; i++) { rightAlias.CopyFrom(f.b); Set.DifferenceExactInto(f.a, rightAlias, rightAlias); } sink = rightAlias; return rightAlias.Count; },
+            () => { rightAlias.CopyFrom(f.b); Set.DifferenceExactInto(f.a, rightAlias, rightAlias); Verify(rightAlias, expected); Verify(f.a, f.x); Verify(f.b, f.y); },
+            (value, repeats) => VerifyTimedSet(f, expected, value), expectZero: true,
+            detail: new { exactUnionCapacity, actualCapacity = rightAlias.Capacity, rightStorage = rightAlias.Storage.ToString(),
+                rightBufferBytes = rightAlias.BufferBytes, resetIncluded = "CopyFrom original right", preparationExcluded = "initial independent target plus exact union reservation" });
         foreach (TagSetStorage sourceMode in new[] { TagSetStorage.Sparse, TagSetStorage.Dense })
         {
             Set source = Input(f.registry, f.x, sourceMode);
             Measure("candidate_only", "conversion.ToStorage.from_" + sourceMode, f,
                 r => { for (int i = 0; i < r; i++) sink = source.ToStorage(mode); return ((Set)sink).Count; },
                 () => { Set result = source.ToStorage(mode); Verify(result, f.x); result.Clear(); Verify(source, f.x); },
+                (value, repeats) => { VerifyTimedSet(f, f.x, value); VerifyOrdered(source, f.x); },
                 detail: new { sourceStorage = sourceMode.ToString(), targetRequested = mode.ToString() });
         }
         CandidateOnlyRows.AddRange(Rows.Skip(start)); Rows.RemoveRange(start, Rows.Count - start);
@@ -315,7 +406,9 @@ internal static class RuntimeBenchmarks
     {
         Measure("registry", "registry.create." + order, f,
             r => { for (int i = 0; i < r; i++) sink = TagRegistry.Create(settings); return ((TagRegistry)sink).Count; },
-            () => Check(TagRegistry.Create(settings).Count == f.registry.Count, "Registry count mismatch"), iterationCap: 1,
+            () => Check(TagRegistry.Create(settings).Count == f.registry.Count, "Registry count mismatch"),
+            (value, repeats) => { var actual = (TagRegistry)sink; Check(actual.Count == f.registry.Count && value == actual.Count, "Actual timed registry Count mismatch");
+                foreach (int index in new[] { 0, actual.Count / 2, actual.Count - 1 }) if (index >= 0 && index < actual.Count) Check(actual.GetTagAt(index).Name == f.registry.GetTagAt(index).Name, "Actual timed registry name mismatch"); }, iterationCap: 1,
             detail: new { includes = "validation, hierarchy construction, registry tables, authoring-tag cache", excludes = "pre-existing settings and strings", actualRegistryCount = f.registry.Count });
     }
     static void PunctuationConversion()
@@ -331,10 +424,43 @@ internal static class RuntimeBenchmarks
         int inversions = 0, previous = -1; foreach (var tag in authoring) { int next = registry.Resolve(tag.Name).RuntimeIndex; if (next < previous) inversions++; previous = next; }
         Check(inversions > 0, "Adversarial authoring fixture must differ from DFS order");
         Measure("prepare", "convert.authoring.punctuation", f, r => { for (int i = 0; i < r; i++) sink = authoring.ToRuntime(registry, count, mode); return ((Set)sink).Count; },
-            () => Verify(authoring.ToRuntime(registry, count, mode), ids), detail: new { ordinalDescendingTransitions = inversions, note = "Ordinal authoring order inserts a late low-ID half after a high-ID half" });
+            () => Verify(authoring.ToRuntime(registry, count, mode), ids),
+            (value, repeats) => VerifyTimedSet(f, ids, value), detail: new { ordinalDescendingTransitions = inversions, note = "Ordinal authoring order inserts a late low-ID half after a high-ID half" });
+    }
+    static int ValidationSelfTests()
+    {
+        validationSelfTest = true; variant = "validator-control"; mode = TagSetStorage.Sparse; samples = 3; targetMs = .01;
+        string[] names = Names(16); var settings = Settings(names); GameplayTagManager.Initialize(settings, true);
+        var registry = GameplayTagManager.CurrentRegistry; int[] leaves = names.Select(n => registry.Resolve(n).RuntimeIndex).ToArray();
+        var f = CreateFixture(registry, leaves, 2, 2, "contiguous", 50);
+        int before = failures;
+        // A fresh preflight produces the right answer, but the actual timed body returns a wrong empty set.
+        // Calling preflight first during post-verification would incorrectly hide this corruption.
+        Measure("validation", "reject_wrong_timed_output", f,
+            r => { sink = new Set(registry); return 0; },
+            () => { sink = Input(registry, f.x, mode); Verify((Set)sink, f.x); },
+            (value, repeats) => VerifyTimedSet(f, f.x, value));
+        Check(failures == before + 1, "Validator accepted wrong actual timed output");
+        RuntimeTag extra = registry.GetTagAt(leaves[leaves.Length - 1]); var mutable = Input(registry, f.x, mode, f.x.Length + 1);
+        Measure("validation", "reject_noop_timed_mutation", f, r => 0,
+            () => VerifyMutationPreflight(mutable, extra, f.x),
+            (value, repeats) => VerifyTimedMutation(mutable, extra, f.x, value, repeats), expectZero: true);
+        Check(failures == before + 2, "Validator accepted no-op timed mutation");
+        Measure("validation", "reject_wrong_timed_probe_checksum", f, r => 0,
+            () => Check(f.a.HasTagExact(registry.GetTagAt(f.x[0])), "Probe preflight"),
+            (value, repeats) => Check(value == repeats, "Actual timed probe checksum"), expectZero: true);
+        Check(failures == before + 3, "Validator accepted wrong timed checksum");
+        Measure("validation", "accept_correct_timed_output", f,
+            r => { for (int i = 0; i < r; i++) f.work.CopyFrom(f.a); sink = f.work; return f.work.Count; },
+            () => { f.work.CopyFrom(f.a); Verify(f.work, f.x); },
+            (value, repeats) => VerifyTimedSet(f, f.x, value), expectZero: true);
+        Check(failures == before + 3, "Validator rejected the correct positive control");
+        Console.WriteLine("VALIDATION SELF-TEST PASS: three injected faults rejected and positive control accepted");
+        return 0;
     }
     static int Main(string[] args)
     {
+        if (args.Length == 1 && args[0] == "--validation-self-test") return ValidationSelfTests();
         if (args.Length < 3) throw new ArgumentException("output.json variant Auto|Sparse|Dense [smoke|full] [samples] [target-ms]");
         variant = args[1]; mode = (TagSetStorage)Enum.Parse(typeof(TagSetStorage), args[2]);
         if (args.Length > 3) suite = args[3]; if (args.Length > 4) samples = int.Parse(args[4]); if (args.Length > 5) targetMs = double.Parse(args[5], CultureInfo.InvariantCulture);
@@ -387,10 +513,12 @@ internal static class RuntimeBenchmarks
         if (!onlyNewApis) PunctuationConversion();
         var result = new { variant, requestedStorage = mode.ToString(), suite, onlyNewApis, samples, targetMs, seed = Seed, assertions, failures, checksum,
             utc = DateTime.UtcNow.ToString("O"), runtime = RuntimeInformation.FrameworkDescription, architecture = RuntimeInformation.ProcessArchitecture.ToString(),
-            os = RuntimeInformation.OSDescription, stopwatchFrequency = Stopwatch.Frequency, processorCount = Environment.ProcessorCount, portableKernelsForced = PortableKernelsForced, avx2Available = System.Runtime.Intrinsics.X86.Avx2.IsSupported, popcntAvailable = System.Runtime.Intrinsics.X86.Popcnt.X64.IsSupported, rows = Rows, candidate_only_rows = CandidateOnlyRows,
-            protocol = "Independent fresh processes per variant/mode/round. Calibration targets milliseconds with 8 MiB allocation budget per batch. All raw samples and GC counts retained. Timing units are operations except 256-probe loops reported per probe. No GC-forcing inside timed bodies.",
+            gcLatencyMode = System.Runtime.GCSettings.LatencyMode.ToString(), gcConcurrent = Environment.GetEnvironmentVariable("DOTNET_gcConcurrent"), serverGC = System.Runtime.GCSettings.IsServerGC,
+            os = RuntimeInformation.OSDescription, stopwatchFrequency = Stopwatch.Frequency, processorCount = Environment.ProcessorCount, portableKernelsForced = PortableKernelsForced, vectorHardwareAccelerated = System.Numerics.Vector.IsHardwareAccelerated, vectorIntWidth = System.Numerics.Vector<int>.Count,
+            portable_backend_scope = "Forced portable disables explicit dense intrinsics only; System.Numerics.Vector query paths and CoreCLR/BCL SIMD can remain active. Availability is host capability, not proof a particular path executed.", avx2Available = System.Runtime.Intrinsics.X86.Avx2.IsSupported, popcntAvailable = System.Runtime.Intrinsics.X86.Popcnt.X64.IsSupported, rows = Rows, candidate_only_rows = CandidateOnlyRows,
+            validation_protocol = "actual-timed-output-before-reset-v2", protocol = "Independent fresh processes per variant/mode/round. Calibration targets milliseconds with 8 MiB allocation budget per batch. All raw samples and GC counts retained. Timing units are operations except 256-probe loops reported per probe. No GC-forcing inside timed bodies.",
             tails = "p95/max describe calibrated batch-mean latency across samples, NOT individual-operation latency and NOT independent-process confidence intervals.",
-            limitations = "CoreCLR managed Linux host only. No Unity/Mono, IL2CPP, Burst, ARM64, native peak memory, user telemetry, or universal fastest claim. Member buffers exclude object headers/shared registry; cumulative allocation is not retained memory. Dense/sparse layout conversion uses public new+CopyFrom, including destination allocation." };
+            limitations = "CoreCLR managed host only; measured architecture is recorded above. No Unity/Mono, IL2CPP, Burst, physical-mobile execution, native peak memory, user telemetry, cross-architecture inference, or universal fastest claim. Member buffers exclude object headers/shared registry; cumulative allocation is not retained memory. Dense/sparse layout conversion uses public new+CopyFrom, including destination allocation." };
         File.WriteAllText(args[0], JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true }));
         Console.WriteLine("BENCH " + variant + " " + mode + " rows=" + Rows.Count + " newApiRows=" + CandidateOnlyRows.Count + " assertions=" + assertions + " failures=" + failures);
         return failures == 0 ? 0 : 1;

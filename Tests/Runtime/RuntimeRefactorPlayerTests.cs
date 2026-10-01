@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ namespace GameplayTags.Runtime.Tests
         private bool m_HadRegistry;
         private TagRegistry m_Registry;
         private static object s_Sink;
-        private static readonly TagSetStorage[] Modes = { TagSetStorage.Sparse, TagSetStorage.Dense };
+        private static readonly TagSetStorage[] Modes = { TagSetStorage.Sparse, TagSetStorage.Dense, TagSetStorage.Compressed };
 
         [SetUp]
         public void SetUp()
@@ -51,6 +52,12 @@ namespace GameplayTags.Runtime.Tests
                 var tags = Handles("Z", "A.B.C", "A!x", "A.B.C");
                 tags[3] = RuntimeTag.None;
                 var source = RuntimeTagSet.FromTags(m_Registry, tags, 0, mode);
+                Assert.AreEqual(3, source.Count);
+                Assert.AreEqual(mode, source.SelectBulkStorage()); // Tiny existing sets do not migrate.
+                var prepared = source.ToStorageForBulk();
+                Assert.IsFalse(ReferenceEquals(prepared, source));
+                Assert.IsTrue(prepared.SetEquals(source));
+                prepared.Clear();
                 Assert.AreEqual(3, source.Count);
                 foreach (var outputMode in Modes)
                 {
@@ -91,6 +98,40 @@ namespace GameplayTags.Runtime.Tests
             }
         }
         [Test]
+        public void PlayerVectorBoundariesAndDirectBulkPreparation()
+        {
+            var settings = ScriptableObject.CreateInstance<GameplayTagSettings>();
+            try
+            {
+                var json = new StringBuilder("{\"m_Sources\":[{\"m_Name\":\"Default\"}],\"m_Tags\":[");
+                for (int i = 0; i < 512; i++)
+                {
+                    if (i != 0) json.Append(',');
+                    json.Append("{\"m_Name\":\"P.T").Append(i.ToString("D3")).Append("\",\"m_Source\":\"Default\"}");
+                }
+                JsonUtility.FromJsonOverwrite(json.Append("]}").ToString(), settings);
+                var registry = TagRegistry.Create(settings);
+                foreach (int count in new[] { 0, 1, 2, 3, 4, 7, 8, 9, 15, 16, 31, 32, 33, 65 })
+                foreach (var mode in Modes)
+                {
+                    var tags = new RuntimeTag[count];
+                    for (int i = 0; i < count; i++) tags[i] = registry.GetTagAt(1 + 2 * i);
+                    var source = RuntimeTagSet.FromTags(registry, tags, 200, mode);
+                    var poison = registry.GetTagAt(registry.Count - 1);
+                    source.AddTag(poison); source.RemoveTag(poison);
+                    for (int id = 0; id < registry.Count; id++)
+                        Assert.AreEqual((id & 1) != 0 && id <= 2 * count - 1, source.HasTagExact(registry.GetTagAt(id)));
+                    Assert.IsFalse(source.HasTagExact(default(RuntimeTag)));
+                    var prepared = source.ToStorageForBulk(200);
+                    Assert.IsFalse(ReferenceEquals(source, prepared));
+                    Assert.IsTrue(source.SetEquals(prepared));
+                    Assert.Greater(prepared.ReservedMemberCapacity, 199);
+                    prepared.Clear(); Assert.AreEqual(count, source.Count);
+                }
+            }
+            finally { UnityEngine.Object.DestroyImmediate(settings); }
+        }
+        [Test]
         public void PlayerDirectDifferencePreparedAllocation()
         {
             long before = GC.GetAllocatedBytesForCurrentThread();
@@ -102,6 +143,7 @@ namespace GameplayTags.Runtime.Tests
                 var left = RuntimeTagSet.FromTags(m_Registry, Handles("A.B.C", "A!x", "Z"), 0, mode);
                 var right = RuntimeTagSet.FromTags(m_Registry, Handles("A.B.C"), 0, mode);
                 var output = new RuntimeTagSet(m_Registry, m_Registry.Count, mode);
+                var rightOutput = new RuntimeTagSet(m_Registry, m_Registry.Count, mode);
                 int checksum = 0;
                 for (int pass = 0; pass < 2; pass++)
                 {
@@ -110,11 +152,14 @@ namespace GameplayTags.Runtime.Tests
                     {
                         RuntimeTagSet.DifferenceExactInto(left, right, output);
                         checksum += output.Count;
+                        rightOutput.CopyFrom(right);
+                        RuntimeTagSet.DifferenceExactInto(left, rightOutput, rightOutput);
+                        checksum += rightOutput.Count;
                     }
                     long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
                     if (pass == 1) Assert.AreEqual(0L, allocated);
                 }
-                Assert.AreEqual(40000, checksum);
+                Assert.AreEqual(80000, checksum);
             }
         }
     }

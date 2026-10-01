@@ -98,6 +98,16 @@ python3 Audit~/integer_audit.py --references artifacts --output artifacts/result
 
 ## 本地运行时重构（未发布）
 
-新增 `RuntimeTagSet.FromTags(registry, handles)` 批量加载已解析句柄、`ToStorage(storage, capacity)` 显式转换，以及 `DifferenceExact` / `DifferenceExactInto` 直接差集 API。差集不是复制后删除的替代计时；右输入兼作输出时，非全 Dense 组合会分配保护性副本。Sparse/Dense 的原始计时合同分别保留。
+新增 `RuntimeTagSet.FromTags(registry, handles)` 批量加载已解析句柄、`ToStorage(storage, capacity)` 显式转换，以及 `DifferenceExact` / `DifferenceExactInto` 直接差集 API。差集不是复制后删除的替代计时；右输入兼作输出时，Sparse 输出会使用自身缓冲区尾部保存排除成员；预留并集成员数容量即可零分配，否则可能扩容。Dense 右别名路径无需临时分配。Sparse/Dense 的原始计时合同分别保留。
 
 .NET 8 的 AVX2/ARM64 优化与 Unity/.NET Standard 2.1 标量实现分开报告。`GAMEPLAYTAGS_FORCE_PORTABLE` 可在托管测试中强制后者；这不等于运行 Unity/IL2CPP。详见 `Documentation~/RUNTIME_INDEX.md` 与 `Audit~/Refactor/`。
+
+### 显式压缩与批量准备
+
+`TagSetStorage.Compressed` 把每个已占用的 16-ID 块压成一个 32 位键/掩码记录，支持最多 2^20 个注册表 ID。集合仍只拥有一份成员数组。`FromTagsForBulk` 在显式分配的加载阶段，按局部性选择压缩记录或稠密位图；小集合保留原有路径。`UnionForBulk` 为新结果选择存储。已有集合不会在查询或修改时隐式转换，准备与转换成本必须纳入端到端测量。
+
+压缩模式的 `RecordCount` / `RecordCapacity` 是物理记录数。`ReservedMemberCapacity` 是任意成员分布的保守预留；同一记录可容纳多个成员。`Capacity` 取当前成员数与保守预留的较大值，因此 Clear 后可能降低，但缓冲区没有缩小。`EnsureCapacity(n)` 为任意 n 个成员的分布预留足够记录。右侧输入同时作为差集输出时，预留左侧的已占用记录数可避免扩容。`BufferBytes` 计算已分配数组容量，不包含对象和数组头。
+
+已有集合可先调用不修改输入的 `SelectBulkStorage()`；存储已合适时，由调用方明确复用输入，否则 `ToStorageForBulk()` 直接生成独立转换结果，不再导出临时句柄数组，也绝不返回原输入。选择过程在不能根据成员数界限直接判断时仍需扫描，成本计入测量。
+
+批量策略会比较已占用记录数、全局字数和稠密后端宽度，属于显式可选策略，并不保证每种工作负载都快。一次操作的转换、部分混合分布仍可能更慢。小型稀疏查询采用标量与 `System.Numerics.Vector<int>`；`GAMEPLAYTAGS_FORCE_PORTABLE` 关闭显式 .NET 8 稠密指令后端，不代表这个可移植 Vector API 也关闭。真实 Unity/IL2CPP 验证仍需单独执行。
