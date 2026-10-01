@@ -163,7 +163,7 @@ namespace GameplayTags
         }
         public RuntimeTag GetTagAt(int runtimeIndex)
         {
-            if ((uint)runtimeIndex >= (uint)Count) throw new ArgumentOutOfRangeException(nameof(runtimeIndex));
+            if (unchecked((uint)runtimeIndex) >= (uint)Count) throw new ArgumentOutOfRangeException(nameof(runtimeIndex));
             return new RuntimeTag(this, runtimeIndex);
         }
         public bool IsRegistered(string name) => name != null && m_Indices.TryGetValue(name, out int id)

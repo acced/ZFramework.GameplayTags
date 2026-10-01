@@ -14,7 +14,7 @@ ROOT = HERE.parent.parent
 sys.path.insert(0, str(ROOT / 'Audit~'))
 from checks import verify_package, compile_documentation, compile_split_assemblies
 
-def project(path, includes, framework='net8.0', executable=True, references=(), name=None, defines=''):
+def project(path, includes, framework='net8.0', executable=True, references=(), name=None, defines='', checked=False):
     path.parent.mkdir(parents=True, exist_ok=True)
     items=''.join('<Compile Include="'+escape(str(p))+'"/>' for p in includes)
     items+=''.join('<Reference Include="'+escape(p.stem)+'"><HintPath>'+escape(str(p))+'</HintPath></Reference>' for p in references)
@@ -22,23 +22,27 @@ def project(path, includes, framework='net8.0', executable=True, references=(), 
         '<OutputType>'+('Exe' if executable else 'Library')+'</OutputType><LangVersion>9.0</LangVersion>'
         '<EnableDefaultCompileItems>false</EnableDefaultCompileItems><ImplicitUsings>disable</ImplicitUsings>'
         '<Nullable>disable</Nullable><Optimize>true</Optimize><AllowUnsafeBlocks>false</AllowUnsafeBlocks>'
+        '<CheckForOverflowUnderflow>'+str(checked).lower()+'</CheckForOverflowUnderflow>'
         '<AssemblyName>'+(name or path.stem)+'</AssemblyName><DefineConstants>'+defines+'</DefineConstants>'
         '</PropertyGroup><ItemGroup>'+items+'</ItemGroup></Project>')
 
 def main():
     ap=argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--dotnet',default='dotnet');ap.add_argument('--output',type=Path,required=True)
-    args=ap.parse_args();out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
+    args=ap.parse_args();out=args.output.resolve()
+    if out.exists() and (not out.is_dir() or any(out.iterdir())):
+        ap.error('Output must be a new or empty directory; preserve prior verification evidence')
+    out.mkdir(parents=True,exist_ok=True)
     env=dict(os.environ,DOTNET_gcConcurrent='0',DOTNET_CLI_TELEMETRY_OPTOUT='1',DOTNET_NOLOGO='1',DOTNET_TieredCompilation='0')
     results=[]
     def run(cmd,log,cwd=ROOT,extra=None):
         result=subprocess.run(list(map(str,cmd)),cwd=cwd,env=dict(env,**(extra or {})),text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         (out/log).write_text(result.stdout);print(result.stdout,flush=True)
         if result.returncode: raise RuntimeError(log+' failed: '+str(result.returncode))
-    def build(folder,includes,framework='net8.0',executable=True,references=(),name=None,defines=''):
+    def build(folder,includes,framework='net8.0',executable=True,references=(),name=None,defines='',checked=False):
         path=out/folder;path.mkdir(parents=True,exist_ok=True)
         shutil.copy2(ROOT/'Audit~/NuGet.Config',path/'NuGet.Config')
-        proj=path/(folder+'.csproj');project(proj,includes,framework,executable,references,name,defines)
+        proj=path/(folder+'.csproj');project(proj,includes,framework,executable,references,name,defines,checked)
         run([args.dotnet,'build',proj,'-c','Release','-o',path/'bin'],folder+'-build.log',path)
         return path/'bin'/((name or folder)+'.dll')
     def execute(dll,label,arguments=(),extra=None):
@@ -57,6 +61,14 @@ def main():
     for label,source in [('RefactorPortableTests',HERE/'RuntimeRefactorTests.cs'),('DensePortableTests',HERE/'DenseKernelTests.cs'),('PackedPortableTests',HERE/'PackedKernelTests.cs')]:
         dll=build(label,[source],references=[portable],name='GameplayTags.Tests',defines='GAMEPLAYTAGS_EXPECT_PORTABLE_RUNTIME')
         execute(dll,label,[out/(label+('.json' if label.startswith(('Dense','Packed')) else ''))])
+    # Check arithmetic in the production library independently of the test oracle.
+    # Hosts stay unchecked; negative guards and bit-level wraparound are Runtime concerns.
+    for suffix,framework,expectation in [('Net8','net8.0',''),('Standard','netstandard2.1',';GAMEPLAYTAGS_EXPECT_PORTABLE_RUNTIME')]:
+        library=build('RuntimeChecked'+suffix,runtime+[facade],framework=framework,executable=False,name='GameplayTags',checked=True)
+        label='RefactorChecked'+suffix+'Tests'
+        dll=build(label,[HERE/'RuntimeRefactorTests.cs'],references=[library],name='GameplayTags.Tests',
+            defines='GAMEPLAYTAGS_EXPECT_CHECKED_RUNTIME'+expectation,checked=False)
+        execute(dll,label,[out/label])
     forced=build('DenseForcedTests',runtime+[facade,HERE/'DenseKernelTests.cs'],name='GameplayTags.Tests',defines='GAMEPLAYTAGS_FORCE_PORTABLE')
     execute(forced,'dense-forced-portable')
     forced_packed=build('PackedForcedTests',runtime+[facade,HERE/'PackedKernelTests.cs'],name='GameplayTags.Tests',defines='GAMEPLAYTAGS_FORCE_PORTABLE')

@@ -651,6 +651,77 @@ internal static class RuntimeRefactorTests
             Throws<ArgumentOutOfRangeException>(() => RuntimeTagSet.FromTagsForBulk(registry, tags, -1));
         }
     }
+    private static void LongBulkAdmissionAndFallback()
+    {
+        var foreign = Registry(2);
+        int backendWidth = 1;
+#if NET8_0_OR_GREATER && !GAMEPLAYTAGS_FORCE_PORTABLE && !GAMEPLAYTAGS_EXPECT_PORTABLE_RUNTIME
+        if (System.Runtime.Intrinsics.X86.Avx2.IsSupported) backendWidth = 4;
+        else if (System.Runtime.Intrinsics.Arm.AdvSimd.Arm64.IsSupported) backendWidth = 2;
+#endif
+        foreach (int universe in new[] { 0, 1, 65, 4097 })
+        {
+            var registry = Registry(universe);
+            foreach (int count in new[] { 0, 1, 63, 64, 65, 128 })
+            {
+                if (count > universe) continue;
+                foreach (bool scattered in new[] { false, true }) foreach (bool reverse in new[] { false, true })
+                {
+                    var members = SetOf(); var tags = new RuntimeTag[Math.Max(8193, universe + 4096)];
+                    int stride = scattered ? Math.Max(1, universe / Math.Max(1, count)) : 1;
+                    for (int i = 0; i < count; i++)
+                    {
+                        int id = i * stride; members.Add(id);
+                        // Long default padding plus repeated real handles forces actual-count
+                        // admission; raw length is deliberately larger than the entire registry.
+                        tags[i * 4 + 1] = registry.GetTagAt(id); tags[i * 4 + 2] = registry.GetTagAt(id);
+                    }
+                    if (reverse) Array.Reverse(tags);
+                    int records = OccupiedRecords(members), words = (universe + 63) / 64;
+                    TagSetStorage expected = count < 64 ? TagSetStorage.Sparse
+                        : records * 4 <= count ? (words <= backendWidth * records ? TagSetStorage.Dense : TagSetStorage.Compressed)
+                        : words <= 2 * count ? TagSetStorage.Dense : TagSetStorage.Sparse;
+                    foreach (int reservation in new[] { 0, 1, count, universe, int.MaxValue })
+                    {
+                        var result = RuntimeTagSet.FromTagsForBulk(registry, tags, reservation);
+                        Same(result, members, "long bulk default/duplicate actual membership"); PackedBufferInvariant(result);
+                        Check(result.Storage == expected, "long bulk raw input length must not change exact selector");
+                        Check(result.ReservedMemberCapacity >= Math.Min(reservation, universe), "long bulk fallback preserves requested reservation");
+                        var copy = new RuntimeTagSet(result); result.Clear(); Same(copy, members, "long bulk independent copy");
+                    }
+                    // A foreign handle after all valid/default/duplicate entries must still
+                    // fail, including zero-member and early-disorder fallback inputs.
+                    tags[tags.Length - 1] = foreign.GetTagAt(1);
+                    Throws<ArgumentException>(() => RuntimeTagSet.FromTagsForBulk(registry, tags));
+                    if (universe > 1)
+                    {
+                        tags[0] = registry.GetTagAt(1); tags[1] = registry.GetTagAt(0);
+                        Throws<ArgumentException>(() => RuntimeTagSet.FromTagsForBulk(registry, tags));
+                    }
+                    Throws<ArgumentOutOfRangeException>(() => RuntimeTagSet.FromTagsForBulk(registry, tags, -1));
+                }
+            }
+        }
+        // At U=2^20+1 this raw length also reaches the narrow-dense speculation
+        // condition for a scalar backend. Actual members must still enforce format limits.
+        var over = SyntheticNumericRegistry((1 << 20) + 1);
+        foreach (int count in new[] { 64, 10000 })
+        {
+            var members = Range(over.Count, 1, over.Count - count);
+            var tags = new RuntimeTag[262160]; int write = 0;
+            foreach (int id in members) { tags[write++] = over.GetTagAt(id); tags[write++] = over.GetTagAt(id); }
+            foreach (bool reverse in new[] { false, true })
+            {
+                if (reverse) Array.Reverse(tags);
+                var result = RuntimeTagSet.FromTagsForBulk(over, tags, 65);
+                Same(result, members, "long above-format bulk actual membership"); PackedBufferInvariant(result);
+                Check(result.Storage == (count == 64 ? TagSetStorage.Sparse : TagSetStorage.Dense), "long above-format bulk exact fallback");
+                Check(result.ReservedMemberCapacity >= 65, "long above-format fallback reservation");
+            }
+            tags[tags.Length - 1] = foreign.GetTagAt(1);
+            Throws<ArgumentException>(() => RuntimeTagSet.FromTagsForBulk(over, tags));
+        }
+    }
     private static object MemberBuffer(RuntimeTagSet value)
     {
         const BindingFlags fields = BindingFlags.Instance | BindingFlags.NonPublic;
@@ -1015,6 +1086,70 @@ internal static class RuntimeRefactorTests
             }
         }
     }
+    private static void CheckedRegistryIndexAdmission()
+    {
+        foreach (int count in new[] { 0, 1, 129 })
+        {
+            var registry = Registry(count);
+            foreach (int index in new[] { -1, int.MinValue, count, int.MaxValue })
+                Throws<ArgumentOutOfRangeException>(() => registry.GetTagAt(index));
+            if (count != 0) Check(registry.GetTagAt(count - 1).RuntimeIndex == count - 1, "last valid registry index");
+        }
+    }
+    private static void CheckedPackedLowerMiss()
+    {
+        var registry = Registry(257);
+        foreach (var members in new[] { SetOf(64), SetOf(64, 80, 96), SetOf(64, 96, 256) })
+        {
+            var value = Set(registry, members, TagSetStorage.Compressed);
+            for (int id = 0; id < 64; id++)
+            {
+                Check(!value.HasTagExact(registry.GetTagAt(id)), "compressed earlier block is a miss under checked arithmetic");
+                Check(!value.HasTag(registry.GetTagAt(id)), "compressed earlier flat subtree is a miss");
+                Check(!value.RemoveTag(registry.GetTagAt(id)), "compressed earlier removal is a miss");
+            }
+            Same(value, members, "checked lower misses preserve members");
+        }
+    }
+    private static void CheckedIteratorTermination(TagSetStorage mode, bool records)
+    {
+        var registry = Registry(257);
+        Type iterator = typeof(RuntimeTagSet).GetNestedType(records ? "RecordEnumerator" : "IdEnumerator", BindingFlags.NonPublic);
+        var ctor = iterator.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null,
+            new[] { typeof(RuntimeTagSet), typeof(bool) }, null);
+        var move = iterator.GetMethod("MoveNext", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        var current = iterator.GetProperty("Current", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+        foreach (var members in new[] { SetOf(), SetOf(0), SetOf(0, 15, 16, 63, 64, 127, 128, 256) })
+        foreach (bool reverse in new[] { false, true })
+        {
+            var source = Set(registry, members, mode);
+            var expected = new List<int>();
+            if (records)
+            {
+                var masks = new SortedDictionary<int,int>();
+                foreach (int id in members) { int block = id / 16; masks.TryGetValue(block, out int mask); masks[block] = mask | (1 << (id % 16)); }
+                foreach (var pair in masks) expected.Add(unchecked((pair.Key << 16) ^ int.MinValue) | pair.Value);
+            }
+            else { expected.AddRange(members); expected.Sort(); }
+            if (reverse) expected.Reverse();
+            object cursor = ctor.Invoke(new object[] { source, reverse });
+            foreach (int item in expected)
+            {
+                Check((bool)move.Invoke(cursor, null), "checked iterator has next value");
+                Check((int)current.GetValue(cursor) == item, "checked iterator mathematical sequence");
+            }
+            Check(!(bool)move.Invoke(cursor, null), "checked iterator terminates normally");
+            Check(!(bool)move.Invoke(cursor, null), "checked iterator remains terminated");
+            Same(source, members, "checked iterator source remains unchanged");
+        }
+    }
+    private static void CheckedReversePublicAliases()
+    {
+        var registry = Registry(257);
+        Pair(registry, SetOf(0, 32, 64, 128, 256), SetOf(0, 1, 63, 65, 127), true);
+        Pair(registry, Range(129, 2), Range(130, 2, 1), true);
+        RightAliasPreservation();
+    }
     private static int Main(string[] args)
     {
         bool aliasOnly = args.Length > 1 && args[1] == "right-alias-only";
@@ -1022,7 +1157,8 @@ internal static class RuntimeRefactorTests
         bool mixedOnly = args.Length > 1 && args[1] == "mixed-large-only";
         bool policyOnly = args.Length > 1 && args[1] == "bulk-policy-only";
         bool rangesOnly = args.Length > 1 && args[1] == "packed-ranges-only";
-        if (!aliasOnly && !packedOnly && !mixedOnly && !policyOnly && !rangesOnly)
+        bool checkedOnly = args.Length > 1 && args[1] == "checked-runtime-only";
+        if (!aliasOnly && !packedOnly && !mixedOnly && !policyOnly && !rangesOnly && !checkedOnly)
         {
         Test("independent-exhaustive-random-skew-word-boundary-operators", DifferenceAndSkew);
         Test("explicit-conversion-resolved-loading-and-authoring-aliases", ConversionAndLoading);
@@ -1031,24 +1167,36 @@ internal static class RuntimeRefactorTests
         Test("shuffled-definitions-prefix-reuse-and-canonical-dfs", RegistryPrefixReuse);
         Test("reserved-zero-allocation-and-right-alias-boundary", ReservedAllocationContract);
         }
-        if (!packedOnly && !mixedOnly && !policyOnly && !rangesOnly) Test("right-alias-union-capacity-preservation-and-growth", RightAliasPreservation);
-        if (!aliasOnly && !mixedOnly && !policyOnly && !rangesOnly)
+        if (!packedOnly && !mixedOnly && !policyOnly && !rangesOnly && !checkedOnly) Test("right-alias-union-capacity-preservation-and-growth", RightAliasPreservation);
+        if (!aliasOnly && !mixedOnly && !policyOnly && !rangesOnly && !checkedOnly)
         {
             Test("compressed-16-id-biased-boundaries-and-synthetic-format-limit", PackedBoundariesAndFormatLimit);
             Test("explicit-bulk-preparation-policy-ownership-and-format-fallback", BulkPreparationPolicyAndOwnership);
             Test("compressed-hierarchy-and-frozen-query-oracles-zero-allocation", PackedHierarchyQueriesAndAllocation);
             Test("ordered-bulk-defaults-duplicates-late-foreign-and-capacity-boundaries", OrderedBulkValidationAndReservations);
+            Test("long-bulk-defaults-duplicates-admission-and-exact-selector-fallback", LongBulkAdmissionAndFallback);
         }
-        if (!aliasOnly && !packedOnly && !policyOnly && !rangesOnly) Test("large-dense-packed-and-tiny-skew-alias-oracles-zero-allocation", LargeMixedAndTinySkew);
-        if (!aliasOnly && !packedOnly && !mixedOnly && !rangesOnly)
+        if (!aliasOnly && !packedOnly && !policyOnly && !rangesOnly && !checkedOnly) Test("large-dense-packed-and-tiny-skew-alias-oracles-zero-allocation", LargeMixedAndTinySkew);
+        if (!aliasOnly && !packedOnly && !mixedOnly && !rangesOnly && !checkedOnly)
         {
             Test("bulk-selector-purity-independent-direct-conversion-capacity-and-format", BulkSelectionAndDirectConversion);
             Test("compact-query-boundaries-stale-tails-and-empty-registry-admission", CompactQueriesAndEmptyAdmission);
         }
-        if (!aliasOnly && !packedOnly && !mixedOnly && !policyOnly)
+        if (!aliasOnly && !packedOnly && !mixedOnly && !policyOnly && !checkedOnly)
         {
             Test("shifted-packed-range-and-direct-sparse-aliases-exact-capacity", ShiftedPackedRangesAndCapacity);
             Test("packed-arithmetic-lookup-gaps-sign-boundaries-and-quarter-selector", PackedLookupGapsSignBoundaryAndQuarters);
+        }
+        if (!aliasOnly && !packedOnly && !mixedOnly && !policyOnly && !rangesOnly)
+        {
+            Test("checked-runtime-negative-registry-index-admission", CheckedRegistryIndexAdmission);
+            Test("checked-runtime-compressed-lower-bound-misses", CheckedPackedLowerMiss);
+            foreach (TagSetStorage mode in Modes)
+            {
+                Test("checked-runtime-id-iterator-termination-" + mode, () => CheckedIteratorTermination(mode, false));
+                Test("checked-runtime-record-iterator-termination-" + mode, () => CheckedIteratorTermination(mode, true));
+            }
+            Test("checked-runtime-public-reverse-alias-termination", CheckedReversePublicAliases);
         }
         var report = new { seed = Seed, assertions, pairs, failures, kernelFlavor = KernelFlavor, runtime = RuntimeInformation.FrameworkDescription,
             architecture = RuntimeInformation.ProcessArchitecture.ToString(), sink, results,
@@ -1057,6 +1205,11 @@ internal static class RuntimeRefactorTests
             hardwareIntrinsicsDisabled = Environment.GetEnvironmentVariable("DOTNET_EnableHWIntrinsic") == "0",
             vectorIntCount = System.Numerics.Vector<int>.Count, vectorHardwareAccelerated = System.Numerics.Vector.IsHardwareAccelerated,
             denseWordsPerPackedRecord = RuntimeBitOperations.DenseWordsPerPackedRecord,
+#if GAMEPLAYTAGS_EXPECT_CHECKED_RUNTIME
+            expectedRuntimeCheckedArithmetic = true,
+#else
+            expectedRuntimeCheckedArithmetic = false,
+#endif
             native_unity_executed = false, note = "Independent HashSet and string-prefix oracles with explicit Unity API facades. Does not validate native Unity, IL2CPP, or ARM64." };
         if (args.Length != 0)
         { Directory.CreateDirectory(args[0]); File.WriteAllText(Path.Combine(args[0], "runtime-refactor-tests.json"), JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true })); }

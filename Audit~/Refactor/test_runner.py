@@ -2,6 +2,8 @@
 import copy
 import json
 from pathlib import Path
+import shutil
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -397,5 +399,76 @@ class ReportIntegrityTests(unittest.TestCase):
             self.assertEqual(summary['gcLatencyMode'],'Batch')
             self.assertEqual(summary['gcConcurrent'],'0')
             self.assertEqual(summary['legacy_gc_metadata'],{'source':'runner_environment_only','gcConcurrent':'0','gcLatencyMode':'not_recorded_by_legacy_harness'})
+
+class SourceAttributionTests(unittest.TestCase):
+    @staticmethod
+    def git(root,*args):
+        return subprocess.check_output(['git','-c','user.name=Attribution Test','-c','user.email=attribution@example.invalid',
+            '-c','commit.gpgsign=false','-c','core.hooksPath=/dev/null',*args],cwd=root,stderr=subprocess.DEVNULL).decode().strip()
+    def fixture(self,root):
+        self.git(root,'init','-q')
+        (root/'Runtime/Nested').mkdir(parents=True)
+        (root/'Runtime/Set.cs').write_text('original bytes\n')
+        (root/'Runtime/Nested/Set.cs.meta').write_text('original metadata\n')
+        self.git(root,'add','Runtime');self.git(root,'commit','-qm','Original fixture')
+        return self.git(root,'rev-parse','HEAD')
+    @staticmethod
+    def snapshot(root,destination):
+        shutil.copytree(root/'Runtime',destination/'Runtime')
+        return destination
+    def test_clean_checkout_proves_exact_runtime_tree(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);head=self.fixture(root);snapshot=self.snapshot(root,root/'frozen')
+            result=run.source_attribution(root,snapshot)
+            self.assertEqual(result['enclosing_checkout_head'],head)
+            self.assertEqual(result['proven_runtime_commit'],head)
+            self.assertEqual(result['proven_runtime_tree'],self.git(root,'rev-parse','HEAD:Runtime'))
+            self.assertTrue(result['source_root_is_checkout_root'])
+            self.assertEqual(result['source_attribution_protocol'],'exact-runtime-tree-v1')
+            self.assertNotIn('git_head',result)
+    def test_nested_archive_proves_baseline_not_enclosing_head(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);baseline=self.fixture(root);archive=self.snapshot(root,root/'archived-original')
+            (root/'Runtime/Set.cs').write_text('current bytes\n');self.git(root,'add','Runtime');self.git(root,'commit','-qm','Current fixture')
+            head=self.git(root,'rev-parse','HEAD');snapshot=self.snapshot(archive,root/'frozen')
+            result=run.source_attribution(archive,snapshot,(baseline,))
+            self.assertEqual(result['enclosing_checkout_root'],str(root.resolve()))
+            self.assertEqual(result['enclosing_checkout_head'],head)
+            self.assertEqual(result['proven_runtime_commit'],baseline)
+            self.assertNotEqual(result['proven_runtime_commit'],head)
+            self.assertFalse(result['source_root_is_checkout_root'])
+            unproven=run.source_attribution(archive,snapshot)
+            self.assertIsNone(unproven['proven_runtime_commit'])
+    def test_dirty_missing_or_extra_runtime_files_are_not_attributed(self):
+        for change in ('changed','missing','extra'):
+            with self.subTest(change=change),tempfile.TemporaryDirectory() as temp:
+                root=Path(temp);head=self.fixture(root);snapshot=self.snapshot(root,root/'frozen')
+                if change=='changed':(snapshot/'Runtime/Set.cs').write_text('dirty bytes\n')
+                elif change=='missing':(snapshot/'Runtime/Nested/Set.cs.meta').unlink()
+                else:(snapshot/'Runtime/Extra.cs').write_text('untracked input\n')
+                result=run.source_attribution(root,snapshot,(head,))
+                self.assertEqual(result['enclosing_checkout_head'],head)
+                self.assertIsNone(result['proven_runtime_commit'])
+                self.assertIsNone(result['proven_runtime_tree'])
+    def test_frozen_bytes_are_checked_instead_of_current_working_copy(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);head=self.fixture(root);snapshot=self.snapshot(root,root/'frozen')
+            (root/'Runtime/Set.cs').write_text('changed after freezing\n')
+            result=run.source_attribution(root,snapshot)
+            self.assertEqual(result['proven_runtime_commit'],head)
+            current=self.snapshot(root,root/'current-frozen')
+            self.assertIsNone(run.source_attribution(root,current)['proven_runtime_commit'])
+    def test_missing_candidate_ref_cannot_supply_provenance(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);head=self.fixture(root);snapshot=self.snapshot(root,root/'frozen')
+            result=run.source_attribution(root,snapshot,('missing-ref-for-test',))
+            self.assertEqual(result['proven_runtime_commit'],head)
+            self.assertEqual(result['runtime_commit_candidates_checked'],[head])
+    def test_source_outside_git_remains_snapshot_only(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);(root/'Runtime').mkdir();(root/'Runtime/Set.cs').write_text('no git\n')
+            snapshot=self.snapshot(root,root/'frozen');result=run.source_attribution(root,snapshot)
+            self.assertIsNone(result['enclosing_checkout_root']);self.assertIsNone(result['enclosing_checkout_head'])
+            self.assertIsNone(result['proven_runtime_commit']);self.assertIsNone(result['proven_runtime_tree'])
 
 if __name__=='__main__': unittest.main()

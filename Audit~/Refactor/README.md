@@ -53,3 +53,7 @@ Allocated bytes are cumulative managed allocation on the current thread, not ret
 ## Scope and acceptance limits
 
 These are managed CoreCLR/Linux measurements, not Unity, Mono, IL2CPP, Burst or physical-mobile evidence. The current machine's architecture is captured; another architecture must be run separately. No universal fastest layout, production-policy fit, or shipping approval is implied by a geometric/median summary. Inspect operation groups, original/candidate absolute ns, allocations and worst rows; keep regressions visible. A finite synthetic matrix is not a probability model of real gameplay traffic.
+
+## Checked production libraries
+
+The managed verifier additionally compiles Runtime with `CheckForOverflowUnderflow=true` as both a net8 library and a real netstandard2.1 library, then executes the public API oracle against those binaries. The oracle hosts remain unchecked so deliberate checksum wraparound does not obscure production behavior. Negative index guards, reverse enumeration, low-ID packed misses and mixed-layout alias filters are covered. Ordinary-build method IL is unchanged by the explicit reinterpretation/truncation annotations. Verification outputs must use a new empty directory, preserving earlier failed evidence.

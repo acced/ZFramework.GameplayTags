@@ -189,7 +189,7 @@ namespace GameplayTags
             if (length == 0) return false;
             int first = RecordBase(m_Ids[0]) >> 4, last = RecordBase(m_Ids[length - 1]) >> 4;
             int offset = (id >> 4) - first;
-            if ((uint)offset > (uint)(last - first)) return false;
+            if (unchecked((uint)offset) > (uint)(last - first)) return false;
             // Sorted unique keys occupy every block iff their endpoint distance is length-1.
             // This derives a direct index without a directory, cache, or extra object field.
             int index = last - first + 1 == length ? offset : FindPackedBinary(PackedKey(id));
@@ -269,20 +269,20 @@ namespace GameplayTags
             {
                 if (kind == 2)
                 {
-                    if ((uint)cursor >= (uint)length) return false;
+                    if (unchecked((uint)cursor) >= (uint)length) return false;
                     Current = ids[cursor]; cursor += reverse ? -1 : 1; return true;
                 }
                 if (kind == 0)
                 {
-                    if ((uint)cursor >= (uint)length) return false;
+                    if (unchecked((uint)cursor) >= (uint)length) return false;
                     int id = ids[cursor], key = PackedKey(id), mask = 0;
                     do { mask |= 1 << (ids[cursor] & 15); cursor += reverse ? -1 : 1; }
-                    while ((uint)cursor < (uint)length && PackedKey(ids[cursor]) == key);
+                    while (unchecked((uint)cursor) < (uint)length && PackedKey(ids[cursor]) == key);
                     Current = key | mask; return true;
                 }
                 while (remaining == 0)
                 {
-                    if ((uint)cursor >= (uint)length) return false;
+                    if (unchecked((uint)cursor) >= (uint)length) return false;
                     remaining = words[cursor];
                     if (remaining == 0) cursor += reverse ? -1 : 1;
                 }
@@ -547,7 +547,7 @@ namespace GameplayTags
             for (int i = 0; i < length; i++)
             {
                 int record = records[i], start = RecordBase(record);
-                int condition = (int)(dense.m_Words[start >> 6] >> (start & 63));
+                int condition = unchecked((int)(dense.m_Words[start >> 6] >> (start & 63)));
                 int bits = record & (difference ? ~condition : condition) & PackedMask;
                 if (bits == 0) continue;
                 int kept = RecordKey(record) | bits;

@@ -25,12 +25,68 @@ ALEX_CORE = ['BinarySearchUtility.cs','GameplayTag.cs','GameplayTagAttribute.cs'
 KEYS = ('stage', 'operation', 'universe', 'leftCount', 'rightCount', 'distribution', 'overlap', 'relation')
 BENCHMARK_SEED = 20261001
 LEGACY_SEED = 20260920
+ORIGINAL_BASELINE_COMMIT = '0587201567aa21edb60055acf5028faf8d659b39'
 
 def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 def inventory(root):
     return {str(p.relative_to(root)): sha(p) for p in sorted(root.rglob('*')) if p.is_file()}
+
+def source_attribution(root, snapshot, candidate_refs=()):
+    """Prove frozen Runtime bytes against a commit, independently of the enclosing checkout.
+
+    Archives nested in a checkout inherit its `git rev-parse HEAD`; that is checkout
+    context only. A Runtime commit is reported only after the complete frozen path
+    inventory and every Git blob match. This does not attribute the whole repository
+    or the separately frozen benchmark harness to that commit.
+    """
+    root = root.resolve()
+    result = {'source_attribution_protocol':'exact-runtime-tree-v1',
+        'enclosing_checkout_root':None, 'enclosing_checkout_head':None,
+        'source_root_is_checkout_root':False, 'proven_runtime_commit':None,
+        'proven_runtime_tree':None, 'runtime_commit_candidates_checked':[],
+        'attribution_scope':'Complete frozen Runtime/ file paths and bytes only; benchmark harness is attributed separately'}
+    def git(*args):
+        return subprocess.check_output(['git',*args],cwd=root,stderr=subprocess.DEVNULL)
+    try:
+        checkout = Path(os.fsdecode(git('rev-parse','--show-toplevel')).strip()).resolve()
+        head = git('rev-parse','--verify','HEAD^{commit}').decode().strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return result
+    result.update(enclosing_checkout_root=str(checkout), enclosing_checkout_head=head,
+        source_root_is_checkout_root=root == checkout)
+    frozen = {p.relative_to(snapshot).as_posix():p.read_bytes()
+        for p in sorted((snapshot/'Runtime').rglob('*')) if p.is_file()}
+    checked = set()
+    for ref in (*candidate_refs,head):
+        try:
+            commit = git('rev-parse','--verify',ref+'^{commit}').decode().strip()
+            if commit in checked: continue
+            checked.add(commit); result['runtime_commit_candidates_checked'].append(commit)
+            records = git('ls-tree','-r','-z','--full-tree',commit,'--','Runtime').split(b'\0')
+            expected = {}
+            for entry in records:
+                if not entry: continue
+                header, path = entry.split(b'\t',1)
+                _, kind, object_id = header.decode().split()
+                if kind != 'blob': break
+                expected[os.fsdecode(path)] = object_id
+            else:
+                if not expected or expected.keys() != frozen.keys(): continue
+                matches = True
+                for path, object_id in expected.items():
+                    data = frozen[path]
+                    algorithm = 'sha1' if len(object_id) == 40 else 'sha256' if len(object_id) == 64 else None
+                    if algorithm is None or hashlib.new(algorithm,('blob '+str(len(data))+'\0').encode()+data).hexdigest() != object_id:
+                        matches = False; break
+                if matches:
+                    result['proven_runtime_commit'] = commit
+                    result['proven_runtime_tree'] = git('rev-parse',commit+':Runtime').decode().strip()
+                    break
+        except subprocess.CalledProcessError:
+            continue
+    return result
 
 def key(row):
     return tuple(row[k] for k in KEYS)
@@ -407,9 +463,8 @@ def main():
     for label, root in source_labels:
         snapshot=output/'sources'/label; snapshot.mkdir(parents=True)
         shutil.copytree((output/'sources/candidate' if label=='candidate_portable' else root)/'Runtime',snapshot/'Runtime')
-        try: commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()
-        except subprocess.CalledProcessError: commit='unknown'
-        inventories[label]={'root':str(root),'git_head':commit,'snapshot_files':inventory(snapshot)}
+        attribution=source_attribution(root,snapshot,(ORIGINAL_BASELINE_COMMIT,) if label=='original' else ())
+        inventories[label]={'root':str(root),**attribution,'snapshot_files':inventory(snapshot)}
         build=output/'build'/label;build.mkdir(parents=True)
         run([args.dotnet,'build',harness/'Refactor.csproj','-c','Release','--configfile',harness.parent/'NuGet.Config',
             '-p:SourceRoot='+str(snapshot),'-p:RefactorApi='+str(label.startswith('candidate')).lower(),'-p:AdditionalDefineConstants='+('GAMEPLAYTAGS_FORCE_PORTABLE' if label=='candidate_portable' else ''),'-p:BaseIntermediateOutputPath='+str(build/'obj')+'/', '-o',build/'bin'],label+'-build')

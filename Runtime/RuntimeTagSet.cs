@@ -1045,7 +1045,7 @@ namespace GameplayTags
                     while (m_Bits == 0)
                     {
                         m_Cursor += m_Reverse ? -1 : 1;
-                        if ((uint)m_Cursor >= (uint)m_Length) return false;
+                        if (unchecked((uint)m_Cursor) >= (uint)m_Length) return false;
                         m_Bits = (uint)(m_Values[m_Cursor] & PackedMask);
                     }
                     int packedBit = m_Reverse ? Bits.Highest(m_Bits) : Bits.Lowest(m_Bits);
@@ -1056,14 +1056,14 @@ namespace GameplayTags
                 if (m_Values != null)
                 {
                     m_Cursor += m_Reverse ? -1 : 1;
-                    if ((uint)m_Cursor >= (uint)m_Length) return false;
+                    if (unchecked((uint)m_Cursor) >= (uint)m_Length) return false;
                     Current = m_Values[m_Cursor];
                     return true;
                 }
                 while (m_Bits == 0)
                 {
                     m_Cursor += m_Reverse ? -1 : 1;
-                    if ((uint)m_Cursor >= (uint)m_Bitmap.Length) return false;
+                    if (unchecked((uint)m_Cursor) >= (uint)m_Bitmap.Length) return false;
                     m_Bits = m_Bitmap[m_Cursor];
                 }
                 int bit = m_Reverse ? Bits.Highest(m_Bits) : Bits.Lowest(m_Bits);
