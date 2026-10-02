@@ -1,0 +1,31 @@
+name: Untimed work counters for bounded stack cache
+on:
+  push:
+    branches: ['experiment/dense-stack-cache-20261002']
+    paths:
+      - 'Audit~/DenseStackCacheWork/**'
+      - '.github/workflows/dense-stack-cache-work.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  work:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '8.0.425'
+      - name: Build separate instrumented alternatives, validate exact results and work bounds
+        run: python3 'Audit~/DenseStackCacheWork/run.py' structural-work
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dense-stack-cache-untimed-${{ github.run_id }}
+          path: structural-work/
+          retention-days: 30
+          if-no-files-found: error
