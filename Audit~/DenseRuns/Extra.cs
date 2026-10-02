@@ -57,7 +57,7 @@ internal static partial class MixedProbe
             long capacity=reuse.BufferBytes;
             long bytes=GC.GetAllocatedBytesForCurrentThread();reuse.AppendTags(b);
             bytes=GC.GetAllocatedBytesForCurrentThread()-bytes;
-            Check(bytes==0 && reuse.BufferBytes==capacity,"run merge actual-capacity contract");
+            Check(bytes==0 && reuse.BufferBytes==capacity, bytes==0 && reuse.BufferBytes==capacity ? "run merge actual-capacity contract" : $"allocation case nx={nx} ny={ny} shape={shape} bytes={bytes} before={capacity} after={reuse.BufferBytes} expectedRecords={exact}");
             Verify(reuse,union);
             if(union.Length>0){reuse.RemoveTag(registry.GetTagAt(union[0]));Verify(reuse,union.Skip(1));}
             cases++;
