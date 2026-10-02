@@ -1,0 +1,114 @@
+        // Specialized merge of two disjoint sorted runs. No comparator/delegate,
+        // source enumeration, secondary representation, or managed scratch.
+        private static void MergeOwnedRuns(Entry[] values, int middle, int end)
+        {
+            __SCRATCH_INIT__
+            MergeRuns(values, 0, middle, end, scratch);
+        }
+
+        private static void MergeRuns(Entry[] a, int start, int middle, int end, Span<Entry> scratch)
+        {
+            while (start < middle && middle < end)
+            {
+                if ((a[middle - 1] & ~Mask) < (a[middle] & ~Mask)) return;
+                // Proven entire right run precedes left: one rotation suffices.
+                if ((a[end - 1] & ~Mask) < (a[start] & ~Mask))
+                {
+                    RotateRuns(a, start, middle, end);
+                    return;
+                }
+                int left = middle - start, right = end - middle;
+                if (left <= scratch.Length || right <= scratch.Length)
+                {
+                    MergeSmallRun(a, start, middle, end, scratch);
+                    return;
+                }
+                // The larger side is bisected; keys cannot be equal across runs.
+                int x, y;
+                if (left >= right)
+                {
+                    x = start + left / 2;
+                    y = LowerKey(a, middle, end, a[x] & ~Mask);
+                }
+                else
+                {
+                    y = middle + right / 2;
+                    x = LowerKey(a, start, middle, a[y] & ~Mask);
+                }
+                int cut = x + y - middle;
+                RotateRuns(a, x, middle, y);
+                // Recurse on the shorter output, loop over the longer output.
+                // Each recursive frame spans at most half the previous interval.
+                if (cut - start < end - cut)
+                {
+                    MergeRuns(a, start, x, cut, scratch);
+                    start = cut;
+                    middle = y;
+                }
+                else
+                {
+                    MergeRuns(a, cut, y, end, scratch);
+                    end = cut;
+                    middle = x;
+                }
+            }
+        }
+
+        private static int LowerKey(Entry[] a, int lo, int hi, Entry key)
+        {
+            while (lo < hi)
+            {
+                int mid = lo + ((hi - lo) >> 1);
+                if ((a[mid] & ~Mask) < key) lo = mid + 1;
+                else hi = mid;
+            }
+            return lo;
+        }
+
+        private static void RotateRuns(Entry[] a, int start, int middle, int end)
+        {
+            if (start == middle || middle == end) return;
+            ReverseRun(a, start, middle);
+            ReverseRun(a, middle, end);
+            ReverseRun(a, start, end);
+        }
+
+        private static void ReverseRun(Entry[] a, int start, int end)
+        {
+            while (start < --end)
+            {
+                Entry value = a[start];
+                a[start++] = a[end];
+                a[end] = value;
+            }
+        }
+
+        private static void MergeSmallRun(Entry[] a, int start, int middle, int end, Span<Entry> scratch)
+        {
+            int left = middle - start, right = end - middle;
+            if (left <= right)
+            {
+                a.AsSpan(start, left).CopyTo(scratch);
+                int i = 0, j = middle, write = start;
+                while (i < left && j < end)
+                {
+                    if ((scratch[i] & ~Mask) < (a[j] & ~Mask)) a[write++] = scratch[i++];
+                    else a[write++] = a[j++];
+                }
+                // Unread right suffix is already correctly placed.
+                scratch.Slice(i, left - i).CopyTo(a.AsSpan(write));
+            }
+            else
+            {
+                a.AsSpan(middle, right).CopyTo(scratch);
+                int i = middle - 1, j = right - 1, write = end - 1;
+                while (i >= start && j >= 0)
+                {
+                    if ((a[i] & ~Mask) > (scratch[j] & ~Mask)) a[write--] = a[i--];
+                    else a[write--] = scratch[j--];
+                }
+                // Unread left prefix is already correctly placed.
+                scratch.Slice(0, j + 1).CopyTo(a.AsSpan(start));
+            }
+        }
+

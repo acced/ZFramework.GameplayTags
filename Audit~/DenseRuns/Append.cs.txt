@@ -1,0 +1,36 @@
+        // Operation entry has established Micro output, Dense input, common registry,
+        // stable source and no shared membership storage. Only the original prefix
+        // participates in membership searches; missing keys are accumulated at tail.
+        private void AppendDenseToMicro(DirectArraySet source)
+        {
+            int original = used, at = 0;
+            var forward = new DenseRecordCursor(source);
+            try
+            {
+                while (forward.MoveNext())
+                {
+                    Entry value = forward.Current, key = value & ~Mask;
+                    while (at < original && (Read(at) & ~Mask) < key) at++;
+                    if (at < original && (Read(at) & ~Mask) == key)
+                    {
+                        Entry before = Read(at);
+                        Write(at++, before | value);
+                        count += Pop(value & ~before & Mask);
+                    }
+                    else
+                    {
+                        // Same insertion-time sizes/number of growth arrays as before.
+                        PutRecord(value);
+                        count += Pop(value & Mask);
+                    }
+                }
+            }
+            finally
+            {
+                // Growth can throw after earlier records were applied. Restore the
+                // ordered invariant before propagating; merging allocates no heap.
+                if (original != 0 && used != original &&
+                    (Read(original - 1) & ~Mask) > (Read(original) & ~Mask))
+                    MergeOwnedRuns(entries, original, used);
+            }
+        }
