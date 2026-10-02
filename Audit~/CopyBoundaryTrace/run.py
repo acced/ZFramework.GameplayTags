@@ -19,8 +19,9 @@ def main():
         z.extractall(src)
     results=src/'results';m=json.loads((results/'manifest.json').read_text());assert m['head']==HEAD
     cpu={'x64':'x86_64','arm64':'aarch64'}[arch];assert m['cpu']==cpu and os.uname().machine==cpu
-    assert subprocess.check_output(['dotnet','--version'],text=True).strip()=='8.0.425'
-    (out/'runtime.txt').write_text(subprocess.check_output(['dotnet','--info'],text=True))
+    (out/'global.json').write_text(json.dumps({'sdk':{'version':'8.0.425','rollForward':'disable'}}))
+    assert subprocess.check_output(['dotnet','--version'],cwd=out,text=True).strip()=='8.0.425'
+    (out/'runtime.txt').write_text(subprocess.check_output(['dotnet','--info'],cwd=out,text=True))
     (out/'cpu.txt').write_text(subprocess.check_output(['lscpu'],text=True))
     env=dict(os.environ,DOTNET_TieredCompilation='0',DOTNET_ReadyToRun='0',DOTNET_NOLOGO='1')
     records=[]
@@ -29,7 +30,7 @@ def main():
         dll=results/job['binary'];assert hashlib.sha256(dll.read_bytes()).hexdigest()==job['sha256']
         asm=out/(n+'.asm')
         variables=dict(env,DOTNET_JitStdOutFile=str(asm),DOTNET_JitDisasm='MixedProbe:CopyCaseLoop *DirectArraySet:CopyCore *DirectArraySet:CopyFrom *DirectArraySet:Clear *DirectArraySet:CopyDenseToMicro *DirectArraySet:CopyDenseGrowing')
-        p=subprocess.run(['dotnet',str(dll),n,'copy',str(out/(n+'-diagnostic.json')),'0'],env=variables,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        p=subprocess.run(['dotnet',str(dll),n,'copy',str(out/(n+'-diagnostic.json')),'0'],cwd=out,env=variables,text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         (out/(n+'-stdout.log')).write_text(p.stdout);assert p.returncode==0,p.stdout
         d=json.loads((out/(n+'-diagnostic.json')).read_text());assert d['runtime']=='.NET 8.0.31' and len(d['rows'])==192
         text=asm.read_text();assert 'MIXED_MEASURED' not in text
