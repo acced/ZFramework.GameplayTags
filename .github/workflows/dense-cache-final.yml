@@ -1,0 +1,40 @@
+name: Finalize cache evidence without mixing experiments
+on:
+  push:
+    branches: ['experiment/dense-cache-20261002']
+    paths: ['Audit~/DenseCacheFinal/**','.github/workflows/dense-cache-final.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Download completed primary, asymmetric and refinement evidence; recheck
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/DenseCacheFinal/collect.py' finalized
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dense-cache-final-source-${{ github.run_id }}
+          path: finalized/deliverable/
+          retention-days: 30
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dense-cache-final-full-${{ github.run_id }}
+          path: |
+            finalized/deliverable/
+            finalized/work/primary-original.zip
+            finalized/work/unequal-reviewed-original.zip
+            finalized/work/counter-original.zip
+            finalized/work/x64-delta-original.zip
+            finalized/work/arm64-delta-original.zip
+          retention-days: 30
+          if-no-files-found: error
