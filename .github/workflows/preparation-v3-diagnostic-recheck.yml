@@ -1,0 +1,94 @@
+name: Verify fixed preparation caller diagnostic
+on:
+  push:
+    branches: ['experiment/preparation-v3-20261002']
+    paths: ['.github/workflows/preparation-v3-diagnostic-recheck.yml']
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  recheck:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Recompute diagnostic and verify its source against measured primary artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          mkdir verified
+          python3 - <<'PY'
+          import csv,hashlib,io,json,math,os,pathlib,re,statistics,subprocess,zipfile
+          out=pathlib.Path('verified')
+          specs={
+              'x64':(11212235180,'9b0125c547a0f7b9f0236128b2be1e8e4acd79212eacf5508f9616d7b1b9f33a',11212075184,'727fd1c57fa1cc26ec263895beefc29f918eeda2fb2b58cd2cf68d39d8483598'),
+              'arm64':(11211817441,'82e9d9f58029bdeb1638d07f4f1423162f70180e3a5d90e4036881235503fd32',11211746754,'3f9455f2c67aff3625697bfbf6a3a52cb2e9c2e9496bdf7c0f0198926c517bdd')}
+          def download(artifact,digest):
+              data=subprocess.check_output(['gh','api',f'/repos/{os.environ["REPO"]}/actions/artifacts/{artifact}/zip'])
+              assert hashlib.sha256(data).hexdigest()==digest
+              return data
+          results={}
+          for cpu,(aid,sha,pid,psha) in specs.items():
+              data=download(aid,sha);(out/(cpu+'-caller-raw.zip')).write_bytes(data)
+              primary=download(pid,psha)
+              with zipfile.ZipFile(io.BytesIO(data)) as z,zipfile.ZipFile(io.BytesIO(primary)) as main:
+                  review=json.loads(z.read('review.json'))
+                  assert review['primary_source']=='db0ffc25448a5df399651550acf627d210482aeb'
+                  assert review['diagnostic_source']=='847a014a51914023bdc54517b2760605645971b7'
+                  count=0
+                  for build,meta in review['manifest'].items():
+                      for path,digest in meta['sources'].items():
+                          assert z.read(path)==main.read('results/'+path)
+                          assert hashlib.sha256(z.read(path)).hexdigest()==digest
+                          count+=1
+                      assert hashlib.sha256(z.read('work/'+build+'/bin/Caller.dll')).hexdigest()==meta['binary_sha256']
+                  groups={};nraw=0
+                  for path in z.namelist():
+                      if not re.fullmatch(r'(runtime|micro)-v[123](AA)?-r[012]\.json',path):continue
+                      doc=json.loads(z.read(path));assert len(doc['rows'])==24 and doc['checks']==68
+                      for row in doc['rows']:
+                          assert row['round']==doc['round'] and row['label']==doc['label']
+                          assert len(row['ns'])==len(row['allocated'])==7
+                          assert all(math.isfinite(n) and n>0 for n in row['ns'])
+                          assert all(n==0 for n in row['allocated'])
+                          key=(row['label'],row['universe'],row['members'],row['scattered'])
+                          roundmap=groups.setdefault(key,{})
+                          assert row['round'] not in roundmap
+                          roundmap[row['round']]=statistics.median(row['ns']);nraw+=1
+                  assert nraw==864
+                  med={k:[rounds[r] for r in range(3)] for k,rounds in groups.items()}
+                  for row in review['rows']:
+                      key=(row['candidate'],row['universe'],row['members'],row['scattered'])
+                      x=med[key];xa=med[(key[0]+'AA',)+key[1:]]
+                      control=key[0].replace('v3',row['control']);y=med[(control,)+key[1:]];ya=med[(control+'AA',)+key[1:]]
+                      assert math.isclose(statistics.median(x),row['candidate_ns'],rel_tol=1e-12)
+                      assert math.isclose(statistics.median(y),row['baseline_ns'],rel_tol=1e-12)
+                      fast=all(max(a,aa)<=.95*min(b,ba) for a,aa,b,ba in zip(x,xa,y,ya))
+                      slow=all(min(a,aa)>1.05*max(b,ba) for a,aa,b,ba in zip(x,xa,y,ya))
+                      stable=all(.95<=a/aa<=1.05 and .95<=b/ba<=1.05 for a,aa,b,ba in zip(x,xa,y,ya))
+                      assert (fast,slow,stable)==(row['faster5'],row['slower5'],row['AAstable'])
+                  calls={}
+                  for family in ('runtime','micro'):
+                      for version in ('v1','v2','v3'):
+                          text=z.read(f'{family}-{version}-codegen.log').decode()
+                          listing=text.split('; Assembly listing for method CallerProbe:ResetLoop')[1]
+                          listing=listing.split('; Assembly listing for method ')[0]
+                          calls[family+'-'+version]=[line.strip() for line in listing.splitlines() if 'ResetFromSortedUnique' in line]
+                  payload=dict(cpu=cpu,primary_source=review['primary_source'],diagnostic_source=review['diagnostic_source'],
+                      archive_sha256=sha,source_files_checked=count,all_generated_sources_identical_to_primary=True,
+                      raw_rows=nraw,samples=nraw*7,all_allocation_samples_zero=True,
+                      summary=review['summary'],codegen=review['codegen'],Reset_calls_in_isolated_caller=calls,
+                      focus=[r for r in review['rows'] if r['universe']==262144 and r['scattered'] and r['members'] in (1,2,8)],
+                      limits='Separate diagnostic workload and host; never splice its timings into primary matrix. No proof of a specific JIT budget cause.')
+                  (out/(cpu+'-recheck.json')).write_text(json.dumps(payload,indent=2))
+                  results[cpu]=payload
+                  print('CALLER_RECHECK '+json.dumps(payload))
+          (out/'验证说明.md').write_text('# 独立 Reset 调用点复核\n\n主计时源码 db0ffc2 不变。补充夹具首次错误使用 Select 导致编译失败，改为 foreach 后在两个平台重新执行成功。此包保存成功运行的原始产物及独立复算；失败日志仍保留在 run36970766344，未被称作通过。\n\n两个平台的生成源码均逐字节对应主实验，所有原始中位数、排名和零分配样本已复算。独立调用点不是主夹具结果的替代品，不能据此认定具体 JIT 预算是全部性能差异的原因。\n')
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: preparation-v3-caller-verified-${{ github.run_id }}
+          path: verified/
+          retention-days: 30
+          if-no-files-found: error
