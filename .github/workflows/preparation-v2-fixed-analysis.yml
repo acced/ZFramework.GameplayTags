@@ -1,0 +1,79 @@
+name: Fixed preparation-v2 analysis
+on:
+  push:
+    branches: ['experiment/preparation-v2-20261002']
+    paths: ['.github/workflows/preparation-v2-fixed-analysis.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  analyze:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Reinspect fixed archives with three-way construction controls
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          mkdir analysis
+          python3 - <<'PY'
+          import csv,hashlib,io,json,os,pathlib,subprocess,zipfile
+          artifacts={
+            'x64':(11210525067,'8bba1ef6bcac7ae37a38bd737e87ce9a016ac586fa9661d1fcbbfd1d9b37dae5'),
+            'arm64':(11210510346,'2a65e10a609bd2acd8c439e4479735b6d505fd4fd892ad4dd4223ec48076553f')}
+          out=pathlib.Path('analysis')
+          dimensions=('stage','label','universe','members','distribution','seed','order','operation','strategy')
+          for cpu,(artifact,digest) in artifacts.items():
+              raw=subprocess.check_output(['gh','api',f'/repos/{os.environ["REPO"]}/actions/artifacts/{artifact}/zip'])
+              assert hashlib.sha256(raw).hexdigest()==digest
+              with zipfile.ZipFile(io.BytesIO(raw)) as z:
+                  review=json.loads(z.read('results/recheck.json'))
+                  assert review['head']=='aae745466fde9bec4e11d986886572be4c6bec2e'
+                  rows=list(csv.DictReader(io.StringIO(z.read('results/All_Results.csv').decode('utf-8-sig'))))
+                  pairs=list(csv.DictReader(io.StringIO(z.read('results/Comparisons.csv').decode('utf-8-sig'))))
+                  data={tuple(r[k] for k in dimensions):r for r in rows}
+                  def find(r,label,strategy):
+                      q=dict(r,label=label,strategy=strategy)
+                      return data[tuple(q[k] for k in dimensions)]
+                  groups={};build=[];convert=[];loops=[]
+                  for p in pairs:
+                      key='/'.join(p[k] for k in ('comparison','label','order','operation'))
+                      g=groups.setdefault(key,dict(cases=0,faster5=0,slower5=0,AAwithin5=0))
+                      g['cases']+=1;g['faster5']+=p['faster5']=='True';g['slower5']+=p['slower5']=='True';g['AAwithin5']+=p['both_AA_within5']=='True'
+                      if p['universe']!='262144':continue
+                      n=int(p['members'])
+                      if p['comparison']=='v2_vs_v1' and p['seed']=='20261002' and p['order'] in ('sorted_unique','shuffled_unique') and ((n in (0,1,8) and p['distribution']=='scattered') or (n==4096 and p['distribution'] in ('contiguous','scattered'))):
+                          old=find(p,p['label'].replace('-v2','-v1'),'bulk');new=find(p,p['label'],'bulk');loop=find(p,p['label'],'loop')
+                          build.append(dict(layout=p['label'],n=n,locality=p['distribution'],order=p['order'],op=p['operation'],
+                            v1_ns=float(old['ns']),v2_ns=float(new['ns']),loop_ns=float(loop['ns']),
+                            v1_B=float(old['bytes']),v2_B=float(new['bytes']),loop_B=float(loop['bytes']),
+                            v2_vs_v1_faster=p['faster5'],v2_vs_v1_slower=p['slower5'],AA=p['both_AA_within5']))
+                      if p['comparison']=='direct_vs_copyfrom' and p['seed']=='20261023' and p['operation'] in ('new_convert','convert_plus_16_unions') and n in (0,8,4096) and p['distribution']==('contiguous' if n==4096 else 'scattered'):
+                          convert.append({k:p[k] for k in ('label','members','order','operation','baseline_ns','candidate_ns','baseline_bytes','candidate_bytes','faster5','slower5','both_AA_within5')})
+                  for r in rows:
+                      if r['stage']!='bench' or not r['label'].endswith('-v2') or r['strategy']!='loop':continue
+                      a=json.loads(r['round_medians']);aa=json.loads(find(r,r['label']+'AA','loop')['round_medians'])
+                      b=json.loads(find(r,r['label'].replace('-v2','-v1'),'loop')['round_medians']);ba=json.loads(find(r,r['label'].replace('-v2','-v1AA'),'loop')['round_medians'])
+                      loops.append(dict(layout=r['label'],order=r['order'],op=r['operation'],n=int(r['members']),
+                        faster=all(max(x,xa)<=.95*min(y,ya) for x,xa,y,ya in zip(a,aa,b,ba)),
+                        slower=all(min(x,xa)>1.05*max(y,ya) for x,xa,y,ya in zip(a,aa,b,ba))))
+                  loop_groups={}
+                  for r in loops:
+                      g=loop_groups.setdefault(r['layout'],dict(cases=0,faster=0,slower=0));g['cases']+=1;g['faster']+=r['faster'];g['slower']+=r['slower']
+                  tests={k:dict(basic=v['basic']['assertions'],extra=v['extra'].get('assertions',0),failures=v['basic']['failures']+v['extra'].get('failures',0)) for k,v in review['tests'].items()}
+                  payload=dict(cpu=cpu,source=review['head'],archive_sha256=digest,groups=groups,three_way_build=build,conversions=convert,
+                    unchanged_loop_controls=loop_groups,AA=review['AA'],tests=tests,
+                    counts={k:review[k] for k in ('rows','raw_rows','timing_samples','zero_allocation_samples')},codegen=review['codegen'],
+                    note='Fixed-data inspection only. No samples deleted, retimed, fitted or promoted. Three-way construction control uses v2 same-binary repeated Add; unchanged-loop cross-version shifts are disclosed separately.')
+                  (out/(cpu+'.json')).write_text(json.dumps(payload,indent=2))
+                  print('V2_SUMMARY '+json.dumps(dict(cpu=cpu,groups=groups,unchanged_loop_controls=loop_groups,counts=payload['counts'],tests=tests)))
+                  print('V2_THREE_WAY '+json.dumps(dict(cpu=cpu,rows=build)))
+                  print('V2_CONVERSION_LIFECYCLE '+json.dumps(dict(cpu=cpu,rows=convert)))
+          (out/'README.txt').write_text('Post-hoc fixed-data summary, not another candidate or new timings. Exact measured source aae745466fde9bec4e11d986886572be4c6bec2e. Full archives and raw samples remain in run36965544514.\n')
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: preparation-v2-fixed-analysis-${{ github.run_id }}
+          path: analysis/
+          if-no-files-found: error
+          retention-days: 30
