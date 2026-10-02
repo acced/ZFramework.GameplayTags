@@ -24,6 +24,18 @@ internal static class CallerProbe
         for (int i = 0; i < repetitions; i++) target.ResetFromSortedUnique(input);
         return target.Count;
     }
+    // Both candidates expose the allocation-free foreach pattern, not IEnumerable<T>.
+    // This untimed assertion helper must not require changing their public interfaces.
+    static bool Matches(Set target, int[] expected)
+    {
+        if (target.Count != expected.Length) return false;
+        int at = 0;
+        foreach (RuntimeTag tag in target)
+        {
+            if (at >= expected.Length || tag.RuntimeIndex != expected[at++]) return false;
+        }
+        return at == expected.Length;
+    }
     static TagRegistry Registry(int leaves)
     {
         var settings = UnityEngine.ScriptableObject.CreateInstance<GameplayTagSettings>();
@@ -44,14 +56,14 @@ internal static class CallerProbe
                 RuntimeTag[] input=ids.Select(registry.GetTagAt).ToArray();
                 var target=new Set(registry,n,(Layout)1);
                 target.ResetFromSortedUnique(input);
-                if(target.Count!=n||!target.Select(t=>t.RuntimeIndex).SequenceEqual(ids))throw new Exception("Incorrect reset");
+                if(!Matches(target,ids))throw new Exception("Incorrect reset");
                 checks++;
                 // Rejected input must leave all old members intact.
                 if(n>0)
                 {
                     var invalid=(RuntimeTag[])input.Clone();invalid[n-1]=default(RuntimeTag);
                     bool threw=false;try{target.ResetFromSortedUnique(invalid);}catch(ArgumentException){threw=true;}
-                    if(!threw||!target.Select(t=>t.RuntimeIndex).SequenceEqual(ids))throw new Exception("Admission failed");
+                    if(!threw||!Matches(target,ids))throw new Exception("Admission failed");
                     checks++;
                 }
                 sink^=ResetLoop(target,input,8192);
@@ -72,7 +84,7 @@ internal static class CallerProbe
                     bytes[s]=GC.GetAllocatedBytesForCurrentThread()-a;
                     if(bytes[s]!=0)throw new Exception("Prepared reset allocated");
                 }
-                if(target.Count!=n||!target.Select(t=>t.RuntimeIndex).SequenceEqual(ids))throw new Exception("Posttiming membership");
+                if(!Matches(target,ids))throw new Exception("Posttiming membership");
                 checks++;
                 rows.Add(new{label,round,universe=u,members=n,scattered,iterations,ns=samples,allocated=bytes});
             }
