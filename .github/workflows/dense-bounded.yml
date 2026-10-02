@@ -1,0 +1,62 @@
+name: First-pass bounded reverse mixed append
+on:
+  push:
+    branches: ['experiment/dense-bounded-20261002']
+    paths:
+      - 'Audit~/DenseBounded/**'
+      - '.github/workflows/dense-bounded.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '8.0.425'
+      - name: Execute unchanged correctness, full public matrix and pair lifecycle
+        run: python3 'Audit~/DenseBounded/run.py' --output artifacts/results --rounds 3
+      - name: Independently reconstruct raw samples, source and A/A
+        run: python3 'Audit~/DenseBounded/review.py' --root artifacts/results
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dense-bounded-${{ matrix.arch }}-${{ github.run_id }}
+          path: artifacts/
+          retention-days: 30
+          if-no-files-found: error
+  collect:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Redownload and repeat archived verification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/DenseBounded/collect.py' reviewed
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dense-bounded-reviewed-${{ github.run_id }}
+          path: reviewed/
+          retention-days: 30
+          if-no-files-found: error
