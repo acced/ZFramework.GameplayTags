@@ -1150,6 +1150,92 @@ internal static class RuntimeRefactorTests
         Pair(registry, Range(129, 2), Range(130, 2, 1), true);
         RightAliasPreservation();
     }
+
+    private static void GappedPackedOperationCapacities()
+    {
+        var registry = SyntheticNumericRegistry(1 << 20);
+        foreach (int first in new[] { 0, (1 << 15) - 40, (1 << 16) - 90 })
+        for (int shape = 0; shape < 4; shape++)
+        {
+            var x = SetOf(); var y = SetOf();
+            for (int n = 0; n < 24; n++)
+            {
+                int blockA = first + n * 3;
+                int blockB = first + n * 3 + (shape == 3 ? 1 : 0);
+                int maskA = n % 3 == 0 ? 0xFFFF : n % 3 == 1 ? 0x5555 : 0x8001;
+                int maskB = shape == 0 ? maskA : shape == 1 ? (~maskA & 0xFFFF) : 0xAAAA;
+                for (int bit = 0; bit < 16; bit++)
+                {
+                    if ((maskA & (1 << bit)) != 0) x.Add(blockA * 16 + bit);
+                    if ((maskB & (1 << bit)) != 0) y.Add(blockB * 16 + bit);
+                }
+            }
+            for (int direction = 0; direction < 2; direction++)
+            {
+                var xm = direction == 0 ? x : y; var ym = direction == 0 ? y : x;
+                var a = Set(registry, xm, TagSetStorage.Compressed, ordered: true);
+                var b = Set(registry, ym, TagSetStorage.Compressed, ordered: true);
+                int upper = OccupiedRecords(Oracle(0, xm, ym));
+                for (int op = 0; op < 3; op++)
+                {
+                    var expected = Oracle(op, xm, ym); int actual = OccupiedRecords(expected);
+                    foreach (int capacity in new HashSet<int> { 0, Math.Max(0, actual - 1), actual,
+                        Math.Min(a.RecordCount, b.RecordCount), a.RecordCount, upper })
+                    {
+                        var output = new RuntimeTagSet(registry, capacity, TagSetStorage.Compressed);
+                        if (capacity > 0) output.AddTag(registry.GetTagAt(registry.Count - 1));
+                        var buffer = MemberBuffer(output); long bytes = output.BufferBytes;
+                        long before = GC.GetAllocatedBytesForCurrentThread();
+                        Operate(op, a, b, output);
+                        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+                        Same(output, expected, "gapped packed actual/insufficient/dispatch boundary"); PackedBufferInvariant(output);
+                        if (capacity >= actual)
+                        {
+                            Check(ReferenceEquals(buffer, MemberBuffer(output)) && bytes == output.BufferBytes, "gapped exact output must retain buffer");
+                            Check(allocated == 0, "gapped prepared independent output must allocate zero");
+                        }
+                    }
+                    foreach (int which in new[] { 0, 1 })
+                    {
+                        var original = which == 0 ? a : b;
+                        var alias = new RuntimeTagSet(registry, upper, TagSetStorage.Compressed);
+                        alias.CopyFrom(original);
+                        var buffer = MemberBuffer(alias);
+                        long before = GC.GetAllocatedBytesForCurrentThread();
+                        if (which == 0) Operate(op, alias, b, alias); else Operate(op, a, alias, alias);
+                        long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+                        Same(alias, expected, "gapped packed alias"); PackedBufferInvariant(alias);
+                        Check(ReferenceEquals(buffer, MemberBuffer(alias)) && allocated == 0, "gapped reserved alias zero allocation");
+                    }
+                }
+                Same(a, xm, "gapped input A unchanged"); Same(b, ym, "gapped input B unchanged");
+            }
+        }
+    }
+    private static void EmptyUnionStaleStateAndRegistry()
+    {
+        var registry = Registry(129); var foreign = Registry(129);
+        foreach (TagSetStorage leftMode in AllModes) foreach (TagSetStorage rightMode in AllModes)
+        foreach (TagSetStorage outMode in AllModes)
+        {
+            var a = new RuntimeTagSet(registry, 0, leftMode); var b = new RuntimeTagSet(registry, 0, rightMode);
+            var output = Set(registry, Range(registry.Count), outMode, registry.Count, true);
+            object buffer = MemberBuffer(output); long bytes = output.BufferBytes;
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            RuntimeTagSet.UnionInto(a, b, output);
+            long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+            Same(output, SetOf(), "empty union replaces stale state");
+            Check(allocated == 0 && bytes == output.BufferBytes && ReferenceEquals(buffer, MemberBuffer(output)), "empty union preserves owned buffer without allocation");
+            Check(output.AddTag(registry.GetTagAt(128)), "empty union permits follow-on mutation");
+            RuntimeTagSet.UnionInto(a, a, output); Same(output, SetOf(), "empty equal inputs replace stale state");
+            Check(output.AddTag(registry.GetTagAt(127)), "empty self union permits follow-on mutation");
+            var wrong = new RuntimeTagSet(foreign, 0, rightMode);
+            Throws<ArgumentException>(() => RuntimeTagSet.UnionInto(a, wrong, output));
+            Same(output, SetOf(127), "foreign empty union fails before clearing output");
+            Throws<ArgumentException>(() => RuntimeTagSet.UnionInto(a, b, wrong));
+        }
+    }
+
     private static int Main(string[] args)
     {
         bool aliasOnly = args.Length > 1 && args[1] == "right-alias-only";
@@ -1198,6 +1284,8 @@ internal static class RuntimeRefactorTests
             }
             Test("checked-runtime-public-reverse-alias-termination", CheckedReversePublicAliases);
         }
+        Test("gapped-packed-operation-specific-capacity-alias-sign-boundaries", GappedPackedOperationCapacities);
+        Test("empty-union-stale-state-ownership-and-registry-precedence", EmptyUnionStaleStateAndRegistry);
         var report = new { seed = Seed, assertions, pairs, failures, kernelFlavor = KernelFlavor, runtime = RuntimeInformation.FrameworkDescription,
             architecture = RuntimeInformation.ProcessArchitecture.ToString(), sink, results,
             gcMode = Environment.GetEnvironmentVariable("DOTNET_gcConcurrent") == "0" ? "BatchGC" : "Unspecified",

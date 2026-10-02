@@ -474,7 +474,15 @@ namespace GameplayTags
                 right.m_Count <= 64 && (long)right.m_Count * 32 <= left.m_Count && !ReferenceEquals(result, right))
             { if (!ReferenceEquals(result, left)) result.CopyFrom(left); result.RemovePackedAware(right); return; }
             if (left.m_PackedUsed >= 0 && right.m_PackedUsed >= 0 && result.m_PackedUsed >= 0)
-            { BinaryPackedDirect(left, right, result, op); return; }
+            {
+                if (op == 0) UnionPackedOperation(left, right, result);
+                else if (op == 1 && result.m_Ids.Length >= Math.Min(left.m_PackedUsed, right.m_PackedUsed))
+                    IntersectPackedOperation(left, right, result);
+                else if (op == 2 && !ReferenceEquals(result, right) && result.m_Ids.Length >= left.m_PackedUsed)
+                    DifferencePackedOperation(left, right, result);
+                else BinaryPackedDirect(left, right, result, op);
+                return;
+            }
             if (op == 0 && result.m_PackedUsed >= 0 && left.m_Words == null && right.m_Words == null)
             {
                 RuntimeTagSet packed = left.m_PackedUsed >= 0 ? left : right;

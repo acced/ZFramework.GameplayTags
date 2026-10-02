@@ -46,7 +46,9 @@ jobs:
         with:
           dotnet-version: 8.0.425
       - name: Runner integrity tests
-        run: python3 -m unittest discover -s 'Audit~/Refactor' -p 'test_*.py' -v
+        run: |
+          python3 -m unittest discover -s 'Audit~/Refactor' -p 'test_*.py' -v
+          python3 -m unittest discover -s 'Audit~/Refactor/PackedOperations' -p 'test_*.py' -v
       - name: Full managed correctness and actual Standard 2.1 binary checks
         run: python3 'Audit~/Refactor/verify.py' --output artifacts/correctness
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

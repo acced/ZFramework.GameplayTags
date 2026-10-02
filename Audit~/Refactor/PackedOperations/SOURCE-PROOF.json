@@ -1,0 +1,29 @@
+{
+  "status": "source_and_python_checks_passed",
+  "reference_commit": "2fc862b91f9c53362e3fb63c7c086f7501c54ba9",
+  "harness_sha256": "296b5911fcbb2e35eab74b2684e027b72542929136dc7995e7636f7902440d47",
+  "plan_sha256": "b8dce170174d64abea002b8db755def8f9342558c32a6fe2c515a905ba9826d1",
+  "harness_and_plan_byte_identical_to_validated_372_row_protocol": true,
+  "unchanged_oracle_function_ast_sha256": {
+    "plan": "7bb17b5c8159fa7fe5849b94b833a1624c7d03319cac91c4395eed004f67cc8f",
+    "candidates": "dbb6bbdea3052fac2113067c69bb36426845f40cef01c51b8d2a34b91389ec26",
+    "fixture_base": "d172565536dd11a43eb1169a8911f7e716792fa433ff37a941b657b7fd2ff611",
+    "fixture": "104ce8e48a8826c76059d4a1b1ec2f003fb98dd523544b6cd5cab7d544884e6e",
+    "layout": "efa90a845945a119316e6d83f5bbc6874b4ce3a6c6ae198cd3696d4bc9ae4e67",
+    "shapes": "b0a666765ff7b78f46eff14b6cf003dfebe2c12ad8d65eb3ca97a6e0825e2b96",
+    "validate": "a7e656139cb34fe9b598046dbf537c2d1d6cbfc2c3f3b6ba5382a5fbd7fb7433",
+    "pct": "6a4e30d99c57ce68d87ba11b1ad04d8dd7df67c5d59b7b4a3ac2933836164d30"
+  },
+  "aggregation_change": "Only fixed expected process count36\u219224; source loop names/cardinality are configured by SOURCES baseline/candidate.",
+  "repository_runner_sha256": "2edcbe01686d07bb3edcc6aca44345e6d33689bc51c7df3237cf31f074680819",
+  "python_tests": {
+    "strict_validator_tests": 24,
+    "staging_and_provenance_tests": 4,
+    "passed": 28
+  },
+  "dotnet_builds": 0,
+  "dotnet_executions": 0,
+  "stage_default": true,
+  "unavailable_experiment_paths_required": false,
+  "proof_scope": "Source-body/oracle continuity plus Python stage/provenance tests. This newly packaged two-source cohort has not been compiled or timed."
+}

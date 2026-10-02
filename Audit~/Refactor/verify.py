@@ -56,6 +56,8 @@ def main():
         ap.error('Output must be a new or empty directory; preserve prior verification evidence')
     out.mkdir(parents=True,exist_ok=True)
     env=dict(os.environ,DOTNET_gcConcurrent='0',DOTNET_CLI_TELEMETRY_OPTOUT='1',DOTNET_NOLOGO='1',DOTNET_TieredCompilation='0')
+    # Verification also runs in containers with a read-only account home.
+    env.setdefault('DOTNET_CLI_HOME',str(out/'dotnet-home'))
     results=[];references_by_host={};reference_checks=[]
     def run(cmd,log,cwd=ROOT,extra=None):
         result=subprocess.run(list(map(str,cmd)),cwd=cwd,env=dict(env,**(extra or {})),text=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
