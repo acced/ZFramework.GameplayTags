@@ -1,0 +1,36 @@
+name: Frozen asymmetric cache evidence
+on:
+  push:
+    branches: ['experiment/dense-cache-20261002']
+    paths: ['Audit~/DenseCacheUnequalReport/**','.github/workflows/dense-cache-unequal-report.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  collect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Require pinned completed primary and supplemental runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run watch 36999746747 --exit-status --interval 30 > main-wait.log
+          gh run watch 37000994169 --exit-status --interval 30 > unequal-wait.log
+      - name: Verify archives and equal candidate source, report distinct supplemental data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/DenseCacheUnequalReport/collect.py' reviewed
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dense-cache-unequal-reviewed-${{ github.run_id }}
+          path: |
+            reviewed/
+            *-wait.log
+          retention-days: 30
+          if-no-files-found: error
