@@ -1,0 +1,83 @@
+name: Fixed preparation v3 analysis
+on:
+  push:
+    branches: ['experiment/preparation-v3-20261002']
+    paths: ['.github/workflows/preparation-v3-fixed-analysis.yml']
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  analyze:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Read exact completed artifacts; do not rerun timings
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir analysis
+          python3 - <<'PY'
+          import csv,hashlib,io,json,os,pathlib,subprocess,zipfile
+          out=pathlib.Path('analysis')
+          artifacts={
+            'x64':(11212075184,'727fd1c57fa1cc26ec263895beefc29f918eeda2fb2b58cd2cf68d39d8483598'),
+            'arm64':(11211746754,'3f9455f2c67aff3625697bfbf6a3a52cb2e9c2e9496bdf7c0f0198926c517bdd')}
+          dims=('stage','label','universe','members','distribution','seed','order','operation','strategy')
+          for cpu,(artifact,digest) in artifacts.items():
+              raw=subprocess.check_output(['gh','api',f'/repos/{os.environ["REPO"]}/actions/artifacts/{artifact}/zip'])
+              assert hashlib.sha256(raw).hexdigest()==digest
+              with zipfile.ZipFile(io.BytesIO(raw)) as z:
+                  check=json.loads(z.read('results/recheck.json'))
+                  assert check['head']=='db0ffc25448a5df399651550acf627d210482aeb'
+                  rows=list(csv.DictReader(io.StringIO(z.read('results/All_Results.csv').decode('utf-8-sig'))))
+                  comparisons=list(csv.DictReader(io.StringIO(z.read('results/Comparisons.csv').decode('utf-8-sig'))))
+                  index={tuple(r[k] for k in dims):r for r in rows}
+                  def get(r,label=None,strategy=None):
+                      q=dict(r)
+                      if label is not None:q['label']=label
+                      if strategy is not None:q['strategy']=strategy
+                      return index[tuple(q[k] for k in dims)]
+                  focused=[]
+                  for r in rows:
+                      if r['stage']!='bench' or not r['label'].endswith('-v3') or r['strategy']!='bulk':continue
+                      if r['universe']!='262144' or r['seed']!='20261002' or r['operation']!='fresh_build':continue
+                      if not ((r['members']=='8' and r['distribution']=='scattered') or (r['members']=='4096' and r['distribution']=='contiguous')):continue
+                      if r['order'] not in ('sorted_unique','shuffled_unique'):continue
+                      old=get(r,r['label'].replace('-v3','-v1'));prev=get(r,r['label'].replace('-v3','-v2'));loop=get(r,strategy='loop')
+                      focused.append(dict(layout=r['label'],n=int(r['members']),locality=r['distribution'],order=r['order'],
+                          v1_ns=float(old['ns']),v2_ns=float(prev['ns']),v3_ns=float(r['ns']),loop_ns=float(loop['ns']),
+                          v1_B=float(old['bytes']),v2_B=float(prev['bytes']),v3_B=float(r['bytes']),loop_B=float(loop['bytes'])))
+                  conversion_bad=[r for r in comparisons if r['comparison']=='v3_vs_v2_conversion' and r['slower5']=='True']
+                  fresh_bad=[r for r in comparisons if r['comparison']=='v3_vs_v1' and r['operation']=='fresh_build' and r['slower5']=='True']
+                  frontier_good=[r for r in comparisons if r['comparison']=='frontier_convert_vs_keep' and r['faster5']=='True' and r['both_AA_within5']=='True']
+                  frontier_good=sorted(frontier_good,key=lambda r:(r['operation'],int(r['universe']),int(r['members']),r['order'],r['distribution'],r['seed']))
+                  frontier_focus=[]
+                  for r in comparisons:
+                      if r['stage']!='frontier' or r['universe']!='262144' or r['seed']!='20261107' or r['operation']!='input_plus_16_unions':continue
+                      if (r['members']=='8' and r['distribution']=='scattered') or (r['members']=='4096' and r['distribution']=='contiguous'):
+                          frontier_focus.append(r)
+                  codegen={name:[line for line in z.read(name).decode().splitlines() if 'Assembly listing' in line or 'Total bytes of code' in line or 'ResetFromSortedUnique' in line and ('call' in line or 'bl ' in line)]
+                      for name in z.namelist() if name.startswith('results/') and name.endswith('-codegen.log')}
+                  payload=dict(cpu=cpu,source=check['head'],archive_sha256=digest,fresh=focused,
+                      conversion_regressions=conversion_bad,fresh_regressions=fresh_bad,
+                      lifecycle_conversions_faster_and_AAstable=frontier_good,lifecycle_focus=frontier_focus,
+                      AA=check['AA'],tests=check['tests'],codegen=codegen,
+                      counts={k:check[k] for k in ('rows','raw_rows','timing_samples','zero_allocation_samples')},
+                      note='Post-hoc explanation of fixed data. No samples deleted, new timings, automatic thresholds or production promotion.')
+                  (out/(cpu+'.json')).write_text(json.dumps(payload,indent=2))
+                  print('FIXED_FRESH '+json.dumps(dict(cpu=cpu,rows=focused)))
+                  print('FIXED_REGRESSIONS '+json.dumps(dict(cpu=cpu,conversion=conversion_bad,fresh=fresh_bad)))
+                  print('FIXED_FRONTIER_POSITIVE '+json.dumps(dict(cpu=cpu,rows=frontier_good)))
+                  print('FIXED_FRONTIER_FOCUS '+json.dumps(dict(cpu=cpu,rows=frontier_focus)))
+                  print('FIXED_CODEGEN '+json.dumps(dict(cpu=cpu,codegen=codegen)))
+          (out/'README.txt').write_text('Exact measured source db0ffc25448a5df399651550acf627d210482aeb. Main evidence remains run36969349329. This is fixed-data analysis only, not a new benchmark or selector.\n')
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: preparation-v3-fixed-analysis-${{ github.run_id }}
+          path: analysis/
+          retention-days: 30
+          if-no-files-found: error
