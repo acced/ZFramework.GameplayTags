@@ -1,0 +1,62 @@
+name: Bounded stack cache for small mixed append
+on:
+  push:
+    branches: ['experiment/dense-stack-cache-20261002']
+    paths:
+      - 'Audit~/DenseStackCache/**'
+      - '.github/workflows/dense-stack-cache.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '8.0.425'
+      - name: Compile and run correctness, complete public matrix and cache boundaries
+        run: python3 'Audit~/DenseStackCache/run.py' --output artifacts/results --rounds 3
+      - name: Independently reconstruct raw samples, source and contracts
+        run: python3 'Audit~/DenseStackCache/review.py' --root artifacts/results
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: dense-stack-cache-${{ matrix.arch }}-${{ github.run_id }}
+          path: artifacts/
+          retention-days: 30
+          if-no-files-found: error
+  collect:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Redownload both raw archives, repeat original verification and group results
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/DenseStackCache/collect.py' reviewed
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dense-stack-cache-reviewed-${{ github.run_id }}
+          path: reviewed/
+          retention-days: 30
+          if-no-files-found: error
