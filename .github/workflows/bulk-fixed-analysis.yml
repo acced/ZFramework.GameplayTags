@@ -1,0 +1,63 @@
+name: Fixed bulk-result analysis
+on:
+  push:
+    branches: ['experiment/bulk-construction-20261002']
+    paths: ['.github/workflows/bulk-fixed-analysis.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  analyze:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Reinspect exact completed artifacts without changing any measured sample
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          mkdir analysis
+          python3 - <<'PY'
+          import csv,hashlib,io,json,os,pathlib,subprocess,zipfile
+          refs={
+            'x64':(11208897441,'a3de05bda003efad6fc2cf912ad9e18ea972c8c695fe07ae0901820632a8bad1'),
+            'arm64':(11208522333,'c97e797690c91b36dbacaaabb9e139b318c14fa8bbd36da0e0422838cf35981f')}
+          out=pathlib.Path('analysis')
+          for cpu,(artifact,digest) in refs.items():
+            raw=subprocess.check_output(['gh','api',f'/repos/{os.environ["REPO"]}/actions/artifacts/{artifact}/zip'])
+            assert hashlib.sha256(raw).hexdigest()==digest
+            with zipfile.ZipFile(io.BytesIO(raw)) as z:
+              review=json.loads(z.read('results/recheck.json'))
+              assert review['head']=='6c7e18dadf6b384046249ba951227109e8d36fde'
+              rows=list(csv.DictReader(io.StringIO(z.read('results/Paired_Comparisons.csv').decode('utf-8-sig'))))
+              groups={};focus=[];failures=[]
+              for row in rows:
+                n=int(row['members'])
+                key='/'.join([row['label'],row['order'],row['operation'],str(n)])
+                g=groups.setdefault(key,dict(cases=0,faster=0,slower=0,aa_within5=0))
+                g['cases']+=1;g['faster']+=row['faster5']=='True';g['slower']+=row['slower5']=='True';g['aa_within5']+=row['AA_within5']=='True'
+                if row['order']=='sorted_unique' and row['operation'] in ('fresh_build','prepared_reset') and row['slower5']=='True':failures.append(row)
+                if int(row['universe'])==262144 and int(row['seed'])==20261002 and ((n==8 and row['distribution']=='scattered') or (n==4096 and row['distribution'] in ('contiguous','scattered'))) and row['order'] in ('sorted_unique','shuffled_unique'):
+                  focus.append(row)
+              examples={}
+              for label in ('array','dense','micro'):
+                doc=json.loads(z.read('results/'+label+'-r0.json'))
+                examples[label]=dict(runtime=doc['runtime'],architecture=doc['arch'],os=doc['os'])
+              payload=dict(source=review['head'],artifact=artifact,artifact_sha256=digest,environment=examples,
+                sdk=review['sdk'],summary=review['groups'],by_size=groups,AA=review['AA'],focus=focus,
+                sorted_regressions=failures,codegen=review['codegen'],counts={k:review[k] for k in ('rows','raw_rows','timing_samples','prepared_zero_allocation_samples')},
+                note='Post-hoc analysis of fixed results. No measurements changed or discarded; no new candidate. Size subgroups describe this matrix, not a tuned selector.')
+              (out/(cpu+'.json')).write_text(json.dumps(payload,indent=2))
+              print('BULK_ENV '+json.dumps(dict(cpu=cpu,sdk=review['sdk'],examples=examples)))
+              print('BULK_SORTED_GATES '+json.dumps(dict(cpu=cpu,groups={k:v for k,v in groups.items() if '/sorted_unique/' in k and ('/fresh_build/' in k or '/prepared_reset/' in k)})))
+              print('BULK_SUMMARY '+json.dumps(dict(cpu=cpu,groups=review['groups'],AA=review['AA'],codegen=review['codegen'])))
+              print('BULK_FOCUS '+json.dumps(dict(cpu=cpu,rows=focus)))
+          (out/'README.txt').write_text('Fixed-data supplemental diagnosis only. Full raw samples, exact source and independent rechecks remain in workflow36962385757. No runtime or measurement changes.\n')
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: bulk-fixed-analysis-${{ github.run_id }}
+          path: analysis/
+          if-no-files-found: error
+          retention-days: 30
