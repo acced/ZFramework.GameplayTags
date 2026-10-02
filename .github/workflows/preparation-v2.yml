@@ -1,0 +1,66 @@
+name: Preparation v2 - construction and explicit conversions
+on:
+  push:
+    branches: ['experiment/preparation-v2-20261002']
+    paths: ['Audit~/PreparationV2/**', '.github/workflows/preparation-v2.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - cpu: x64
+            runner: ubuntu-24.04
+          - cpu: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '8.0.425'
+      - name: Archive exact source and guard production
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          git archive --format=zip HEAD > artifacts/source.zip
+          git rev-parse HEAD > artifacts/SOURCE_COMMIT.txt
+          git rev-parse 'HEAD^{tree}' > artifacts/SOURCE_TREE.txt
+          git diff --exit-code 84729cc3b6e1b4681328806df2d7c8a1d8f568f6 HEAD -- Runtime Editor Samples~ Tests package.json
+      - name: Compile, test and measure v1, v2, repeated Add and conversion controls
+        run: python3 'Audit~/PreparationV2/run.py' --output artifacts/results --rounds 3
+      - name: Recompute raw samples, Git tree and A/A identities
+        run: python3 'Audit~/PreparationV2/review.py' --root artifacts
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: preparation-v2-${{ matrix.cpu }}-${{ github.run_id }}
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 30
+  collect:
+    needs: verify
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Re-download and independently verify both architectures
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/PreparationV2/collect.py' reviewed
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: preparation-v2-reviewed-${{ github.run_id }}
+          path: reviewed/
+          if-no-files-found: error
+          retention-days: 30
