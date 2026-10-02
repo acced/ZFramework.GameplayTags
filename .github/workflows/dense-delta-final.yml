@@ -1,0 +1,39 @@
+name: Final delta safety acceptance and source-matched work
+on:
+  push:
+    branches: ['experiment/dense-delta-safety-20261002']
+    paths:
+      - 'Audit~/DenseDeltaFinal/**'
+      - '.github/workflows/dense-delta-final.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  acceptance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Recheck frozen originals and match diagnostic source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/DenseDeltaFinal/run.py' final
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: delta-safety-acceptance-source-${{ github.run_id }}
+          path: final/delivery/
+          retention-days: 30
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: delta-safety-acceptance-full-${{ github.run_id }}
+          path: |
+            final/delivery/
+            final/review-original.zip
+            final/work-original.zip
+            final/*-recheck.log
+          retention-days: 30
+          if-no-files-found: error
