@@ -1,0 +1,62 @@
+name: Capacity-certified copy correctness and cost
+on:
+  push:
+    branches: ['experiment/copy-count-commit-20261002']
+    paths:
+      - 'Audit~/CopyCapacity/**'
+      - '.github/workflows/copy-capacity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '8.0.425'
+      - name: Fault reproduction, full correctness and same public-operation matrix
+        run: python3 'Audit~/CopyCapacity/run.py' --output artifacts/results --rounds 3
+      - name: Reconstruct source identity, faults, samples, allocations and A/A
+        run: python3 'Audit~/CopyCapacity/review.py' --root artifacts/results
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: copy-capacity-${{ matrix.arch }}-${{ github.run_id }}
+          path: artifacts/
+          retention-days: 30
+          if-no-files-found: error
+  collect:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Download originals and rerun their archived reviewers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/CopyCapacity/collect.py' reviewed
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: copy-capacity-reviewed-${{ github.run_id }}
+          path: reviewed/
+          retention-days: 30
+          if-no-files-found: error
