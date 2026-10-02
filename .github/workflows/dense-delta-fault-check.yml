@@ -1,0 +1,31 @@
+name: Independent delta allocation-failure preflight
+on:
+  push:
+    branches: ['experiment/dense-delta-safety-20261002']
+    paths:
+      - 'Audit~/DenseDeltaFaultCheck/**'
+      - '.github/workflows/dense-delta-fault-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  fault:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '8.0.425'
+      - name: Run identical separate fault-build logic, no timing
+        run: python3 'Audit~/DenseDeltaFaultCheck/run.py' --output fault-only/results
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: delta-independent-fault-${{ github.run_id }}
+          path: fault-only/
+          retention-days: 30
+          if-no-files-found: error

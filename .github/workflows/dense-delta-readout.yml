@@ -1,0 +1,54 @@
+name: Frozen delta safety results and repeated verification
+on:
+  push:
+    branches: ['experiment/dense-delta-safety-20261002']
+    paths:
+      - 'Audit~/DenseDeltaReadout/**'
+      - '.github/workflows/dense-delta-readout.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  readout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Require successful completion of the already running fixed main experiment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run watch 37006439435 --repo "$GITHUB_REPOSITORY" --exit-status --interval 30
+      - name: Download originals, reverify, and expose all changed-path and fault results
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/DenseDeltaReadout/run.py' readout
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: delta-safety-source-report-${{ github.run_id }}
+          path: |
+            readout/Source_Tested.zip
+            readout/Summary.json
+            readout/结果读出.md
+            readout/All_Comparisons.csv
+            readout/All_Architectures.csv
+            readout/All_Regressions.json
+          retention-days: 30
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: delta-safety-final-full-${{ github.run_id }}
+          path: |
+            readout/Source_Tested.zip
+            readout/Summary.json
+            readout/结果读出.md
+            readout/All_Comparisons.csv
+            readout/All_Architectures.csv
+            readout/All_Regressions.json
+            readout/main-original.zip
+            readout/fault-original.zip
+            readout/*-additional-recheck.log
+          retention-days: 30
+          if-no-files-found: error
