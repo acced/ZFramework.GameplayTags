@@ -1,0 +1,134 @@
+// Experimental partial class. Generated beside the pinned implementation, not in Runtime.
+// Strict public admission: resolved handles must belong to the supplied registry.
+using System;
+#if BULK_MICRO
+#if MICRO_WIDE
+using Entry = System.UInt64;
+#else
+using Entry = System.UInt32;
+#endif
+#endif
+
+namespace __NAMESPACE__
+{
+    public sealed partial class __TYPE__
+    {
+        /// <summary>
+        /// Builds an independently owned set from strictly increasing, unique handles.
+        /// Validation, capacity reservation and eager Count are included in this call.
+        /// Input must not be modified concurrently. A default span is an empty input.
+        /// Capacity reserves arbitrary member distributions, as in the existing constructor.
+        /// </summary>
+        public static __TYPE__ FromSortedUnique(TagRegistry registry,
+            ReadOnlySpan<RuntimeTag> tags, int capacity = 0, __MODE__ storage = __MODE__.Auto)
+        {
+            int reserved = ValidateBuildOptions(registry, capacity, storage, tags.Length);
+            ValidateSortedHandles(registry, tags);
+            var result = new __TYPE__(registry, reserved, WantsDense(registry, reserved, storage));
+            result.FillSortedHandles(tags);
+            return result;
+        }
+
+        /// <summary>
+        /// General input; accepts repetitions, rejects default/foreign handles.
+        /// Owns a temporary ID array, sorts and deduplicates it; never mutates the caller.
+        /// Result reserves at least the input length (clamped to registry size), matching
+        /// the pre-sized repeated-Add baseline. Workspace allocation is NOT a hot-path promise.
+        /// </summary>
+        public static __TYPE__ FromUnordered(TagRegistry registry,
+            ReadOnlySpan<RuntimeTag> tags, int capacity = 0, __MODE__ storage = __MODE__.Auto)
+        {
+            int reserved = ValidateBuildOptions(registry, capacity, storage, tags.Length);
+            int[] ids = tags.Length == 0 ? Array.Empty<int>() : new int[tags.Length];
+            for (int i = 0; i < tags.Length; i++)
+            {
+                if (!ReferenceEquals(tags[i].Owner, registry))
+                    throw new ArgumentException("All input handles must belong to this registry.", nameof(tags));
+                ids[i] = tags[i].Id;
+            }
+            Array.Sort(ids);
+            int unique = 0;
+            for (int i = 0; i < ids.Length; i++)
+                if (unique == 0 || ids[i] != ids[unique - 1]) ids[unique++] = ids[i];
+            var result = new __TYPE__(registry, reserved, WantsDense(registry, reserved, storage));
+            result.FillSortedIds(ids, unique);
+            return result;
+        }
+
+        /// <summary>
+        /// Overwrites existing membership; validates the complete input before mutation.
+        /// No allocation when existing capacity suffices. No implicit representation change.
+        /// Source handles cannot alias the private ID/bitmap buffer.
+        /// </summary>
+        public void ResetFromSortedUnique(ReadOnlySpan<RuntimeTag> tags)
+        {
+            ValidateSortedHandles(Registry, tags);
+            EnsureCapacity(tags.Length);
+            Clear();
+            FillSortedHandles(tags);
+        }
+
+        private static int ValidateBuildOptions(TagRegistry registry, int capacity,
+            __MODE__ storage, int inputCount)
+        {
+            if (registry == null) throw new ArgumentNullException(nameof(registry));
+            if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
+            if (storage < __MODE__.Auto || storage > __MODE__.Dense)
+                throw new ArgumentOutOfRangeException(nameof(storage));
+#if BULK_MICRO && !MICRO_WIDE
+            if (registry.Count > (1 << 20))
+                throw new ArgumentOutOfRangeException(nameof(registry), "The fixed Micro16 format supports at most 2^20 registered IDs.");
+#endif
+            return Math.Min(registry.Count, Math.Max(capacity, inputCount));
+        }
+
+        // Only called with a non-null registry established by construction/options validation.
+        // RuntimeTag owns a registry-issued valid ID; no repeated range lookup is needed.
+        private static void ValidateSortedHandles(TagRegistry registry, ReadOnlySpan<RuntimeTag> tags)
+        {
+            int previous = -1;
+            for (int i = 0; i < tags.Length; i++)
+            {
+                RuntimeTag tag = tags[i];
+                if (!ReferenceEquals(tag.Owner, registry))
+                    throw new ArgumentException("All input handles must belong to this registry.", nameof(tags));
+                if (tag.Id <= previous)
+                    throw new ArgumentException("Input must be strictly increasing and unique.", nameof(tags));
+                previous = tag.Id;
+            }
+        }
+
+        private static bool WantsDense(TagRegistry registry, int capacity, __MODE__ storage)
+        {
+#if BULK_MICRO
+            const int bytesPerMember = EntryBytes;
+#else
+            const int bytesPerMember = 4;
+#endif
+            return storage == __MODE__.Dense || (storage == __MODE__.Auto && registry.Count != 0
+                && 8L * registry.WordCount <= (long)bytesPerMember * capacity);
+        }
+
+        // Internal allocation only: options and input have been admitted exactly once.
+        // All new member storage is independent. The layout/capacity policy is unchanged.
+        private __TYPE__(TagRegistry registry, int capacity, bool makeDense)
+        {
+            Registry = registry;
+#if BULK_MICRO
+            if (makeDense) dense = registry.WordCount == 0 ? Array.Empty<ulong>() : new ulong[registry.WordCount];
+            else
+            {
+                int records = Math.Min(capacity, MaxEntries);
+                if (records > 1) entries = new Entry[records];
+            }
+#else
+            if (makeDense) m_Words = registry.WordCount == 0 ? Array.Empty<ulong>() : new ulong[registry.WordCount];
+            else m_Ids = capacity == 0 ? Array.Empty<int>() : new int[capacity];
+#endif
+        }
+
+        // The generator emits two direct loops rather than a per-member delegate/accessor.
+        // One consumes caller handles, one consumes our privately sorted workspace.
+__FILL_METHODS__
+    }
+}
