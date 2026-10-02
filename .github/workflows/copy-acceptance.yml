@@ -1,0 +1,39 @@
+name: Frozen copy acceptance and source identity
+on:
+  push:
+    branches: ['experiment/copy-count-commit-20261002']
+    paths:
+      - 'Audit~/CopyAcceptance/**'
+      - '.github/workflows/copy-acceptance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  acceptance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Redownload both frozen originals and repeat archived reviewers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/CopyAcceptance/run.py' accepted
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: copy-acceptance-source-${{ github.run_id }}
+          path: accepted/delivery/
+          retention-days: 30
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: copy-acceptance-full-${{ github.run_id }}
+          path: |
+            accepted/delivery/
+            accepted/commit-original.zip
+            accepted/capacity-original.zip
+            accepted/*-recheck.log
+          retention-days: 30
+          if-no-files-found: error
