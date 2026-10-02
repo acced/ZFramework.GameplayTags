@@ -1,0 +1,39 @@
+name: Frozen empty-copy factorial acceptance
+on:
+  push:
+    branches: ['experiment/copy-empty-boundary-20261002']
+    paths:
+      - 'Audit~/CopyBoundaryAcceptance/**'
+      - '.github/workflows/copy-boundary-acceptance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  acceptance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Reverify frozen raw samples and source-matched original-binary traces
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/CopyBoundaryAcceptance/run.py' accepted
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: copy-boundary-acceptance-source-${{ github.run_id }}
+          path: accepted/delivery/
+          retention-days: 30
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: copy-boundary-acceptance-full-${{ github.run_id }}
+          path: |
+            accepted/delivery/
+            accepted/main-original.zip
+            accepted/*-trace-original.zip
+            accepted/*-recheck.log
+          retention-days: 30
+          if-no-files-found: error
