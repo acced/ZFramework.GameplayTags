@@ -1,0 +1,29 @@
+name: Scoped Dense fixed evidence report
+on:
+  push:
+    branches: ['experiment/scoped-dense-20261002']
+    paths:
+      - '.github/workflows/scoped-dense-report.yml'
+      - 'Audit~/ScopedDenseReport/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  report:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Analyze only completed exact artifacts, never rerun timings
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/ScopedDenseReport/run.py'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: scoped-dense-final-${{ github.run_id }}
+          path: deliverables/
+          retention-days: 30
+          if-no-files-found: error
