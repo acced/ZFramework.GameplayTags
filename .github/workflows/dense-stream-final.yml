@@ -1,0 +1,26 @@
+name: Frozen stream evidence and changed-path readout
+on:
+  push:
+    branches: ['experiment/dense-stream-20261002']
+    paths: ['Audit~/DenseStreamFinal/**', '.github/workflows/dense-stream-final.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  readout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with: {persist-credentials: false}
+      - name: Read frozen completed artifacts and verify source identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/DenseStreamFinal/readout.py' readout
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dense-stream-final-readout-${{ github.run_id }}
+          path: readout/
+          retention-days: 30
+          if-no-files-found: error
