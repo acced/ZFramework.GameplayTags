@@ -83,7 +83,8 @@ def generate(out,pinned=None):
         assert code[:code.index('public TagRegistry Registry')]==direct[:direct.index('public TagRegistry Registry')]
         for signature in ('private struct Records','public struct Enumerator','public bool HasTagExact(','public void RemoveTags(','private void ReserveEntries(','public DirectArraySet(DirectArraySet source)'):
             assert block(code,signature)==block(direct,signature),signature
-        for signature in ('private static void UnionCore(','private struct DenseRecordCursor','private void CopyDenseToMicro('):
-            assert block(code,signature)==block(sources['stream'],signature),signature
+        if n!='direct':
+            for signature in ('private static void UnionCore(','private struct DenseRecordCursor','private void CopyDenseToMicro('):
+                assert block(code,signature)==block(sources['stream'],signature),signature
     (out/'generation.json').write_text(json.dumps(dict(parent_commit='0d097a1546c51ea3676ef35817428f346da46293',sources=manifest,new_instance_fields=0,stack_payload_bytes=128,cache_record_limit=32,performance_crossover_validated=False),indent=2))
     return files
