@@ -1,0 +1,49 @@
+name: Source-matched copy boundary machine-code trace
+on:
+  push:
+    branches: ['experiment/copy-empty-boundary-20261002']
+    paths:
+      - 'Audit~/CopyBoundaryTrace/**'
+      - '.github/workflows/copy-boundary-trace.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  trace:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '8.0.425'
+      - name: Require completion of frozen main run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run watch 37024028909 --repo "$GITHUB_REPOSITORY" --exit-status --interval 30
+      - name: Verify original binary identity and capture separate JIT output
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 'Audit~/CopyBoundaryTrace/run.py' '${{ matrix.arch }}' traced
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: copy-boundary-trace-${{ matrix.arch }}-${{ github.run_id }}
+          path: |
+            traced/*.asm
+            traced/*.json
+            traced/*.log
+            traced/*.txt
+          retention-days: 30
+          if-no-files-found: error
