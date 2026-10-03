@@ -1,0 +1,20 @@
+--- published-historical-reanalyze.py
++++ remote-statistics_methods.py
+@@ -371,7 +371,7 @@
+     require(layouts == ["Micro", "Dense", "Auto"] and args["rounds"] == 3,
+             name + ": unexpected historical cohort dimensions")
+     group = args["group"]
+-    require(name == f"final-{group}-{args['backend']}", "Cohort name/arguments differ")
++    require(name.endswith(f"-{group}-{args['backend']}"), "Cohort name/arguments differ")
+     plans = {layout: evidence.json(root + f"/iterations-{layout}.json") for layout in layouts}
+     for plan in plans.values():
+         require(len(plan) == EXPECTED_ROWS[group] and set(plan) == expected_keys(group), "Wrong workload plan")
+@@ -460,7 +460,7 @@
+     root = "benchmark/results/" + name
+     manifest = evidence.json(root + "/manifest.json")
+     args = manifest["args"]
+-    bridge = name.startswith("bridge-")
++    bridge = name.startswith("bridge-") or "-bridge-" in name
+     planned = {(c["group"], c["layout"], c["id"]): c["role"] for c in manifest["plan"]["cells"]}
+     require(len(planned) == len(manifest["plan"]["cells"]) == (54 if bridge else 18), "Wrong factor plan")
+     require(name.endswith("-" + args["backend"]), "Factor name/backend differs")

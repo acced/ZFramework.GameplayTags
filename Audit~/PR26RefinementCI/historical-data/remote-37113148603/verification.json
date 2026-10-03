@@ -1,0 +1,185 @@
+{
+  "status": "verified",
+  "shards": 16,
+  "cells": 1920,
+  "timed_samples": 125496,
+  "raw_archive_files": 1972,
+  "raw_archive_bytes": 87899780,
+  "manifest_bound_raw_files": 1200,
+  "manifest_processes": 600,
+  "derived_files": 32,
+  "correctness_records": {
+    "artifacts": 6,
+    "recorded_processes": 136,
+    "retained_files": 846,
+    "retained_bytes": 1778373,
+    "jobs": [
+      {
+        "artifact_id": "11270556934",
+        "architecture": "arm64",
+        "configuration": "net8-checked",
+        "processes": 18,
+        "status": "recorded_pass",
+        "summary_members": [
+          "pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/summary.json",
+          "pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json"
+        ]
+      },
+      {
+        "artifact_id": "11271275896",
+        "architecture": "arm64",
+        "configuration": "net8-normal",
+        "processes": 32,
+        "status": "recorded_pass",
+        "summary_members": [
+          "pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+          "pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/summary.json",
+          "pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json"
+        ]
+      },
+      {
+        "artifact_id": "11271190868",
+        "architecture": "arm64",
+        "configuration": "netstandard-checked",
+        "processes": 18,
+        "status": "recorded_pass",
+        "summary_members": [
+          "pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/summary.json",
+          "pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json"
+        ]
+      },
+      {
+        "artifact_id": "11270781545",
+        "architecture": "x64",
+        "configuration": "net8-checked",
+        "processes": 18,
+        "status": "recorded_pass",
+        "summary_members": [
+          "pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/summary.json",
+          "pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json"
+        ]
+      },
+      {
+        "artifact_id": "11270581268",
+        "architecture": "x64",
+        "configuration": "net8-normal",
+        "processes": 32,
+        "status": "recorded_pass",
+        "summary_members": [
+          "pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+          "pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/summary.json",
+          "pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json"
+        ]
+      },
+      {
+        "artifact_id": "11271200888",
+        "architecture": "x64",
+        "configuration": "netstandard-checked",
+        "processes": 18,
+        "status": "recorded_pass",
+        "summary_members": [
+          "pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/summary.json",
+          "pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json"
+        ]
+      }
+    ],
+    "recorded_source_pins": {
+      "payload_manifest_sha256": "29fb65f0cde2f7da991361e899ed245184006f30e593f72d7a161841268ebec1",
+      "source_selection_sha256": "3534632810536b1f5bec44484422f115581bb331684013bbfc808a6d72f5d3ce",
+      "source_runtime_set_sha256": {
+        "selected": "b46b2a1d9aff79bcbf53450ca3fbb9ea70692ddc9759b39c9ce7d829d5338fce",
+        "baseline": "20903415f7a88a3ee2c39e28936027ec8dbf59ebb398de9fe45366debe5ba6dc",
+        "bridge-before": "68374b4e284dbd1cf035a3ae5bd6e7fed724b6666e3dfd592552605f72fb9fe2"
+      },
+      "checked_files": 407,
+      "historical_rows": 852,
+      "historical_losses": [
+        {
+          "run": "final-query-default",
+          "layout": "Dense",
+          "id": "query/scatter/8/query64/balanced/same/0"
+        },
+        {
+          "run": "final-query-default",
+          "layout": "Auto",
+          "id": "query/scatter/8/query64/miss-bit/same/0"
+        },
+        {
+          "run": "final-builder-nohw",
+          "layout": "Dense",
+          "id": "builder/cluster/4096/build/sorted/same/0"
+        },
+        {
+          "run": "final-mixed-nohw",
+          "layout": "Micro",
+          "id": "mixed/random/4096/restore-remove/equal/same/4096"
+        }
+      ],
+      "historical_invalid_controls": [
+        {
+          "run": "final-builder-default",
+          "layout": "Dense",
+          "id": "builder/scatter/0/build/sorted/same/0"
+        },
+        {
+          "run": "final-builder-default",
+          "layout": "Dense",
+          "id": "builder/scatter/0/build/shuffled/same/0"
+        },
+        {
+          "run": "final-builder-default",
+          "layout": "Dense",
+          "id": "builder/scatter/1/build/sorted/same/0"
+        },
+        {
+          "run": "final-builder-nohw",
+          "layout": "Dense",
+          "id": "builder/scatter/0/build/sorted/same/0"
+        },
+        {
+          "run": "final-builder-nohw",
+          "layout": "Dense",
+          "id": "builder/scatter/0/build/shuffled/same/0"
+        },
+        {
+          "run": "final-builder-nohw",
+          "layout": "Dense",
+          "id": "builder/scatter/1/build/sorted/same/0"
+        }
+      ]
+    },
+    "scope": "Original nonbinary correctness records only; no tests rerun and omitted DLL bytes not revalidated"
+  },
+  "default_main_matrix_counts": {
+    "x64-default": {
+      "clear-improvement": 126,
+      "clear-regression": 31,
+      "uncertain-or-small": 265,
+      "invalid-sample": 4
+    },
+    "arm64-default": {
+      "clear-improvement": 68,
+      "clear-regression": 3,
+      "uncertain-or-small": 353,
+      "invalid-sample": 2
+    }
+  },
+  "nohw_control_counts": {
+    "x64-nohw": {
+      "clear-improvement": 14,
+      "clear-regression": 9,
+      "uncertain-or-small": 399,
+      "invalid-sample": 4
+    },
+    "arm64-nohw": {
+      "clear-improvement": 31,
+      "clear-regression": 2,
+      "uncertain-or-small": 389,
+      "invalid-sample": 4
+    }
+  },
+  "historical_local_results_reclassified": false,
+  "source_or_binary_provenance_revalidated": false,
+  "benchmarks_rerun": false,
+  "scope": "Retained raw-data and statistical integrity only; omitted binaries and full source/compiler/dependency provenance are not revalidated. New Linux hosted-VM .NET8 x64/ARM64 observations remain separate from historical local data and do not establish native Unity, Mono, IL2CPP, Burst or device performance."
+}

@@ -1,0 +1,2416 @@
+{
+  "archive": {
+    "file_count": 846,
+    "name": "correctness-records.tar.gz",
+    "sha256": "f6bb460b052d2a7e5ddd3685f51486965058dda47fd9521f425b35b7277bc125",
+    "size": 174111,
+    "uncompressed_file_bytes": 1778373
+  },
+  "artifact_count": 6,
+  "commit": "fc555ca1ce637c5d04274945ce90734afc89f2f1",
+  "counting_rule": "Count each row once in each original integration-results/**/summary.json, keyed by artifact, summary path, suite and mode. Result JSON files and repeated logs are not additional processes.",
+  "inventory": {
+    "name": "correctness-inventory.json",
+    "sha256": "4942528fd46cfc6ab517b81d8c83067e1acee4210130fc73bae785077a69141f",
+    "size": 494937
+  },
+  "jobs": {
+    "arm64-net8-checked": {
+      "architecture": "arm64",
+      "artifact_id": 11270556934,
+      "configuration": "net8-checked",
+      "feature_default": {
+        "advsimd": true,
+        "advsimd_arm64": true,
+        "avx2": false,
+        "complus_enable_hw_intrinsic": null,
+        "dotnet_enable_hw_intrinsic": null,
+        "os_architecture": "Arm64",
+        "popcnt": false,
+        "popcnt_x64": false,
+        "process_architecture": "Arm64",
+        "runtime": ".NET 8.0.31",
+        "vector_accelerated": true,
+        "vector_uint_lanes": 4
+      },
+      "feature_nohw": {
+        "advsimd": false,
+        "advsimd_arm64": false,
+        "avx2": false,
+        "complus_enable_hw_intrinsic": "0",
+        "dotnet_enable_hw_intrinsic": "0",
+        "os_architecture": "Arm64",
+        "popcnt": false,
+        "popcnt_x64": false,
+        "process_architecture": "Arm64",
+        "runtime": ".NET 8.0.31",
+        "vector_accelerated": false,
+        "vector_uint_lanes": 4
+      },
+      "file_count": 116,
+      "process_count": 18,
+      "process_exit_counts": {
+        "0": 18
+      },
+      "sdk": "8.0.425",
+      "status": "passed",
+      "summaries": {
+        "pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/summary.json": 4,
+        "pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json": 14
+      },
+      "summary_file_count": 2,
+      "uncompressed_file_bytes": 268636
+    },
+    "arm64-net8-normal": {
+      "architecture": "arm64",
+      "artifact_id": 11271275896,
+      "configuration": "net8-normal",
+      "feature_default": {
+        "advsimd": true,
+        "advsimd_arm64": true,
+        "avx2": false,
+        "complus_enable_hw_intrinsic": null,
+        "dotnet_enable_hw_intrinsic": null,
+        "os_architecture": "Arm64",
+        "popcnt": false,
+        "popcnt_x64": false,
+        "process_architecture": "Arm64",
+        "runtime": ".NET 8.0.31",
+        "vector_accelerated": true,
+        "vector_uint_lanes": 4
+      },
+      "feature_nohw": {
+        "advsimd": false,
+        "advsimd_arm64": false,
+        "avx2": false,
+        "complus_enable_hw_intrinsic": "0",
+        "dotnet_enable_hw_intrinsic": "0",
+        "os_architecture": "Arm64",
+        "popcnt": false,
+        "popcnt_x64": false,
+        "process_architecture": "Arm64",
+        "runtime": ".NET 8.0.31",
+        "vector_accelerated": false,
+        "vector_uint_lanes": 4
+      },
+      "file_count": 191,
+      "process_count": 32,
+      "process_exit_counts": {
+        "0": 32
+      },
+      "sdk": "8.0.425",
+      "status": "passed",
+      "summaries": {
+        "pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json": 14,
+        "pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/summary.json": 4,
+        "pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json": 14
+      },
+      "summary_file_count": 3,
+      "uncompressed_file_bytes": 344630
+    },
+    "arm64-netstandard-checked": {
+      "architecture": "arm64",
+      "artifact_id": 11271190868,
+      "configuration": "netstandard-checked",
+      "feature_default": {
+        "advsimd": true,
+        "advsimd_arm64": true,
+        "avx2": false,
+        "complus_enable_hw_intrinsic": null,
+        "dotnet_enable_hw_intrinsic": null,
+        "os_architecture": "Arm64",
+        "popcnt": false,
+        "popcnt_x64": false,
+        "process_architecture": "Arm64",
+        "runtime": ".NET 8.0.31",
+        "vector_accelerated": true,
+        "vector_uint_lanes": 4
+      },
+      "feature_nohw": {
+        "advsimd": false,
+        "advsimd_arm64": false,
+        "avx2": false,
+        "complus_enable_hw_intrinsic": "0",
+        "dotnet_enable_hw_intrinsic": "0",
+        "os_architecture": "Arm64",
+        "popcnt": false,
+        "popcnt_x64": false,
+        "process_architecture": "Arm64",
+        "runtime": ".NET 8.0.31",
+        "vector_accelerated": false,
+        "vector_uint_lanes": 4
+      },
+      "file_count": 116,
+      "process_count": 18,
+      "process_exit_counts": {
+        "0": 18
+      },
+      "sdk": "8.0.425",
+      "status": "passed",
+      "summaries": {
+        "pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/summary.json": 4,
+        "pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json": 14
+      },
+      "summary_file_count": 2,
+      "uncompressed_file_bytes": 270248
+    },
+    "x64-net8-checked": {
+      "architecture": "x64",
+      "artifact_id": 11270781545,
+      "configuration": "net8-checked",
+      "feature_default": {
+        "advsimd": false,
+        "advsimd_arm64": false,
+        "avx2": true,
+        "complus_enable_hw_intrinsic": null,
+        "dotnet_enable_hw_intrinsic": null,
+        "os_architecture": "X64",
+        "popcnt": true,
+        "popcnt_x64": true,
+        "process_architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "vector_accelerated": true,
+        "vector_uint_lanes": 8
+      },
+      "feature_nohw": {
+        "advsimd": false,
+        "advsimd_arm64": false,
+        "avx2": false,
+        "complus_enable_hw_intrinsic": "0",
+        "dotnet_enable_hw_intrinsic": "0",
+        "os_architecture": "X64",
+        "popcnt": false,
+        "popcnt_x64": false,
+        "process_architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "vector_accelerated": false,
+        "vector_uint_lanes": 4
+      },
+      "file_count": 116,
+      "process_count": 18,
+      "process_exit_counts": {
+        "0": 18
+      },
+      "sdk": "8.0.425",
+      "status": "passed",
+      "summaries": {
+        "pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/summary.json": 4,
+        "pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json": 14
+      },
+      "summary_file_count": 2,
+      "uncompressed_file_bytes": 272417
+    },
+    "x64-net8-normal": {
+      "architecture": "x64",
+      "artifact_id": 11270581268,
+      "configuration": "net8-normal",
+      "feature_default": {
+        "advsimd": false,
+        "advsimd_arm64": false,
+        "avx2": true,
+        "complus_enable_hw_intrinsic": null,
+        "dotnet_enable_hw_intrinsic": null,
+        "os_architecture": "X64",
+        "popcnt": true,
+        "popcnt_x64": true,
+        "process_architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "vector_accelerated": true,
+        "vector_uint_lanes": 8
+      },
+      "feature_nohw": {
+        "advsimd": false,
+        "advsimd_arm64": false,
+        "avx2": false,
+        "complus_enable_hw_intrinsic": "0",
+        "dotnet_enable_hw_intrinsic": "0",
+        "os_architecture": "X64",
+        "popcnt": false,
+        "popcnt_x64": false,
+        "process_architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "vector_accelerated": false,
+        "vector_uint_lanes": 4
+      },
+      "file_count": 191,
+      "process_count": 32,
+      "process_exit_counts": {
+        "0": 32
+      },
+      "sdk": "8.0.425",
+      "status": "passed",
+      "summaries": {
+        "pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json": 14,
+        "pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/summary.json": 4,
+        "pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json": 14
+      },
+      "summary_file_count": 3,
+      "uncompressed_file_bytes": 348417
+    },
+    "x64-netstandard-checked": {
+      "architecture": "x64",
+      "artifact_id": 11271200888,
+      "configuration": "netstandard-checked",
+      "feature_default": {
+        "advsimd": false,
+        "advsimd_arm64": false,
+        "avx2": true,
+        "complus_enable_hw_intrinsic": null,
+        "dotnet_enable_hw_intrinsic": null,
+        "os_architecture": "X64",
+        "popcnt": true,
+        "popcnt_x64": true,
+        "process_architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "vector_accelerated": true,
+        "vector_uint_lanes": 8
+      },
+      "feature_nohw": {
+        "advsimd": false,
+        "advsimd_arm64": false,
+        "avx2": false,
+        "complus_enable_hw_intrinsic": "0",
+        "dotnet_enable_hw_intrinsic": "0",
+        "os_architecture": "X64",
+        "popcnt": false,
+        "popcnt_x64": false,
+        "process_architecture": "X64",
+        "runtime": ".NET 8.0.31",
+        "vector_accelerated": false,
+        "vector_uint_lanes": 4
+      },
+      "file_count": 116,
+      "process_count": 18,
+      "process_exit_counts": {
+        "0": 18
+      },
+      "sdk": "8.0.425",
+      "status": "passed",
+      "summaries": {
+        "pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/summary.json": 4,
+        "pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json": 14
+      },
+      "summary_file_count": 2,
+      "uncompressed_file_bytes": 274025
+    }
+  },
+  "process_count": 136,
+  "process_exit_counts": {
+    "0": 136
+  },
+  "processes": [
+    {
+      "artifact_id": 11270556934,
+      "clean_runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "exit": 0,
+      "host_sha256": "7e8fcfda51ca0a19e71a51f5983e0e0a2d9035d844161551c72a0e18a2c16a10",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/fault/default.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/fault/default.json"
+      ],
+      "runtime_sha256": "cf33180fb6b4dc7a3f450e60a76859ba9a3904dece9db0fd96ff0ff97e9323a2",
+      "suite": "fault",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11270556934,
+      "clean_runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "exit": 0,
+      "host_sha256": "7e8fcfda51ca0a19e71a51f5983e0e0a2d9035d844161551c72a0e18a2c16a10",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/fault/nohw.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/fault/nohw.json"
+      ],
+      "runtime_sha256": "cf33180fb6b4dc7a3f450e60a76859ba9a3904dece9db0fd96ff0ff97e9323a2",
+      "suite": "fault",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11270556934,
+      "clean_runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "exit": 0,
+      "host_sha256": "64ae9797409585da83d4e19e6a5f9c386451de6f848e6bde406c2f0cba958174",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/unionfault/default.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/unionfault/default.json"
+      ],
+      "runtime_sha256": "03a1566953c3d2b57067f0899ee52de30399260c80d48b94ccd8f719794aecf1",
+      "suite": "unionfault",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11270556934,
+      "clean_runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "exit": 0,
+      "host_sha256": "64ae9797409585da83d4e19e6a5f9c386451de6f848e6bde406c2f0cba958174",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/unionfault/nohw.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/unionfault/nohw.json"
+      ],
+      "runtime_sha256": "03a1566953c3d2b57067f0899ee52de30399260c80d48b94ccd8f719794aecf1",
+      "suite": "unionfault",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "939497ae8d19ede5d2120506f97652e145bf2188b95711060a337c568d156dfd",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/independent/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/independent/default/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "independent",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "939497ae8d19ede5d2120506f97652e145bf2188b95711060a337c568d156dfd",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/independent/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/independent/nohw/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "independent",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "320f14760a3e4e3d840b9d794a316e120bc879b9e53bc10093547098a053f565",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/full/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/full/default/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "full",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "320f14760a3e4e3d840b9d794a316e120bc879b9e53bc10093547098a053f565",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/full/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/full/nohw/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "full",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "3bc2d9cbf2e71a59ee59d1cebf9c3b2cdb3dc86c0d480df7594593eb458f7229",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bitcount/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bitcount/default/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "bitcount",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 4
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "3bc2d9cbf2e71a59ee59d1cebf9c3b2cdb3dc86c0d480df7594593eb458f7229",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bitcount/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bitcount/nohw/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "bitcount",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 5
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "e1757891e321417b4ca3f9ddfc333f03fecf47b0864f75730c00aebdcb11d9b1",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/original/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/original/default/original/integer-tests.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "original",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 6
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "e1757891e321417b4ca3f9ddfc333f03fecf47b0864f75730c00aebdcb11d9b1",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/original/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/original/nohw/original/integer-tests.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "original",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 7
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "96344f6bf699571b080ed412be2cfb4d1000c35465f301658d633c41718ec78e",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/interop/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/interop/default/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "interop",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 8
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "96344f6bf699571b080ed412be2cfb4d1000c35465f301658d633c41718ec78e",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/interop/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/interop/nohw/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "interop",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 9
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "0d0c371a81e37af81650d7157039e000d49616b54319d70caf9f8f2b432ddc2b",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge/default/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "bridge",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 10
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "0d0c371a81e37af81650d7157039e000d49616b54319d70caf9f8f2b432ddc2b",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge/nohw/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "bridge",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 11
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "1db692514e147551cdb0cc9fa8fef225c8b75f3876179f6ae91f1f5481babd5e",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge-mutation/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge-mutation/default/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "bridge-mutation",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 12
+    },
+    {
+      "artifact_id": 11270556934,
+      "exit": 0,
+      "host_sha256": "1db692514e147551cdb0cc9fa8fef225c8b75f3876179f6ae91f1f5481babd5e",
+      "job": "arm64-net8-checked",
+      "log_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge-mutation/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge-mutation/nohw/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "bridge-mutation",
+      "summary_member": "arm64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 13
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "0427e2af8d9deb228283ceab6ad285c2cbb347e6cfc3fb26a160ead7f040e26d",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/independent/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/independent/default/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "independent",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "0427e2af8d9deb228283ceab6ad285c2cbb347e6cfc3fb26a160ead7f040e26d",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/independent/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/independent/nohw/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "independent",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "b275b61ac870a78ab117d416f3d6ec78f9456e2d581d8554273b8392d8aed1ff",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/full/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/full/default/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "full",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "b275b61ac870a78ab117d416f3d6ec78f9456e2d581d8554273b8392d8aed1ff",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/full/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/full/nohw/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "full",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "510fb13fbb1492995bd9cc7ccce2f0eb9dca135d3cb0dfafa23a9c0afe31c549",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bitcount/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bitcount/default/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "bitcount",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 4
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "510fb13fbb1492995bd9cc7ccce2f0eb9dca135d3cb0dfafa23a9c0afe31c549",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bitcount/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bitcount/nohw/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "bitcount",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 5
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "48b6063d573416a6b396d5689a99618304275a829f96021e9371db9033b5e803",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/original/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/original/default/original/integer-tests.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "original",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 6
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "48b6063d573416a6b396d5689a99618304275a829f96021e9371db9033b5e803",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/original/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/original/nohw/original/integer-tests.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "original",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 7
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "997488f638d33c81fead54b6d1bed1882e7d8d264038659c0658c76f213f0c53",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/interop/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/interop/default/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "interop",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 8
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "997488f638d33c81fead54b6d1bed1882e7d8d264038659c0658c76f213f0c53",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/interop/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/interop/nohw/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "interop",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 9
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "dd14b611001bf458b558775acc8591a32d8588fb2e61f4a8d1944f925ca33995",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge/default/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "bridge",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 10
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "dd14b611001bf458b558775acc8591a32d8588fb2e61f4a8d1944f925ca33995",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge/nohw/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "bridge",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 11
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "a480570edc2c3c203a2f72b3115beb227e1ef61535ff1bcabe745cce0c3a32b0",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge-mutation/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge-mutation/default/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "bridge-mutation",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 12
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "a480570edc2c3c203a2f72b3115beb227e1ef61535ff1bcabe745cce0c3a32b0",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge-mutation/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge-mutation/nohw/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "bridge-mutation",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 13
+    },
+    {
+      "artifact_id": 11270581268,
+      "clean_runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "exit": 0,
+      "host_sha256": "d672b0e547fc14a276f6bd01877fe643a3dbb7ed25300dfe7893dddaa82545be",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/fault/default.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/fault/default.json"
+      ],
+      "runtime_sha256": "7596c7bf301e6391fec72962bce6aeac339c4712ca5504aed3310ba23e28dcc5",
+      "suite": "fault",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11270581268,
+      "clean_runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "exit": 0,
+      "host_sha256": "d672b0e547fc14a276f6bd01877fe643a3dbb7ed25300dfe7893dddaa82545be",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/fault/nohw.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/fault/nohw.json"
+      ],
+      "runtime_sha256": "7596c7bf301e6391fec72962bce6aeac339c4712ca5504aed3310ba23e28dcc5",
+      "suite": "fault",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11270581268,
+      "clean_runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "exit": 0,
+      "host_sha256": "86a2eeb5378e44f014f43dbb54ec475eb443d930def4b7f08ed5d5d8f88f3b9a",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/unionfault/default.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/unionfault/default.json"
+      ],
+      "runtime_sha256": "97d7dc6e52576915d9893c84341bda2363f2508e67fd6eaf1aadded8469f61cf",
+      "suite": "unionfault",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11270581268,
+      "clean_runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "exit": 0,
+      "host_sha256": "86a2eeb5378e44f014f43dbb54ec475eb443d930def4b7f08ed5d5d8f88f3b9a",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/unionfault/nohw.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/unionfault/nohw.json"
+      ],
+      "runtime_sha256": "97d7dc6e52576915d9893c84341bda2363f2508e67fd6eaf1aadded8469f61cf",
+      "suite": "unionfault",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "a04d5691886051005f823fe71c2724c76381b4954e0ae35319be8981d8085f81",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/independent/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/independent/default/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "independent",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "a04d5691886051005f823fe71c2724c76381b4954e0ae35319be8981d8085f81",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/independent/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/independent/nohw/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "independent",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "a39677f26cf30c4927103d72fedae7759ead089d1b0c387d12e161ec5ae460b2",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/full/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/full/default/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "full",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "a39677f26cf30c4927103d72fedae7759ead089d1b0c387d12e161ec5ae460b2",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/full/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/full/nohw/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "full",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "3632bec2c96cdaa41cce59d5544d00efb64ecc043b7c894b1ff567e3e4632f43",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bitcount/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bitcount/default/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "bitcount",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 4
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "3632bec2c96cdaa41cce59d5544d00efb64ecc043b7c894b1ff567e3e4632f43",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bitcount/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bitcount/nohw/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "bitcount",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 5
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "ac00c2aae47a9fb591340763ea4e16437c72052108413ca9661b6eec31aec6c0",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/original/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/original/default/original/integer-tests.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "original",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 6
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "ac00c2aae47a9fb591340763ea4e16437c72052108413ca9661b6eec31aec6c0",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/original/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/original/nohw/original/integer-tests.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "original",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 7
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "b7f86a8e1c621c2324315a27e90cb5167d48c46f052a7bbfed02b95b3690c0e8",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/interop/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/interop/default/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "interop",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 8
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "b7f86a8e1c621c2324315a27e90cb5167d48c46f052a7bbfed02b95b3690c0e8",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/interop/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/interop/nohw/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "interop",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 9
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "df736d1e418e9dcbec3c9aedb0e3a94e7148aef22535d90dfb993310d5708879",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge/default/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "bridge",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 10
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "df736d1e418e9dcbec3c9aedb0e3a94e7148aef22535d90dfb993310d5708879",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge/nohw/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "bridge",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 11
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "ad631806e07653b6b1c8e0f7053b85f575d263f4e52537b9a43be5b40de86d5b",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge-mutation/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge-mutation/default/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "bridge-mutation",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 12
+    },
+    {
+      "artifact_id": 11270581268,
+      "exit": 0,
+      "host_sha256": "ad631806e07653b6b1c8e0f7053b85f575d263f4e52537b9a43be5b40de86d5b",
+      "job": "x64-net8-normal",
+      "log_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge-mutation/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge-mutation/nohw/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "bridge-mutation",
+      "summary_member": "x64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 13
+    },
+    {
+      "artifact_id": 11270781545,
+      "clean_runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "exit": 0,
+      "host_sha256": "7e8fcfda51ca0a19e71a51f5983e0e0a2d9035d844161551c72a0e18a2c16a10",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/fault/default.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/fault/default.json"
+      ],
+      "runtime_sha256": "cf33180fb6b4dc7a3f450e60a76859ba9a3904dece9db0fd96ff0ff97e9323a2",
+      "suite": "fault",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11270781545,
+      "clean_runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "exit": 0,
+      "host_sha256": "7e8fcfda51ca0a19e71a51f5983e0e0a2d9035d844161551c72a0e18a2c16a10",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/fault/nohw.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/fault/nohw.json"
+      ],
+      "runtime_sha256": "cf33180fb6b4dc7a3f450e60a76859ba9a3904dece9db0fd96ff0ff97e9323a2",
+      "suite": "fault",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11270781545,
+      "clean_runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "exit": 0,
+      "host_sha256": "64ae9797409585da83d4e19e6a5f9c386451de6f848e6bde406c2f0cba958174",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/unionfault/default.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/unionfault/default.json"
+      ],
+      "runtime_sha256": "03a1566953c3d2b57067f0899ee52de30399260c80d48b94ccd8f719794aecf1",
+      "suite": "unionfault",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11270781545,
+      "clean_runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "exit": 0,
+      "host_sha256": "64ae9797409585da83d4e19e6a5f9c386451de6f848e6bde406c2f0cba958174",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/unionfault/nohw.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/unionfault/nohw.json"
+      ],
+      "runtime_sha256": "03a1566953c3d2b57067f0899ee52de30399260c80d48b94ccd8f719794aecf1",
+      "suite": "unionfault",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked-faults/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "939497ae8d19ede5d2120506f97652e145bf2188b95711060a337c568d156dfd",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/independent/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/independent/default/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "independent",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "939497ae8d19ede5d2120506f97652e145bf2188b95711060a337c568d156dfd",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/independent/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/independent/nohw/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "independent",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "320f14760a3e4e3d840b9d794a316e120bc879b9e53bc10093547098a053f565",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/full/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/full/default/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "full",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "320f14760a3e4e3d840b9d794a316e120bc879b9e53bc10093547098a053f565",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/full/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/full/nohw/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "full",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "3bc2d9cbf2e71a59ee59d1cebf9c3b2cdb3dc86c0d480df7594593eb458f7229",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bitcount/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bitcount/default/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "bitcount",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 4
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "3bc2d9cbf2e71a59ee59d1cebf9c3b2cdb3dc86c0d480df7594593eb458f7229",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bitcount/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bitcount/nohw/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "bitcount",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 5
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "e1757891e321417b4ca3f9ddfc333f03fecf47b0864f75730c00aebdcb11d9b1",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/original/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/original/default/original/integer-tests.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "original",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 6
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "e1757891e321417b4ca3f9ddfc333f03fecf47b0864f75730c00aebdcb11d9b1",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/original/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/original/nohw/original/integer-tests.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "original",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 7
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "96344f6bf699571b080ed412be2cfb4d1000c35465f301658d633c41718ec78e",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/interop/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/interop/default/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "interop",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 8
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "96344f6bf699571b080ed412be2cfb4d1000c35465f301658d633c41718ec78e",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/interop/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/interop/nohw/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "interop",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 9
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "0d0c371a81e37af81650d7157039e000d49616b54319d70caf9f8f2b432ddc2b",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge/default/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "bridge",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 10
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "0d0c371a81e37af81650d7157039e000d49616b54319d70caf9f8f2b432ddc2b",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge/nohw/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "bridge",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 11
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "1db692514e147551cdb0cc9fa8fef225c8b75f3876179f6ae91f1f5481babd5e",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge-mutation/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge-mutation/default/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "bridge-mutation",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 12
+    },
+    {
+      "artifact_id": 11270781545,
+      "exit": 0,
+      "host_sha256": "1db692514e147551cdb0cc9fa8fef225c8b75f3876179f6ae91f1f5481babd5e",
+      "job": "x64-net8-checked",
+      "log_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge-mutation/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/bridge-mutation/nohw/result.json"
+      ],
+      "runtime_sha256": "62f625734d63159fb73bd944e9812cd9eaa1389bd2a864b8c1e77e25041545fd",
+      "suite": "bridge-mutation",
+      "summary_member": "x64-net8-checked/pr26-refinement/independent-tests/integration-results/selected-net8-checked/summary.json",
+      "summary_row": 13
+    },
+    {
+      "artifact_id": 11271190868,
+      "clean_runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "exit": 0,
+      "host_sha256": "4c949d474738e3fca828739e3041da71d145fcdadc717aecdb7e70acae4bac58",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/fault/default.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/fault/default.json"
+      ],
+      "runtime_sha256": "4ff17f76c6d7c8d53dceed49039981a2a65ec932dd3e6cb519a0003f34329eba",
+      "suite": "fault",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11271190868,
+      "clean_runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "exit": 0,
+      "host_sha256": "4c949d474738e3fca828739e3041da71d145fcdadc717aecdb7e70acae4bac58",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/fault/nohw.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/fault/nohw.json"
+      ],
+      "runtime_sha256": "4ff17f76c6d7c8d53dceed49039981a2a65ec932dd3e6cb519a0003f34329eba",
+      "suite": "fault",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11271190868,
+      "clean_runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "exit": 0,
+      "host_sha256": "8bea48e90da621ff2800fe04bc7b2211d77cb3dfb12722714e8818a2d5dcd69b",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/unionfault/default.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/unionfault/default.json"
+      ],
+      "runtime_sha256": "36ec064ee3520b5a33f9f85d3309989653e85c88a38d51222e66c7ebb736f6c5",
+      "suite": "unionfault",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11271190868,
+      "clean_runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "exit": 0,
+      "host_sha256": "8bea48e90da621ff2800fe04bc7b2211d77cb3dfb12722714e8818a2d5dcd69b",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/unionfault/nohw.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/unionfault/nohw.json"
+      ],
+      "runtime_sha256": "36ec064ee3520b5a33f9f85d3309989653e85c88a38d51222e66c7ebb736f6c5",
+      "suite": "unionfault",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "9edd88dcebd586fb3c72e2c0af4b7e3ec59f355fca2618637bafbbf792f85960",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/independent/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/independent/default/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "independent",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "9edd88dcebd586fb3c72e2c0af4b7e3ec59f355fca2618637bafbbf792f85960",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/independent/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/independent/nohw/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "independent",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "fd76b1066f779580c10f8c460d5885c1a7c02fb3eca84e3d4e895b3c9b5989b3",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/full/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/full/default/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "full",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "fd76b1066f779580c10f8c460d5885c1a7c02fb3eca84e3d4e895b3c9b5989b3",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/full/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/full/nohw/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "full",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "eaa09fe5885584185ceb45fd7fe455274fff42d6f2414278ec04bac8a03ba22f",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bitcount/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bitcount/default/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "bitcount",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 4
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "eaa09fe5885584185ceb45fd7fe455274fff42d6f2414278ec04bac8a03ba22f",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bitcount/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bitcount/nohw/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "bitcount",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 5
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "005f5357c9b7d3c39f0ea1a3ad80b2dfc63084084bfcbdd9c8dd9004c47b12aa",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/original/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/original/default/original/integer-tests.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "original",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 6
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "005f5357c9b7d3c39f0ea1a3ad80b2dfc63084084bfcbdd9c8dd9004c47b12aa",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/original/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/original/nohw/original/integer-tests.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "original",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 7
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "70ad5ec8706dac685a8f395d331df256be8125b6cfb0114c9155edeedbec535a",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/interop/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/interop/default/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "interop",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 8
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "70ad5ec8706dac685a8f395d331df256be8125b6cfb0114c9155edeedbec535a",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/interop/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/interop/nohw/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "interop",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 9
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "de26011436e2ecc4a466d82837e47e54e2734bbed45c4436a4b2c3e6fecaf956",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge/default/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "bridge",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 10
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "de26011436e2ecc4a466d82837e47e54e2734bbed45c4436a4b2c3e6fecaf956",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge/nohw/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "bridge",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 11
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "0b2dcad7fa17e6803904ea913660d390f65df391e3811905c5fa225a788ea545",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge-mutation/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge-mutation/default/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "bridge-mutation",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 12
+    },
+    {
+      "artifact_id": 11271190868,
+      "exit": 0,
+      "host_sha256": "0b2dcad7fa17e6803904ea913660d390f65df391e3811905c5fa225a788ea545",
+      "job": "arm64-netstandard-checked",
+      "log_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge-mutation/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge-mutation/nohw/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "bridge-mutation",
+      "summary_member": "arm64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 13
+    },
+    {
+      "artifact_id": 11271200888,
+      "clean_runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "exit": 0,
+      "host_sha256": "4c949d474738e3fca828739e3041da71d145fcdadc717aecdb7e70acae4bac58",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/fault/default.log",
+      "mode": "default",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/fault/default.json"
+      ],
+      "runtime_sha256": "4ff17f76c6d7c8d53dceed49039981a2a65ec932dd3e6cb519a0003f34329eba",
+      "suite": "fault",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11271200888,
+      "clean_runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "exit": 0,
+      "host_sha256": "4c949d474738e3fca828739e3041da71d145fcdadc717aecdb7e70acae4bac58",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/fault/nohw.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/fault/nohw.json"
+      ],
+      "runtime_sha256": "4ff17f76c6d7c8d53dceed49039981a2a65ec932dd3e6cb519a0003f34329eba",
+      "suite": "fault",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11271200888,
+      "clean_runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "exit": 0,
+      "host_sha256": "8bea48e90da621ff2800fe04bc7b2211d77cb3dfb12722714e8818a2d5dcd69b",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/unionfault/default.log",
+      "mode": "default",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/unionfault/default.json"
+      ],
+      "runtime_sha256": "36ec064ee3520b5a33f9f85d3309989653e85c88a38d51222e66c7ebb736f6c5",
+      "suite": "unionfault",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11271200888,
+      "clean_runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "exit": 0,
+      "host_sha256": "8bea48e90da621ff2800fe04bc7b2211d77cb3dfb12722714e8818a2d5dcd69b",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/unionfault/nohw.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/unionfault/nohw.json"
+      ],
+      "runtime_sha256": "36ec064ee3520b5a33f9f85d3309989653e85c88a38d51222e66c7ebb736f6c5",
+      "suite": "unionfault",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked-faults/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "9edd88dcebd586fb3c72e2c0af4b7e3ec59f355fca2618637bafbbf792f85960",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/independent/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/independent/default/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "independent",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "9edd88dcebd586fb3c72e2c0af4b7e3ec59f355fca2618637bafbbf792f85960",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/independent/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/independent/nohw/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "independent",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "fd76b1066f779580c10f8c460d5885c1a7c02fb3eca84e3d4e895b3c9b5989b3",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/full/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/full/default/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "full",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "fd76b1066f779580c10f8c460d5885c1a7c02fb3eca84e3d4e895b3c9b5989b3",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/full/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/full/nohw/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "full",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "eaa09fe5885584185ceb45fd7fe455274fff42d6f2414278ec04bac8a03ba22f",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bitcount/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bitcount/default/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "bitcount",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 4
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "eaa09fe5885584185ceb45fd7fe455274fff42d6f2414278ec04bac8a03ba22f",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bitcount/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bitcount/nohw/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "bitcount",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 5
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "005f5357c9b7d3c39f0ea1a3ad80b2dfc63084084bfcbdd9c8dd9004c47b12aa",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/original/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/original/default/original/integer-tests.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "original",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 6
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "005f5357c9b7d3c39f0ea1a3ad80b2dfc63084084bfcbdd9c8dd9004c47b12aa",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/original/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/original/nohw/original/integer-tests.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "original",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 7
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "70ad5ec8706dac685a8f395d331df256be8125b6cfb0114c9155edeedbec535a",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/interop/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/interop/default/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "interop",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 8
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "70ad5ec8706dac685a8f395d331df256be8125b6cfb0114c9155edeedbec535a",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/interop/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/interop/nohw/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "interop",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 9
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "de26011436e2ecc4a466d82837e47e54e2734bbed45c4436a4b2c3e6fecaf956",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge/default/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "bridge",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 10
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "de26011436e2ecc4a466d82837e47e54e2734bbed45c4436a4b2c3e6fecaf956",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge/nohw/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "bridge",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 11
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "0b2dcad7fa17e6803904ea913660d390f65df391e3811905c5fa225a788ea545",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge-mutation/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge-mutation/default/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "bridge-mutation",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 12
+    },
+    {
+      "artifact_id": 11271200888,
+      "exit": 0,
+      "host_sha256": "0b2dcad7fa17e6803904ea913660d390f65df391e3811905c5fa225a788ea545",
+      "job": "x64-netstandard-checked",
+      "log_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge-mutation/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/bridge-mutation/nohw/result.json"
+      ],
+      "runtime_sha256": "f3cd331059309c0f9c15b45b345d00a30bcd8b356c6c687cff1a1eaf34bdb6c7",
+      "suite": "bridge-mutation",
+      "summary_member": "x64-netstandard-checked/pr26-refinement/independent-tests/integration-results/selected-netstandard-checked/summary.json",
+      "summary_row": 13
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "0427e2af8d9deb228283ceab6ad285c2cbb347e6cfc3fb26a160ead7f040e26d",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/independent/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/independent/default/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "independent",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "0427e2af8d9deb228283ceab6ad285c2cbb347e6cfc3fb26a160ead7f040e26d",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/independent/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/independent/nohw/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "independent",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "b275b61ac870a78ab117d416f3d6ec78f9456e2d581d8554273b8392d8aed1ff",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/full/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/full/default/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "full",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "b275b61ac870a78ab117d416f3d6ec78f9456e2d581d8554273b8392d8aed1ff",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/full/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/full/nohw/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "full",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "510fb13fbb1492995bd9cc7ccce2f0eb9dca135d3cb0dfafa23a9c0afe31c549",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bitcount/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bitcount/default/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "bitcount",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 4
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "510fb13fbb1492995bd9cc7ccce2f0eb9dca135d3cb0dfafa23a9c0afe31c549",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bitcount/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bitcount/nohw/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "bitcount",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 5
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "48b6063d573416a6b396d5689a99618304275a829f96021e9371db9033b5e803",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/original/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/original/default/original/integer-tests.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "original",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 6
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "48b6063d573416a6b396d5689a99618304275a829f96021e9371db9033b5e803",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/original/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/original/nohw/original/integer-tests.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "original",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 7
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "997488f638d33c81fead54b6d1bed1882e7d8d264038659c0658c76f213f0c53",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/interop/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/interop/default/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "interop",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 8
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "997488f638d33c81fead54b6d1bed1882e7d8d264038659c0658c76f213f0c53",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/interop/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/interop/nohw/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "interop",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 9
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "dd14b611001bf458b558775acc8591a32d8588fb2e61f4a8d1944f925ca33995",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge/default/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "bridge",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 10
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "dd14b611001bf458b558775acc8591a32d8588fb2e61f4a8d1944f925ca33995",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge/nohw/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "bridge",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 11
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "a480570edc2c3c203a2f72b3115beb227e1ef61535ff1bcabe745cce0c3a32b0",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge-mutation/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge-mutation/default/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "bridge-mutation",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 12
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "a480570edc2c3c203a2f72b3115beb227e1ef61535ff1bcabe745cce0c3a32b0",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge-mutation/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/bridge-mutation/nohw/result.json"
+      ],
+      "runtime_sha256": "56afd4b1922fc5bec545c529920bc049ed2afbdd98a44fb0fb192a27281d4113",
+      "suite": "bridge-mutation",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/baseline-net8-normal/summary.json",
+      "summary_row": 13
+    },
+    {
+      "artifact_id": 11271275896,
+      "clean_runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "exit": 0,
+      "host_sha256": "d672b0e547fc14a276f6bd01877fe643a3dbb7ed25300dfe7893dddaa82545be",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/fault/default.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/fault/default.json"
+      ],
+      "runtime_sha256": "7596c7bf301e6391fec72962bce6aeac339c4712ca5504aed3310ba23e28dcc5",
+      "suite": "fault",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11271275896,
+      "clean_runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "exit": 0,
+      "host_sha256": "d672b0e547fc14a276f6bd01877fe643a3dbb7ed25300dfe7893dddaa82545be",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/fault/nohw.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/fault/nohw.json"
+      ],
+      "runtime_sha256": "7596c7bf301e6391fec72962bce6aeac339c4712ca5504aed3310ba23e28dcc5",
+      "suite": "fault",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11271275896,
+      "clean_runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "exit": 0,
+      "host_sha256": "86a2eeb5378e44f014f43dbb54ec475eb443d930def4b7f08ed5d5d8f88f3b9a",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/unionfault/default.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/unionfault/default.json"
+      ],
+      "runtime_sha256": "97d7dc6e52576915d9893c84341bda2363f2508e67fd6eaf1aadded8469f61cf",
+      "suite": "unionfault",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11271275896,
+      "clean_runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "exit": 0,
+      "host_sha256": "86a2eeb5378e44f014f43dbb54ec475eb443d930def4b7f08ed5d5d8f88f3b9a",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/unionfault/nohw.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/unionfault/nohw.json"
+      ],
+      "runtime_sha256": "97d7dc6e52576915d9893c84341bda2363f2508e67fd6eaf1aadded8469f61cf",
+      "suite": "unionfault",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal-faults/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "a04d5691886051005f823fe71c2724c76381b4954e0ae35319be8981d8085f81",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/independent/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/independent/default/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "independent",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 0
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "a04d5691886051005f823fe71c2724c76381b4954e0ae35319be8981d8085f81",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/independent/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/independent/nohw/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "independent",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 1
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "a39677f26cf30c4927103d72fedae7759ead089d1b0c387d12e161ec5ae460b2",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/full/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/full/default/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "full",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 2
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "a39677f26cf30c4927103d72fedae7759ead089d1b0c387d12e161ec5ae460b2",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/full/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/full/nohw/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "full",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 3
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "3632bec2c96cdaa41cce59d5544d00efb64ecc043b7c894b1ff567e3e4632f43",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bitcount/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bitcount/default/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "bitcount",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 4
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "3632bec2c96cdaa41cce59d5544d00efb64ecc043b7c894b1ff567e3e4632f43",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bitcount/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bitcount/nohw/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "bitcount",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 5
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "ac00c2aae47a9fb591340763ea4e16437c72052108413ca9661b6eec31aec6c0",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/original/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/original/default/original/integer-tests.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "original",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 6
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "ac00c2aae47a9fb591340763ea4e16437c72052108413ca9661b6eec31aec6c0",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/original/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/original/nohw/original/integer-tests.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "original",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 7
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "b7f86a8e1c621c2324315a27e90cb5167d48c46f052a7bbfed02b95b3690c0e8",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/interop/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/interop/default/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "interop",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 8
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "b7f86a8e1c621c2324315a27e90cb5167d48c46f052a7bbfed02b95b3690c0e8",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/interop/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/interop/nohw/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "interop",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 9
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "df736d1e418e9dcbec3c9aedb0e3a94e7148aef22535d90dfb993310d5708879",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge/default/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "bridge",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 10
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "df736d1e418e9dcbec3c9aedb0e3a94e7148aef22535d90dfb993310d5708879",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge/nohw/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "bridge",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 11
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "ad631806e07653b6b1c8e0f7053b85f575d263f4e52537b9a43be5b40de86d5b",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge-mutation/default/run.log",
+      "mode": "default",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge-mutation/default/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "bridge-mutation",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 12
+    },
+    {
+      "artifact_id": 11271275896,
+      "exit": 0,
+      "host_sha256": "ad631806e07653b6b1c8e0f7053b85f575d263f4e52537b9a43be5b40de86d5b",
+      "job": "arm64-net8-normal",
+      "log_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge-mutation/nohw/run.log",
+      "mode": "nohw",
+      "result_members": [
+        "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/bridge-mutation/nohw/result.json"
+      ],
+      "runtime_sha256": "8fe414f3c6065195cfc81c552f0aa78e1df7d5da738c242667d7f998685cf22b",
+      "suite": "bridge-mutation",
+      "summary_member": "arm64-net8-normal/pr26-refinement/independent-tests/integration-results/selected-net8-normal/summary.json",
+      "summary_row": 13
+    }
+  ],
+  "run_id": 37113148603,
+  "schema_version": 1,
+  "scope": "Existing GitHub correctness artifacts only. No probes, benchmarks, .NET commands or new correctness tests executed.",
+  "selection": {
+    "archive_member_prefix": "<architecture>-<configuration>/; original relative member path retained afterwards",
+    "artifact_name_prefix": "pr26-correctness-",
+    "excluded_directory_components": [
+      ".cache",
+      "__pycache__",
+      "bin",
+      "cache",
+      "home",
+      "obj"
+    ],
+    "excluded_payloads": [
+      "DLL/PDB/native executables",
+      "actual .cs files and duplicate source trees",
+      "unselected artifact data"
+    ],
+    "include": [
+      "run-receipt.json",
+      "features/default.json",
+      "features/nohw.json",
+      "global.json",
+      "logs/**/*.log",
+      "pr26-refinement/independent-tests/integration-results/**/*.{json,log,csproj}"
+    ]
+  },
+  "status": "passed",
+  "summary_file_count": 14,
+  "verification": {
+    "all_payload_files_are_utf8_without_nul": true,
+    "all_published_members_match_original_zip_bytes": true,
+    "all_summary_process_exits_zero": true,
+    "archive_below_2_mib": true,
+    "binaries_retained_in_publication": false,
+    "fault_clean_runtime_hashes_verified": 24,
+    "job_command_log_hashes_verified": 44,
+    "original_artifact_files_manifests_match_original_bytes": true,
+    "original_manifest_entries_verified": 4522,
+    "original_zip_and_metadata_files_unchanged": true,
+    "outer_digests_match_github_metadata": true,
+    "published_csproj": 132,
+    "published_files_byte_verified_against_original_zip": 846,
+    "published_json": 402,
+    "published_log": 312,
+    "source_or_library_path_hashes_verified": 1706,
+    "summary_host_and_runtime_hashes_verified": 272
+  }
+}

@@ -1,0 +1,201 @@
+{
+  "schema": 1,
+  "archive": "derived-results.tar.gz",
+  "archive_sha256": "8ae1aa5be89de992051c6ea4091e999aeb364ecb668445e5876a8c0aa204dff4",
+  "archive_size": 989816,
+  "files": {
+    "results/ci-arm64-bridge-default.json": {
+      "size": 152738,
+      "sha256": "6a5ec54d637abd2ac7e154898039de782c88ceb58fb3dbaa3a0257ffe31d5831",
+      "source_artifact_id": 11271197052,
+      "shard": "ci-arm64-bridge-default"
+    },
+    "results/ci-arm64-bridge-default.csv": {
+      "size": 17481,
+      "sha256": "3553ebc01297b22c2ab1136338d47a76e4c962b06ea608be41867a7d266ccd65",
+      "source_artifact_id": 11271197052,
+      "shard": "ci-arm64-bridge-default"
+    },
+    "results/ci-arm64-bridge-nohw.json": {
+      "size": 152784,
+      "sha256": "7f9d22cbc4d14ea3164deba697e46eaf38026df56346aa00a518a5f598c73a46",
+      "source_artifact_id": 11270432164,
+      "shard": "ci-arm64-bridge-nohw"
+    },
+    "results/ci-arm64-bridge-nohw.csv": {
+      "size": 17516,
+      "sha256": "fb2d3cac2e9b49fab146579435fd5073fbcb01f82f33c35a0c3e71838eb71725",
+      "source_artifact_id": 11270432164,
+      "shard": "ci-arm64-bridge-nohw"
+    },
+    "results/ci-arm64-builder-default.json": {
+      "size": 206655,
+      "sha256": "3d3f4d9e7cfe6d7acba9e4f54e0c422f6b98d56bb6f08302003d04c4641ce8bb",
+      "source_artifact_id": 11270427261,
+      "shard": "ci-arm64-builder-default"
+    },
+    "results/ci-arm64-builder-default.csv": {
+      "size": 23112,
+      "sha256": "ea8993bd0eb1e0292f321483d41ff7a7f84f2474d78fe624a739617e09cac849",
+      "source_artifact_id": 11270427261,
+      "shard": "ci-arm64-builder-default"
+    },
+    "results/ci-arm64-builder-nohw.json": {
+      "size": 206524,
+      "sha256": "4eab1882c3f23e49f76becce70edef40b4e8ad850ea59a0c0a387d8c1f6cdee6",
+      "source_artifact_id": 11270787720,
+      "shard": "ci-arm64-builder-nohw"
+    },
+    "results/ci-arm64-builder-nohw.csv": {
+      "size": 23118,
+      "sha256": "54d806754e3b582a8e9f9515d8c6cf241b7572aa3f16d2c8b2b346e606d063df",
+      "source_artifact_id": 11270787720,
+      "shard": "ci-arm64-builder-nohw"
+    },
+    "results/ci-arm64-mixed-default.json": {
+      "size": 515342,
+      "sha256": "cbd818573e4b6e0cd1c11536d38a3ffad46f4916444482783d63c2d1aedffb68",
+      "source_artifact_id": 11270686941,
+      "shard": "ci-arm64-mixed-default"
+    },
+    "results/ci-arm64-mixed-default.csv": {
+      "size": 57859,
+      "sha256": "33d0cce2187408c949570d2f648ce1e7e0e8830c7b1ded66fc135cd7ec05e1e4",
+      "source_artifact_id": 11270686941,
+      "shard": "ci-arm64-mixed-default"
+    },
+    "results/ci-arm64-mixed-nohw.json": {
+      "size": 515127,
+      "sha256": "091ae63fe58d1223ac20c0e65c6e240832fae8eebe12747c5bbbba1859f37ffd",
+      "source_artifact_id": 11270668136,
+      "shard": "ci-arm64-mixed-nohw"
+    },
+    "results/ci-arm64-mixed-nohw.csv": {
+      "size": 57873,
+      "sha256": "d9b55f085328058688bd460154d08c2514d57804ad54142a14b6002c03a4eb54",
+      "source_artifact_id": 11270668136,
+      "shard": "ci-arm64-mixed-nohw"
+    },
+    "results/ci-arm64-query-default.json": {
+      "size": 254303,
+      "sha256": "f16eaf366f536997b1efc3454b089a820a23b1690328c156ac0bd83798e2541c",
+      "source_artifact_id": 11270927417,
+      "shard": "ci-arm64-query-default"
+    },
+    "results/ci-arm64-query-default.csv": {
+      "size": 27963,
+      "sha256": "44254d758fe00ef0f399182a86c028c8131669f649b39d4f825d3babaebfb973",
+      "source_artifact_id": 11270927417,
+      "shard": "ci-arm64-query-default"
+    },
+    "results/ci-arm64-query-nohw.json": {
+      "size": 254431,
+      "sha256": "c30f0a09f4aa7e6d93f8b4b229e6168ef70ba51e470724e315d6106cb9f6169e",
+      "source_artifact_id": 11270982439,
+      "shard": "ci-arm64-query-nohw"
+    },
+    "results/ci-arm64-query-nohw.csv": {
+      "size": 27978,
+      "sha256": "8a797e07fc58a7da5b6638c3bbb89730a3dae21f77810d7c2147387941d4e62e",
+      "source_artifact_id": 11270982439,
+      "shard": "ci-arm64-query-nohw"
+    },
+    "results/ci-x64-bridge-default.json": {
+      "size": 152652,
+      "sha256": "cf8b95bb772670d099d8bfd24269b5df5154b0c758663404efbeb820d28db907",
+      "source_artifact_id": 11270647434,
+      "shard": "ci-x64-bridge-default"
+    },
+    "results/ci-x64-bridge-default.csv": {
+      "size": 17490,
+      "sha256": "b1110b872def3d52191eddaa73ffff4b857b45e3a51c465f018b164c8455b43a",
+      "source_artifact_id": 11270647434,
+      "shard": "ci-x64-bridge-default"
+    },
+    "results/ci-x64-bridge-nohw.json": {
+      "size": 152670,
+      "sha256": "87b6345ec5553af0a487a04a2f44688a7feb0473573f50b7e2559749a480e989",
+      "source_artifact_id": 11271311144,
+      "shard": "ci-x64-bridge-nohw"
+    },
+    "results/ci-x64-bridge-nohw.csv": {
+      "size": 17466,
+      "sha256": "c335b2c83596a966d99f2c338992633b029e01a08acf071ab4ecd299775e2e25",
+      "source_artifact_id": 11271311144,
+      "shard": "ci-x64-bridge-nohw"
+    },
+    "results/ci-x64-builder-default.json": {
+      "size": 206474,
+      "sha256": "6b450d288c0afc89bae98b45b4de8cfc96cb234b3e9721dada7b3ebf18f278e4",
+      "source_artifact_id": 11270442961,
+      "shard": "ci-x64-builder-default"
+    },
+    "results/ci-x64-builder-default.csv": {
+      "size": 23109,
+      "sha256": "92daf4332bb801cb09a6262f4326f7c34c5752cbc3ebdddb4cc3be12e1a8e79f",
+      "source_artifact_id": 11270442961,
+      "shard": "ci-x64-builder-default"
+    },
+    "results/ci-x64-builder-nohw.json": {
+      "size": 206454,
+      "sha256": "1ee7cf3801d1756f707523430690679b5dc015d152bab52607534814ba28690d",
+      "source_artifact_id": 11271296444,
+      "shard": "ci-x64-builder-nohw"
+    },
+    "results/ci-x64-builder-nohw.csv": {
+      "size": 23109,
+      "sha256": "515c6c853bcbd33a23564e998f7700392be11ca20df7007736f6cd6ae44890b6",
+      "source_artifact_id": 11271296444,
+      "shard": "ci-x64-builder-nohw"
+    },
+    "results/ci-x64-mixed-default.json": {
+      "size": 515402,
+      "sha256": "59306fc186fd801092c0e17893e43c278adff630dd60b69fda28bc57d68a92d7",
+      "source_artifact_id": 11270477860,
+      "shard": "ci-x64-mixed-default"
+    },
+    "results/ci-x64-mixed-default.csv": {
+      "size": 57627,
+      "sha256": "d0a3cba0ddf8bb8c33d5608a0d6fada1825eecf9d818c8403fcf34d5e60ebdfb",
+      "source_artifact_id": 11270477860,
+      "shard": "ci-x64-mixed-default"
+    },
+    "results/ci-x64-mixed-nohw.json": {
+      "size": 514590,
+      "sha256": "7cce688b6117ff0d93f271a5eda46664d267c9fb7c11a872bebdb414a0d5028e",
+      "source_artifact_id": 11270837459,
+      "shard": "ci-x64-mixed-nohw"
+    },
+    "results/ci-x64-mixed-nohw.csv": {
+      "size": 57869,
+      "sha256": "7bebaa0b74fe31bc91dba2a8fbe3be4028b1a9d1bbd207941aa023facb100d7e",
+      "source_artifact_id": 11270837459,
+      "shard": "ci-x64-mixed-nohw"
+    },
+    "results/ci-x64-query-default.json": {
+      "size": 254313,
+      "sha256": "333845dd9896b4916a9c136beb49b022683d8b73f820baebd2aca9700b44c37b",
+      "source_artifact_id": 11270882127,
+      "shard": "ci-x64-query-default"
+    },
+    "results/ci-x64-query-default.csv": {
+      "size": 27851,
+      "sha256": "744013e410bf3a5c4a942cc6115c429baa9b6a30f3b7a431a814977b63c59490",
+      "source_artifact_id": 11270882127,
+      "shard": "ci-x64-query-default"
+    },
+    "results/ci-x64-query-nohw.json": {
+      "size": 254195,
+      "sha256": "29431e9e734e6657c8a1cc7db1d0aa9ac1ec97cc8d46aa88540127b23e993d99",
+      "source_artifact_id": 11270466861,
+      "shard": "ci-x64-query-nohw"
+    },
+    "results/ci-x64-query-nohw.csv": {
+      "size": 27862,
+      "sha256": "21b7a1928de408fa0048e25f9147e17ed1f265d48efef753e378de60ad77672b",
+      "source_artifact_id": 11270466861,
+      "shard": "ci-x64-query-nohw"
+    }
+  },
+  "scope": "Recomputed JSON plus derived CSV, all1920statistical rows. Original raw summary bytes remain separately archived."
+}

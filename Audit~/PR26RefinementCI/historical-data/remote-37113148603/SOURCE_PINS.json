@@ -1,0 +1,78 @@
+{
+  "run_id": "37113148603",
+  "commit": "fc555ca1ce637c5d04274945ce90734afc89f2f1",
+  "run_attempt": 1,
+  "all_16_shard_recorded_source_pins_equal": true,
+  "pins": {
+    "payload_manifest_sha256": "29fb65f0cde2f7da991361e899ed245184006f30e593f72d7a161841268ebec1",
+    "source_selection_sha256": "3534632810536b1f5bec44484422f115581bb331684013bbfc808a6d72f5d3ce",
+    "source_runtime_set_sha256": {
+      "selected": "b46b2a1d9aff79bcbf53450ca3fbb9ea70692ddc9759b39c9ce7d829d5338fce",
+      "baseline": "20903415f7a88a3ee2c39e28936027ec8dbf59ebb398de9fe45366debe5ba6dc",
+      "bridge-before": "68374b4e284dbd1cf035a3ae5bd6e7fed724b6666e3dfd592552605f72fb9fe2"
+    },
+    "checked_files": 407,
+    "historical_rows": 852,
+    "historical_losses": [
+      {
+        "run": "final-query-default",
+        "layout": "Dense",
+        "id": "query/scatter/8/query64/balanced/same/0"
+      },
+      {
+        "run": "final-query-default",
+        "layout": "Auto",
+        "id": "query/scatter/8/query64/miss-bit/same/0"
+      },
+      {
+        "run": "final-builder-nohw",
+        "layout": "Dense",
+        "id": "builder/cluster/4096/build/sorted/same/0"
+      },
+      {
+        "run": "final-mixed-nohw",
+        "layout": "Micro",
+        "id": "mixed/random/4096/restore-remove/equal/same/4096"
+      }
+    ],
+    "historical_invalid_controls": [
+      {
+        "run": "final-builder-default",
+        "layout": "Dense",
+        "id": "builder/scatter/0/build/sorted/same/0"
+      },
+      {
+        "run": "final-builder-default",
+        "layout": "Dense",
+        "id": "builder/scatter/0/build/shuffled/same/0"
+      },
+      {
+        "run": "final-builder-default",
+        "layout": "Dense",
+        "id": "builder/scatter/1/build/sorted/same/0"
+      },
+      {
+        "run": "final-builder-nohw",
+        "layout": "Dense",
+        "id": "builder/scatter/0/build/sorted/same/0"
+      },
+      {
+        "run": "final-builder-nohw",
+        "layout": "Dense",
+        "id": "builder/scatter/0/build/shuffled/same/0"
+      },
+      {
+        "run": "final-builder-nohw",
+        "layout": "Dense",
+        "id": "builder/scatter/1/build/sorted/same/0"
+      }
+    ]
+  },
+  "scope": "Recorded identity values and original independent artifact audits. This subtree retains raw timing/receipt bytes; it omits historical DLLs and full compiler/source dependency trees. No fresh omitted-binary proof is claimed.",
+  "published_source_paths": {
+    "selected": "../../source/selected",
+    "baseline": "../../source/baseline",
+    "bridge-before": "../../source/bridge-before"
+  },
+  "all_22_recorded_timing_and_correctness_source_pins_equal": true
+}

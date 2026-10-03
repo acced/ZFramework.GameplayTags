@@ -1,0 +1,231 @@
+{
+  "archives": {
+    "raw-arm64-bridge.tar.gz": {
+      "file_count": 296,
+      "sha256": "57cfe7d08409482aedb7298ba6d6da42913d2500dc0868188207aca598453896",
+      "size": 527618,
+      "uncompressed_file_bytes": 5847057
+    },
+    "raw-arm64-builder.tar.gz": {
+      "file_count": 230,
+      "sha256": "e995a19d80bc60d4b1c7d2f8a6e35b6df0b04894744823deed010aefbec1f9c6",
+      "size": 868472,
+      "uncompressed_file_bytes": 8269422
+    },
+    "raw-arm64-mixed.tar.gz": {
+      "file_count": 230,
+      "sha256": "8f12b2a6b3bfdae973fd0c44bdcad95ea07b2b456ddeabbce1726e259fac5cce",
+      "size": 1704690,
+      "uncompressed_file_bytes": 19954553
+    },
+    "raw-arm64-query.tar.gz": {
+      "file_count": 230,
+      "sha256": "c9de693dc67849708227589d25a32e3cac1de010c3c87088c96f896d2fe04b77",
+      "size": 811312,
+      "uncompressed_file_bytes": 9861271
+    },
+    "raw-x64-bridge.tar.gz": {
+      "file_count": 296,
+      "sha256": "7c9a2e0e6d2d41af1af70ef3ec2928a320aa02a96508224c40cb11336611e0e8",
+      "size": 536895,
+      "uncompressed_file_bytes": 5857463
+    },
+    "raw-x64-builder.tar.gz": {
+      "file_count": 230,
+      "sha256": "02001009d042560a9236da0fe7544054f484f1bb4e339106e2b10a6d10b3d08c",
+      "size": 872723,
+      "uncompressed_file_bytes": 8267149
+    },
+    "raw-x64-mixed.tar.gz": {
+      "file_count": 230,
+      "sha256": "5eef2dd5d697c14da8f24058de5845632dd9a22ea3b94c9d7da2f235272ee83e",
+      "size": 1732165,
+      "uncompressed_file_bytes": 19973472
+    },
+    "raw-x64-query.tar.gz": {
+      "file_count": 230,
+      "sha256": "35c96efcc8b62c9dab904c900ccdb0bc1a3b96d21edebca0db8ac70abf966d4e",
+      "size": 831730,
+      "uncompressed_file_bytes": 9869393
+    }
+  },
+  "checks": {
+    "all_16_expected_cohorts_present_exactly_once": true,
+    "all_archive_members_are_safe_relative_regular_files": true,
+    "all_archives_at_most_2_MiB": true,
+    "all_result_files_in_each_original_inner_zip_included": true,
+    "archive_order_and_tar_gzip_metadata_normalized": true,
+    "artifact_run_commit_and_outer_digest_match": true,
+    "every_archived_payload_compared_byte_for_byte_to_original_inner_zip_member": true,
+    "inventory_members_and_archive_members_form_exactly_same_set": true,
+    "known_credential_signatures_not_found": true,
+    "only_exact_result_directory_and_supporting_receipt_allowlist_selected": true,
+    "original_artifact_files_unchanged": true,
+    "original_summary_json_and_csv_retained_for_every_cohort": true,
+    "payload_bytes_unchanged": true,
+    "selected_contents_are_utf8_text_without_nul_bytes": true
+  },
+  "cohorts": {
+    "ci-arm64-bridge-default": {
+      "artifact_id": "11271197052",
+      "file_count": 148,
+      "result_file_bytes": 2908972,
+      "result_file_count": 144,
+      "shard_name": "ci-arm64-bridge-default",
+      "supporting_file_count": 4
+    },
+    "ci-arm64-bridge-nohw": {
+      "artifact_id": "11270432164",
+      "file_count": 148,
+      "result_file_bytes": 2909181,
+      "result_file_count": 144,
+      "shard_name": "ci-arm64-bridge-nohw",
+      "supporting_file_count": 4
+    },
+    "ci-arm64-builder-default": {
+      "artifact_id": "11270427261",
+      "file_count": 115,
+      "result_file_bytes": 4121917,
+      "result_file_count": 111,
+      "shard_name": "ci-arm64-builder-default",
+      "supporting_file_count": 4
+    },
+    "ci-arm64-builder-nohw": {
+      "artifact_id": "11270787720",
+      "file_count": 115,
+      "result_file_bytes": 4120272,
+      "result_file_count": 111,
+      "shard_name": "ci-arm64-builder-nohw",
+      "supporting_file_count": 4
+    },
+    "ci-arm64-mixed-default": {
+      "artifact_id": "11270686941",
+      "file_count": 115,
+      "result_file_bytes": 9966048,
+      "result_file_count": 111,
+      "shard_name": "ci-arm64-mixed-default",
+      "supporting_file_count": 4
+    },
+    "ci-arm64-mixed-nohw": {
+      "artifact_id": "11270668136",
+      "file_count": 115,
+      "result_file_bytes": 9961308,
+      "result_file_count": 111,
+      "shard_name": "ci-arm64-mixed-nohw",
+      "supporting_file_count": 4
+    },
+    "ci-arm64-query-default": {
+      "artifact_id": "11270927417",
+      "file_count": 115,
+      "result_file_bytes": 4916571,
+      "result_file_count": 111,
+      "shard_name": "ci-arm64-query-default",
+      "supporting_file_count": 4
+    },
+    "ci-arm64-query-nohw": {
+      "artifact_id": "11270982439",
+      "file_count": 115,
+      "result_file_bytes": 4917494,
+      "result_file_count": 111,
+      "shard_name": "ci-arm64-query-nohw",
+      "supporting_file_count": 4
+    },
+    "ci-x64-bridge-default": {
+      "artifact_id": "11270647434",
+      "file_count": 148,
+      "result_file_bytes": 2904956,
+      "result_file_count": 144,
+      "shard_name": "ci-x64-bridge-default",
+      "supporting_file_count": 4
+    },
+    "ci-x64-bridge-nohw": {
+      "artifact_id": "11271311144",
+      "file_count": 148,
+      "result_file_bytes": 2915317,
+      "result_file_count": 144,
+      "shard_name": "ci-x64-bridge-nohw",
+      "supporting_file_count": 4
+    },
+    "ci-x64-builder-default": {
+      "artifact_id": "11270442961",
+      "file_count": 115,
+      "result_file_bytes": 4115916,
+      "result_file_count": 111,
+      "shard_name": "ci-x64-builder-default",
+      "supporting_file_count": 4
+    },
+    "ci-x64-builder-nohw": {
+      "artifact_id": "11271296444",
+      "file_count": 115,
+      "result_file_bytes": 4116452,
+      "result_file_count": 111,
+      "shard_name": "ci-x64-builder-nohw",
+      "supporting_file_count": 4
+    },
+    "ci-x64-mixed-default": {
+      "artifact_id": "11270477860",
+      "file_count": 115,
+      "result_file_bytes": 9989723,
+      "result_file_count": 111,
+      "shard_name": "ci-x64-mixed-default",
+      "supporting_file_count": 4
+    },
+    "ci-x64-mixed-nohw": {
+      "artifact_id": "11270837459",
+      "file_count": 115,
+      "result_file_bytes": 9948254,
+      "result_file_count": 111,
+      "shard_name": "ci-x64-mixed-nohw",
+      "supporting_file_count": 4
+    },
+    "ci-x64-query-default": {
+      "artifact_id": "11270882127",
+      "file_count": 115,
+      "result_file_bytes": 4918016,
+      "result_file_count": 111,
+      "shard_name": "ci-x64-query-default",
+      "supporting_file_count": 4
+    },
+    "ci-x64-query-nohw": {
+      "artifact_id": "11270466861",
+      "file_count": 115,
+      "result_file_bytes": 4916609,
+      "result_file_count": 111,
+      "shard_name": "ci-x64-query-nohw",
+      "supporting_file_count": 4
+    }
+  },
+  "commit": "fc555ca1ce637c5d04274945ce90734afc89f2f1",
+  "excluded_payload_categories": [
+    "binaries",
+    "build source duplicates",
+    "bin",
+    "obj",
+    "caches",
+    "homes",
+    "secrets",
+    "approval state",
+    "chat state",
+    "helper state"
+  ],
+  "inventory": {
+    "file": "raw-inventory.json",
+    "sha256": "2565714c03663b5a4f8b039a345012dbf5be53b0732b11088725d1237d6578be",
+    "size": 945238
+  },
+  "run_id": 37113148603,
+  "schema_version": 1,
+  "scope": "Exact raw performance result bytes and four narrowly selected supporting JSON receipts per cohort, drawn only from original artifact ZIPs.",
+  "status": "PASS",
+  "totals": {
+    "archive_bytes": 7885605,
+    "archives": 8,
+    "artifacts": 16,
+    "cohorts": 16,
+    "files": 1972,
+    "result_files": 1908,
+    "supporting_files": 64,
+    "uncompressed_file_bytes": 87899780
+  },
+  "verification_limit": "The credential-signature check is a narrow automated scan, not proof that arbitrary text can never contain sensitive information. Payload selection is restricted to benchmark results and the four named supporting receipts. This review checks packaging and byte preservation; it does not rerun benchmarks or independently establish performance conclusions."
+}

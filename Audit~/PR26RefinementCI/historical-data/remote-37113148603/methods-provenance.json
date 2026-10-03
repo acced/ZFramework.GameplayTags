@@ -1,0 +1,12 @@
+{
+  "source": "Audit~/PR26RefinementCI/historical-data/reanalyze.py",
+  "source_sha256": "2dc26cedb7ca6484a9f7b77d772b20799d952da0090da93d97b4c4d1fc967386",
+  "adapted_sha256": "9ece6c8d0b937634d36db6216f4f824f8d549150435748240ef028b7af3c064b",
+  "changes": [
+    "Accept current ci-architecture-group-backend dataset names while preserving argument agreement",
+    "Identify ci-architecture-bridge-backend as the 54-cell bridge factor"
+  ],
+  "formulas_changed": false,
+  "raw_results_modified": false,
+  "benchmarks_executed": false
+}
