@@ -1,0 +1,16 @@
+{
+  "candidate_runtime_sha256": "1c032a39cf571ba4ef80ff22c12dd99049b01e1ce0a2cd34040868d899188fa3",
+  "baseline_runtime_sha256": "1dd0309a59eb38834eed5da8edfd4e959d9b584457976ed5c69d61fcc2a4d834",
+  "runs": [
+    "final-query-default",
+    "final-query-nohw",
+    "final-builder-default",
+    "final-builder-nohw",
+    "final-mixed-default",
+    "final-mixed-nohw"
+  ],
+  "rows": 852,
+  "samples": 53676,
+  "median_regressions": 4,
+  "invalid_cells": 6
+}

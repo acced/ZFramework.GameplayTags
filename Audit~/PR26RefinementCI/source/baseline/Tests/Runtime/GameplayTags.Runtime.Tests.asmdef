@@ -1,0 +1,12 @@
+{
+  "name": "GameplayTags.Runtime.Tests",
+  "references": [
+    "GameplayTags"
+  ],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "autoReferenced": false,
+  "overrideReferences": false,
+  "noEngineReferences": false
+}

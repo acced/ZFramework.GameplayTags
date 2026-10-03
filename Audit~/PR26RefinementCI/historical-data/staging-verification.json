@@ -1,0 +1,12 @@
+{
+  "pass": true,
+  "source_bytes_equal": 2320,
+  "archives": 9,
+  "archive_bytes": 4772293,
+  "largest_archive_bytes": 891697,
+  "uncompressed_file_bytes": 51480760,
+  "mismatched_or_excluded_entries": [],
+  "sensitive_pattern_matches": [],
+  "historical_binaries_included": false,
+  "benchmarks_rerun": false
+}

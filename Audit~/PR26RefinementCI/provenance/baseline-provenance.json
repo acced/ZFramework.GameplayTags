@@ -1,0 +1,10 @@
+{
+  "source": "GitHub Actions artifact11236074772 from run37029414923",
+  "artifact_sha256": "14947c76e75f89ce334312605d6a523d36fa06044dde816d2be94ade91ad1bf4",
+  "measured_commit": "98311092b7e8892e5632c2863a391187f4367cf8",
+  "generated_variant": "empty",
+  "artifact_generated_matches": true,
+  "comparison_compile_input_hashes_matched": 14,
+  "selected_source_files": 13,
+  "baseline_manifest_sha256": "f1ba4b7e3f0ec083a0dfa74fc4a25ffeb9acba1f1c2967ad72233cfc5489446f"
+}

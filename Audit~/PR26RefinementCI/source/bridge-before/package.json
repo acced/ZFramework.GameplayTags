@@ -1,0 +1,11 @@
+{
+  "name": "zframework.gameplaytag",
+  "displayName": "ZFramework Gameplay Tags",
+  "version": "3.0.0-pre.1",
+  "unity": "2021.3",
+  "description": "Immutable DFS-indexed registry snapshots, sparse/dense integer runtime sets and frozen interval queries. Stable names remain authoring data. Prerelease; native Unity and device acceptance is required.",
+  "keywords": ["gameplay-tags", "gameplay-ability-system", "gas", "zframework", "unity"],
+  "author": {"name": "ZFramework"},
+  "license": "MIT",
+  "samples": [{"displayName": "Basic Usage", "description": "Author names in the Inspector, prepare a runtime set and frozen query once, then use scoped integer handles.", "path": "Samples~/BasicUsage"}]
+}

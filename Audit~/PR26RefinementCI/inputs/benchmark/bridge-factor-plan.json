@@ -1,0 +1,329 @@
+{
+  "purpose": "Pair existing public API with old-v3 and split Direct bridges in the same fixed-actor/hot-query scope",
+  "cells": [
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/8/exact-hit",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/8/exact-miss",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/8/parent-hit",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/8/parent-miss",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/8/nested-pass",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/8/nested-fail",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/8/empty-query",
+      "role": "empty-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/8/constant-true",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/8/mutate-between-matches",
+      "role": "mutation-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/4096/exact-hit",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/4096/exact-miss",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/4096/parent-hit",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/4096/parent-miss",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/4096/nested-pass",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/4096/nested-fail",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/4096/empty-query",
+      "role": "empty-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/4096/constant-true",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Micro",
+      "id": "bridge/4096/mutate-between-matches",
+      "role": "mutation-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/8/exact-hit",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/8/exact-miss",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/8/parent-hit",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/8/parent-miss",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/8/nested-pass",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/8/nested-fail",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/8/empty-query",
+      "role": "empty-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/8/constant-true",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/8/mutate-between-matches",
+      "role": "mutation-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/4096/exact-hit",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/4096/exact-miss",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/4096/parent-hit",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/4096/parent-miss",
+      "role": "parent-miss-target"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/4096/nested-pass",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/4096/nested-fail",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/4096/empty-query",
+      "role": "empty-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/4096/constant-true",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Dense",
+      "id": "bridge/4096/mutate-between-matches",
+      "role": "mutation-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/8/exact-hit",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/8/exact-miss",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/8/parent-hit",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/8/parent-miss",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/8/nested-pass",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/8/nested-fail",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/8/empty-query",
+      "role": "empty-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/8/constant-true",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/8/mutate-between-matches",
+      "role": "mutation-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/4096/exact-hit",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/4096/exact-miss",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/4096/parent-hit",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/4096/parent-miss",
+      "role": "parent-miss-target"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/4096/nested-pass",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/4096/nested-fail",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/4096/empty-query",
+      "role": "empty-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/4096/constant-true",
+      "role": "bridge-control"
+    },
+    {
+      "group": "bridge",
+      "layout": "Auto",
+      "id": "bridge/4096/mutate-between-matches",
+      "role": "mutation-control"
+    }
+  ]
+}

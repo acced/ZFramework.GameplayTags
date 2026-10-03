@@ -1,0 +1,174 @@
+{
+  "variant": "baseline",
+  "profile": {
+    "BULK_MICRO": true,
+    "MICRO_WIDE": false,
+    "MICRO_SCAN8": false,
+    "MICRO_EXACT": false
+  },
+  "dispatch": "NET8_0_OR_GREATER",
+  "intentional_non_algorithm_changes": [
+    "Production comments",
+    "Remove untested Micro32 recommendation from registry-limit exception",
+    "Unsafe method modifier exists only for NET8 intrinsic paths"
+  ],
+  "sources": [
+    {
+      "selected": "baseline/generated/DirectArraySet.cs",
+      "selected_sha256": "bd3d48a69cfab49fb9f07eddcaab2353be968430a949a6e83b216a83b9be857f",
+      "integrated": "source/Runtime/DirectArraySet.cs",
+      "integrated_sha256": "9e34e49b8b9fd3cc2e00e8f9cb8994aee2a4b2122f91b3f86d1c279a5ddb2995",
+      "token_equal_netstandard21": true,
+      "token_equal_net8": true
+    },
+    {
+      "selected": "baseline/generated/BulkBuilders.cs",
+      "selected_sha256": "22644785ab3d126f340c711d2bf45576461e090b31e4bcfaea0a4f6f003f8567",
+      "integrated": "source/Runtime/DirectArraySet.Builders.cs",
+      "integrated_sha256": "95f8991994110bbfe81e4bc123bc2ed61c312f7c3c44d460abdc7a44726d1e95",
+      "token_equal_netstandard21": true,
+      "token_equal_net8": true
+    },
+    {
+      "selected": "baseline/source/Audit~/Fusion/DenseFusion.cs",
+      "selected_sha256": "bb932afe47adb2a0fe78358e0a44840fbb3ac8bf07d8ef29e05d3d2e2ebc3f5f",
+      "integrated": "source/Runtime/DenseFusion.cs",
+      "integrated_sha256": "87dfe782da4b44abe1bb7bd42947425fd2acfc30242417f87dcfcfa85615429d",
+      "token_equal_netstandard21": true,
+      "token_equal_net8": true
+    }
+  ],
+  "preserved_runtime": [
+    {
+      "path": "Runtime/AssemblyInfo.cs",
+      "sha256": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4"
+    },
+    {
+      "path": "Runtime/AssemblyInfo.cs.meta",
+      "sha256": "2d3da3e6216c297b859cb7e6387352a5182b6f54674f0ecbbe9f44d70f7822de"
+    },
+    {
+      "path": "Runtime/GameplayTag.cs",
+      "sha256": "5fbda322ab3320ef388e3034e4dd38aa85b8c7d8a965d5f44cb6d900175e5bee"
+    },
+    {
+      "path": "Runtime/GameplayTag.cs.meta",
+      "sha256": "6c7c83b76381077ebd955fb0b247f092271fe63f864601299205f21e3aed6982"
+    },
+    {
+      "path": "Runtime/GameplayTagContainer.cs",
+      "sha256": "0b3790aa14dd189fa94a0a880f429b311368964da0e0003fb7728d3766d4ca5b"
+    },
+    {
+      "path": "Runtime/GameplayTagContainer.cs.meta",
+      "sha256": "e8d9bfdf8c49db016e48fe068d9fd76585d1e6dda1cd9e0aac91d41f8cfb8b14"
+    },
+    {
+      "path": "Runtime/GameplayTagManager.cs",
+      "sha256": "fc2205a3e49d53d701f1a6a67b441c7cdb7d393bc87944812eadf4b66acc9dba"
+    },
+    {
+      "path": "Runtime/GameplayTagManager.cs.meta",
+      "sha256": "3335db4fc45b6d7ae0b5457b4f42cec3fb31e2167ca955ccdc6bee8d14d4ea92"
+    },
+    {
+      "path": "Runtime/GameplayTagQuery.cs.meta",
+      "sha256": "956a69410151fffdcd1e06a32ba56bba2ba68aa381d07cbc9836230d98f9522b"
+    },
+    {
+      "path": "Runtime/GameplayTagSettings.cs",
+      "sha256": "0e9effd357a6f1940b2a70e0eaba9091cd471778c960ac77739f9810f41476c0"
+    },
+    {
+      "path": "Runtime/GameplayTagSettings.cs.meta",
+      "sha256": "89f9dcc51db2f8409bae247f02d902d179b8850cabe7159113bc704a7c3e8647"
+    },
+    {
+      "path": "Runtime/GameplayTags.asmdef",
+      "sha256": "ac3527d9d55cea4179f4d87dc1c1354306f9b2f3cf9018b6b049dc55e8b851c7"
+    },
+    {
+      "path": "Runtime/GameplayTags.asmdef.meta",
+      "sha256": "4981c1d8fed1cdadfb67e08fdcc51181874cbcc79cf23c712b7a83f50378a7e8"
+    },
+    {
+      "path": "Runtime/RuntimeTagSet.cs.meta",
+      "sha256": "920c03db9272d8cf39d72a929db4d60d826877c132cf027bc5d0d1caf9a45fe2"
+    },
+    {
+      "path": "Runtime/TagRegistry.cs.meta",
+      "sha256": "02d8995fe58b42cdfffece7187fc6d6ed8954ced7478b2fd1767f3508c7c6361"
+    }
+  ],
+  "modified_existing_runtime": [
+    {
+      "path": "Runtime/GameplayTagQuery.cs",
+      "original_sha256": "d87e0a939c3baf30da3e08190807059029cdaea9116205028087a19710f58c00",
+      "integrated_sha256": "a40093806a9b9a922e0af53ba0ac108501d6675d0a17a372bae74026a64943a6",
+      "only_change": "Add partial modifier to FrozenGameplayTagQuery declaration; all existing method bodies byte-identical"
+    },
+    {
+      "path": "Runtime/RuntimeTagSet.cs",
+      "original_sha256": "771e8a85c80cc02a59130bd226ba3cd2afa08b4810fb2cce72bcf12fab1283e1",
+      "integrated_sha256": "71e14b0e8d69cdf8f32a383cbb12a6f604331c09f022e761806fd61377f7fc08",
+      "only_change": "Explicit unchecked signed-to-uint bounds guard conversion; normal-build behavior and storage layout unchanged",
+      "replacements": [
+        [
+          "(uint)m_Cursor",
+          "unchecked((uint)m_Cursor)"
+        ]
+      ]
+    },
+    {
+      "path": "Runtime/TagRegistry.cs",
+      "original_sha256": "b4d7655e16f58ee5b0a3d4bf78789d7abd38df020c3d3b9360c094a3066dd8f9",
+      "integrated_sha256": "c7a380c3428c5f06375826a670c2f01de88ea6e9da964d29a93bd18ac445b994",
+      "only_change": "Explicit unchecked signed-to-uint bounds guard conversion; normal-build behavior and storage layout unchanged",
+      "replacements": [
+        [
+          "(uint)runtimeIndex",
+          "unchecked((uint)runtimeIndex)"
+        ]
+      ]
+    }
+  ],
+  "query_bridge": {
+    "evaluator_matches_original_tokens_after_type_and_method_renaming": true,
+    "runtime_tag_set_source_byte_identical": false,
+    "existing_query_matches_overload_unchanged": true,
+    "measured_exact_kernel_unchanged": true
+  },
+  "checked_guard_fixes": true,
+  "production_inputs": {
+    "source/Runtime/AssemblyInfo.cs": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4",
+    "source/Runtime/AssemblyInfo.cs.meta": "2d3da3e6216c297b859cb7e6387352a5182b6f54674f0ecbbe9f44d70f7822de",
+    "source/Runtime/BitmapLayout.cs": "0bd640df2372d9121640ee45a96abba9d21af1d4e95569a3a35fb389c0d2d176",
+    "source/Runtime/BitmapLayout.cs.meta": "e0aa7488efa28b5378451f21d090d4ed362642561359a1c89c16204acae88867",
+    "source/Runtime/DenseFusion.cs": "87dfe782da4b44abe1bb7bd42947425fd2acfc30242417f87dcfcfa85615429d",
+    "source/Runtime/DenseFusion.cs.meta": "d16a3c4760184f7d862fa10b5932445d8134c0103197114e9995118d8f3a8427",
+    "source/Runtime/DirectArraySet.Builders.cs": "95f8991994110bbfe81e4bc123bc2ed61c312f7c3c44d460abdc7a44726d1e95",
+    "source/Runtime/DirectArraySet.Builders.cs.meta": "7d7fc3d495fee68f3fbb8ce49491cfaeaea9cf628cb6bf0dd68b7e47fd215340",
+    "source/Runtime/DirectArraySet.Queries.cs": "e3e5c325461b602ae6bc087a58ce22dd3683722e753606bedb2b20e69ea8559b",
+    "source/Runtime/DirectArraySet.Queries.cs.meta": "02603c473d35e2096d2c4f32e354c007c0cffb9c183a4c5f3d9c4d587ee0cf24",
+    "source/Runtime/DirectArraySet.cs": "9e34e49b8b9fd3cc2e00e8f9cb8994aee2a4b2122f91b3f86d1c279a5ddb2995",
+    "source/Runtime/DirectArraySet.cs.meta": "f891ac95b9e9b8467dab297ced0e5a4b1ec123fd8e300776b61f691caaf127b7",
+    "source/Runtime/FrozenGameplayTagQuery.DirectArraySet.cs": "5355bcf2400b011ee2c0e210a22ed670b9d83ed88e9ad4cb9a7a833ed51c5ffb",
+    "source/Runtime/FrozenGameplayTagQuery.DirectArraySet.cs.meta": "ebacf292e282c7f0bd5936b6788d9ed5989ec89182ae23522ec8d79bd4c118e4",
+    "source/Runtime/GameplayTag.cs": "5fbda322ab3320ef388e3034e4dd38aa85b8c7d8a965d5f44cb6d900175e5bee",
+    "source/Runtime/GameplayTag.cs.meta": "6c7c83b76381077ebd955fb0b247f092271fe63f864601299205f21e3aed6982",
+    "source/Runtime/GameplayTagContainer.cs": "0b3790aa14dd189fa94a0a880f429b311368964da0e0003fb7728d3766d4ca5b",
+    "source/Runtime/GameplayTagContainer.cs.meta": "e8d9bfdf8c49db016e48fe068d9fd76585d1e6dda1cd9e0aac91d41f8cfb8b14",
+    "source/Runtime/GameplayTagManager.cs": "fc2205a3e49d53d701f1a6a67b441c7cdb7d393bc87944812eadf4b66acc9dba",
+    "source/Runtime/GameplayTagManager.cs.meta": "3335db4fc45b6d7ae0b5457b4f42cec3fb31e2167ca955ccdc6bee8d14d4ea92",
+    "source/Runtime/GameplayTagQuery.cs": "a40093806a9b9a922e0af53ba0ac108501d6675d0a17a372bae74026a64943a6",
+    "source/Runtime/GameplayTagQuery.cs.meta": "956a69410151fffdcd1e06a32ba56bba2ba68aa381d07cbc9836230d98f9522b",
+    "source/Runtime/GameplayTagSettings.cs": "0e9effd357a6f1940b2a70e0eaba9091cd471778c960ac77739f9810f41476c0",
+    "source/Runtime/GameplayTagSettings.cs.meta": "89f9dcc51db2f8409bae247f02d902d179b8850cabe7159113bc704a7c3e8647",
+    "source/Runtime/GameplayTags.asmdef": "ac3527d9d55cea4179f4d87dc1c1354306f9b2f3cf9018b6b049dc55e8b851c7",
+    "source/Runtime/GameplayTags.asmdef.meta": "4981c1d8fed1cdadfb67e08fdcc51181874cbcc79cf23c712b7a83f50378a7e8",
+    "source/Runtime/RuntimeTagSet.cs": "71e14b0e8d69cdf8f32a383cbb12a6f604331c09f022e761806fd61377f7fc08",
+    "source/Runtime/RuntimeTagSet.cs.meta": "920c03db9272d8cf39d72a929db4d60d826877c132cf027bc5d0d1caf9a45fe2",
+    "source/Runtime/TagRegistry.cs": "c7a380c3428c5f06375826a670c2f01de88ea6e9da964d29a93bd18ac445b994",
+    "source/Runtime/TagRegistry.cs.meta": "02d8995fe58b42cdfffece7187fc6d6ed8954ced7478b2fd1767f3508c7c6361"
+  }
+}

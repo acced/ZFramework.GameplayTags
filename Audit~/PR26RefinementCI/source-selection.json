@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "measured_commit": "98311092b7e8892e5632c2863a391187f4367cf8",
+  "generated_variant": "empty",
+  "baseline_definition": "Selected PR26 guarded-capacity plus empty-source Clear/return kernel/builders, normalized into the same additive Runtime bridge and checked-guard scaffold. Not repository-root Runtime.",
+  "selected_definition": "Hardware-gated-count selected-v3 plus bridge-split-v1",
+  "sources": {
+    "selected": {
+      "origin": "runtime-integration/bridge-split-v1/source",
+      "path": "source/selected",
+      "runtime_sha256": {
+        "Runtime/AssemblyInfo.cs": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4",
+        "Runtime/BitmapLayout.cs": "0bd640df2372d9121640ee45a96abba9d21af1d4e95569a3a35fb389c0d2d176",
+        "Runtime/DenseFusion.cs": "87dfe782da4b44abe1bb7bd42947425fd2acfc30242417f87dcfcfa85615429d",
+        "Runtime/DirectArraySet.Builders.cs": "5c83776976cab967575c63750b43916ae94d3bb326a3658c4bc79728e8a63788",
+        "Runtime/DirectArraySet.Queries.cs": "75a9a8e47001510ea1e92478b329c950ad8714018bf30d8486e953ef83568839",
+        "Runtime/DirectArraySet.cs": "a5bfb09f05200264330c7a6345d7fa8d8baec8a03197bea047366db2dca33e6b",
+        "Runtime/FrozenGameplayTagQuery.DirectArraySet.cs": "5355bcf2400b011ee2c0e210a22ed670b9d83ed88e9ad4cb9a7a833ed51c5ffb",
+        "Runtime/GameplayTag.cs": "5fbda322ab3320ef388e3034e4dd38aa85b8c7d8a965d5f44cb6d900175e5bee",
+        "Runtime/GameplayTagContainer.cs": "0b3790aa14dd189fa94a0a880f429b311368964da0e0003fb7728d3766d4ca5b",
+        "Runtime/GameplayTagManager.cs": "fc2205a3e49d53d701f1a6a67b441c7cdb7d393bc87944812eadf4b66acc9dba",
+        "Runtime/GameplayTagQuery.cs": "a40093806a9b9a922e0af53ba0ac108501d6675d0a17a372bae74026a64943a6",
+        "Runtime/GameplayTagSettings.cs": "0e9effd357a6f1940b2a70e0eaba9091cd471778c960ac77739f9810f41476c0",
+        "Runtime/RuntimeTagSet.cs": "71e14b0e8d69cdf8f32a383cbb12a6f604331c09f022e761806fd61377f7fc08",
+        "Runtime/TagRegistry.cs": "c7a380c3428c5f06375826a670c2f01de88ea6e9da964d29a93bd18ac445b994"
+      },
+      "runtime_set_sha256": "b46b2a1d9aff79bcbf53450ca3fbb9ea70692ddc9759b39c9ce7d829d5338fce",
+      "original_source_proof_sha256": "ede070cedf85831d30c539fdacfe7b89ba973103747c743b650d6250e74e8c69"
+    },
+    "baseline": {
+      "origin": "runtime-integration/checked-guards/baseline/source",
+      "path": "source/baseline",
+      "runtime_sha256": {
+        "Runtime/AssemblyInfo.cs": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4",
+        "Runtime/BitmapLayout.cs": "0bd640df2372d9121640ee45a96abba9d21af1d4e95569a3a35fb389c0d2d176",
+        "Runtime/DenseFusion.cs": "87dfe782da4b44abe1bb7bd42947425fd2acfc30242417f87dcfcfa85615429d",
+        "Runtime/DirectArraySet.Builders.cs": "95f8991994110bbfe81e4bc123bc2ed61c312f7c3c44d460abdc7a44726d1e95",
+        "Runtime/DirectArraySet.Queries.cs": "e3e5c325461b602ae6bc087a58ce22dd3683722e753606bedb2b20e69ea8559b",
+        "Runtime/DirectArraySet.cs": "9e34e49b8b9fd3cc2e00e8f9cb8994aee2a4b2122f91b3f86d1c279a5ddb2995",
+        "Runtime/FrozenGameplayTagQuery.DirectArraySet.cs": "5355bcf2400b011ee2c0e210a22ed670b9d83ed88e9ad4cb9a7a833ed51c5ffb",
+        "Runtime/GameplayTag.cs": "5fbda322ab3320ef388e3034e4dd38aa85b8c7d8a965d5f44cb6d900175e5bee",
+        "Runtime/GameplayTagContainer.cs": "0b3790aa14dd189fa94a0a880f429b311368964da0e0003fb7728d3766d4ca5b",
+        "Runtime/GameplayTagManager.cs": "fc2205a3e49d53d701f1a6a67b441c7cdb7d393bc87944812eadf4b66acc9dba",
+        "Runtime/GameplayTagQuery.cs": "a40093806a9b9a922e0af53ba0ac108501d6675d0a17a372bae74026a64943a6",
+        "Runtime/GameplayTagSettings.cs": "0e9effd357a6f1940b2a70e0eaba9091cd471778c960ac77739f9810f41476c0",
+        "Runtime/RuntimeTagSet.cs": "71e14b0e8d69cdf8f32a383cbb12a6f604331c09f022e761806fd61377f7fc08",
+        "Runtime/TagRegistry.cs": "c7a380c3428c5f06375826a670c2f01de88ea6e9da964d29a93bd18ac445b994"
+      },
+      "runtime_set_sha256": "20903415f7a88a3ee2c39e28936027ec8dbf59ebb398de9fe45366debe5ba6dc",
+      "original_source_proof_sha256": "c0d627532bb0097205842b2dbfeb6d01290b5907812f3e77e3570ebba5905058"
+    },
+    "bridge-before": {
+      "origin": "runtime-integration/selected-v3/source",
+      "path": "source/bridge-before",
+      "runtime_sha256": {
+        "Runtime/AssemblyInfo.cs": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4",
+        "Runtime/BitmapLayout.cs": "0bd640df2372d9121640ee45a96abba9d21af1d4e95569a3a35fb389c0d2d176",
+        "Runtime/DenseFusion.cs": "87dfe782da4b44abe1bb7bd42947425fd2acfc30242417f87dcfcfa85615429d",
+        "Runtime/DirectArraySet.Builders.cs": "5c83776976cab967575c63750b43916ae94d3bb326a3658c4bc79728e8a63788",
+        "Runtime/DirectArraySet.Queries.cs": "e3e5c325461b602ae6bc087a58ce22dd3683722e753606bedb2b20e69ea8559b",
+        "Runtime/DirectArraySet.cs": "a5bfb09f05200264330c7a6345d7fa8d8baec8a03197bea047366db2dca33e6b",
+        "Runtime/FrozenGameplayTagQuery.DirectArraySet.cs": "5355bcf2400b011ee2c0e210a22ed670b9d83ed88e9ad4cb9a7a833ed51c5ffb",
+        "Runtime/GameplayTag.cs": "5fbda322ab3320ef388e3034e4dd38aa85b8c7d8a965d5f44cb6d900175e5bee",
+        "Runtime/GameplayTagContainer.cs": "0b3790aa14dd189fa94a0a880f429b311368964da0e0003fb7728d3766d4ca5b",
+        "Runtime/GameplayTagManager.cs": "fc2205a3e49d53d701f1a6a67b441c7cdb7d393bc87944812eadf4b66acc9dba",
+        "Runtime/GameplayTagQuery.cs": "a40093806a9b9a922e0af53ba0ac108501d6675d0a17a372bae74026a64943a6",
+        "Runtime/GameplayTagSettings.cs": "0e9effd357a6f1940b2a70e0eaba9091cd471778c960ac77739f9810f41476c0",
+        "Runtime/RuntimeTagSet.cs": "71e14b0e8d69cdf8f32a383cbb12a6f604331c09f022e761806fd61377f7fc08",
+        "Runtime/TagRegistry.cs": "c7a380c3428c5f06375826a670c2f01de88ea6e9da964d29a93bd18ac445b994"
+      },
+      "runtime_set_sha256": "68374b4e284dbd1cf035a3ae5bd6e7fed724b6666e3dfd592552605f72fb9fe2",
+      "original_source_proof_sha256": "a979f18f11d5ed693c0d49496bf7e635ac3a68de538e3dab7f56c50215a0419a"
+    }
+  },
+  "historical_x64_dll_sha256": {
+    "selected": "1c032a39cf571ba4ef80ff22c12dd99049b01e1ce0a2cd34040868d899188fa3",
+    "baseline": "1dd0309a59eb38834eed5da8edfd4e959d9b584457976ed5c69d61fcc2a4d834"
+  },
+  "rebuilt_dll_policy": "Record and verify per-build loaded DLL identity; never require historical x64 DLL hash on a rebuilt binary or ARM64."
+}

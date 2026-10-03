@@ -1,0 +1,22 @@
+{
+  "pr": 26,
+  "measured_commit": "98311092b7e8892e5632c2863a391187f4367cf8",
+  "documentation_commit": "c6cafdbd56f060403854772bda964bddff019ff6",
+  "selected_variant": "empty",
+  "selection": "guarded capacity plus empty source Clear/return, no NoInlining",
+  "files": {
+    "generated/BulkBuilders.cs": "22644785ab3d126f340c711d2bf45576461e090b31e4bcfaea0a4f6f003f8567",
+    "generated/DirectArraySet.cs": "bd3d48a69cfab49fb9f07eddcaab2353be968430a949a6e83b216a83b9be857f",
+    "source/Audit~/Fusion/DenseFusion.cs": "bb932afe47adb2a0fe78358e0a44840fbb3ac8bf07d8ef29e05d3d2e2ebc3f5f",
+    "source/Audit~/MicroBitmapSet.cs": "a46b1e686d8b1b4f5489ec58ba30e329e0570161e562d5a2415f4cb5f3e01e45",
+    "source/Audit~/UnityStubs.cs": "e5c54407a7cfb5e8721acca9230b65bedbb6b9c8758e29c261c08ff931fbf68e",
+    "source/Runtime/AssemblyInfo.cs": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4",
+    "source/Runtime/GameplayTag.cs": "5fbda322ab3320ef388e3034e4dd38aa85b8c7d8a965d5f44cb6d900175e5bee",
+    "source/Runtime/GameplayTagContainer.cs": "0b3790aa14dd189fa94a0a880f429b311368964da0e0003fb7728d3766d4ca5b",
+    "source/Runtime/GameplayTagManager.cs": "fc2205a3e49d53d701f1a6a67b441c7cdb7d393bc87944812eadf4b66acc9dba",
+    "source/Runtime/GameplayTagQuery.cs": "d87e0a939c3baf30da3e08190807059029cdaea9116205028087a19710f58c00",
+    "source/Runtime/GameplayTagSettings.cs": "0e9effd357a6f1940b2a70e0eaba9091cd471778c960ac77739f9810f41476c0",
+    "source/Runtime/RuntimeTagSet.cs": "771e8a85c80cc02a59130bd226ba3cd2afa08b4810fb2cce72bcf12fab1283e1",
+    "source/Runtime/TagRegistry.cs": "b4d7655e16f58ee5b0a3d4bf78789d7abd38df020c3d3b9360c094a3066dd8f9"
+  }
+}
