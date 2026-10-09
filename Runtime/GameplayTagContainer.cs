@@ -1,624 +1,295 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
 namespace GameplayTags
 {
+    /// <summary>A live view of a container. Copies share storage; this is not a snapshot.</summary>
     public struct GameplayTagContainerIndices
     {
-        public readonly bool IsCreated => Explicit != null && Implicit != null;
-        public readonly bool IsEmpty => !IsCreated || Explicit.Count == 0;
-        public readonly int TagCount => IsCreated ? Implicit.Count : 0;
-        public readonly int ExplicitTagCount => IsCreated ? Explicit.Count : 0;
+        internal TagStorage Storage { get; private set; }
+        public readonly bool IsCreated => Storage != null;
+        public readonly bool IsEmpty => ExplicitTagCount == 0;
+        public readonly int TagCount => Storage == null ? 0 : Storage.Count;
+        public readonly int ExplicitTagCount => Storage == null ? 0 : Storage.ExplicitCount;
 
-        internal List<int> Explicit { get; private set; }
-        internal List<int> Implicit { get; private set; }
+        public static GameplayTagContainerIndices Create() =>
+            new GameplayTagContainerIndices { Storage = new TagStorage() };
 
         public static void Create(ref GameplayTagContainerIndices indices)
         {
-            if (indices.IsCreated)
-                return;
-
-            indices = new GameplayTagContainerIndices()
-            {
-                Explicit = new(),
-                Implicit = new()
-            };
+            if (indices.Storage == null)
+                indices = Create();
         }
 
-        public static GameplayTagContainerIndices Create()
-        {
-            return new GameplayTagContainerIndices()
-            {
-                Explicit = new(),
-                Implicit = new()
-            };
-        }
-
-        internal readonly void Clear()
-        {
-            Explicit?.Clear();
-            Implicit?.Clear();
-        }
-
-        internal readonly void CopyTo(in GameplayTagContainerIndices other)
-        {
-            other.Clear();
-            other.Explicit.AddRange(this.Explicit);
-            other.Implicit.AddRange(this.Implicit);
-        }
+        internal readonly void Clear() => Storage?.Clear();
+        internal readonly void CopyTo(in GameplayTagContainerIndices other) => other.Storage.CopyFrom(Storage);
     }
 
     public interface IGameplayTagContainer : IEnumerable<GameplayTag>
     {
-        /// <summary>
-        /// Gets a value indicating whether this container is empty.
-        /// </summary>
-        public bool IsEmpty { get; }
-
-        /// <summary>
-        /// Gets the count of explicit tags in this container.
-        /// Explicit tags are the tags that have been directly added to this container.
-        /// </summary>
-        public int ExplicitTagCount { get; }
-
-        /// <summary>
-        /// Gets the total count of tags in this container, including implicit tags.
-        /// Implicit tags are tags that are indirectly included based on the hierarchy of explicit tags.
-        /// For example, if "ParentTag" is an implicit tag and "ParentTag.ChildTag" is an explicit tag,
-        /// then "ParentTag" will be counted as an implicit tag in this container.
-        /// </summary>
-        public int TagCount { get; }
-
-        /// <summary>
-        /// Gets the indeces of tags in this container.
-        /// </summary>
+        bool IsEmpty { get; }
+        int ExplicitTagCount { get; }
+        int TagCount { get; }
         GameplayTagContainerIndices Indices { get; }
-
-        /// <summary>
-        /// Adds a tag to this container.
-        /// </summary>
-        /// <param name="gameplayTag">The tag to add.</param>
-        public void AddTag(GameplayTag gameplayTag);
-
-        /// <summary>
-        /// Removes a tag from this container.
-        /// </summary>
-        /// <param name="gameplayTag">The tag to remove.</param>
-        public void RemoveTag(GameplayTag gameplayTag);
-
-        /// <summary>
-        /// Gets an enumerator for all tags in this container.
-        /// </summary>
-        /// <returns>An enumerator for all tags in this container.</returns>
-        public GameplayTagEnumerator GetTags();
-
-        /// <summary>
-        /// Gets an enumerator for the explicit tags in this container.
-        /// </summary>
-        /// <returns>An enumerator for the explicit tags in this container.</returns>
-        public GameplayTagEnumerator GetExplicitTags();
-
-        /// <summary>
-        /// Adds tags from another container to this container.
-        /// </summary>
-        /// <typeparam name="T">The type of the other container.</typeparam>
-        /// <param name="other">The other container.</param>
-        public void AddTags<T>(in T other) where T : IGameplayTagContainer;
-
-        /// <summary>
-        /// Gets the parent tags of a tag in this container.
-        /// </summary>
-        /// <param name="tag">The tag to get the parent tags of.</param>
-        /// <param name="parentTags">The list to populate with the parent tags.</param>
-        public void GetParentTags(GameplayTag tag, List<GameplayTag> parentTags);
-
-        /// <summary>
-        /// Gets the child tags of a tag in this container.
-        /// </summary>
-        /// <param name="tag">The tag to get the child tags of.</param>
-        /// <param name="childTags">The list to populate with the child tags.</param>
-        public void GetChildTags(GameplayTag tag, List<GameplayTag> childTags);
-
-        /// <summary>
-        /// Gets the explicit parent tags of a tag in this container.
-        /// </summary>
-        /// <param name="tag">The tag to get the explicit parent tags of.</param>
-        ///<param name = "parentTags" > The list to populate with the explicit parent tags.</param>
-        public void GetExplicitParentTags(GameplayTag tag, List<GameplayTag> parentTags);
-
-        /// <summary>
-        /// Gets the explicit child tags of a tag in this container.
-        /// </summary>
-        /// <param name="tag"></param>
-        /// <param name="childTags"></param>
-        public void GetExplicitChildTags(GameplayTag tag, List<GameplayTag> childTags);
-
-        /// <summary>
-        /// Removes tags from this container that are present in another container.
-        /// </summary>
-        /// <typeparam name="T">The type of the other container.</typeparam>
-        /// <param name="other">The other container.</param>
-        public void RemoveTags<T>(in T other) where T : IGameplayTagContainer;
-
-        /// <summary>
-        /// Clears all tags from this container.
-        /// </summary>
-        public void Clear();
+        void AddTag(GameplayTag tag);
+        void RemoveTag(GameplayTag tag);
+        GameplayTagEnumerator GetTags();
+        GameplayTagEnumerator GetExplicitTags();
+        void AddTags<T>(in T other) where T : IGameplayTagContainer;
+        void RemoveTags<T>(in T other) where T : IGameplayTagContainer;
+        void GetParentTags(GameplayTag tag, List<GameplayTag> output);
+        void GetChildTags(GameplayTag tag, List<GameplayTag> output);
+        void GetExplicitParentTags(GameplayTag tag, List<GameplayTag> output);
+        void GetExplicitChildTags(GameplayTag tag, List<GameplayTag> output);
+        void Clear();
     }
 
+    /// <summary>
+    /// A set of explicit tags with reference-counted ancestor closure. Mutations require
+    /// registered, non-None tags. Enumeration is unordered and invalidated by mutation.
+    /// </summary>
     [Serializable]
+    [DataContract]
     [DebuggerTypeProxy(typeof(GameplayTagContainerDebugView))]
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    public class GameplayTagContainer : IGameplayTagContainer, IEnumerable<GameplayTag>
+    [DebuggerDisplay("Explicit = {ExplicitTagCount}, Total = {TagCount}")]
+    public class GameplayTagContainer : IGameplayTagContainer
+#if UNITY_5_3_OR_NEWER
+        , UnityEngine.ISerializationCallbackReceiver
+#endif
     {
-        public static GameplayTagContainer Empty { get; } = new();
+        /// <summary>Shared empty query operand. Treat as read-only.</summary>
+        public static GameplayTagContainer Empty { get; } = new GameplayTagContainer();
 
-        /// <inheritdoc />
-        public bool IsEmpty => m_Indices.IsEmpty;
+        [NonSerialized] private GameplayTagContainerIndices m_Indices = GameplayTagContainerIndices.Create();
+        // Force a name-based object contract. Otherwise DataContractSerializer
+        // recognizes IEnumerable + Add as a collection and restores implicit
+        // ancestors as explicit tags, changing the meaning of the container.
+        [DataMember(Order = 0)] public List<string> m_SerializedExplicitTags;
 
-        /// <inheritdoc />
-        public int ExplicitTagCount => m_Indices.ExplicitTagCount;
-
-        /// <inheritdoc />
-        public int TagCount => m_Indices.TagCount;
-
-        /// <inheritdoc />
+        public bool IsEmpty => m_Indices.Storage.ExplicitCount == 0;
+        public int ExplicitTagCount => m_Indices.Storage.ExplicitCount;
+        public int TagCount => m_Indices.Storage.Count;
         public GameplayTagContainerIndices Indices => m_Indices;
 
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members",
-            Justification = "It's used for debugging")]
-        private string DebuggerDisplay => $"Count (Explicit, Total) = ({ExplicitTagCount}, {TagCount})";
+        public GameplayTagContainer() { }
+        /// <param name="capacity">Distinct tag capacity, including ancestors.</param>
+        public GameplayTagContainer(int capacity) => m_Indices.Storage.EnsureCapacity(capacity);
+        public GameplayTagContainer(IGameplayTagContainer other) => Copy(this, other);
 
-        public List<string> m_SerializedExplicitTags;
+        /// <summary>Reserve distinct tag capacity, including ancestors.</summary>
+        public void EnsureCapacity(int capacity) => m_Indices.Storage.EnsureCapacity(capacity);
 
-        private GameplayTagContainerIndices m_Indices = new();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool HasTag(GameplayTag tag) => m_Indices.Storage.Contains(tag.RuntimeIndex);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool HasTagExact(GameplayTag tag) => m_Indices.Storage.ContainsExplicit(tag.RuntimeIndex);
 
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        public GameplayTagContainer()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GameplayTagContainer"/> class by copying tags from another container.
-        /// </summary>
-        public GameplayTagContainer(IGameplayTagContainer other)
-        {
-            Copy(this, other);
-        }
-
-        /// <summary>
-        /// Creates a clone of this container.
-        /// </summary>
         public GameplayTagContainer Clone()
         {
-            GameplayTagContainer clone = new();
-            Copy(clone, this);
-
+            var clone = new GameplayTagContainer();
+            clone.m_Indices.Storage.CopyFrom(m_Indices.Storage);
             return clone;
         }
 
-        /// <summary>
-        /// Copies tags from one container to another.
-        /// </summary>
-        /// <param name="dest">The destination container.</param>
-        /// <param name="src">The source container.</param>
         public static void Copy<T>(GameplayTagContainer dest, in T src) where T : IGameplayTagContainer
         {
-            if (src.IsEmpty)
+            TagStorage source = src.Indices.Storage;
+            if (ReferenceEquals(dest.m_Indices.Storage, source))
                 return;
-
-            GameplayTagContainerIndices.Create(ref dest.m_Indices);
-            src.Indices.CopyTo(dest.m_Indices);
-        }
-
-        /// <summary>
-        /// Creates a container that is the intersection of two other containers.
-        /// </summary>
-        /// <typeparam name="T">The type of the first container.</typeparam>
-        /// <typeparam name="U">The type of the second container.</typeparam>
-        /// <param name="lhs">The first container.</param>
-        /// <param name="rhs">The second container.</param>
-        /// <returns>A new <see cref="GameplayTagContainer"/> that contains the intersection of the two containers.</returns>
-        public static GameplayTagContainer Intersection<T, U>(in T lhs, in U rhs) where T : IGameplayTagContainer
-            where U : IGameplayTagContainer
-        {
-            GameplayTagContainer intersection = new();
-            intersection.AddIntersection(lhs, rhs);
-            return intersection;
-        }
-
-        public static void Intersection<T, U>(GameplayTagContainer output, in T lhs, in U rhs)
-            where T : IGameplayTagContainer where U : IGameplayTagContainer
-        {
-            if (output == null)
-                throw new ArgumentNullException(nameof(output));
-
-            if (!output.IsEmpty)
-                throw new ArgumentException("Output container must be empty.", nameof(output));
-
-            output.AddIntersection(lhs, rhs);
-        }
-
-        /// <summary>
-        /// Adds the intersection of two containers to this container.
-        /// </summary>
-        /// <typeparam name="T">The type of the first container.</typeparam>
-        /// <typeparam name="U">The type of the second container.</typeparam>
-        /// <param name="lhs">The first container.</param>
-        /// <param name="rhs">The second container.</param>
-        internal void AddIntersection<T, U>(in T lhs, in U rhs)
-            where T : IGameplayTagContainer where U : IGameplayTagContainer
-        {
-            static void OrderedListIntersection(List<int> a, List<int> b, List<int> dst)
+            if (src is GameplayTagContainer)
             {
-                int i = 0, j = 0;
-                while (i < a.Count && j < b.Count)
-                {
-                    int aElement = a[i], bElement = b[j];
-                    if (aElement == bElement)
-                    {
-                        dst.Add(aElement);
-                        i++;
-                        j++;
-                        continue;
-                    }
-
-                    if (aElement < bElement)
-                    {
-                        i++;
-                        continue;
-                    }
-
-                    j++;
-                }
-            }
-
-            if (lhs.IsEmpty || rhs.IsEmpty)
+                dest.m_Indices.Storage.CopyFrom(source);
+                dest.m_SerializedExplicitTags?.Clear();
                 return;
-
-            if (!m_Indices.IsCreated)
-                m_Indices = GameplayTagContainerIndices.Create();
-
-            OrderedListIntersection(lhs.Indices.Explicit, rhs.Indices.Explicit, m_Indices.Explicit);
-            OrderedListIntersection(lhs.Indices.Implicit, rhs.Indices.Implicit, m_Indices.Implicit);
-        }
-
-        /// <summary>
-        /// Creates a container that is the union of two other containers.
-        /// </summary>
-        /// <typeparam name="T">The type of the first container.</typeparam>
-        /// <typeparam name="U">The type of the second container.</typeparam>
-        /// <param name="lhs">The first container.</param>
-        /// <param name="rhs">The second container.</param>
-        /// <returns>A new <see cref="GameplayTagContainer"/> that contains the union of the two containers.</returns>
-        public static GameplayTagContainer Union<T, U>(in T lhs, in U rhs) where T : IGameplayTagContainer
-            where U : IGameplayTagContainer
-        {
-            static void OrderedListUnion(List<int> a, List<int> b, List<int> dst)
-            {
-                dst.Capacity = Math.Max(dst.Capacity, a.Count + b.Count);
-
-                int i = 0, j = 0;
-                while (i < a.Count && j < b.Count)
-                {
-                    int aElement = a[i], bElement = b[j];
-                    if (aElement == bElement)
-                    {
-                        dst.Add(aElement);
-                        i++;
-                        j++;
-                        continue;
-                    }
-
-                    if (aElement < bElement)
-                    {
-                        dst.Add(aElement);
-                        i++;
-                        continue;
-                    }
-
-                    dst.Add(bElement);
-                    j++;
-                }
-
-                for (; i < a.Count; i++)
-                    dst.Add(a[i]);
-
-                for (; j < b.Count; j++)
-                    dst.Add(b[j]);
             }
-
-            GameplayTagContainer union = new();
-            GameplayTagContainerIndices.Create(ref union.m_Indices);
-
-            if (lhs.IsEmpty && rhs.IsEmpty)
-                return union;
-
-            if (lhs.IsEmpty)
-                return new GameplayTagContainer(rhs);
-
-            if (rhs.IsEmpty)
-                new GameplayTagContainer(lhs);
-
-            OrderedListUnion(lhs.Indices.Explicit, rhs.Indices.Explicit, union.m_Indices.Explicit);
-            OrderedListUnion(lhs.Indices.Implicit, rhs.Indices.Implicit, union.m_Indices.Implicit);
-
-            return union;
+            dest.Clear();
+            dest.AddTags(src);
         }
 
-        /// <summary>
-        /// Compares the explicit tags between this instance and another <see cref="IGameplayTagContainer"/> instance.
-        /// It populates the lists of added and removed tags based on the comparison.
-        /// </summary>
-        /// <typeparam name="T">Type that implements <see cref="IGameplayTagContainer"/>.</typeparam>
-        /// <param name="other">The other tag container to compare against.</param>
-        /// <param name="added">The list that will be populated with tags that are in this container but not in the other.</param>
-        /// <param name="removed">The list that will be populated with tags that are in the other container but not in this one.</param>
-        public void GetDiffExplicitTags<T>(T other, List<GameplayTag> added, List<GameplayTag> removed)
-            where T : IGameplayTagContainer
+        public void AddTag(GameplayTag tag) => TryAddTag(tag);
+
+        public bool TryAddTag(GameplayTag tag)
         {
-            // Get the indices of the explicit tags from the other container.
-            GameplayTagContainerIndices otherIndices = other.Indices;
-
-            // Get the explicit tag indices from both containers.
-            List<int> currentContainerTagIndices = Indices.Explicit;
-            List<int> otherContainerTagIndices = otherIndices.Explicit;
-
-            // Initialize counters for both lists.
-            int currentIndex = 0, otherIndex = 0;
-
-            // Traverse both lists of explicit tag indices.
-            while (currentIndex < Indices.ExplicitTagCount && otherIndex < otherIndices.ExplicitTagCount)
-            {
-                int currentTagIndex = currentContainerTagIndices[currentIndex],
-                    otherTagIndex = otherContainerTagIndices[otherIndex];
-
-                // If both indices match, the tag is present in both containers. Move to the next element in both lists.
-                if (currentTagIndex == otherTagIndex)
-                {
-                    currentIndex++;
-                    otherIndex++;
-                    continue;
-                }
-
-                // If the tag index in this container is smaller, it means the tag is present here but not in the other container.
-                // Add it to the added list and increment the index for this container.
-                if (currentTagIndex < otherTagIndex)
-                {
-                    added.Add(GameplayTagManager.GetDefinitionFromRuntimeIndex(currentTagIndex).Tag);
-                    currentIndex++;
-                    continue;
-                }
-
-                // If the tag index in the other container is smaller, it means the tag is present in the other container but not in this one.
-                // Add it to the removed list and increment the index for the other container.
-                removed.Add(GameplayTagManager.GetDefinitionFromRuntimeIndex(otherTagIndex).Tag);
-                otherIndex++;
-            }
-
-            // If there are remaining elements in this container's explicit tags, they are considered added.
-            for (; currentIndex < Indices.ExplicitTagCount; currentIndex++)
-                added.Add(
-                    GameplayTagManager.GetDefinitionFromRuntimeIndex(currentContainerTagIndices[currentIndex]).Tag);
-
-            // If there are remaining elements in the other container's explicit tags, they are considered removed.
-            for (; otherIndex < otherIndices.ExplicitTagCount; otherIndex++)
-                removed.Add(GameplayTagManager.GetDefinitionFromRuntimeIndex(otherContainerTagIndices[otherIndex]).Tag);
+            TagStorage storage = m_Indices.Storage;
+            if (!storage.TryAddExplicit(tag.RuntimeIndex))
+                return false;
+            ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(tag.RuntimeIndex);
+            for (int i = 0; i < hierarchy.Length; i++)
+                storage.AddTotal(hierarchy[i]);
+            return true;
         }
 
-        /// <summary>
-        /// Gets an enumerator for the explicit tags in this container.
-        /// </summary>
-        public GameplayTagEnumerator GetExplicitTags()
+        public void RemoveTag(GameplayTag tag) => TryRemoveTag(tag);
+
+        public bool TryRemoveTag(GameplayTag tag)
         {
-            return new GameplayTagEnumerator(m_Indices.Explicit);
+            TagStorage storage = m_Indices.Storage;
+            if (storage.RemoveExplicit(tag.RuntimeIndex) < 0)
+                return false;
+            ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(tag.RuntimeIndex);
+            for (int i = 0; i < hierarchy.Length; i++)
+                storage.RemoveTotal(hierarchy[i]);
+            return true;
         }
 
-        /// <summary>
-        /// Gets an enumerator for all tags in this container.
-        /// </summary>
-        public GameplayTagEnumerator GetTags()
+        public void AddTags<T>(in T other) where T : IGameplayTagContainer
         {
-            return new GameplayTagEnumerator(m_Indices.Implicit);
-        }
-
-        /// <inheritdoc />
-        public void GetParentTags(GameplayTag tag, List<GameplayTag> parentTags)
-        {
-            GameplayTagContainerUtility.GetParentTags(m_Indices.Implicit, tag, parentTags);
-        }
-
-        /// <inheritdoc />
-        public void GetChildTags(GameplayTag tag, List<GameplayTag> childTags)
-        {
-            GameplayTagContainerUtility.GetChildTags(m_Indices.Implicit, tag, childTags);
-        }
-
-        /// <inheritdoc />
-        public void GetExplicitParentTags(GameplayTag tag, List<GameplayTag> parentTags)
-        {
-            GameplayTagContainerUtility.GetParentTags(m_Indices.Explicit, tag, parentTags);
-        }
-
-        /// <inheritdoc />
-        public void GetExplicitChildTags(GameplayTag tag, List<GameplayTag> childTags)
-        {
-            GameplayTagContainerUtility.GetChildTags(m_Indices.Explicit, tag, childTags);
-        }
-
-        /// <inheritdoc />
-        public void Clear()
-        {
-            m_Indices.Clear();
-            m_SerializedExplicitTags?.Clear();
-        }
-
-        /// <inheritdoc />
-        public void AddTag(GameplayTag tag)
-        {
-            GameplayTagContainerIndices.Create(ref m_Indices);
-            int index = BinarySearchUtility.Search(m_Indices.Explicit, tag.RuntimeIndex);
-            if (index >= 0)
+            TagStorage source = other.Indices.Storage;
+            if (ReferenceEquals(source, m_Indices.Storage))
                 return;
-
-            m_Indices.Explicit.Insert(~index, tag.RuntimeIndex);
-            AddImplicitTagsFor(tag);
-        }
-
-        /// <inheritdoc />
-        public void AddTags<T>(in T container) where T : IGameplayTagContainer
-        {
-            foreach (GameplayTag tag in container.GetExplicitTags())
+            foreach (GameplayTag tag in other.GetExplicitTags())
                 AddTag(tag);
         }
 
-        /// <inheritdoc />
-        public void RemoveTag(GameplayTag tag)
-        {
-            if (!m_Indices.IsCreated)
-                return;
-
-            int index = BinarySearchUtility.Search(m_Indices.Explicit, tag.RuntimeIndex);
-            if (index < 0)
-            {
-                GameplayTagUtility.WarnNotExplictlyAddedTagRemoval(tag);
-                return;
-            }
-
-            m_Indices.Explicit.RemoveAt(index);
-            FillImplictTags();
-        }
-
-        /// <inheritdoc />
         public void RemoveTags<T>(in T other) where T : IGameplayTagContainer
         {
-            if (!m_Indices.IsCreated)
+            if (ReferenceEquals(other.Indices.Storage, m_Indices.Storage))
+            {
+                Clear();
                 return;
-
+            }
             foreach (GameplayTag tag in other.GetExplicitTags())
-            {
-                int index = BinarySearchUtility.Search(m_Indices.Explicit, tag.RuntimeIndex);
-                if (index < 0)
-                {
-                    GameplayTagUtility.WarnNotExplictlyAddedTagRemoval(tag);
-                    return;
-                }
-
-                m_Indices.Explicit.RemoveAt(index);
-            }
-
-            FillImplictTags();
+                RemoveTag(tag);
         }
 
-        private void AddImplicitTagsFor(GameplayTag tag)
+        public void Clear()
         {
-            ReadOnlySpan<GameplayTag> tags = tag.HierarchyTags;
-            for (int i = tags.Length - 1; i >= 0; i--)
-            {
-                GameplayTag parent = tags[i];
-                int index = BinarySearchUtility.Search(m_Indices.Implicit, parent.RuntimeIndex);
-                if (index >= 0)
-                    break;
+            m_Indices.Storage.Clear();
+            m_SerializedExplicitTags?.Clear();
+        }
 
-                m_Indices.Implicit.Insert(~index, parent.RuntimeIndex);
+        /// <summary>Intersection of explicit sets; ancestors are derived from the result.</summary>
+        public static GameplayTagContainer Intersection<T, U>(in T lhs, in U rhs)
+            where T : IGameplayTagContainer where U : IGameplayTagContainer
+        {
+            var result = new GameplayTagContainer();
+            result.AddIntersection(lhs, rhs);
+            return result;
+        }
+
+        /// <summary>Replace output with the explicit intersection. Output may alias either input.</summary>
+        public static void Intersection<T, U>(GameplayTagContainer output, in T lhs, in U rhs)
+            where T : IGameplayTagContainer where U : IGameplayTagContainer
+        {
+            if (ReferenceEquals(output.m_Indices.Storage, lhs.Indices.Storage))
+            {
+                output.IntersectWith(rhs);
+                return;
+            }
+            if (ReferenceEquals(output.m_Indices.Storage, rhs.Indices.Storage))
+            {
+                output.IntersectWith(lhs);
+                return;
+            }
+            output.Clear();
+            output.AddIntersection(lhs, rhs);
+        }
+
+        internal void AddIntersection<T, U>(in T lhs, in U rhs)
+            where T : IGameplayTagContainer where U : IGameplayTagContainer
+        {
+            TagStorage a = lhs.Indices.Storage, b = rhs.Indices.Storage;
+            if (a == null || b == null)
+                return;
+            if (a.ExplicitCount > b.ExplicitCount)
+            {
+                TagStorage temporary = a;
+                a = b;
+                b = temporary;
+            }
+            for (int i = 0; i < a.ExplicitCount; i++)
+            {
+                TagStorage.Entry entry = a.Entries[a.ExplicitIndices[i]];
+                if (b.ContainsExplicit(entry.Id))
+                    AddTag(GameplayTagManager.GetTagFromRuntimeIndex(entry.Id));
             }
         }
 
-        private void FillImplictTags()
+        public void IntersectWith<T>(in T other) where T : IGameplayTagContainer
         {
-            m_Indices.Implicit.Clear();
-
-            for (int i = 0; i < m_Indices.Explicit.Count; i++)
+            TagStorage storage = m_Indices.Storage, source = other.Indices.Storage;
+            if (ReferenceEquals(storage, source))
+                return;
+            if (source == null || source.ExplicitCount == 0)
             {
-                GameplayTagDefinition definition =
-                    GameplayTagManager.GetDefinitionFromRuntimeIndex(m_Indices.Explicit[i]);
-
-                foreach (GameplayTag tag in definition.HierarchyTags)
-                {
-                    if (m_Indices.Implicit.Count > 0 && m_Indices.Implicit[^1] >= tag.RuntimeIndex)
-                        continue;
-
-                    m_Indices.Implicit.Add(tag.RuntimeIndex);
-                }
+                Clear();
+                return;
             }
+            // The explicit index is maintained independently from ancestor closure.
+            for (int i = storage.ExplicitCount - 1; i >= 0; i--)
+            {
+                TagStorage.Entry entry = storage.Entries[storage.ExplicitIndices[i]];
+                if (!source.ContainsExplicit(entry.Id))
+                    RemoveTag(GameplayTagManager.GetTagFromRuntimeIndex(entry.Id));
+            }
+        }
+
+        public static GameplayTagContainer Union<T, U>(in T lhs, in U rhs)
+            where T : IGameplayTagContainer where U : IGameplayTagContainer
+        {
+            var result = new GameplayTagContainer(lhs);
+            result.AddTags(rhs);
+            return result;
+        }
+
+        /// <summary>Append this-minus-other to added, and other-minus-this to removed.</summary>
+        public void GetDiffExplicitTags<T>(T other, List<GameplayTag> added, List<GameplayTag> removed)
+            where T : IGameplayTagContainer
+        {
+            foreach (GameplayTag tag in GetExplicitTags())
+                if (!other.HasTagExact(tag))
+                    added.Add(tag);
+            foreach (GameplayTag tag in other.GetExplicitTags())
+                if (!HasTagExact(tag))
+                    removed.Add(tag);
+        }
+
+        public GameplayTagEnumerator GetTags() => new GameplayTagEnumerator(m_Indices.Storage);
+        public GameplayTagEnumerator GetExplicitTags() => new GameplayTagEnumerator(m_Indices.Storage, true);
+        public GameplayTagEnumerator GetEnumerator() => GetTags();
+        IEnumerator<GameplayTag> IEnumerable<GameplayTag>.GetEnumerator() => GetTags();
+        IEnumerator IEnumerable.GetEnumerator() => GetTags();
+
+        public void GetParentTags(GameplayTag tag, List<GameplayTag> output) =>
+            GameplayTagContainerUtility.GetParentTags(m_Indices.Storage, tag, output);
+        public void GetChildTags(GameplayTag tag, List<GameplayTag> output) =>
+            GameplayTagContainerUtility.GetChildTags(m_Indices.Storage, tag, output);
+        public void GetExplicitParentTags(GameplayTag tag, List<GameplayTag> output) =>
+            GameplayTagContainerUtility.GetParentTags(m_Indices.Storage, tag, output, true);
+        public void GetExplicitChildTags(GameplayTag tag, List<GameplayTag> output) =>
+            GameplayTagContainerUtility.GetChildTags(m_Indices.Storage, tag, output, true);
+
+        // Names are a cold serialization boundary. Runtime state never stores strings.
+        public void OnBeforeSerialize()
+        {
+            m_SerializedExplicitTags ??= new List<string>(ExplicitTagCount);
+            m_SerializedExplicitTags.Clear();
+            foreach (GameplayTag tag in GetExplicitTags())
+                m_SerializedExplicitTags.Add(tag.Name);
+            m_SerializedExplicitTags.Sort(StringComparer.Ordinal);
+        }
+
+        public void OnAfterDeserialize()
+        {
+            m_Indices = GameplayTagContainerIndices.Create();
+            if (m_SerializedExplicitTags == null)
+                return;
+            for (int i = 0; i < m_SerializedExplicitTags.Count; i++)
+                if (GameplayTagManager.RequestTag(m_SerializedExplicitTags[i], out GameplayTag tag))
+                    AddTag(tag);
         }
 
         [OnSerializing]
-        void OnBeforeSerialize()
-        {
-            m_SerializedExplicitTags ??= new();
+        private void OnSerializing(StreamingContext context) => OnBeforeSerialize();
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context) => OnAfterDeserialize();
 
-            m_SerializedExplicitTags.Clear();
-            if (m_Indices.Explicit == null)
-                return;
-
-            foreach (GameplayTag tag in new GameplayTagEnumerator(m_Indices.Explicit))
-            {
-                if (tag == GameplayTag.None)
-                {
-                    continue;
-                }
-
-                m_SerializedExplicitTags.Add(tag.Name);
-            }
-        }
-
-        [OnSerialized]
-        void OnAfterDeserialize()
-        {
-            m_Indices = GameplayTagContainerIndices.Create();
-            if (m_SerializedExplicitTags == null || m_SerializedExplicitTags.Count == 0)
-                return;
-
-            for (int i = 0; i < m_SerializedExplicitTags.Count;)
-            {
-                GameplayTag tag = GameplayTagManager.RequestTag(m_SerializedExplicitTags[i]);
-                if (tag == GameplayTag.None)
-                {
-                    m_SerializedExplicitTags.RemoveAt(i);
-                    continue;
-                }
-
-                int index = BinarySearchUtility.Search(m_Indices.Explicit, tag.RuntimeIndex);
-                if (index < 0)
-                {
-                    m_Indices.Explicit.Insert(~index, tag.RuntimeIndex);
-                    i++;
-                    continue;
-                }
-
-                m_SerializedExplicitTags.RemoveAt(i);
-            }
-
-            FillImplictTags();
-        }
-
-        /// <summary>
-        /// This method is implemented only to allow the use of collection initializer syntax.
-        /// It is hidden from IntelliSense to avoid cluttering the API.
-        /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public void Add(GameplayTag tag)
-        {
-            AddTag(tag);
-        }
-
-        public IEnumerator<GameplayTag> GetEnumerator()
-        {
-            return GetTags();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        public void Add(GameplayTag tag) => AddTag(tag);
     }
 }

@@ -58,7 +58,7 @@ namespace GameplayTags.Editor
                   for (int i = 0; i < m_ExplicitTagsProperty.arraySize; i++)
                   {
                      SerializedProperty element = m_ExplicitTagsProperty.GetArrayElementAtIndex(i);
-                     if (string.Equals(element.stringValue, item.Tag.Name, StringComparison.OrdinalIgnoreCase))
+                     if (string.Equals(element.stringValue, item.Tag.Name, StringComparison.Ordinal))
                      {
                         m_ExplicitTagsProperty.DeleteArrayElementAtIndex(i);
                         break;
@@ -73,7 +73,7 @@ namespace GameplayTags.Editor
          }
       }
 
-      private unsafe void UpdateIncludedTags()
+      private void UpdateIncludedTags()
       {
          foreach (TreeViewItem row in GetRows())
          {
@@ -91,10 +91,7 @@ namespace GameplayTags.Editor
             GameplayTagTreeViewItem item = FindItem(tag.RuntimeIndex);
 
             if (item == null)
-            {
-               Debug.Log(element.stringValue);
                continue;
-            }
 
             item.IsExplicitIncluded = true;
             item.IsIncluded = true;
@@ -110,7 +107,7 @@ namespace GameplayTags.Editor
          }
       }
 
-      private unsafe void ExpandIncludedTagItems()
+      private void ExpandIncludedTagItems()
       {
          for (int i = 0; i < m_ExplicitTagsProperty.arraySize; i++)
          {

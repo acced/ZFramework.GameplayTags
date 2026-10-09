@@ -19,7 +19,7 @@ namespace GameplayTags.Editor
       private GameplayTag m_Tag;
 
       public GameplayTagTreeViewItem(int id, GameplayTag tag)
-         : base(id, tag.HierarchyLevel, tag.Label)
+         : base(id, tag.HierarchyLevel - 1, tag.Label)
       {
          m_Tag = tag;
       }
@@ -101,9 +101,6 @@ namespace GameplayTags.Editor
 
          foreach (GameplayTag tag in GameplayTagManager.GetAllTags())
          {
-            if (tag.Name.StartsWith("Test.") || tag.Name.Equals("Test"))
-               continue;
-
             items.Add(new GameplayTagTreeViewItem(tag.RuntimeIndex, tag));
             m_IsEmpty = false;
          }

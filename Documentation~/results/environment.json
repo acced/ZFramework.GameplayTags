@@ -1,0 +1,93 @@
+{
+  "record_date": "2026-10-09",
+  "cpu_model_reported_by_lscpu": "AMD EPYC 9V74 80-Core Processor",
+  "virtualization": "KVM virtual machine",
+  "cpu_affinity": "not pinned",
+  "cpu_frequency": "not controlled",
+  "framework": ".NET 8.0.31",
+  "os": "Ubuntu 24.04.3 LTS",
+  "architecture": "X64",
+  "kernel": "6.18.44",
+  "sdk_version": "8.0.425",
+  "roslyn_compiler": "4.11.0-3.25569.22 (3fb752d4)",
+  "baseline_commit": "da8a6d2dbe6fa9124a70051c2f5585a1b4e51583",
+  "compiler_flags": [
+    "-optimize+",
+    "-langversion:9.0",
+    "-nullable:disable",
+    "-deterministic+",
+    "-target:exe"
+  ],
+  "reference_pack": "Microsoft.NETCore.App.Ref/8.0.31/ref/net8.0",
+  "tiered_compilation": false,
+  "server_gc": false,
+  "samples_per_case": 7,
+  "retained_memory_samples": 3,
+  "retained_memory_cohort": 128,
+  "observed_checksum": -1524431612,
+  "timing_execution": "Baseline and final rewrite ran sequentially; no task-owned heavy builds or tests ran during their timed processes. Shared-host activity was not controlled.",
+  "baseline_dependencies": "Only absent Log/ObjectPool/GenericPool/ListPool compile shims supplied by Benchmarks~/BaselineDependencies.cs. No baseline runtime source patches.",
+  "runtime_platform_limits": "Standalone .NET 8 x64. Unity adapter has compile-only shim validation. No actual Unity Editor, Mono, IL2CPP, AOT, ARM or mobile timing.",
+  "combined_digest_definition": "SHA-256 of UTF-8 concatenation of sorted relative POSIX path, NUL, file content SHA-256 hex, LF for each listed file.",
+  "baseline_runtime": {
+    "combined_sha256": "7bdbf076a53f25c126ea14bd2d49b6b4757a919fba56b3df96fc19ef48d82f5c",
+    "files": {
+      "Runtime/BinarySearchUtility.cs": "891ff0ec0282ce4e1841869bcc0bd2c337aca392d92ce1dccb8cb708da3dc78c",
+      "Runtime/GameplayTag.cs": "c82a80bae15198fa847626902f2895ab5e9ffe61b0428b64ae505cdd2b8c4eb6",
+      "Runtime/GameplayTagAttribute.cs": "5c0c71d0d7df69f26a2349018e69db7d5a01600a6b0d4335f5bb4da176353e64",
+      "Runtime/GameplayTagContainer.cs": "decf316de30f83bae4900cc1528f021faaf2346365c3d909a21d3bb23bab3c94",
+      "Runtime/GameplayTagContainerBinds.cs": "b4906b375d3c835cf0d0e70b6ee0703409722a29a9ef0ad1a9d9da5785b1c443",
+      "Runtime/GameplayTagContainerDebugView.cs": "e682823b44f03c05e2fd80d43076045a26aa6ca935e7a3f91168dee0f6c0a4f6",
+      "Runtime/GameplayTagContainerExtensionMethods.cs": "9fc12794f1e1537cfc7f48da44e8db09e8b3a741f427820fc848a9cb65159a44",
+      "Runtime/GameplayTagContainerPool.cs": "446aa72232cfe31af05d08a11598cccde6f55e3947ecbe174d573ff0cc5c49cd",
+      "Runtime/GameplayTagContainerUtility.cs": "a670c2925e01ab8a7b7040f477c790207cecf924d747ef7bc9e8e1e5249c5304",
+      "Runtime/GameplayTagCountContainer.cs": "1f39ceba1e779c5d74cfb078c64200a4ea1907d1cc66009b5b696c2f0d5ae605",
+      "Runtime/GameplayTagDefinition.cs": "9c67470df4f630ce403072d4f37dde77adc036fc8dd716c9f465e5aa5e688bac",
+      "Runtime/GameplayTagEnumerator.cs": "21d63ca1a6c893e15bdcdccb2907223ea37f809a165446cc5bf5e75abfb11769",
+      "Runtime/GameplayTagFlags.cs": "6829706bccf06e412df84f3f01c163e225c23782c7c4fb09dfe445b1d8dcabe9",
+      "Runtime/GameplayTagHierarchicalContanier.cs": "6b7949985f80f3e6bc24ae3aafc1adeded23f2f5ac3c90af87a5b3ec3b4a7911",
+      "Runtime/GameplayTagManager.cs": "315db1f1a3f78c1eed1a2887be13adea348a2a0345d03cca1446788c2f63e81c",
+      "Runtime/GameplayTagRegistrationContext.cs": "b83ec26879d9f3afd4e9219c532a52e66c695035ab167b0f092bb8caca400377",
+      "Runtime/GameplayTagRequirements.cs": "0a71fdf05e2a1b205e29f01387651a013dc4ca75489af480d42221335d50bc10",
+      "Runtime/GameplayTagUtility.cs": "084d3edd3058a51dcfbe1f458fc7a82124b5afec950026851a709ee967a103ce"
+    }
+  },
+  "rewrite_runtime": {
+    "combined_sha256": "4db9058253fd7adf68dedb3d5e46e2a1dffaeea92f02362c23e2af1008f5e6a7",
+    "files": {
+      "Runtime/GameplayTag.cs": "0367808f8c540762b064c0ebd0e0d2ebb660b6eadf4dae724678029f49a37e7b",
+      "Runtime/GameplayTagAttribute.cs": "5c0c71d0d7df69f26a2349018e69db7d5a01600a6b0d4335f5bb4da176353e64",
+      "Runtime/GameplayTagContainer.cs": "e3b181b3ee963d00b03b24eb05f93049624df5ccdbd787b2bd306bf4cc086a50",
+      "Runtime/GameplayTagContainerBinds.cs": "7c1f1faee1e486bab0ffda0539249a6cc20cbc8c570d6dd2bb2239cd72553150",
+      "Runtime/GameplayTagContainerDebugView.cs": "329846fecdfe0a176cae5dd78856ef8d2b5e9a87c976bc05c61433c1fb3aa9f3",
+      "Runtime/GameplayTagContainerExtensionMethods.cs": "96067d19715f0a516f818467f01180718f1fd8fe5176e1bb9e2b1c802d86454c",
+      "Runtime/GameplayTagContainerPool.cs": "f88beb9962b220ab5274f85450cd513b25e095915e257a605114d3a7dcbfad76",
+      "Runtime/GameplayTagContainerUtility.cs": "f6f62ce3f41baf36ef5e71b92c31511833656aae3834b240535b420389f522c4",
+      "Runtime/GameplayTagCountContainer.cs": "2507f999f41b18019d3a5478f9d42599792dfd7a0e517730309e54cfa99ee858",
+      "Runtime/GameplayTagDefinition.cs": "7cf498e3b14f6ae9d328898c9f833608fe71a05911805086deab27f684442c68",
+      "Runtime/GameplayTagEnumerator.cs": "5ceeaab6e65ee8ac0393e3cf5815b4d55d6d17b630a1a92f8fdc81e021e2daf9",
+      "Runtime/GameplayTagFlags.cs": "6829706bccf06e412df84f3f01c163e225c23782c7c4fb09dfe445b1d8dcabe9",
+      "Runtime/GameplayTagHierarchicalContanier.cs": "00bb82b1d7603d3579b511f6d3504d8d2771ccb662187350678ec4e706307c77",
+      "Runtime/GameplayTagManager.cs": "4d931365b965aee5d59a0782314c7cddfbde97a73b09bb743d2c883752ddc341",
+      "Runtime/GameplayTagRegistrationContext.cs": "5795ab0f7f6a7672a557841a327b673c00c0c8599302face56aeed3247f07ef8",
+      "Runtime/GameplayTagRequirements.cs": "25982793636c07582d12acd77c63b02c8c38d4cdc4e6a1f9233c6417e7ccf4f9",
+      "Runtime/GameplayTagUtility.cs": "8c23380b52c53b8e9d707abdcf16f66bb8a5fec7627f5ec1c95e04d4f1c2a96d",
+      "Runtime/TagStorage.cs": "69925a059252af8115e704300946b76bb991d82f8770ed7a04dab3f1e1892654"
+    }
+  },
+  "shared_benchmark_sources": {
+    "combined_sha256": "a9cc0657467481fcdafd97cf668cc02ae4e52732dda61ced3b34935495911506",
+    "files": {
+      "Benchmarks~/BaselineDependencies.cs": "b234c192d7df93495e7f93b85cee1a70b5d4cf1d64225039f649c3ce3b0af024",
+      "Benchmarks~/GameplayTags.Benchmarks.csproj": "292e5e845731bfc1350cdcb65bfc0a63d75838b1c27a51b47220eb7876c1360e",
+      "Benchmarks~/Program.cs": "a3edc2de8a50dc9a8bb8748d6051b9b733ff8fb9ee38dccc1c7601d430fc054f",
+      "Tests~/FixtureRegistration.cs": "1f1402685f03030bf39057fe44d6c817118325dce35b527f3828378c78dfa60a",
+      "Tests~/run.py": "69042d935dfa7310f4fc07f24054ba709accb20114e42fc61bbbb47987a248e5"
+    }
+  },
+  "commands": [
+    "python3 Tests~/run.py benchmark --dotnet /workspace/scratch/119d882d7d25/toolchain/dotnet/dotnet --source /workspace/scratch/119d882d7d25/baseline --baseline --output-dir artifacts/baseline --json Documentation~/results/baseline.json",
+    "python3 Tests~/run.py benchmark --dotnet /workspace/scratch/119d882d7d25/toolchain/dotnet/dotnet --output-dir artifacts/rewrite --json Documentation~/results/rewrite.json",
+    "python3 Benchmarks~/compare.py Documentation~/results/baseline.json Documentation~/results/rewrite.json --csv Documentation~/results/comparison.csv"
+  ]
+}

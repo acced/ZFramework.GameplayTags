@@ -1,0 +1,10 @@
+{
+  "name": "com.acced.zframework.gameplaytags",
+  "version": "2.0.0",
+  "displayName": "ZFramework Gameplay Tags",
+  "description": "Performance-first hierarchical gameplay tags with compact indexed storage and reference-counted ancestor closure.",
+  "unity": "2022.3",
+  "license": "MIT",
+  "keywords": ["gameplay", "tags", "hierarchy"],
+  "author": { "name": "acced" }
+}

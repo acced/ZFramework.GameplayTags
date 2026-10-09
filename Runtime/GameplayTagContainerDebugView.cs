@@ -1,60 +1,47 @@
-﻿using System.Diagnostics;
-using System.Linq;
+using System.Diagnostics;
 
 namespace GameplayTags
 {
-   internal class GameplayTagContainerDebugView
-   {
-      [DebuggerDisplay("{DebuggerDisplay,nq}")]
-      public struct Tag
-      {
-         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-         private IGameplayTagContainer m_Container { get; set; }
+    internal sealed class GameplayTagContainerDebugView
+    {
+        [DebuggerDisplay("{Display,nq}")]
+        internal readonly struct Tag
+        {
+            private readonly IGameplayTagContainer m_Container;
+            private readonly GameplayTag m_Tag;
 
-         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-         private GameplayTag m_Tag;
+            private string Display
+            {
+                get
+                {
+                    if (m_Container is IGameplayTagCountContainer counts)
+                        return $"{m_Tag.Name} (Explicit: {counts.GetExplicitTagCount(m_Tag)}, Total: {counts.GetTagCount(m_Tag)})";
+                    return m_Container.HasTagExact(m_Tag) ? $"{m_Tag.Name} (Explicit)" : m_Tag.Name;
+                }
+            }
 
-         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-         private readonly string DebuggerDisplay
-         {
+            internal Tag(IGameplayTagContainer container, GameplayTag tag)
+            {
+                m_Container = container;
+                m_Tag = tag;
+            }
+        }
+
+        private readonly IGameplayTagContainer m_Container;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public Tag[] Tags
+        {
             get
             {
-               string name = m_Tag.Name;
-
-               if (m_Container is IGameplayTagCountContainer countContainer)
-               {
-                  int count = countContainer.GetTagCount(m_Tag);
-                  int explicitCount = countContainer.GetExplicitTagCount(m_Tag);
-
-                  return $"{name} (Explicit: {explicitCount}, Total: {count})";
-               }
-
-               bool isExplicit = m_Container.HasTagExact(m_Tag);
-               return isExplicit ? $"{name} (Explicit)" : name;
+                var result = new Tag[m_Container.TagCount];
+                int i = 0;
+                foreach (GameplayTag tag in m_Container.GetTags())
+                    result[i++] = new Tag(m_Container, tag);
+                return result;
             }
-         }
+        }
 
-         public Tag(IGameplayTagContainer container, GameplayTag tag)
-         {
-            m_Container = container;
-            m_Tag = tag;
-         }
-      }
-
-      [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-      public IGameplayTagContainer Container { get; set; }
-
-      [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-      public Tag[] Tags
-      {
-         get => Container.GetTags()
-               .Select(tag => new Tag(Container, tag))
-               .ToArray();
-      }
-
-      public GameplayTagContainerDebugView(IGameplayTagContainer container)
-      {
-         Container = container;
-      }
-   }
+        public GameplayTagContainerDebugView(IGameplayTagContainer container) => m_Container = container;
+    }
 }

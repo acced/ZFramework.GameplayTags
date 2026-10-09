@@ -1,0 +1,26 @@
+name: Runtime validation
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Unity package metadata
+        run: python3 Tests~/validate_package.py
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build portable runtime
+        run: dotnet build GameplayTags.Runtime.csproj -c Release
+      - name: Run deterministic and randomized reference tests
+        run: dotnet run --project Tests~/GameplayTags.Tests.csproj -c Release
+      - name: Validate registry construction and deep hierarchies
+        run: dotnet run --project Tests~/Registry/GameplayTags.Registry.Tests.csproj -c Release
+      - name: Validate containers with a 3000-level hierarchy
+        run: dotnet run --project Tests~/DeepHierarchy/GameplayTags.DeepHierarchy.Tests.csproj -c Release
+      - name: Validate source generator against pinned Roslyn
+        run: dotnet run --project SourceGenerator~/Tests/GameplayTags.SourceGenerator.Tests.csproj -c Release
+      - name: Compile benchmark harness
+        run: dotnet build Benchmarks~/GameplayTags.Benchmarks.csproj -c Release
