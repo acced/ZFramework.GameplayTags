@@ -133,6 +133,46 @@
         "Mono approximate fullGC retention flags do not establish owned-storage growth; structural fixtures remain equal.",
         "Existing legacy largeCopy AMD regression is reproduced, so no successful version is counted. Lazy registry patch remains isolated for a principled future repair."
       ]
+    },
+    {
+      "sha": "3af34cba7c0e70c2fc8e3f3a5f1f930ebf079991",
+      "ci_run": 38082297304,
+      "decision": "Rejected as-is: adaptive Union and tiny Copy/Clear wins do not offset two substantive query regressions reproduced on matched AMD with stable same-binary controls. Keep combined patch isolated for future principled query repair.",
+      "artifacts": [
+        {
+          "backend": ".NET8 AMD7763",
+          "id": 11680654788,
+          "sha256": "b8fa309fe300e9340c0d0810c05ada68cb21421d98e21fbcfe93da4b309737b0"
+        },
+        {
+          "backend": "standalone Mono6.8 Intel8573C",
+          "id": 11681915802,
+          "sha256": "2bcfe6a8492d2759dde12c3360719b162dcfb0b6d6394fa6a70785b1be7e5735"
+        }
+      ],
+      "diagnostics": [
+        {
+          "run": 38084400570,
+          "artifact": 11682415225,
+          "sha256": "3fd1590f30c41a33de44d7585f349e48ed741daf30a96110c58b5e89c62ec219",
+          "result": "MatchedAMD slot2 originalProgram AA/AB14pairs: AnyExact nonself1439.08->1519.14ns,14/14 slower,99%0.943-0.954; HasAll hierarchical self56.79->68.74ns,12/14 slower,99%0.806-0.919. Same-binary AA has no directional signal; AnyHier control neutral. Minimum selected batches499ms,zeroGC/allocations."
+        },
+        {
+          "run": 38084400570,
+          "artifact": 11681573642,
+          "sha256": "9164f24bf4aeac9415dd603d708e79c1130f51c7a86cbed02792a79509adc6be",
+          "result": "Slot1 CPU no-match only, no timing evidence or acceptance conclusion."
+        }
+      ],
+      "findings": [
+        "DeepascendingUnion speedups at128/1024/3000:.NET5.66/65.0/147.6,Mono3.38/52.3/149.0. Warm/cold tested allocations unchanged.",
+        "Tiny sparseCopy+Clear restore guards improve~1.35x.NET and2.7xMono; all24 owned-storage graphs/layouts identical bothbackends.",
+        "Additional AddTags-self shift8.11->8.42ns is reproducible but not the standalone material reason for rejection; two substantial query regressions independently suffice.",
+        "Mono first-missing-leaf HasAll negatives shift+1.1..1.74ns (~9-15%),14/14. Small absolute costs remain disclosed; no semantic failure.",
+        "Legacy padded fresh intersections andCopy have short-batch secondary slowdowns; keep raw artifacts, do not claim they passed merely because mainqueryregressions already reject. Mono legacyQuery short-batch~0.5..0.7ns shift likewise retained.",
+        "Registrytrunk.NET median+14.5B/34.6MB is not established allocationgrowth: mixedpairdeltas,mean+11.875B99%interval-17.46..41.21,unchangedregistrycode. No unproven GC cause claimed.",
+        "No successful optimization version counted."
+      ]
     }
   ],
   "verification_limits": [
@@ -140,5 +180,5 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Combined adaptive Union plus general workspace ref-local propagation and tiny CopyFrom loops (both live and explicit counts <=8), based on exact f7. Restores original registry. This is one candidate, never three successful versions. All original131 workloads and prior regressions remain; adaptive-specific shared long iteration maps restored. Exact local correctness, overflow differentials and cold/storage probes passed on both standalone runtimes; acceptance pending full CI."
+  "current_candidate_note": "Independent declared-duplicate registration fastpath on exact acceptedf7, eagerChildren/Node/Build unchanged. Only already-declared duplicate names skip prefix construction; first implicit-parent declarations preserve original allocation sequence.216freshprocessprobes show sixunique fixtures allocation-equal and hierarchicalduplicate fixtures savings. Fixedroot131/fourRegistry/legacy/Bulk guards retained, plus additive short/longroot-only and longCopy guards. FullpairedCI pending, count0."
 }

@@ -28,24 +28,39 @@ namespace GameplayTags
         internal void RegisterTag(string name, string description = null,
             GameplayTagFlags flags = GameplayTagFlags.None)
         {
-            Node parent = m_Root;
-            int start = 0;
-            while (true)
+            // Only an already-declared name can bypass prefix construction.
+            // A first declaration of an implicit ancestor retains the original
+            // allocation sequence, just like every other unique declaration.
+            Node existing = null;
+            if (name != null)
+                m_ByName.TryGetValue(name, out existing);
+            Node parent = existing;
+            if (existing == null || !existing.IsDeclared)
             {
-                int dot = name.IndexOf('.', start);
-                int end = dot < 0 ? name.Length : dot;
-                string prefix = dot < 0 ? name : name.Substring(0, end);
-                if (!m_ByName.TryGetValue(prefix, out Node node))
+                parent = m_Root;
+                int start = 0;
+                while (true)
                 {
-                    node = new Node(prefix, name.Substring(start, end - start), parent);
-                    m_ByName.Add(prefix, node);
-                    parent.Children.Add(node);
-                }
+                    int dot = name.IndexOf('.', start);
+                    int end = dot < 0 ? name.Length : dot;
+                    string prefix = dot < 0 ? name : name.Substring(0, end);
+                    // Reuse the complete-name lookup; unique registrations do
+                    // not need an additional dictionary probe at their leaf.
+                    Node node = existing;
+                    if (dot >= 0)
+                        m_ByName.TryGetValue(prefix, out node);
+                    if (node == null)
+                    {
+                        node = new Node(prefix, name.Substring(start, end - start), parent);
+                        m_ByName.Add(prefix, node);
+                        parent.Children.Add(node);
+                    }
 
-                parent = node;
-                if (dot < 0)
-                    break;
-                start = dot + 1;
+                    parent = node;
+                    if (dot < 0)
+                        break;
+                    start = dot + 1;
+                }
             }
 
             // Declarations are trusted input. ValidateName is an explicit authoring-time
