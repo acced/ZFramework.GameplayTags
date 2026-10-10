@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework Condition="'$(TargetFramework)' == ''">net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RuntimeRoot Condition="'$(RuntimeRoot)' == ''">../../Runtime</RuntimeRoot>
+    <DefineConstants Condition="'$(Baseline)' == 'true'">$(DefineConstants);BASELINE</DefineConstants>
+    <DefineConstants Condition="'$(ProbeCompile)' == 'true'">$(DefineConstants);UNITY_EDITOR;PROBE_STUBS</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(RuntimeRoot)/**/*.cs" />
+    <Compile Include="Program.cs;Benchmarks.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(ProbeCompile)' == 'true'">
+    <Compile Include="UnityProbeStubs.cs" />
+    <Compile Include="../../Samples~/IntersectionDiagnostics/Editor/GameplayTagIntersectionDiagnostics.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3" PrivateAssets="All" />
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="System.Buffers" Version="4.5.1" />
+  </ItemGroup>
+</Project>

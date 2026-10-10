@@ -180,7 +180,34 @@ namespace GameplayTags
                 lhs is GameplayTagContainer, rhs is GameplayTagContainer);
         }
 
-        private void SetIntersection(TagStorage a, TagStorage b, bool aIsSet, bool bIsSet)
+        /// <summary>
+        /// Create an independent explicit intersection using caller-owned sort-free scratch.
+        /// The workspace must be exclusively owned for the duration of the call.
+        /// </summary>
+        public static GameplayTagContainer Intersection<T, U>(in T lhs, in U rhs,
+            GameplayTagIntersectionWorkspace workspace)
+            where T : IGameplayTagContainer where U : IGameplayTagContainer
+        {
+            var result = new GameplayTagContainer();
+            result.SetIntersection(lhs.Indices.Storage, rhs.Indices.Storage,
+                lhs is GameplayTagContainer, rhs is GameplayTagContainer, workspace);
+            return result;
+        }
+
+        /// <summary>
+        /// Replace output using sort-free scratch. Output may alias either input.
+        /// Prewarm output and workspace capacities for allocation-free repeated calls.
+        /// </summary>
+        public static void Intersection<T, U>(GameplayTagContainer output, in T lhs, in U rhs,
+            GameplayTagIntersectionWorkspace workspace)
+            where T : IGameplayTagContainer where U : IGameplayTagContainer
+        {
+            output.SetIntersection(lhs.Indices.Storage, rhs.Indices.Storage,
+                lhs is GameplayTagContainer, rhs is GameplayTagContainer, workspace);
+        }
+
+        private void SetIntersection(TagStorage a, TagStorage b, bool aIsSet, bool bIsSet,
+            GameplayTagIntersectionWorkspace workspace = null)
         {
             if (a == null || b == null || a.ExplicitCount == 0 || b.ExplicitCount == 0)
             {
@@ -200,16 +227,29 @@ namespace GameplayTags
             {
                 if (aIsSet)
                     output.CopyFrom(a);
-                else
+                else if (workspace == null)
                     CopyExplicitStorage(a);
+                else
+                {
+                    int count = a.ExplicitCount;
+                    workspace.EnsureSelectedCapacity(count);
+                    for (int i = 0; i < count; i++)
+                        workspace.SelectedIds[i] = a.Entries[a.ExplicitIndices[i]].Id;
+                    output.BuildFromUnsortedExplicitIds(count, workspace);
+                }
                 m_SerializedExplicitTags?.Clear();
                 return;
             }
 
-            int matches = 0;
-            // A few missing tags are cheaper to remove from a block copy than
-            // to rebuild the common closure. Capture them before touching an
-            // output that may also be the lookup operand.
+            // Reused, non-aliased outputs gather IDs during the first lookup pass.
+            // Fresh outputs count first to allocate only the exact selected capacity.
+            // Without a workspace an alias must defer overwriting its explicit index
+            // until the full-hit/copy-minus-missing fast paths have been ruled out.
+            bool capture = workspace != null ||
+                (output.ExplicitIndices.Length != 0 && !ReferenceEquals(output, a) && !ReferenceEquals(output, b));
+            int[] selectedIds = workspace == null ? output.ExplicitIndices : workspace.SelectedIds;
+            int matches = 0, previousId = 0;
+            bool ordered = true;
             Span<int> missingIds = stackalloc int[8];
             int missing = 0;
             long missingPathWork = 0;
@@ -217,7 +257,28 @@ namespace GameplayTags
             {
                 int id = a.Entries[a.ExplicitIndices[i]].Id;
                 if (b.ContainsExplicit(id))
+                {
+                    if (capture)
+                    {
+                        if (matches == selectedIds.Length)
+                        {
+                            if (workspace == null)
+                            {
+                                output.EnsureExplicitCapacity(matches + 1);
+                                selectedIds = output.ExplicitIndices;
+                            }
+                            else
+                            {
+                                workspace.EnsureSelectedCapacity(matches + 1);
+                                selectedIds = workspace.SelectedIds;
+                            }
+                        }
+                        selectedIds[matches] = id;
+                        ordered &= id > previousId;
+                        previousId = id;
+                    }
                     matches++;
+                }
                 else if (missing < missingIds.Length)
                 {
                     missingIds[missing++] = id;
@@ -239,21 +300,40 @@ namespace GameplayTags
                 return;
             }
 
-            output.EnsureExplicitCapacity(matches);
-            int selected = 0;
-            for (int i = 0; i < a.ExplicitCount; i++)
+            if (!capture)
             {
-                int id = a.Entries[a.ExplicitIndices[i]].Id;
-                if (b.ContainsExplicit(id))
-                    output.ExplicitIndices[selected++] = id;
+                output.EnsureExplicitCapacity(matches);
+                int selected = 0;
+                for (int i = 0; i < a.ExplicitCount; i++)
+                {
+                    int id = a.Entries[a.ExplicitIndices[i]].Id;
+                    if (b.ContainsExplicit(id))
+                    {
+                        // Forward compaction is safe for an aliased input: selected
+                        // never exceeds i; lookups use Entries/buckets, not this index.
+                        output.ExplicitIndices[selected++] = id;
+                        ordered &= id > previousId;
+                        previousId = id;
+                    }
+                }
             }
-            output.BuildFromExplicitIds(selected);
+            if (workspace == null)
+                output.BuildFromExplicitIds(matches, ordered);
+            else
+                output.BuildFromUnsortedExplicitIds(matches, workspace);
             m_SerializedExplicitTags?.Clear();
         }
 
         public void IntersectWith<T>(in T other) where T : IGameplayTagContainer
         {
             SetIntersection(m_Indices.Storage, other.Indices.Storage, true, other is GameplayTagContainer);
+        }
+
+        /// <summary>Intersect in place using exclusively owned sort-free scratch.</summary>
+        public void IntersectWith<T>(in T other, GameplayTagIntersectionWorkspace workspace)
+            where T : IGameplayTagContainer
+        {
+            SetIntersection(m_Indices.Storage, other.Indices.Storage, true, other is GameplayTagContainer, workspace);
         }
 
         public static GameplayTagContainer Union<T, U>(in T lhs, in U rhs)

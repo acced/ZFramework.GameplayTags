@@ -383,19 +383,63 @@ namespace GameplayTags
                 Array.Resize(ref ExplicitIndices, ArrayCapacityFor(capacity));
         }
 
-        internal void BuildFromExplicitIds(int explicitCount)
+        internal void BuildFromExplicitIds(int explicitCount, bool alreadySorted = false)
         {
             if (explicitCount == 0)
             {
                 Clear();
                 return;
             }
-            Array.Sort(ExplicitIndices, 0, explicitCount);
+            if (!alreadySorted)
+                Int32Sort.Sort(ExplicitIndices, 0, explicitCount);
 
-            // Sorted DFS IDs let us count each missing path segment once. This
-            // determines exact live capacity without reserving both input closures.
-            int total = 0;
-            int depth = 0;
+            // Fresh outputs size the live closure first to avoid geometric entry
+            // allocations. A reused output streams into its retained buffer instead.
+            if (Entries.Length == 0)
+                EnsureOverwriteCapacity(CountSortedClosure(explicitCount), explicitCount);
+
+            // Count temporarily stores the number of selected tags processed when
+            // this subtree was entered. At exit, the prefix difference is exactly
+            // its explicit contribution count. ExplicitIndex is the DFS parent link.
+            int next = 0, parent = -1, depth = 0;
+            Entry[] entries = Entries;
+            for (int i = 0; i < explicitCount; i++)
+            {
+                int id = ExplicitIndices[i];
+                while (parent >= 0 && id >= GameplayTagManager.GetSubtreeEnd(entries[parent].Id))
+                {
+                    entries[parent].Count = i - entries[parent].Count;
+                    parent = entries[parent].ExplicitIndex;
+                    depth--;
+                }
+                ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
+                int needed = next + path.Length - depth;
+                if (needed > entries.Length)
+                    entries = GrowBuildEntries(needed, next);
+                while (depth < path.Length)
+                {
+                    entries[next] = new Entry { Id = path[depth++], Count = i, ExplicitIndex = parent };
+                    parent = next++;
+                }
+                entries[parent].ExplicitCount = 1;
+                ExplicitIndices[i] = parent;
+            }
+            while (parent >= 0)
+            {
+                entries[parent].Count = explicitCount - entries[parent].Count;
+                parent = entries[parent].ExplicitIndex;
+            }
+            for (int i = 0; i < explicitCount; i++)
+                entries[ExplicitIndices[i]].ExplicitIndex = i;
+            Count = next;
+            ExplicitCount = explicitCount;
+            ResetIndex(BucketCapacityFor(next));
+            BuildIndex();
+        }
+
+        private int CountSortedClosure(int explicitCount)
+        {
+            int total = 0, depth = 0;
             ReadOnlySpan<int> previous = default;
             for (int i = 0; i < explicitCount; i++)
             {
@@ -407,45 +451,101 @@ namespace GameplayTags
                 depth = path.Length;
                 previous = path;
             }
+            return total;
+        }
 
-            ResetIndex(BucketCapacityFor(total));
-            EnsureOverwriteCapacity(total, explicitCount);
+        // No old index is consulted while bulk-building. Preserve just the live
+        // prefix on growth, not the old container's Count or stale hash contents.
+        private Entry[] GrowBuildEntries(int capacity, int written)
+        {
+            var replacement = new Entry[ArrayCapacityFor(capacity)];
+            if (written != 0)
+                Array.Copy(Entries, replacement, written);
+            Entries = replacement;
+            return replacement;
+        }
 
-            // Until the final explicit-index pass, ExplicitIndex is a parent
-            // dense index. The entries themselves are the DFS stack: no scratch
-            // array and no per-node hash lookup is needed for ancestor counts.
+        internal void BuildFromUnsortedExplicitIds(int explicitCount, GameplayTagIntersectionWorkspace workspace)
+        {
+            if (explicitCount == 0)
+            {
+                Clear();
+                return;
+            }
+            workspace.PrepareLookup();
+            EnsureExplicitCapacity(explicitCount);
+            int[] positions = workspace.Positions;
+            int[] ids = workspace.SelectedIds;
+            Entry[] entries = Entries;
             int next = 0;
-            int parent = -1;
-            depth = 0;
+
+            // Sparse-set validation makes leftover workspace positions harmless:
+            // the position must point inside THIS build and match the requested ID.
+            // An existing node already has a complete path to the root, so stop there.
             for (int i = 0; i < explicitCount; i++)
             {
-                int id = ExplicitIndices[i];
-                while (depth != 0 && id >= GameplayTagManager.GetSubtreeEnd(Entries[parent].Id))
+                int first = next, child = -1;
+                for (int id = ids[i]; id != 0; id = GameplayTagManager.GetParentIndex(id))
                 {
-                    parent = Entries[parent].ExplicitIndex;
-                    depth--;
+                    int position = positions[id];
+                    if ((uint)position < (uint)next && entries[position].Id == id)
+                    {
+                        if (child < 0)
+                            first = position;
+                        else
+                        {
+                            entries[child].ExplicitIndex = position;
+                            entries[position].ExplicitCount++;
+                        }
+                        break;
+                    }
+                    if (next == entries.Length)
+                        entries = GrowBuildEntries(next + 1, next);
+                    int index = next++;
+                    entries[index] = new Entry { Id = id, ExplicitIndex = -1 };
+                    positions[id] = index;
+                    if (child >= 0)
+                    {
+                        entries[child].ExplicitIndex = index;
+                        entries[index].ExplicitCount = 1;
+                    }
+                    child = index;
                 }
-                ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
-                while (depth < path.Length)
-                {
-                    Entries[next] = new Entry { Id = path[depth++], ExplicitIndex = parent };
-                    parent = next++;
-                }
-                Entries[parent].Count = 1;
-                Entries[parent].ExplicitCount = 1;
-                ExplicitIndices[i] = parent;
+                // Selected IDs are unique, even for a counted input.
+                entries[first].Count = 1;
+                ExplicitIndices[i] = first;
             }
 
-            for (int i = next - 1; i >= 0; i--)
+            // ExplicitCount temporarily counts unfinished direct children.
+            // -1 marks a finished node. Each edge forwards its contribution once;
+            // the last finished child can immediately finish its parent, without
+            // a heap queue, recursion, sorting or a scan of the complete registry.
+            for (int i = 0; i < next; i++)
             {
-                int parentIndex = Entries[i].ExplicitIndex;
-                if (parentIndex >= 0)
-                    Entries[parentIndex].Count += Entries[i].Count;
+                int node = i;
+                while (node >= 0 && entries[node].ExplicitCount == 0)
+                {
+                    int parent = entries[node].ExplicitIndex;
+                    entries[node].ExplicitCount = -1;
+                    if (parent >= 0)
+                    {
+                        entries[parent].Count += entries[node].Count;
+                        entries[parent].ExplicitCount--;
+                    }
+                    node = parent;
+                }
             }
+            for (int i = 0; i < next; i++)
+                entries[i].ExplicitCount = 0;
             for (int i = 0; i < explicitCount; i++)
-                Entries[ExplicitIndices[i]].ExplicitIndex = i;
+            {
+                int index = ExplicitIndices[i];
+                entries[index].ExplicitCount = 1;
+                entries[index].ExplicitIndex = i;
+            }
             Count = next;
             ExplicitCount = explicitCount;
+            ResetIndex(BucketCapacityFor(next));
             BuildIndex();
         }
 
