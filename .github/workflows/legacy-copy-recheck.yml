@@ -11,14 +11,33 @@ jobs:
   targeted-dotnet:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        amd_probe: [1, 2]
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Record CPU and require original AMD model for this recheck
+        id: cpu
+        shell: bash
+        run: |
+          mkdir -p .artifacts/copy-host
+          lscpu > .artifacts/copy-host/lscpu.txt
+          if grep -q "AMD EPYC 7763" /proc/cpuinfo; then
+            echo "matched=true" >> "$GITHUB_OUTPUT"
+            echo "Matched original AMD EPYC 7763 model; paired timing will run." > .artifacts/copy-host/status.txt
+          else
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+            echo "CPU model did not match; no timing evidence or acceptance conclusion from this job." > .artifacts/copy-host/status.txt
+          fi
       - uses: actions/setup-dotnet@v4
+        if: steps.cpu.outputs.matched == 'true'
         with:
           dotnet-version: 8.0.x
       - name: Freeze exact original and lazy registry candidate
+        if: steps.cpu.outputs.matched == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -26,6 +45,7 @@ jobs:
           git archive f7c99546dbf029d70896c0f05e5119b19ffd6d26 Runtime | tar -x -C .artifacts/copy-original
           git archive 94ed1d020b9dd8ad20b08b8079e7b81811b338a3 Runtime | tar -x -C .artifacts/copy-candidate
       - name: Long-batch original legacy operations, isolated A/A then A/B
+        if: steps.cpu.outputs.matched == 'true'
         shell: bash
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: '1'
@@ -41,8 +61,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: legacy-copy-diagnostic-${{ github.sha }}
+          name: legacy-copy-amd-probe-${{ matrix.amd_probe }}-${{ github.sha }}
           path: |
+            .artifacts/copy-host/
             .artifacts/copy-aa/
             .artifacts/copy-ab/
           include-hidden-files: true
