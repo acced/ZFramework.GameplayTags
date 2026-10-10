@@ -1,0 +1,41 @@
+{
+  "SourceRun": 38082297304,
+  "ArtifactId": 11680654788,
+  "ArtifactSHA256": "b8fa309fe300e9340c0d0810c05ada68cb21421d98e21fbcfe93da4b309737b0",
+  "BaselineRevision": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "Formula": "ceil(500000000 / minimum of all 14 baseline Ns samples); identical counts for both slots; all other 127 rows 65",
+  "Rows": {
+    "guard/n1024/addtags-self": {
+      "FastestBaselineNs": 8.094700164416526,
+      "Iterations": 61768811
+    },
+    "guard/n1024/any-exact-nonself": {
+      "FastestBaselineNs": 1436.556644106607,
+      "Iterations": 348055
+    },
+    "guard/n1024/any-hierarchical-nonself": {
+      "FastestBaselineNs": 1148.6527907085,
+      "Iterations": 435293
+    },
+    "guard/n16/all-hierarchical-self": {
+      "FastestBaselineNs": 56.71714487257696,
+      "Iterations": 8815677
+    }
+  },
+  "BaselineRawHashes": {
+    "before-0.json": "e12a88646731a7adbb196b8bddb0e56ec94b7f705adae202d5c6753b873e2636",
+    "before-1.json": "2a49804294956422d3978203e17ec9b454c7c1f065a0b8e6c3aaf6c7e3b6074b",
+    "before-2.json": "f6d634134ef0c4a63e7807b6e7b4f92a2edf932ed92fcd7e7c15cbf9ec89d248",
+    "before-3.json": "20dd6ce27a97d19359ec1e3b110fdca15d2354d2d54e107f7c7e2ee923626cda",
+    "before-4.json": "f3c2f54c8d849a42a2464ca18ebce207e66774b46633de033c2ca75016cb56cd",
+    "before-5.json": "48cc400e48517703e39328c5e760f96f78256dcd0c028be05b725907628a5ca1",
+    "before-6.json": "763132caf090c9b7708239b8108bd25e685aedb32ea8abab89c77a846d328e55",
+    "before-7.json": "a9604581e1c863603a582006e94ac65cd652d40e5b1e5159523e2921322d1735",
+    "before-8.json": "a2d4c7e64a96fea5228b6b8f9e7c144d708d9d96e9099c7b912e0b7409ca3c6b",
+    "before-9.json": "f595e57e8c5df8332d09eb0fb1643dccb30ab2f4a6f71e324b568f5befc3162d",
+    "before-10.json": "d0fd9ccba39f45240e7e613dc29251461985a84788079eb41cb8de3dde938f43",
+    "before-11.json": "9754734d83d3610a019bbb5d4af229241b939c05d078f70657dce2601a52ae59",
+    "before-12.json": "c57baba7aca2b19e522253b39a3ef8ddcec4662d7a3158348b3610090237c105",
+    "before-13.json": "a23457c0c99a41757f3c1634e2eaf3ac9642e02b1aed2872ba1c91bca3552977"
+  }
+}
