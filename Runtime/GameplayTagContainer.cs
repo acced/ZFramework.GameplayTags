@@ -241,16 +241,22 @@ namespace GameplayTags
                 return;
             }
 
+            TagStorage.Entry[] sourceEntries = a.Entries;
+            int[] sourceExplicit = a.ExplicitIndices;
+            int sourceCount = a.ExplicitCount;
             // A full hit needs only the membership pass and a storage copy. Delay
             // materializing selected IDs until the first miss, so reused outputs
             // and workspaces do not write a result they would immediately discard.
+            // On tiny sets the original single capture loop avoids the fixed
+            // prefix/backfill bookkeeping cost; larger sets amortize that cost.
+            bool scanPrefix = aIsSet && sourceCount > 16;
             int prefix = 0;
-            if (aIsSet)
+            if (scanPrefix)
             {
-                while (prefix < a.ExplicitCount &&
-                    b.ContainsExplicit(a.Entries[a.ExplicitIndices[prefix]].Id))
+                while (prefix < sourceCount &&
+                    b.ContainsExplicit(sourceEntries[sourceExplicit[prefix]].Id))
                     prefix++;
-                if (prefix == a.ExplicitCount)
+                if (prefix == sourceCount)
                 {
                     output.CopyFrom(a);
                     m_SerializedExplicitTags?.Clear();
@@ -276,7 +282,7 @@ namespace GameplayTags
                 }
                 for (int i = 0; i < prefix; i++)
                 {
-                    int id = a.Entries[a.ExplicitIndices[i]].Id;
+                    int id = sourceEntries[sourceExplicit[i]].Id;
                     selectedIds[i] = id;
                     ordered &= id > previousId;
                     previousId = id;
@@ -286,16 +292,16 @@ namespace GameplayTags
             int missing = 0;
             long missingPathWork = 0;
             int scanStart = prefix;
-            if (aIsSet)
+            if (scanPrefix)
             {
                 // The prefix scan already proved this first entry absent.
-                int id = a.Entries[a.ExplicitIndices[scanStart++]].Id;
+                int id = sourceEntries[sourceExplicit[scanStart++]].Id;
                 missingIds[missing++] = id;
                 missingPathWork = GameplayTagManager.GetHierarchyIndices(id).Length;
             }
-            for (int i = scanStart; i < a.ExplicitCount; i++)
+            for (int i = scanStart; i < sourceCount; i++)
             {
-                int id = a.Entries[a.ExplicitIndices[i]].Id;
+                int id = sourceEntries[sourceExplicit[i]].Id;
                 if (b.ContainsExplicit(id))
                 {
                     if (capture)
@@ -330,7 +336,7 @@ namespace GameplayTags
                 Clear();
                 return;
             }
-            if (aIsSet && a.ExplicitCount - matches <= missingIds.Length &&
+            if (aIsSet && sourceCount - matches <= missingIds.Length &&
                 (missing == 0 || missingPathWork <= a.Count / 2))
             {
                 output.CopyFrom(a);
@@ -344,9 +350,9 @@ namespace GameplayTags
             {
                 output.EnsureExplicitCapacity(matches);
                 int selected = 0;
-                for (int i = 0; i < a.ExplicitCount; i++)
+                for (int i = 0; i < sourceCount; i++)
                 {
-                    int id = a.Entries[a.ExplicitIndices[i]].Id;
+                    int id = sourceEntries[sourceExplicit[i]].Id;
                     if (b.ContainsExplicit(id))
                     {
                         // Forward compaction is safe for an aliased input: selected

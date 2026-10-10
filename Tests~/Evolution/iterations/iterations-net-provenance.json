@@ -1,0 +1,207 @@
+{
+  "Run": 38072089527,
+  "ArtifactId": 11677326813,
+  "OriginalRevision": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "CandidateRevisionForProvenanceOnly": "413f41e3504bcaa164518be677d755db07a72487",
+  "Backend": "net",
+  "Formula": "Use only before-0..13: if minimum baseline WallMilliseconds <100, new=max(old,ceil(300000000/minimum baseline Ns)); otherwise unchanged. Never lower iterations.",
+  "SourceHashes": {
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-0.json": "10122269a8f85dab5b34e99a0f73ad78473c474f98e79ac5ce914e7b0e0ea838",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-1.json": "f21581f844466b4a29884f23a3273b043e8459e9e62c3fc7aa6b53fb7d4a84b7",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-2.json": "6848e5a316e49d802ef4bce60940168ea9ae3196c8aa1f5e5869399dd8bf4395",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-3.json": "1a68481ca2e65995905f0f4949edcf45f95cbe74f7ab93a57e2c887d76851e54",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-4.json": "024e98a135afdd1acfb8221786a32a67cc55c22e3fb42a6a74e068e82e9215aa",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-5.json": "df76835d85b7ab1b8d0a047e5065f6ec24cb37ad7f59d302a4e7f1624201811f",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-6.json": "e020fe46c48cd9c34f3f579fb8a45122703debdeb7d955ad11cce4c8d83969ec",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-7.json": "9b99ff23349cc627c2887da5a93f8bff0bec30b96f67866d9c501b733f54aaf3",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-8.json": "18883b727aec7ab0d71262feb17e6f6adcb7fe010d87ef50fd4be0e3b9c96348",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-9.json": "a2f7a50cce6306e43a74f6c1beff6c0c06ceff35eb3a5a936c4e4e42a0cdedc7",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-10.json": "4ec681813cf3a5bc7574be300b986e2902d82c982d51f90c4c95a7f9284bbe3e",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-11.json": "5a33acb6cea970d86cc8b4f6ac770de7881d13eb3d1a31e6aca026336aee623e",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-12.json": "30e3f55693bdaf0a0c7300523be541de4300e467d245aa6e21af8ed4375b6331",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/raw/before-13.json": "8bdd33501bdcd29acc36aa32a7e6bd832c4a88bb876bcf2613bbf806b8315919",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/environment.json": "27d1cf94b665c7a74abc983b695a281d2a2d29901969aae8c786926fcc0f9aa7",
+    "gameplaytags/artifacts/evolution/ci-413f41e-net/evolution-evidence/iterations.tsv": "521700545f7bdeff931cf0892200c664c995daa703c8a3089342cad3391099b4"
+  },
+  "Rows": 131,
+  "ChangedRows": [
+    {
+      "Id": "n4/overlap0/workspace-cold-growth",
+      "OldIterations": 1343092,
+      "NewIterations": 4300165,
+      "MinimumBaselineMilliseconds": 93.700502,
+      "FastestBaselineNsPerOperation": 69.76476816182361,
+      "PredictedFastestBaselineMilliseconds": 300.00001428258827
+    },
+    {
+      "Id": "n4/overlap0/union-new",
+      "OldIterations": 395668,
+      "NewIterations": 1471933,
+      "MinimumBaselineMilliseconds": 80.642584,
+      "FastestBaselineNsPerOperation": 203.81376305387346,
+      "PredictedFastestBaselineMilliseconds": 300.0002036931771
+    },
+    {
+      "Id": "n4/overlap50/workspace-cold-growth",
+      "OldIterations": 11961,
+      "NewIterations": 183526,
+      "MinimumBaselineMilliseconds": 19.55201,
+      "FastestBaselineNsPerOperation": 1634.6467686648273,
+      "PredictedFastestBaselineMilliseconds": 300.0001828659811
+    },
+    {
+      "Id": "n4/overlap100/intersection-new",
+      "OldIterations": 488641,
+      "NewIterations": 2251053,
+      "MinimumBaselineMilliseconds": 65.121662,
+      "FastestBaselineNsPerOperation": 133.2709739870375,
+      "PredictedFastestBaselineMilliseconds": 300.00002580644275
+    },
+    {
+      "Id": "n4/overlap100/workspace-cold-growth",
+      "OldIterations": 383106,
+      "NewIterations": 1967768,
+      "MinimumBaselineMilliseconds": 58.407198,
+      "FastestBaselineNsPerOperation": 152.45701711797778,
+      "PredictedFastestBaselineMilliseconds": 300.00003966020887
+    },
+    {
+      "Id": "n4/overlap100/union-new",
+      "OldIterations": 480418,
+      "NewIterations": 2523656,
+      "MinimumBaselineMilliseconds": 57.10977,
+      "FastestBaselineNsPerOperation": 118.87516704203424,
+      "PredictedFastestBaselineMilliseconds": 300.00002855663195
+    },
+    {
+      "Id": "n16/overlap0/union-new",
+      "OldIterations": 120466,
+      "NewIterations": 491918,
+      "MinimumBaselineMilliseconds": 73.467159,
+      "FastestBaselineNsPerOperation": 609.8580429332758,
+      "PredictedFastestBaselineMilliseconds": 300.0001487636511
+    },
+    {
+      "Id": "n16/overlap50/intersection-new",
+      "OldIterations": 215001,
+      "NewIterations": 667453,
+      "MinimumBaselineMilliseconds": 96.636474,
+      "FastestBaselineNsPerOperation": 449.4698815354347,
+      "PredictedFastestBaselineMilliseconds": 300.0000208404705
+    },
+    {
+      "Id": "n16/overlap50/workspace-cold-growth",
+      "OldIterations": 11420,
+      "NewIterations": 169879,
+      "MinimumBaselineMilliseconds": 20.167318,
+      "FastestBaselineNsPerOperation": 1765.9647985989493,
+      "PredictedFastestBaselineMilliseconds": 300.0003340211909
+    },
+    {
+      "Id": "n16/overlap100/intersection-new",
+      "OldIterations": 174386,
+      "NewIterations": 1128062,
+      "MinimumBaselineMilliseconds": 46.376725,
+      "FastestBaselineNsPerOperation": 265.9429369330107,
+      "PredictedFastestBaselineMilliseconds": 300.0001213225259
+    },
+    {
+      "Id": "n16/overlap100/workspace-cold-growth",
+      "OldIterations": 161780,
+      "NewIterations": 1015386,
+      "MinimumBaselineMilliseconds": 47.798606,
+      "FastestBaselineNsPerOperation": 295.4543577698108,
+      "PredictedFastestBaselineMilliseconds": 300.00021851845713
+    },
+    {
+      "Id": "n16/overlap100/union-new",
+      "OldIterations": 171694,
+      "NewIterations": 1100332,
+      "MinimumBaselineMilliseconds": 46.811512,
+      "FastestBaselineNsPerOperation": 272.645007979312,
+      "PredictedFastestBaselineMilliseconds": 300.0000269198924
+    },
+    {
+      "Id": "n128/overlap0/union-new",
+      "OldIterations": 14109,
+      "NewIterations": 74262,
+      "MinimumBaselineMilliseconds": 56.997539,
+      "FastestBaselineNsPerOperation": 4039.8000567013964,
+      "PredictedFastestBaselineMilliseconds": 300.00363181075915
+    },
+    {
+      "Id": "n128/overlap50/workspace-cold-growth",
+      "OldIterations": 9006,
+      "NewIterations": 79116,
+      "MinimumBaselineMilliseconds": 34.149996,
+      "FastestBaselineNsPerOperation": 3791.9160559626916,
+      "PredictedFastestBaselineMilliseconds": 300.00123068354435
+    },
+    {
+      "Id": "n128/overlap100/intersection-new",
+      "OldIterations": 45484,
+      "NewIterations": 261152,
+      "MinimumBaselineMilliseconds": 52.250062,
+      "FastestBaselineNsPerOperation": 1148.7569694837746,
+      "PredictedFastestBaselineMilliseconds": 300.0001800946267
+    },
+    {
+      "Id": "n128/overlap100/workspace-cold-growth",
+      "OldIterations": 37647,
+      "NewIterations": 237666,
+      "MinimumBaselineMilliseconds": 47.521079,
+      "FastestBaselineNsPerOperation": 1262.2806332509895,
+      "PredictedFastestBaselineMilliseconds": 300.0011889822297
+    },
+    {
+      "Id": "n128/overlap100/union-new",
+      "OldIterations": 45578,
+      "NewIterations": 314085,
+      "MinimumBaselineMilliseconds": 43.534144,
+      "FastestBaselineNsPerOperation": 955.1569616920444,
+      "PredictedFastestBaselineMilliseconds": 300.0004743130458
+    },
+    {
+      "Id": "n1024/overlap0/union-new",
+      "OldIterations": 2698,
+      "NewIterations": 10369,
+      "MinimumBaselineMilliseconds": 78.06046,
+      "FastestBaselineNsPerOperation": 28932.713120830245,
+      "PredictedFastestBaselineMilliseconds": 300.0033023498888
+    },
+    {
+      "Id": "n1024/overlap50/workspace-cold-growth",
+      "OldIterations": 5271,
+      "NewIterations": 19359,
+      "MinimumBaselineMilliseconds": 81.684483,
+      "FastestBaselineNsPerOperation": 15496.961297666478,
+      "PredictedFastestBaselineMilliseconds": 300.0056737615253
+    },
+    {
+      "Id": "n1024/overlap100/intersection-new",
+      "OldIterations": 6290,
+      "NewIterations": 35863,
+      "MinimumBaselineMilliseconds": 52.617492,
+      "FastestBaselineNsPerOperation": 8365.261049284578,
+      "PredictedFastestBaselineMilliseconds": 300.0033570104928
+    },
+    {
+      "Id": "guard/depth3/fresh-single-add",
+      "OldIterations": 796132,
+      "NewIterations": 3366699,
+      "MinimumBaselineMilliseconds": 70.941782,
+      "FastestBaselineNsPerOperation": 89.10806499424719,
+      "PredictedFastestBaselineMilliseconds": 300.00003330806703
+    },
+    {
+      "Id": "guard/depth128/fresh-single-add",
+      "OldIterations": 41080,
+      "NewIterations": 165578,
+      "MinimumBaselineMilliseconds": 74.430313,
+      "FastestBaselineNsPerOperation": 1811.838193768257,
+      "PredictedFastestBaselineMilliseconds": 300.0005444477605
+    }
+  ],
+  "OutputSHA256": "a08666db3fb8cecfc00708c257a0d1b4268b4a2340e78e68afd1de531a79cca8",
+  "CandidateMeasurementsUsed": false
+}

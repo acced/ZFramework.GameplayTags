@@ -1,0 +1,35 @@
+{
+  "original_sha": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "accepted_optimization_versions": [],
+  "rejected_candidates": [
+    {
+      "sha": "413f41e3504bcaa164518be677d755db07a72487",
+      "ci_run": 38072089527,
+      "decision": "Rejected as-is: full-hit speed/allocation benefits do not offset reproducible small/partial intersection regressions.",
+      "artifacts": [
+        {
+          "backend": ".NET 8",
+          "id": 11677326813,
+          "sha256": "fdbc67839b9fcda8968b7a2c82c14486e521e3befb923cb287f76616ab9679b7"
+        },
+        {
+          "backend": "standalone Mono 6.8",
+          "id": 11677930920,
+          "sha256": "bd94aa55e91be7fe2f36ce5de91968b11c2ae7972493c5bdf414a186cfca6b78"
+        }
+      ],
+      "findings": [
+        "Correctness suites passed on both standalone backends.",
+        "Full-overlap n1024 reused intersection improved in both backends; full-overlap cold workspace allocation decreased.",
+        "n4/n16 zero-overlap intersections regressed repeatedly; .NET n128 half-overlap workspace and legacy n1024 half-overlap default paths also regressed.",
+        "Unchanged-code timing regressions and conservative Mono retained-heap flags remain unresolved; they are not discarded as noise.",
+        "No optimization version was accepted from this commit."
+      ]
+    }
+  ],
+  "verification_limits": [
+    "No Unity 6000.3.14f1 execution",
+    "No IL2CPP execution",
+    "No Alex comparison"
+  ]
+}
