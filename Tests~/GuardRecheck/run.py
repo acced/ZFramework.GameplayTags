@@ -156,10 +156,15 @@ def main():
         print('Compiled all distinct identities; no host execution.');return
     reports=[];env=dict(os.environ,DOTNET_TieredCompilation='0',DOTNET_gcServer='0',COMPlus_TieredCompilation='0',COMPlus_gcServer='0')
     if not args.skip_inspection:
-        inspection=list(invocation);inspection[inspection.index('--inspect')+1]='1';inspection[inspection.index('--out')+1]=str(out/'inspection.jsonl')
-        inspect_env=dict(env,COMPlus_JitDisasm='*SetIntersection* *ContainsExplicit* *Find* *BuildFromExplicitIds* *Benchmark* *Measure*',COMPlus_JitStdOutFile=str(out/'jit-disassembly.txt'))
-        manifest['Commands'].append(inspection)
-        with (out/'inspection.stdout.txt').open('w') as stdout,(out/'inspection.stderr.txt').open('w') as stderr:command(inspection,stdout=stdout,stderr=stderr,env=inspect_env)
+        # Separate single-assembly processes prevent concurrent JIT text interleaving.
+        for label in ('before','after'):
+            inspection=list(invocation);inspection[inspection.index('--inspect')+1]='1'
+            inspection[inspection.index('--mode')+1]='aa'
+            inspection[inspection.index('--assembly-before')+1]=str(assemblies[label])
+            inspection[inspection.index('--out')+1]=str(out/f'inspection-{label}.jsonl')
+            inspect_env=dict(env,COMPlus_JitDisasm='*SetIntersection* *ContainsExplicit* *Find* *BuildFromExplicitIds* *Benchmark* *Measure*',COMPlus_JitStdOutFile=str(out/f'jit-disassembly-{label}.txt'))
+            manifest['Commands'].append(inspection)
+            with (out/f'inspection-{label}.stdout.txt').open('w') as stdout,(out/f'inspection-{label}.stderr.txt').open('w') as stderr:command(inspection,stdout=stdout,stderr=stderr,env=inspect_env)
     for round_index in range(args.rounds):
         call=list(invocation);call[call.index('--round')+1]=str(round_index);path=out/f'raw-{round_index}.jsonl';call[call.index('--out')+1]=str(path)
         manifest['Commands'].append(call)

@@ -38,6 +38,19 @@ jobs:
           args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --before .artifacts/guard-original --after .artifacts/guard-candidate --before-revision f7c99546dbf029d70896c0f05e5119b19ffd6d26 --after-revision 4df49f4f1252388c66a87f5df359f08a109ef838 --rounds 14 --iterations-file Tests~/GuardRecheck/iterations.tsv)
           python3 Tests~/GuardRecheck/run.py "${args[@]}" --mode aa --out .artifacts/guard-aa
           python3 Tests~/GuardRecheck/run.py "${args[@]}" --mode ab --out .artifacts/guard-ab
+      - name: Unmodified original harness in isolated A/A and A/B processes
+        shell: bash
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+          DOTNET_TieredCompilation: '0'
+          DOTNET_gcServer: '0'
+          COMPlus_TieredCompilation: '0'
+          COMPlus_gcServer: '0'
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --before .artifacts/guard-original --after .artifacts/guard-candidate --before-revision f7c99546dbf029d70896c0f05e5119b19ffd6d26 --after-revision 4df49f4f1252388c66a87f5df359f08a109ef838 --rounds 14 --iterations-file Tests~/GuardRecheck/isolated-iterations.tsv)
+          python3 Tests~/GuardRecheck/isolated.py "${args[@]}" --mode aa --out .artifacts/guard-isolated-aa
+          python3 Tests~/GuardRecheck/isolated.py "${args[@]}" --mode ab --out .artifacts/guard-isolated-ab
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -45,6 +58,8 @@ jobs:
           path: |
             .artifacts/guard-aa/
             .artifacts/guard-ab/
+            .artifacts/guard-isolated-aa/
+            .artifacts/guard-isolated-ab/
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 90
