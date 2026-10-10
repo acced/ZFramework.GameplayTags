@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RuntimeSourceRoot Condition="'$(RuntimeSourceRoot)' == ''">$(MSBuildThisFileDirectory)../..</RuntimeSourceRoot>
+  </PropertyGroup>
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Runtime.TieredCompilation" Value="false" />
+    <RuntimeHostConfigurationOption Include="System.GC.Server" Value="false" />
+    <Compile Include="$(RuntimeSourceRoot)/Runtime/**/*.cs" Exclude="$(RuntimeSourceRoot)/Runtime/GameObjectGameplayTagContainer.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

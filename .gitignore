@@ -117,5 +117,5 @@ __pycache__/
 # Hand-authored standalone build projects are part of this package.
 !/GameplayTags.Runtime.csproj
 !/Tests~/**/*.csproj
-!/Benchmarks~/*.csproj
+!/Benchmarks~/**/*.csproj
 !/SourceGenerator~/**/*.csproj

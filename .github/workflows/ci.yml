@@ -16,6 +16,8 @@ jobs:
         run: dotnet build GameplayTags.Runtime.csproj -c Release
       - name: Run deterministic and randomized reference tests
         run: dotnet run --project Tests~/GameplayTags.Tests.csproj -c Release
+      - name: Validate bulk copy, union and explicit intersection
+        run: dotnet run --project Tests~/Bulk/GameplayTags.Bulk.Tests.csproj -c Release
       - name: Validate registry construction and deep hierarchies
         run: dotnet run --project Tests~/Registry/GameplayTags.Registry.Tests.csproj -c Release
       - name: Validate containers with a 3000-level hierarchy
@@ -24,3 +26,5 @@ jobs:
         run: dotnet run --project SourceGenerator~/Tests/GameplayTags.SourceGenerator.Tests.csproj -c Release
       - name: Compile benchmark harness
         run: dotnet build Benchmarks~/GameplayTags.Benchmarks.csproj -c Release
+      - name: Compile bulk-operation benchmark harness
+        run: dotnet build Benchmarks~/Bulk/GameplayTags.BulkBenchmarks.csproj -c Release

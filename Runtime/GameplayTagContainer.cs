@@ -107,8 +107,7 @@ namespace GameplayTags
                 dest.m_SerializedExplicitTags?.Clear();
                 return;
             }
-            dest.Clear();
-            dest.AddTags(src);
+            dest.CopyExplicitStorage(source);
         }
 
         public void AddTag(GameplayTag tag) => TryAddTag(tag);
@@ -168,7 +167,8 @@ namespace GameplayTags
             where T : IGameplayTagContainer where U : IGameplayTagContainer
         {
             var result = new GameplayTagContainer();
-            result.AddIntersection(lhs, rhs);
+            result.SetIntersection(lhs.Indices.Storage, rhs.Indices.Storage,
+                lhs is GameplayTagContainer, rhs is GameplayTagContainer);
             return result;
         }
 
@@ -176,65 +176,130 @@ namespace GameplayTags
         public static void Intersection<T, U>(GameplayTagContainer output, in T lhs, in U rhs)
             where T : IGameplayTagContainer where U : IGameplayTagContainer
         {
-            if (ReferenceEquals(output.m_Indices.Storage, lhs.Indices.Storage))
-            {
-                output.IntersectWith(rhs);
-                return;
-            }
-            if (ReferenceEquals(output.m_Indices.Storage, rhs.Indices.Storage))
-            {
-                output.IntersectWith(lhs);
-                return;
-            }
-            output.Clear();
-            output.AddIntersection(lhs, rhs);
+            output.SetIntersection(lhs.Indices.Storage, rhs.Indices.Storage,
+                lhs is GameplayTagContainer, rhs is GameplayTagContainer);
         }
 
-        internal void AddIntersection<T, U>(in T lhs, in U rhs)
-            where T : IGameplayTagContainer where U : IGameplayTagContainer
+        private void SetIntersection(TagStorage a, TagStorage b, bool aIsSet, bool bIsSet)
         {
-            TagStorage a = lhs.Indices.Storage, b = rhs.Indices.Storage;
-            if (a == null || b == null)
-                return;
-            if (a.ExplicitCount > b.ExplicitCount)
-            {
-                TagStorage temporary = a;
-                a = b;
-                b = temporary;
-            }
-            for (int i = 0; i < a.ExplicitCount; i++)
-            {
-                TagStorage.Entry entry = a.Entries[a.ExplicitIndices[i]];
-                if (b.ContainsExplicit(entry.Id))
-                    AddTag(GameplayTagManager.GetTagFromRuntimeIndex(entry.Id));
-            }
-        }
-
-        public void IntersectWith<T>(in T other) where T : IGameplayTagContainer
-        {
-            TagStorage storage = m_Indices.Storage, source = other.Indices.Storage;
-            if (ReferenceEquals(storage, source))
-                return;
-            if (source == null || source.ExplicitCount == 0)
+            if (a == null || b == null || a.ExplicitCount == 0 || b.ExplicitCount == 0)
             {
                 Clear();
                 return;
             }
-            // The explicit index is maintained independently from ancestor closure.
-            for (int i = storage.ExplicitCount - 1; i >= 0; i--)
+            if (a.ExplicitCount > b.ExplicitCount ||
+                (a.ExplicitCount == b.ExplicitCount && a.Count > b.Count))
             {
-                TagStorage.Entry entry = storage.Entries[storage.ExplicitIndices[i]];
-                if (!source.ContainsExplicit(entry.Id))
-                    RemoveTag(GameplayTagManager.GetTagFromRuntimeIndex(entry.Id));
+                TagStorage temporary = a;
+                a = b;
+                b = temporary;
+                aIsSet = bIsSet;
             }
+            TagStorage output = m_Indices.Storage;
+            if (ReferenceEquals(a, b))
+            {
+                if (aIsSet)
+                    output.CopyFrom(a);
+                else
+                    CopyExplicitStorage(a);
+                m_SerializedExplicitTags?.Clear();
+                return;
+            }
+
+            int matches = 0;
+            // A few missing tags are cheaper to remove from a block copy than
+            // to rebuild the common closure. Capture them before touching an
+            // output that may also be the lookup operand.
+            Span<int> missingIds = stackalloc int[8];
+            int missing = 0;
+            long missingPathWork = 0;
+            for (int i = 0; i < a.ExplicitCount; i++)
+            {
+                int id = a.Entries[a.ExplicitIndices[i]].Id;
+                if (b.ContainsExplicit(id))
+                    matches++;
+                else if (missing < missingIds.Length)
+                {
+                    missingIds[missing++] = id;
+                    missingPathWork += GameplayTagManager.GetHierarchyIndices(id).Length;
+                }
+            }
+            if (matches == 0)
+            {
+                Clear();
+                return;
+            }
+            if (aIsSet && a.ExplicitCount - matches <= missingIds.Length &&
+                (missing == 0 || missingPathWork <= a.Count / 2))
+            {
+                output.CopyFrom(a);
+                for (int i = 0; i < missing; i++)
+                    RemoveTag(GameplayTagManager.GetTagFromRuntimeIndex(missingIds[i]));
+                m_SerializedExplicitTags?.Clear();
+                return;
+            }
+
+            output.EnsureExplicitCapacity(matches);
+            int selected = 0;
+            for (int i = 0; i < a.ExplicitCount; i++)
+            {
+                int id = a.Entries[a.ExplicitIndices[i]].Id;
+                if (b.ContainsExplicit(id))
+                    output.ExplicitIndices[selected++] = id;
+            }
+            output.BuildFromExplicitIds(selected);
+            m_SerializedExplicitTags?.Clear();
+        }
+
+        public void IntersectWith<T>(in T other) where T : IGameplayTagContainer
+        {
+            SetIntersection(m_Indices.Storage, other.Indices.Storage, true, other is GameplayTagContainer);
         }
 
         public static GameplayTagContainer Union<T, U>(in T lhs, in U rhs)
             where T : IGameplayTagContainer where U : IGameplayTagContainer
         {
-            var result = new GameplayTagContainer(lhs);
-            result.AddTags(rhs);
+            var result = new GameplayTagContainer();
+            TagStorage a = lhs.Indices.Storage, b = rhs.Indices.Storage;
+            bool aIsSet = lhs is GameplayTagContainer, bIsSet = rhs is GameplayTagContainer;
+            // Prefer a normal seed: a counted input contributes existence only.
+            // Otherwise copying the larger closure leaves less work to append.
+            if (a == null || (b != null && ((!aIsSet && bIsSet) ||
+                (aIsSet == bIsSet && a.Count < b.Count))))
+            {
+                TagStorage temporary = a;
+                a = b;
+                b = temporary;
+                aIsSet = bIsSet;
+            }
+            if (a == null || a.ExplicitCount == 0)
+            {
+                result.CopyExplicitStorage(b);
+                return result;
+            }
+            if (aIsSet)
+                result.m_Indices.Storage.CopyFrom(a);
+            else
+                result.CopyExplicitStorage(a);
+            if (b != null && b.ExplicitCount != 0 && !ReferenceEquals(a, b))
+                result.m_Indices.Storage.AddUnion(b);
             return result;
+        }
+
+        private void CopyExplicitStorage(TagStorage source)
+        {
+            if (source == null || source.ExplicitCount == 0)
+            {
+                Clear();
+                return;
+            }
+            TagStorage output = m_Indices.Storage;
+            int count = source.ExplicitCount;
+            output.EnsureExplicitCapacity(count);
+            for (int i = 0; i < count; i++)
+                output.ExplicitIndices[i] = source.Entries[source.ExplicitIndices[i]].Id;
+            output.BuildFromExplicitIds(count);
+            m_SerializedExplicitTags?.Clear();
         }
 
         /// <summary>Append this-minus-other to added, and other-minus-this to removed.</summary>

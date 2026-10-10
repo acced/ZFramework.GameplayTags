@@ -8,6 +8,7 @@ on .NET 8. Test failures return a nonzero process exit code.
 ```sh
 dotnet build GameplayTags.Runtime.csproj -c Release
 dotnet run --project Tests~/GameplayTags.Tests.csproj -c Release
+dotnet run --project Tests~/Bulk/GameplayTags.Bulk.Tests.csproj -c Release
 dotnet run --project Tests~/Registry/GameplayTags.Registry.Tests.csproj -c Release
 dotnet run --project Tests~/DeepHierarchy/GameplayTags.DeepHierarchy.Tests.csproj -c Release
 dotnet run --project SourceGenerator~/Tests/GameplayTags.SourceGenerator.Tests.csproj -c Release
@@ -15,7 +16,7 @@ dotnet run --project SourceGenerator~/Tests/GameplayTags.SourceGenerator.Tests.c
 
 The source-generator project uses its pinned Roslyn 3.8 package dependencies;
 its first normal build needs NuGet access. The runtime, main tests, registry tests
-and deep-hierarchy tests have no external package dependencies.
+and deep-hierarchy tests, including the bulk-operation suite, have no external package dependencies.
 
 ## What is validated
 
@@ -50,6 +51,13 @@ queries, cloning, aliases and count propagation. Source-generator tests cover
 semantic attributes, aliases, constants, named overrides, deterministic output,
 identifier collisions, and diagnostics.
 
+The [bulk-operation suite](Bulk/README.md) compares Copy, Union and explicit
+Intersection against independent name-based models across different overlap,
+capacity, aliasing and counted-input cases. It mutates and completely drains
+results to check ancestor reference counts, including copied hash layouts that
+subsequently shrink to a linear index and grow through retained bucket slots.
+The same test source can validate both the before and after runtime revisions.
+
 ## Direct compiler fallback
 
 Some restricted execution environments have an installed SDK but cannot supply
@@ -59,6 +67,7 @@ does not download packages or change platform access controls.
 
 ```sh
 python3 Tests~/run.py all --dotnet /path/to/dotnet --unity-check
+python3 Tests~/Bulk/run.py --dotnet /path/to/dotnet
 ```
 
 Individual modes are `build`, `test`, `deep`, `registry`, `generator`, and

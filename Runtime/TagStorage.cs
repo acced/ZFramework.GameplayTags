@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Runtime.CompilerServices;
 
 namespace GameplayTags
@@ -23,6 +24,9 @@ namespace GameplayTags
         internal int Count;
         internal int ExplicitCount;
         private int[] m_Buckets = Array.Empty<int>();
+        // The active index may occupy a prefix of a larger reserved array. This
+        // lets copies transfer the source index even when capacities differ.
+        private int m_BucketMask;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int Hash(int id)
@@ -36,7 +40,8 @@ namespace GameplayTags
         {
             int[] buckets = m_Buckets;
             Entry[] entries = Entries;
-            if (buckets.Length == 0)
+            int mask = m_BucketMask;
+            if (mask == 0)
             {
                 for (int i = 0; i < Count; i++)
                     if (entries[i].Id == id)
@@ -44,7 +49,6 @@ namespace GameplayTags
                 return -1;
             }
 
-            int mask = buckets.Length - 1;
             int slot = Hash(id) & mask;
             int encoded;
             while ((encoded = buckets[slot]) != 0)
@@ -151,9 +155,9 @@ namespace GameplayTags
             EnsureEntryCapacity(Count + 1);
             int index = Count++;
             Entries[index] = new Entry { Id = id };
-            if (m_Buckets.Length != 0)
+            int mask = m_BucketMask;
+            if (mask != 0)
             {
-                int mask = m_Buckets.Length - 1;
                 int slot = Hash(id) & mask;
                 while (m_Buckets[slot] != 0)
                     slot = (slot + 1) & mask;
@@ -165,9 +169,9 @@ namespace GameplayTags
         private void RemoveAt(int index)
         {
             int[] buckets = m_Buckets;
-            if (buckets.Length != 0)
+            int mask = m_BucketMask;
+            if (mask != 0)
             {
-                int mask = buckets.Length - 1;
                 int slot = Hash(Entries[index].Id) & mask;
                 while (buckets[slot] != index + 1)
                     slot = (slot + 1) & mask;
@@ -195,9 +199,8 @@ namespace GameplayTags
             Entries[index] = moved;
             if (moved.ExplicitCount != 0)
                 ExplicitIndices[moved.ExplicitIndex] = index;
-            if (buckets.Length != 0)
+            if (mask != 0)
             {
-                int mask = buckets.Length - 1;
                 int slot = Hash(moved.Id) & mask;
                 while (buckets[slot] != last + 1)
                     slot = (slot + 1) & mask;
@@ -228,21 +231,11 @@ namespace GameplayTags
                 Array.Resize(ref Entries, size);
             }
 
-            if (capacity <= LinearCapacity || m_Buckets.Length >= capacity * 2)
+            if (capacity <= LinearCapacity || m_BucketMask >= capacity * 2 - 1)
                 return;
 
-            int bucketCount = 32;
-            while (bucketCount < capacity * 2)
-                bucketCount *= 2;
-            m_Buckets = new int[bucketCount];
-            int mask = bucketCount - 1;
-            for (int i = 0; i < Count; i++)
-            {
-                int slot = Hash(Entries[i].Id) & mask;
-                while (m_Buckets[slot] != 0)
-                    slot = (slot + 1) & mask;
-                m_Buckets[slot] = i + 1;
-            }
+            ResetIndex(BucketCapacityFor(capacity));
+            BuildIndex();
         }
 
         internal void Clear()
@@ -250,9 +243,9 @@ namespace GameplayTags
             // Only occupied buckets need clearing; a large, mostly empty retained
             // buffer must not turn Clear into an operation over its capacity.
             int[] buckets = m_Buckets;
-            if (buckets.Length != 0)
+            int mask = m_BucketMask;
+            if (mask != 0)
             {
-                int mask = buckets.Length - 1;
                 // Match the encoded dense index, deliberately scanning past holes
                 // made earlier in this loop (ordinary Find would stop too soon).
                 for (int i = 0; i < Count; i++)
@@ -271,15 +264,240 @@ namespace GameplayTags
         {
             if (ReferenceEquals(this, other))
                 return;
-            Clear();
-            EnsureCapacity(other.Count);
-            Array.Copy(other.Entries, Entries, other.Count);
-            Array.Copy(other.ExplicitIndices, ExplicitIndices, other.ExplicitCount);
-            Count = other.Count;
-            ExplicitCount = other.ExplicitCount;
-            if (m_Buckets.Length == 0)
+            int count = other.Count;
+            if (count == 0)
+            {
+                Clear();
                 return;
-            int mask = m_Buckets.Length - 1;
+            }
+
+            int sourceBucketCount = other.m_BucketMask == 0 ? 0 : other.m_BucketMask + 1;
+            // The dense order and active mask fully describe the index. Retained
+            // destination capacity does not force a rehash. A very sparse source
+            // instead gets a compact index so copying stays proportional to data.
+            bool copyBuckets = sourceBucketCount <= Math.Max(32, count * 8);
+            if (copyBuckets)
+            {
+                if (m_Buckets.Length < sourceBucketCount)
+                    m_Buckets = new int[sourceBucketCount];
+                if (sourceBucketCount != 0)
+                    Array.Copy(other.m_Buckets, m_Buckets, sourceBucketCount);
+                m_BucketMask = other.m_BucketMask;
+            }
+            else
+                ResetIndex(BucketCapacityFor(count));
+
+            EnsureOverwriteCapacity(count, other.ExplicitCount);
+            Array.Copy(other.Entries, Entries, count);
+            Array.Copy(other.ExplicitIndices, ExplicitIndices, other.ExplicitCount);
+            Count = count;
+            ExplicitCount = other.ExplicitCount;
+            if (!copyBuckets)
+                BuildIndex();
+        }
+
+        // Add a distinct explicit set to a normal set. Each new explicit tag
+        // contributes to itself immediately, then queues only its direct parent.
+        // Shared parents combine pending contributions before forwarding them.
+        internal void AddUnion(TagStorage source)
+        {
+            if (source.ExplicitCount <= 8)
+            {
+                for (int i = 0; i < source.ExplicitCount; i++)
+                {
+                    int id = source.Entries[source.ExplicitIndices[i]].Id;
+                    if (!TryAddExplicit(id))
+                        continue;
+                    ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
+                    for (int j = 0; j < path.Length; j++)
+                        AddTotal(path[j]);
+                }
+                return;
+            }
+
+            // At most one parent is queued per new explicit tag; each dequeue
+            // can enqueue at most one parent, so peak occupancy never exceeds E.
+            int[] queue = ArrayPool<int>.Shared.Rent(source.ExplicitCount);
+            try
+            {
+                int tail = 0, queued = 0;
+                for (int i = 0; i < source.ExplicitCount; i++)
+                {
+                    int id = source.Entries[source.ExplicitIndices[i]].Id;
+                    int index = Find(id);
+                    if (index < 0)
+                        index = Insert(id);
+                    else if ((Entries[index].ExplicitCount & 1) != 0)
+                        continue;
+                    // High bits temporarily hold pending ancestor contributions.
+                    // An implicit parent can be promoted while already queued.
+                    Entries[index].ExplicitCount |= 1;
+                    AddExplicitIndex(index);
+                    Entries[index].Count++;
+                    int parent = GameplayTagManager.GetParentIndex(id);
+                    if (parent != 0)
+                        QueueContribution(parent, 1, queue, ref tail, ref queued);
+                }
+
+                int head = 0;
+                while (queued != 0)
+                {
+                    int index = queue[head++];
+                    if (head == queue.Length)
+                        head = 0;
+                    queued--;
+                    int pending = (int)((uint)Entries[index].ExplicitCount >> 1);
+                    Entries[index].ExplicitCount &= 1;
+                    Entries[index].Count += pending;
+                    int parent = GameplayTagManager.GetParentIndex(Entries[index].Id);
+                    if (parent != 0)
+                        QueueContribution(parent, pending, queue, ref tail, ref queued);
+                }
+            }
+            finally
+            {
+                ArrayPool<int>.Shared.Return(queue, clearArray: false);
+            }
+        }
+
+        private void QueueContribution(int id, int amount, int[] queue, ref int tail, ref int queued)
+        {
+            int index = Find(id);
+            if (index < 0)
+                index = Insert(id);
+            if ((Entries[index].ExplicitCount & ~1) == 0)
+            {
+                queue[tail++] = index;
+                if (tail == queue.Length)
+                    tail = 0;
+                queued++;
+            }
+            Entries[index].ExplicitCount = unchecked(Entries[index].ExplicitCount + (amount << 1));
+        }
+
+        // Bulk operations collect unique explicit IDs into ExplicitIndices first.
+        // They may reuse this buffer while filtering an aliased input forwards.
+        internal void EnsureExplicitCapacity(int capacity)
+        {
+            if (ExplicitIndices.Length < capacity)
+                Array.Resize(ref ExplicitIndices, ArrayCapacityFor(capacity));
+        }
+
+        internal void BuildFromExplicitIds(int explicitCount)
+        {
+            if (explicitCount == 0)
+            {
+                Clear();
+                return;
+            }
+            Array.Sort(ExplicitIndices, 0, explicitCount);
+
+            // Sorted DFS IDs let us count each missing path segment once. This
+            // determines exact live capacity without reserving both input closures.
+            int total = 0;
+            int depth = 0;
+            ReadOnlySpan<int> previous = default;
+            for (int i = 0; i < explicitCount; i++)
+            {
+                int id = ExplicitIndices[i];
+                while (depth != 0 && id >= GameplayTagManager.GetSubtreeEnd(previous[depth - 1]))
+                    depth--;
+                ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
+                total += path.Length - depth;
+                depth = path.Length;
+                previous = path;
+            }
+
+            ResetIndex(BucketCapacityFor(total));
+            EnsureOverwriteCapacity(total, explicitCount);
+
+            // Until the final explicit-index pass, ExplicitIndex is a parent
+            // dense index. The entries themselves are the DFS stack: no scratch
+            // array and no per-node hash lookup is needed for ancestor counts.
+            int next = 0;
+            int parent = -1;
+            depth = 0;
+            for (int i = 0; i < explicitCount; i++)
+            {
+                int id = ExplicitIndices[i];
+                while (depth != 0 && id >= GameplayTagManager.GetSubtreeEnd(Entries[parent].Id))
+                {
+                    parent = Entries[parent].ExplicitIndex;
+                    depth--;
+                }
+                ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
+                while (depth < path.Length)
+                {
+                    Entries[next] = new Entry { Id = path[depth++], ExplicitIndex = parent };
+                    parent = next++;
+                }
+                Entries[parent].Count = 1;
+                Entries[parent].ExplicitCount = 1;
+                ExplicitIndices[i] = parent;
+            }
+
+            for (int i = next - 1; i >= 0; i--)
+            {
+                int parentIndex = Entries[i].ExplicitIndex;
+                if (parentIndex >= 0)
+                    Entries[parentIndex].Count += Entries[i].Count;
+            }
+            for (int i = 0; i < explicitCount; i++)
+                Entries[ExplicitIndices[i]].ExplicitIndex = i;
+            Count = next;
+            ExplicitCount = explicitCount;
+            BuildIndex();
+        }
+
+        private static int ArrayCapacityFor(int count)
+        {
+            int capacity = LinearCapacity;
+            while (capacity < count)
+                capacity *= 2;
+            return capacity;
+        }
+
+        private static int BucketCapacityFor(int count)
+        {
+            if (count <= LinearCapacity)
+                return 0;
+            int capacity = 32;
+            while (capacity < count * 2)
+                capacity *= 2;
+            return capacity;
+        }
+
+        private void EnsureOverwriteCapacity(int count, int explicitCount)
+        {
+            // All live contents will be replaced; Array.Resize would copy data
+            // that the bulk operation immediately overwrites.
+            if (Entries.Length < count)
+                Entries = new Entry[ArrayCapacityFor(count)];
+            if (ExplicitIndices.Length < explicitCount)
+                ExplicitIndices = new int[ArrayCapacityFor(explicitCount)];
+        }
+
+        // Ignore old slots outside the active prefix. Expanding into them must
+        // clear the new prefix before rebuilding; those retained slots may be stale.
+        private void ResetIndex(int bucketCount)
+        {
+            if (bucketCount == 0)
+            {
+                m_BucketMask = 0;
+                return;
+            }
+            if (m_Buckets.Length < bucketCount)
+                m_Buckets = new int[bucketCount];
+            else
+                Array.Clear(m_Buckets, 0, bucketCount);
+            m_BucketMask = bucketCount - 1;
+        }
+
+        private void BuildIndex()
+        {
+            int mask = m_BucketMask;
+            if (mask == 0)
+                return;
             for (int i = 0; i < Count; i++)
             {
                 int slot = Hash(Entries[i].Id) & mask;

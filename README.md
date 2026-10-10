@@ -2,7 +2,7 @@
 
 面向性能的 C# 层级标签库。运行时使用整数 ID、紧凑数组与开放寻址索引；标签祖先关系在注册时编译为连续区间。支持普通集合、计数集合、父容器传播、条件查询、事件、对象池、Unity 序列化和源码生成。
 
-这一版重写了运行时存储和算法。**普通集合删除只更新受影响的祖先，不再重建全部隐式标签。** 不为每个实体分配覆盖整个全局注册表的数组。具体测量方法、结果与适用边界见 [性能说明](Documentation~/PERFORMANCE.md)，升级行为见 [迁移说明](Documentation~/MIGRATION.md)。
+这一版重写了运行时存储和算法。**普通集合删除只更新受影响的祖先，不再重建全部隐式标签。** 不为每个实体分配覆盖整个全局注册表的数组。首次重写的历史测量见 [性能说明](Documentation~/PERFORMANCE.md)，Copy、Union 与显式 Intersection 的后续优化和交叉测量见 [批量操作性能记录](Documentation~/BULK_PERFORMANCE.md)，升级行为见 [迁移说明](Documentation~/MIGRATION.md)。
 
 ## 安装与构建
 
