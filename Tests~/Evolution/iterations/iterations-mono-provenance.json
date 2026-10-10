@@ -1,0 +1,30 @@
+{
+  "Run": 38072089527,
+  "ArtifactId": 11677930920,
+  "OriginalRevision": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "CandidateRevisionForProvenanceOnly": "413f41e3504bcaa164518be677d755db07a72487",
+  "Backend": "mono",
+  "Formula": "Use only before-0..13: if minimum baseline WallMilliseconds <100, new=max(old,ceil(300000000/minimum baseline Ns)); otherwise unchanged. Never lower iterations.",
+  "SourceHashes": {
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-0.json": "d83605ee7c2143934ce955f06d487f0cbd4b2febce67445c73dfafadba15fa4a",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-1.json": "5e0ef77c502ce865b023a4ff58efffa169620103dadc9726d4d09db948d804ed",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-2.json": "6ae194a53eaff5765c11997f2718b3957036615b732973e34899d2fa8573a31a",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-3.json": "550dc143617cf06ebfb2550c007f40fd4b7b53dbb86adbf2f702e3e15020d527",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-4.json": "4e97f910d0ecf3a7e23281bf37e68b7607ee21b06b3cdaf347773568f1255d49",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-5.json": "3c9d73887ee7a2a05de6d8dfc1cee9d4a2315d6981c99933912b28ba6f1ace95",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-6.json": "30a594f687ed67aced7c780a630e29465bdf5854b51cece04258a22ffd1c7c16",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-7.json": "02c28f77c2383dfd00c45744b6d0e5cd754db0eeac70fe600b0984eb2654e3c7",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-8.json": "228e34ca7d0bb91e4c41ddc38226447acea8b1ad15444b8db60928733dc78943",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-9.json": "6b5432fd3ce35ef23f78f85fd07879e7ae30802ce11839ded2288e51f0c306bb",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-10.json": "98e862e57ab6852199c1938989f2c2693e3acc6b4869a328ca5c2c60df13bb38",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-11.json": "22915782539ffe5ef3d01a4c5c83742b35b45ff538cd95856abdd09208e973bd",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-12.json": "72c21f2218271f3b6e37bfe4dd2fe18eed1fe5243cf39bd7d015dd3d7bbe7698",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/raw/before-13.json": "f342e4ca16662f75b4fe9e1961591202b474ca70cf3ca03e4f8c9cbf03d8740d",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/environment.json": "c61c774925c26aee65c71d51336a3278188bd33c719908f90dc578ee3dea032b",
+    "gameplaytags/artifacts/evolution/ci-413f41e-mono/evolution-evidence/iterations.tsv": "9621452bef1b2c201d6de376c309f8f12f17766d391b48f1d86990c8e8789395"
+  },
+  "Rows": 131,
+  "ChangedRows": [],
+  "OutputSHA256": "9621452bef1b2c201d6de376c309f8f12f17766d391b48f1d86990c8e8789395",
+  "CandidateMeasurementsUsed": false
+}

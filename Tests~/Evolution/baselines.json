@@ -1,0 +1,6 @@
+{
+  "original_sha": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "previous_accepted_sha": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "accepted_optimization_versions": 0,
+  "note": "Candidate and infrastructure commits do not count. Advance previous_accepted_sha only after correctness and the fixed performance/allocation/retained-memory gates are reviewed. Standalone runtimes do not establish Unity or IL2CPP results."
+}

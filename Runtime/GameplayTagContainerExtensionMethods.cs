@@ -1,144 +1,97 @@
-﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace GameplayTags
 {
     public static class GameplayTagContainerExtensionMethods
     {
-        public static bool HasTag<T>(this T container, GameplayTag gameplayTag) where T : IGameplayTagContainer
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasTag<T>(this T container, GameplayTag tag) where T : IGameplayTagContainer
         {
-            return container.Indices.Implicit != null &&
-                   BinarySearchUtility.Search(container.Indices.Implicit, gameplayTag.RuntimeIndex) >= 0;
+            TagStorage storage = container.Indices.Storage;
+            return storage != null && storage.Contains(tag.RuntimeIndex);
         }
 
-        public static bool HasTagExact<T>(this T container, GameplayTag gameplayTag) where T : IGameplayTagContainer
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasTagExact<T>(this T container, GameplayTag tag) where T : IGameplayTagContainer
         {
-            return container.Indices.Explicit != null &&
-                   BinarySearchUtility.Search(container.Indices.Explicit, gameplayTag.RuntimeIndex) >= 0;
+            TagStorage storage = container.Indices.Storage;
+            return storage != null && storage.ContainsExplicit(tag.RuntimeIndex);
         }
 
+        /// <summary>Any explicit query tag is present in the holder's ancestor closure. Null query means empty.</summary>
         public static bool HasAny<T, U>(this T container, in U other)
-            where T : IGameplayTagContainer where U : IGameplayTagContainer
-        {
-            return HasAnyInternal(container.Indices.Implicit, other?.Indices.Explicit);
-        }
+            where T : IGameplayTagContainer where U : IGameplayTagContainer =>
+            other is null ? false : HasAnyInternal(container.Indices.Storage, other.Indices.Storage, false);
 
-        public static bool HasAnyExact<T, U>(this T container, in U other) where T : IGameplayTagContainer
-            where U : IGameplayTagContainer
-        {
-            return HasAnyInternal(container.Indices.Explicit, other?.Indices.Explicit);
-        }
+        public static bool HasAnyExact<T, U>(this T container, in U other)
+            where T : IGameplayTagContainer where U : IGameplayTagContainer =>
+            other is null ? false : HasAnyInternal(container.Indices.Storage, other.Indices.Storage, true);
 
-        private static bool HasAnyInternal(List<int> tagIndices, List<int> otherTagIndices)
+        private static bool HasAnyInternal(TagStorage holder, TagStorage query, bool exact)
         {
-            if (otherTagIndices == null || otherTagIndices.Count == 0 || tagIndices == null || tagIndices.Count == 0)
+            if (holder == null || query == null)
                 return false;
-
-            int start = BinarySearchUtility.Search(tagIndices, otherTagIndices[0], 0, tagIndices.Count - 1);
-            if (start >= 0)
-                return true;
-
-            start = ~start;
-
-            int end = BinarySearchUtility.Search(tagIndices, otherTagIndices[^1], start, tagIndices.Count - 1);
-            if (end >= 0)
-                return true;
-
-            end = ~end;
-
-            int j = 1;
-            int i = start + 1;
-            while (i < end && j < otherTagIndices.Count)
+            // Probe with the smaller relevant set; one explicit condition must not
+            // require scanning its entire (possibly very deep) ancestor closure.
+            int holderCount = exact ? holder.ExplicitCount : holder.Count;
+            if (holderCount < query.ExplicitCount)
             {
-                if (otherTagIndices[j] == tagIndices[i])
-                    return true;
-
-                if (tagIndices[i] > otherTagIndices[j])
+                for (int i = 0; i < holderCount; i++)
                 {
-                    i++;
-                    continue;
-                }
-
-                j++;
-                while (otherTagIndices[j] < tagIndices[i])
-                {
-                    j++;
-                    if (j == end)
-                        return false;
+                    TagStorage.Entry entry = holder.Entries[exact ? holder.ExplicitIndices[i] : i];
+                    if (query.ContainsExplicit(entry.Id))
+                        return true;
                 }
             }
-
+            else
+            {
+                for (int i = 0; i < query.ExplicitCount; i++)
+                {
+                    TagStorage.Entry entry = query.Entries[query.ExplicitIndices[i]];
+                    if (exact ? holder.ContainsExplicit(entry.Id) : holder.Contains(entry.Id))
+                        return true;
+                }
+            }
             return false;
         }
 
-        private static bool HasAllInternal(List<int> tagIndices, List<int> otherTagIndices)
+        /// <summary>Every explicit query tag is present. An empty or null query is satisfied.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasAll<T, U>(this T container, in U other)
+            where T : IGameplayTagContainer where U : IGameplayTagContainer =>
+            other is null || HasAllInternal(container.Indices.Storage, other.Indices.Storage, false);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasAllExact<T, U>(this T container, in U other)
+            where T : IGameplayTagContainer where U : IGameplayTagContainer =>
+            other is null || HasAllInternal(container.Indices.Storage, other.Indices.Storage, true);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool HasAllInternal(TagStorage holder, TagStorage query, bool exact)
         {
-            if (otherTagIndices == null || otherTagIndices.Count == 0)
+            if (query == null || query.ExplicitCount == 0)
                 return true;
-
-            if (tagIndices == null || tagIndices.Count == 0)
+            if (holder == null || query.ExplicitCount > (exact ? holder.ExplicitCount : holder.Count))
                 return false;
-
-            int start = BinarySearchUtility.Search(tagIndices, otherTagIndices[0], 0, tagIndices.Count - 1);
-            if (start < 0)
-                return false;
-
-            if (otherTagIndices.Count == 1)
-                return true;
-
-            int end = BinarySearchUtility.Search(tagIndices, otherTagIndices[^1], 0, tagIndices.Count - 1);
-            if (end < 0)
-                return false;
-
-            int j = 1;
-            end--;
-            for (int i = start + 1; i < end; i++)
+            if (query.ExplicitCount == 1)
             {
-                if (otherTagIndices[j] == tagIndices[i])
-                {
-                    j++;
-                    continue;
-                }
-
-                if (otherTagIndices[j] > tagIndices[i])
+                int id = query.Entries[query.ExplicitIndices[0]].Id;
+                if (exact && holder.ExplicitCount == 1)
+                    return holder.Entries[holder.ExplicitIndices[0]].Id == id;
+                return exact ? holder.ContainsExplicit(id) : holder.Contains(id);
+            }
+            for (int i = 0; i < query.ExplicitCount; i++)
+            {
+                TagStorage.Entry entry = query.Entries[query.ExplicitIndices[i]];
+                if (!(exact ? holder.ContainsExplicit(entry.Id) : holder.Contains(entry.Id)))
                     return false;
             }
-
-            return j == otherTagIndices.Count - 1;
+            return true;
         }
 
-        public static bool HasAll<T, U>(this T container, in U other)
-            where T : IGameplayTagContainer where U : IGameplayTagContainer
-        {
-            return HasAllInternal(container.Indices.Implicit, other?.Indices.Explicit);
-        }
-
-        public static bool HasAll<T, U, V>(this T container, in U otherA, in V otherB) where T : IGameplayTagContainer
-            where U : IGameplayTagContainer
-            where V : IGameplayTagContainer
-        {
-            if (otherA.IsEmpty && otherB.IsEmpty)
-                return true;
-
-            if (otherA.IsEmpty)
-                return HasAll(container, otherB);
-
-            if (otherB.IsEmpty)
-                return HasAll(container, otherA);
-
-            using (GenericPool<GameplayTagContainer>.Get(out GameplayTagContainer intersection))
-            {
-                intersection.AddIntersection(otherA, otherB);
-                bool hasAll = HasAll(container, intersection);
-                intersection.Clear();
-
-                return hasAll;
-            }
-        }
-
-        public static bool HasAllExact<T, U>(this T container, in U other) where T : IGameplayTagContainer
-            where U : IGameplayTagContainer
-        {
-            return HasAllInternal(container.Indices.Explicit, other?.Indices.Explicit);
-        }
+        /// <summary>The holder satisfies both query sets, without constructing a temporary union.</summary>
+        public static bool HasAll<T, U, V>(this T container, in U otherA, in V otherB)
+            where T : IGameplayTagContainer where U : IGameplayTagContainer where V : IGameplayTagContainer =>
+            container.HasAll(otherA) && container.HasAll(otherB);
     }
 }

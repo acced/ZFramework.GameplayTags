@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace GameplayTags
@@ -6,22 +6,16 @@ namespace GameplayTags
     [Serializable]
     public class GameObjectGameplayTagContainer : MonoBehaviour
     {
+        private readonly GameplayTagCountContainer m_GameplayTagContainer = new GameplayTagCountContainer();
+
+        // Runtime state is available before Awake, including on inactive GameObjects.
         public GameplayTagCountContainer GameplayTagContainer => m_GameplayTagContainer;
+        public GameplayTagContainer m_PersistentTags = new GameplayTagContainer();
 
-        public GameplayTagContainer m_PersistentTags;
+        private void Awake() => m_GameplayTagContainer.AddTags(m_PersistentTags);
 
-        private GameplayTagCountContainer m_GameplayTagContainer;
-
-        private void Awake()
-        {
-            m_GameplayTagContainer = new GameplayTagCountContainer();
-            m_GameplayTagContainer.AddTags(m_PersistentTags);
-        }
-
-        public static implicit operator GameplayTagCountContainer(GameObjectGameplayTagContainer container)
-        {
-            return container.GameplayTagContainer;
-        }
+        public static implicit operator GameplayTagCountContainer(GameObjectGameplayTagContainer container) =>
+            container.GameplayTagContainer;
     }
 
     public static class GameplayTagContainerBindsHelper
@@ -30,12 +24,9 @@ namespace GameplayTags
         {
             GameObjectGameplayTagContainer component = gameObject.GetComponent<GameObjectGameplayTagContainer>();
             if (component == null)
-            {
                 component = gameObject.AddComponent<GameObjectGameplayTagContainer>();
-            }
 
-            GameplayTagContainerBinds binds = new GameplayTagContainerBinds(component.GameplayTagContainer);
-            return binds;
+            return new GameplayTagContainerBinds(component.GameplayTagContainer);
         }
     }
 }

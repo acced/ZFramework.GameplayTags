@@ -1,0 +1,27 @@
+{
+  "Protocol": "Predeclared larger shared counts for expected large-effect adaptive Union. Not baseline-only calibration. No candidate timing data used in these counts. All variants use same counts; no reduction or fixture change.",
+  "SourceMap": "/tmp/ci-413f41-audit/iterations-mono.tsv",
+  "SourceSHA256": "9621452bef1b2c201d6de376c309f8f12f17766d391b48f1d86990c8e8789395",
+  "OutputSHA256": "e0bc7a1b1405324d6d117d94d9e6a58e60243a41a10a9b4c1c7c9220edd33484",
+  "Changes": [
+    {
+      "Id": "guard/depth128/union-larger-disjoint-seed-ascending",
+      "Old": 1877,
+      "New": 16384,
+      "ExtraBaselineSecondsAtSlowestObservedRate14Rounds": 28.191257560788472
+    },
+    {
+      "Id": "guard/depth1024/union-larger-disjoint-seed-ascending",
+      "Old": 29,
+      "New": 2048,
+      "ExtraBaselineSecondsAtSlowestObservedRate14Rounds": 201.6639719379309
+    },
+    {
+      "Id": "guard/depth3000/union-larger-disjoint-seed-ascending",
+      "Old": 16,
+      "New": 512,
+      "ExtraBaselineSecondsAtSlowestObservedRate14Rounds": 487.7676958
+    }
+  ],
+  "Rows": 131
+}

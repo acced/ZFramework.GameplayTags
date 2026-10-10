@@ -1,0 +1,10 @@
+{
+  "name": "ZFramework.GameplayTags",
+  "rootNamespace": "GameplayTags",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

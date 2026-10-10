@@ -29,6 +29,7 @@ namespace GameplayTags.Editor
          else
          {
             s_TempContent.text = "Select...";
+            s_TempContent.tooltip = null;
          }
 
          if (EditorGUI.DropdownButton(position, s_TempContent, FocusType.Keyboard))

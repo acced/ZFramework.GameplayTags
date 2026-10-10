@@ -1,133 +1,77 @@
-﻿using System;
+using System;
 
 namespace GameplayTags
 {
+    /// <summary>Name utilities. Parsing assumes valid input; validation is an explicit cold-path operation.</summary>
     public class GameplayTagUtility
     {
-        internal static void WarnNotExplictlyAddedTagRemoval(GameplayTag gameplayTag)
-        {
-            Log.Warn("Attempted to remove tag {0} from tag count container," +
-                     " but it is not explicitly added to the container.", gameplayTag);
-        }
-
-        internal static void WarnNotExplicitTagsRemoval(GameplayTagEnumerator tags)
-        {
-            foreach (GameplayTag tag in tags)
-                WarnNotExplictlyAddedTagRemoval(tag);
-        }
-
-        /// <summary>
-        /// Return the name of every tag in the hierarchy of the given tag. For
-        /// example, if the tag is "A.B.C", the result will be ["A", "A.B",
-        /// "A.B.C"]
-        /// </summary>
+        /// <summary>Return every root-to-self prefix. The historical spelling is retained for compatibility.</summary>
         public static string[] GetHeirarchyNames(string tagName)
         {
-            ValidateName(tagName);
-
-            int level = GetHeirarchyLevelFromName(tagName);
-            string[] names = new string[level];
-            names[--level] = tagName;
-
-            for (int i = tagName.Length - 1; i >= 0; i--)
-            {
+            int count = GetHeirarchyLevelFromName(tagName);
+            var names = new string[count];
+            int position = 0;
+            for (int i = 0; i < tagName.Length; ++i)
                 if (tagName[i] == '.')
-                {
-                    string name = tagName[..i];
-                    names[--level] = name;
-
-                    if (level == -1)
-                        break;
-                }
-            }
-
+                    names[position++] = tagName.Substring(0, i);
+            names[position] = tagName;
             return names;
         }
 
+        public static string[] GetHierarchyNames(string tagName) => GetHeirarchyNames(tagName);
+
         public static bool TryGetParentName(string name, out string parentName)
         {
-            ValidateName(name);
-
-            for (int i = name.Length - 1; i >= 0; i--)
-            {
-                if (name[i] == '.')
-                {
-                    parentName = name[..i];
-                    return true;
-                }
-            }
-
-            parentName = null;
-            return false;
+            int dot = name.LastIndexOf('.');
+            parentName = dot < 0 ? null : name.Substring(0, dot);
+            return dot >= 0;
         }
 
         public static int GetHeirarchyLevelFromName(string name)
         {
-            ValidateName(name);
-
             int level = 1;
-            for (int i = 0; i < name.Length; i++)
-            {
+            for (int i = 0; i < name.Length; ++i)
                 if (name[i] == '.')
-                {
-                    level++;
-                }
-            }
-
+                    ++level;
             return level;
         }
 
+        public static int GetHierarchyLevelFromName(string name) => GetHeirarchyLevelFromName(name);
+
         public static string GetLabel(string name)
         {
-            ValidateName(name);
-
-            int indexOfPoint = name.LastIndexOf('.');
-            if (indexOfPoint == -1)
-                return name;
-
-            return name[(indexOfPoint + 1)..];
+            int dot = name.LastIndexOf('.');
+            return dot < 0 ? name : name.Substring(dot + 1);
         }
 
+        /// <summary>Validate untrusted authoring input without throwing. Never called by runtime operations.</summary>
+        public static bool IsValidName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return false;
+            bool needsCharacter = true;
+            for (int i = 0; i < name.Length; ++i)
+            {
+                char c = name[i];
+                if (c == '.')
+                {
+                    if (needsCharacter)
+                        return false;
+                    needsCharacter = true;
+                }
+                else if (c == '_' || char.IsLetterOrDigit(c))
+                    needsCharacter = false;
+                else
+                    return false;
+            }
+            return !needsCharacter;
+        }
+
+        /// <summary>Opt-in validation for editors/importers. Names are ordinal and case-sensitive.</summary>
         public static void ValidateName(string name)
         {
-            static bool IsValidLabelCharacter(char c)
-            {
-                return char.IsLetterOrDigit(c) || c == '_';
-            }
-
-            static bool AcceptLabel(string name, ref int position)
-            {
-                if (position >= name.Length || !IsValidLabelCharacter(name[position]))
-                    return false;
-
-                position++;
-                while (position < name.Length && IsValidLabelCharacter(name[position]))
-                {
-                    position++;
-                }
-
-                return true;
-            }
-
-            if (string.IsNullOrEmpty(name))
-                throw new ArgumentException("Tag name cannot be null or empty.");
-
-            int position = 0;
-            if (AcceptLabel(name, ref position))
-            {
-                while (position < name.Length && name[position] == '.')
-                {
-                    position++;
-                    if (!AcceptLabel(name, ref position))
-                        throw new ArgumentException(
-                            $"Invalid tag name '{name}'. Unexpected character at position {position}.");
-                }
-            }
-
-            if (position == name.Length)
-                return;
-
-            throw new ArgumentException($"Invalid tag name '{name}'. Unexpected character at position {position}.");
+            if (!IsValidName(name))
+                throw new ArgumentException("Tag names require nonempty dot-separated labels containing only letters, digits or underscores.", nameof(name));
         }
     }
 }

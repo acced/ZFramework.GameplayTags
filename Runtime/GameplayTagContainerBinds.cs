@@ -1,54 +1,63 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 
 namespace GameplayTags
 {
-   public struct GameplayTagContainerBinds
-   {
-      private struct BindData
-      {
-         public OnTagCountChangedDelegate OnTagAddedOrRemved;
-         public GameplayTag Tag;
-      }
+    /// <summary>Owns a group of tag-presence subscriptions. Copies share the same subscriptions.</summary>
+    public struct GameplayTagContainerBinds : IDisposable
+    {
+        private struct BindData
+        {
+            internal GameplayTag Tag;
+            internal OnTagCountChangedDelegate Callback;
+        }
 
-      private GameplayTagCountContainer m_Container;
-      private List<BindData> m_Binds;
+        private sealed class BindState
+        {
+            internal readonly GameplayTagCountContainer Container;
+            internal BindData[] Items = Array.Empty<BindData>();
+            internal int Count;
 
-      public GameplayTagContainerBinds(GameplayTagCountContainer container)
-      {
-         m_Container = container;
-         m_Binds = null;
-      }
+            internal BindState(GameplayTagCountContainer container) => Container = container;
+        }
 
-      public void Bind(GameplayTag tag, Action<bool> onTagAddedOrRemoved)
-      {
-         m_Binds ??= new List<BindData>();
+        private readonly BindState m_State;
 
-         void OnTagAddedOrRemoved(GameplayTag gameplayTag, int newCount)
-         {
-            onTagAddedOrRemoved(newCount > 0);
-         }
+        public GameplayTagContainerBinds(GameplayTagCountContainer container)
+        {
+            m_State = new BindState(container);
+        }
 
-         m_Binds.Add(new BindData { Tag = tag, OnTagAddedOrRemved = OnTagAddedOrRemoved });
-         m_Container.RegisterTagEventCallback(tag, GameplayTagEventType.NewOrRemoved, OnTagAddedOrRemoved);
+        /// <summary>Subscribes and immediately reports the current presence of the tag.</summary>
+        public void Bind(GameplayTag tag, Action<bool> onTagAddedOrRemoved)
+        {
+            BindState state = m_State;
+            if (state.Count == state.Items.Length)
+                Array.Resize(ref state.Items, state.Count == 0 ? 4 : state.Count * 2);
 
-         int count = m_Container.GetTagCount(tag);
-         onTagAddedOrRemoved(count > 0);
-      }
+            void OnChanged(GameplayTag _, int count) => onTagAddedOrRemoved(count != 0);
 
-      public void UnbindAll()
-      {
-         if (m_Binds == null)
-         {
-            return;
-         }
+            state.Items[state.Count++] = new BindData { Tag = tag, Callback = OnChanged };
+            state.Container.RegisterTagEventCallback(tag, GameplayTagEventType.NewOrRemoved, OnChanged);
+            onTagAddedOrRemoved(state.Container.GetTagCount(tag) != 0);
+        }
 
-         foreach (BindData bind in m_Binds)
-         {
-            m_Container.RemoveTagEventCallback(bind.Tag, GameplayTagEventType.NewOrRemoved, bind.OnTagAddedOrRemved);
-         }
+        public void UnbindAll()
+        {
+            BindState state = m_State;
+            if (state == null)
+                return;
 
-         m_Binds.Clear();
-      }
-   }
+            for (int i = 0; i < state.Count; i++)
+            {
+                BindData binding = state.Items[i];
+                state.Container.RemoveTagEventCallback(binding.Tag, GameplayTagEventType.NewOrRemoved,
+                    binding.Callback);
+                state.Items[i] = default;
+            }
+
+            state.Count = 0;
+        }
+
+        public void Dispose() => UnbindAll();
+    }
 }

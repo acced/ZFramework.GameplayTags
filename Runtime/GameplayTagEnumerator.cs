@@ -1,59 +1,37 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace GameplayTags
 {
-   public struct GameplayTagEnumerator : IEnumerator<GameplayTag>, IEnumerable<GameplayTag>
-   {
-      public readonly GameplayTag Current
-      {
-         get
-         {
-            GameplayTagDefinition definition = GameplayTagManager.GetDefinitionFromRuntimeIndex(m_Indices[m_CurrentIndex]);
-            return definition.Tag;
-         }
-      }
+    /// <summary>Allocation-free concrete enumeration. Mutating the source invalidates the enumerator.</summary>
+    public struct GameplayTagEnumerator : IEnumerator<GameplayTag>, IEnumerable<GameplayTag>
+    {
+        private readonly TagStorage m_Storage;
+        private readonly bool m_ExplicitOnly;
+        private int m_Index;
 
-      readonly object IEnumerator.Current => Current;
+        internal GameplayTagEnumerator(TagStorage storage, bool explicitOnly = false)
+        {
+            m_Storage = storage;
+            m_ExplicitOnly = explicitOnly;
+            m_Index = -1;
+        }
 
-      private readonly List<int> m_Indices;
-      private int m_CurrentIndex;
+        public readonly GameplayTag Current => GameplayTagManager.GetTagFromRuntimeIndex(
+            m_Storage.Entries[m_ExplicitOnly ? m_Storage.ExplicitIndices[m_Index] : m_Index].Id);
+        readonly object IEnumerator.Current => Current;
 
+        public bool MoveNext()
+        {
+            if (m_Storage == null)
+                return false;
+            return ++m_Index < (m_ExplicitOnly ? m_Storage.ExplicitCount : m_Storage.Count);
+        }
 
-      internal GameplayTagEnumerator(List<int> indices)
-      {
-         m_Indices = indices;
-         m_CurrentIndex = -1;
-      }
-
-      public readonly void Dispose()
-      {
-      }
-
-      public bool MoveNext()
-      {
-         m_CurrentIndex++;
-         return m_Indices != null && m_CurrentIndex < m_Indices.Count;
-      }
-
-      public void Reset()
-      {
-         m_CurrentIndex = -1;
-      }
-
-      public readonly GameplayTagEnumerator GetEnumerator()
-      {
-         return this;
-      }
-
-      readonly IEnumerator<GameplayTag> IEnumerable<GameplayTag>.GetEnumerator()
-      {
-         return this;
-      }
-
-      readonly IEnumerator IEnumerable.GetEnumerator()
-      {
-         return this;
-      }
-   }
+        public void Reset() => m_Index = -1;
+        public readonly void Dispose() { }
+        public readonly GameplayTagEnumerator GetEnumerator() => this;
+        readonly IEnumerator<GameplayTag> IEnumerable<GameplayTag>.GetEnumerator() => this;
+        readonly IEnumerator IEnumerable.GetEnumerator() => this;
+    }
 }

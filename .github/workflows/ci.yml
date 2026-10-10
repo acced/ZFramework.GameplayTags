@@ -1,0 +1,80 @@
+name: Runtime validation
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Unity package metadata
+        run: python3 Tests~/validate_package.py
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Build portable runtime
+        run: dotnet build GameplayTags.Runtime.csproj -c Release
+      - name: Run deterministic and randomized reference tests
+        run: dotnet run --project Tests~/GameplayTags.Tests.csproj -c Release
+      - name: Validate bulk copy, union and explicit intersection
+        run: dotnet run --project Tests~/Bulk/GameplayTags.Bulk.Tests.csproj -c Release
+      - name: Validate registry construction and deep hierarchies
+        run: dotnet run --project Tests~/Registry/GameplayTags.Registry.Tests.csproj -c Release
+      - name: Validate containers with a 3000-level hierarchy
+        run: dotnet run --project Tests~/DeepHierarchy/GameplayTags.DeepHierarchy.Tests.csproj -c Release
+      - name: Validate general intersection, integer sort and warm allocations
+        run: dotnet run --project Tests~/Intersection/GameplayTags.Intersection.Tests.csproj -c Release
+      - name: Validate fixed evolution correctness matrix
+        run: dotnet run --project Tests~/Evolution/GameplayTags.Evolution.Tests.csproj -c Release -- test
+      - name: Compile Unity allocation sample against contracts (not Unity execution)
+        run: dotnet build Tests~/Intersection/GameplayTags.Intersection.Tests.csproj -c Release -p:ProbeCompile=true
+      - name: Validate source generator against pinned Roslyn
+        run: dotnet run --project SourceGenerator~/Tests/GameplayTags.SourceGenerator.Tests.csproj -c Release
+      - name: Compile benchmark harness
+        run: dotnet build Benchmarks~/GameplayTags.Benchmarks.csproj -c Release
+      - name: Compile bulk-operation benchmark harness
+        run: dotnet build Benchmarks~/Bulk/GameplayTags.BulkBenchmarks.csproj -c Release
+  intersection-runtime-comparison:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Install standalone Mono (not Unity Mono)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-devel
+          mono --version
+      - name: Extract fixed baseline Runtime
+        run: |
+          mkdir -p .artifacts/intersection-base
+          git archive 21e2d93d85380fb9267284c5469fb21d31d21a78 Runtime | tar -x -C .artifacts/intersection-base
+      - name: Build baseline and current harness on .NET and Mono
+        run: |
+          PROJECT=Tests~/Intersection/GameplayTags.Intersection.Tests.csproj
+          BASE="$PWD/.artifacts/intersection-base/Runtime"
+          dotnet build "$PROJECT" -c Release -p:RuntimeRoot="$BASE" -p:Baseline=true -p:BaseIntermediateOutputPath="$PWD/.artifacts/obj-before-net/" -o .artifacts/before-net
+          dotnet build "$PROJECT" -c Release -p:BaseIntermediateOutputPath="$PWD/.artifacts/obj-after-net/" -o .artifacts/after-net
+          dotnet build "$PROJECT" -c Release -p:MonoTarget=true -p:RuntimeRoot="$BASE" -p:Baseline=true -p:BaseIntermediateOutputPath="$PWD/.artifacts/obj-before-mono/" -o .artifacts/before-mono
+          dotnet build "$PROJECT" -c Release -p:MonoTarget=true -p:BaseIntermediateOutputPath="$PWD/.artifacts/obj-after-mono/" -o .artifacts/after-mono
+      - name: Validate behavior and allocations on standalone Mono
+        run: mono .artifacts/after-mono/GameplayTags.Intersection.Tests.exe
+      - name: Paired .NET comparison (14 samples per version)
+        run: python3 Tests~/Intersection/paired.py --before .artifacts/before-net/GameplayTags.Intersection.Tests.dll --after .artifacts/after-net/GameplayTags.Intersection.Tests.dll --output .artifacts/intersection-net.json
+      - name: Paired standalone Mono comparison (14 samples per version)
+        run: python3 Tests~/Intersection/paired.py --runtime mono --before .artifacts/before-mono/GameplayTags.Intersection.Tests.exe --after .artifacts/after-mono/GameplayTags.Intersection.Tests.exe --output .artifacts/intersection-mono.json
+      - name: Larger registry sensitivity (4 paired samples, fixed selected workload)
+        run: python3 Tests~/Intersection/paired.py --runtime mono --rounds 4 --padding 50000 --before .artifacts/before-mono/GameplayTags.Intersection.Tests.exe --after .artifacts/after-mono/GameplayTags.Intersection.Tests.exe --output .artifacts/intersection-mono-large-registry.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: intersection-runtime-evidence
+          path: .artifacts/intersection-*.json
+          include-hidden-files: true
+          if-no-files-found: error

@@ -107,3 +107,15 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+# Standalone .NET build and reproducible benchmark outputs.
+**/bin/
+**/obj/
+/artifacts/
+__pycache__/
+*.py[cod]
+
+# Hand-authored standalone build projects are part of this package.
+!/GameplayTags.Runtime.csproj
+!/Tests~/**/*.csproj
+!/Benchmarks~/**/*.csproj
+!/SourceGenerator~/**/*.csproj

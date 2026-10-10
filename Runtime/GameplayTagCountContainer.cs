@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,91 +13,72 @@ namespace GameplayTags
         AnyCountChange
     }
 
-    internal struct DeferredTagChangedDelegate
+    internal readonly struct DeferredTagChangedDelegate
     {
-        public GameplayTag GameplayTag;
-        public readonly int NewCount;
-        public readonly OnTagCountChangedDelegate Delegate;
+        internal readonly int TagId;
+        internal readonly int Count;
+        internal readonly OnTagCountChangedDelegate Callback;
 
-        public DeferredTagChangedDelegate(GameplayTag gameplayTag, int newCount, OnTagCountChangedDelegate @delegate)
+        internal DeferredTagChangedDelegate(int tagId, int count, OnTagCountChangedDelegate callback)
         {
-            GameplayTag = gameplayTag;
-            NewCount = newCount;
-            Delegate = @delegate;
+            TagId = tagId;
+            Count = count;
+            Callback = callback;
         }
 
-        public readonly void Execute()
-        {
-            Delegate(GameplayTag, NewCount);
-        }
+        internal void Execute() => Callback(GameplayTagManager.GetTagFromRuntimeIndex(TagId), Count);
     }
 
     internal struct GameplayTagDelegateInfo
     {
-        public OnTagCountChangedDelegate OnAnyChange;
-        public OnTagCountChangedDelegate OnNewOrRemove;
+        internal OnTagCountChangedDelegate OnAnyChange;
+        internal OnTagCountChangedDelegate OnNewOrRemove;
     }
 
     public interface IGameplayTagCountContainer : IGameplayTagContainer
     {
-        /// <summary>
-        /// Event that is called when the count of any tag changes.
-        /// </summary>
         event OnTagCountChangedDelegate OnAnyTagCountChange;
-
-        /// <summary>
-        /// Eve that is called when any tag is added or removed.
-        /// </summary>
         event OnTagCountChangedDelegate OnAnyTagNewOrRemove;
-
-        /// <summary>
-        /// Gets the count of a specific tag (the number of times it has been explicitly added).
-        /// </summary>
         int GetExplicitTagCount(GameplayTag tag);
-
-        /// <summary>
-        /// Gets the count of a specific tag.
-        /// </summary>
         int GetTagCount(GameplayTag tag);
-
-        /// <summary>
-        /// Registers a callback for a tag event.
-        /// </summary>
-        /// <param name="callback">The callback to register.</param>
-        /// <param name="tag">The gameplay tag.</param>
-        /// <param name="eventType">The type of event.</param>
         void RegisterTagEventCallback(GameplayTag tag, GameplayTagEventType eventType,
             OnTagCountChangedDelegate callback);
-
-        /// <summary>
-        /// Removes a callback for a tag event.
-        /// </summary>
-        /// <param name="callback">The callback to remove.</param>
-        /// <param name="tag">The gameplay tag.</param>
-        /// <param name="eventType">The type of event.</param>
         void RemoveTagEventCallback(GameplayTag tag, GameplayTagEventType eventType,
             OnTagCountChangedDelegate callback);
-
-        /// <summary>
-        /// Removes all callbacks for tag events.
-        /// </summary>
         void RemoveAllTagEventCallbacks();
     }
 
+    /// <summary>
+    /// A counted tag set. Each explicit occurrence contributes one count to the tag and its ancestors.
+    /// Mutations require registered, non-None tags. Instances are intended for single-threaded use.
+    /// </summary>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     [DebuggerTypeProxy(typeof(GameplayTagContainerDebugView))]
     public class GameplayTagCountContainer : IGameplayTagCountContainer
     {
-        /// <inheritdoc />
-        public bool IsEmpty => m_Indices.IsEmpty;
+        private struct CallbackEntry
+        {
+            internal int Id;
+            internal GameplayTagDelegateInfo Callbacks;
+        }
 
-        /// <inheritdoc />
-        public int ExplicitTagCount => m_Indices.ExplicitTagCount;
+        private readonly GameplayTagContainerIndices m_Indices = GameplayTagContainerIndices.Create();
+        private CallbackEntry[] m_Callbacks = Array.Empty<CallbackEntry>();
+        private int m_CallbackCount;
+        private DeferredTagChangedDelegate[] m_Events = Array.Empty<DeferredTagChangedDelegate>();
+        private int m_EventCount;
+        private int m_NextEvent;
+        private int m_BatchDepth;
+        private bool m_Dispatching;
+        private int[] m_Snapshot = Array.Empty<int>();
 
-        /// <inheritdoc />
-        public int TagCount => m_Indices.TagCount;
+        private TagStorage Storage => m_Indices.Storage;
+        internal bool HasListeners => m_CallbackCount != 0 || OnAnyTagNewOrRemove != null ||
+                                     OnAnyTagCountChange != null;
 
-        /// <inheritdoc />
+        public bool IsEmpty => Storage.ExplicitCount == 0;
+        public int ExplicitTagCount => Storage.ExplicitCount;
+        public int TagCount => Storage.Count;
         public GameplayTagContainerIndices Indices => m_Indices;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -106,303 +87,307 @@ namespace GameplayTags
         public event OnTagCountChangedDelegate OnAnyTagNewOrRemove;
         public event OnTagCountChangedDelegate OnAnyTagCountChange;
 
-        private Dictionary<GameplayTag, GameplayTagDelegateInfo> m_TagDelegateInfoMap = new();
-        private Dictionary<GameplayTag, int> m_TagCountMap = new();
-        private Dictionary<GameplayTag, int> m_ExplicitTagCountMap = new();
-        private GameplayTagContainerIndices m_Indices = GameplayTagContainerIndices.Create();
-
-        /// <inheritdoc />
-        public GameplayTagEnumerator GetExplicitTags()
+        public GameplayTagCountContainer()
         {
-            return new GameplayTagEnumerator(m_Indices.Explicit);
         }
 
-        /// <inheritdoc />
-        public GameplayTagEnumerator GetTags()
+        /// <param name="capacity">Initial capacity for distinct tags including ancestors.</param>
+        public GameplayTagCountContainer(int capacity)
         {
-            return new GameplayTagEnumerator(m_Indices.Implicit);
+            Storage.EnsureCapacity(capacity);
         }
 
-        /// <inheritdoc />
-        public void GetParentTags(GameplayTag tag, List<GameplayTag> parentTags)
-        {
-            GameplayTagContainerUtility.GetParentTags(m_Indices.Implicit, tag, parentTags);
-        }
+        public void EnsureCapacity(int capacity) => Storage.EnsureCapacity(capacity);
+        public int GetTagCount(GameplayTag tag) => Storage.GetCount(tag.RuntimeIndex);
+        public int GetExplicitTagCount(GameplayTag tag) => Storage.GetExplicitCount(tag.RuntimeIndex);
+        public GameplayTagEnumerator GetExplicitTags() => new GameplayTagEnumerator(Storage, true);
+        public GameplayTagEnumerator GetTags() => new GameplayTagEnumerator(Storage);
 
-        /// <inheritdoc />
-        public void GetChildTags(GameplayTag tag, List<GameplayTag> childTags)
-        {
-            GameplayTagContainerUtility.GetChildTags(m_Indices.Implicit, tag, childTags);
-        }
+        public void GetParentTags(GameplayTag tag, List<GameplayTag> parentTags) =>
+            GameplayTagContainerUtility.GetParentTags(Storage, tag, parentTags);
 
-        /// <inheritdoc />
-        public void GetExplicitParentTags(GameplayTag tag, List<GameplayTag> parentTags)
-        {
-            GameplayTagContainerUtility.GetParentTags(m_Indices.Explicit, tag, parentTags);
-        }
+        public void GetChildTags(GameplayTag tag, List<GameplayTag> childTags) =>
+            GameplayTagContainerUtility.GetChildTags(Storage, tag, childTags);
 
-        /// <inheritdoc />
-        public void GetExplicitChildTags(GameplayTag tag, List<GameplayTag> childTags)
-        {
-            GameplayTagContainerUtility.GetChildTags(m_Indices.Explicit, tag, childTags);
-        }
+        public void GetExplicitParentTags(GameplayTag tag, List<GameplayTag> parentTags) =>
+            GameplayTagContainerUtility.GetParentTags(Storage, tag, parentTags, true);
 
-        /// <inheritdoc />
-        public int GetTagCount(GameplayTag tag)
-        {
-            m_TagCountMap.TryGetValue(tag, out int count);
-            return count;
-        }
+        public void GetExplicitChildTags(GameplayTag tag, List<GameplayTag> childTags) =>
+            GameplayTagContainerUtility.GetChildTags(Storage, tag, childTags, true);
 
-        /// <inheritdoc />
-        public int GetExplicitTagCount(GameplayTag tag)
-        {
-            m_ExplicitTagCountMap.TryGetValue(tag, out int count);
-            return count;
-        }
-
-        /// <inheritdoc />
         public void RegisterTagEventCallback(GameplayTag tag, GameplayTagEventType eventType,
             OnTagCountChangedDelegate callback)
         {
-            m_TagDelegateInfoMap.TryGetValue(tag, out GameplayTagDelegateInfo delegateInfo);
-            GetEventDelegate(ref delegateInfo, eventType) += callback;
-            m_TagDelegateInfoMap[tag] = delegateInfo;
+            int index = FindCallback(tag.RuntimeIndex);
+            if (index < 0)
+            {
+                index = ~index;
+                if (m_CallbackCount == m_Callbacks.Length)
+                    Array.Resize(ref m_Callbacks, m_CallbackCount == 0 ? 4 : m_CallbackCount * 2);
+
+                Array.Copy(m_Callbacks, index, m_Callbacks, index + 1, m_CallbackCount - index);
+                m_Callbacks[index] = new CallbackEntry { Id = tag.RuntimeIndex };
+                m_CallbackCount++;
+            }
+
+            ref GameplayTagDelegateInfo callbacks = ref m_Callbacks[index].Callbacks;
+            if (eventType == GameplayTagEventType.NewOrRemoved)
+                callbacks.OnNewOrRemove += callback;
+            else
+                callbacks.OnAnyChange += callback;
         }
 
-        /// <inheritdoc />
         public void RemoveTagEventCallback(GameplayTag tag, GameplayTagEventType eventType,
             OnTagCountChangedDelegate callback)
         {
-            if (m_TagDelegateInfoMap.TryGetValue(tag, out GameplayTagDelegateInfo delegateInfo))
+            int index = FindCallback(tag.RuntimeIndex);
+            if (index < 0)
+                return;
+
+            ref GameplayTagDelegateInfo callbacks = ref m_Callbacks[index].Callbacks;
+            if (eventType == GameplayTagEventType.NewOrRemoved)
+                callbacks.OnNewOrRemove -= callback;
+            else
+                callbacks.OnAnyChange -= callback;
+
+            if (callbacks.OnNewOrRemove == null && callbacks.OnAnyChange == null)
             {
-                GetEventDelegate(ref delegateInfo, eventType) -= callback;
-                m_TagDelegateInfoMap[tag] = delegateInfo;
+                m_CallbackCount--;
+                Array.Copy(m_Callbacks, index + 1, m_Callbacks, index, m_CallbackCount - index);
+                m_Callbacks[m_CallbackCount] = default;
             }
         }
 
-        /// <inheritdoc />
         public void RemoveAllTagEventCallbacks()
         {
-            m_TagDelegateInfoMap.Clear();
+            Array.Clear(m_Callbacks, 0, m_CallbackCount);
+            m_CallbackCount = 0;
         }
 
-        private static ref OnTagCountChangedDelegate GetEventDelegate(ref GameplayTagDelegateInfo delegateInfo,
-            GameplayTagEventType eventType)
+        private int FindCallback(int id)
         {
-            switch (eventType)
+            int low = 0;
+            int high = m_CallbackCount - 1;
+            while (low <= high)
             {
-                case GameplayTagEventType.AnyCountChange:
-                    return ref delegateInfo.OnAnyChange;
-
-                case GameplayTagEventType.NewOrRemoved:
-                    return ref delegateInfo.OnNewOrRemove;
+                int middle = (low + high) >> 1;
+                int candidate = m_Callbacks[middle].Id;
+                if (candidate == id)
+                    return middle;
+                if (candidate < id)
+                    low = middle + 1;
+                else
+                    high = middle - 1;
             }
 
-            throw new ArgumentException(nameof(eventType));
+            return ~low;
         }
 
-        /// <inheritdoc />
-        public void AddTag(GameplayTag tag)
+        public void AddTag(GameplayTag tag) => AddTag(tag, 1);
+
+        /// <summary>Adds a positive number of explicit occurrences in one update.</summary>
+        public void AddTag(GameplayTag tag, int amount)
         {
-            using (ListPool<DeferredTagChangedDelegate>.Get(out List<DeferredTagChangedDelegate> delegates))
-            {
-                AddTagInternal(tag, delegates);
-
-                foreach (DeferredTagChangedDelegate del in delegates)
-                    del.Execute();
-            }
+            bool notify = HasListeners;
+            AddTagInternal(tag.RuntimeIndex, amount, notify);
+            if (notify)
+                FlushEvents();
         }
 
-        /// <inheritdoc />
+        /// <summary>Adds one occurrence of each distinct explicit tag in the source.</summary>
         public void AddTags<T>(in T other) where T : IGameplayTagContainer
         {
-            using (ListPool<DeferredTagChangedDelegate>.Get(out List<DeferredTagChangedDelegate> delegates))
-            {
-                foreach (GameplayTag gameplayTag in other.GetExplicitTags())
-                    AddTagInternal(gameplayTag, delegates);
+            TagStorage source = other.Indices.Storage;
+            if (source == null)
+                return;
 
-                foreach (DeferredTagChangedDelegate del in delegates)
-                    del.Execute();
+            bool notify = HasListeners;
+            int count = source.ExplicitCount;
+            for (int i = 0; i < count; i++)
+            {
+                int id = source.Entries[source.ExplicitIndices[i]].Id;
+                AddTagInternal(id, 1, notify);
             }
+
+            if (notify)
+                FlushEvents();
         }
 
-        private void AddTagInternal(GameplayTag tag, List<DeferredTagChangedDelegate> tagChangeDelegates)
+        internal void AddTagDeferred(int id, int amount) => AddTagInternal(id, amount, HasListeners);
+
+        private void AddTagInternal(int id, int amount, bool notify)
         {
-            m_ExplicitTagCountMap.TryGetValue(tag, out int previousExplictTagCount);
-            m_ExplicitTagCountMap[tag] = previousExplictTagCount + 1;
-
-            if (previousExplictTagCount == 0)
+            Storage.AddExplicit(id, amount);
+            ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
+            if (!notify)
             {
-                int index = ~BinarySearchUtility.Search(m_Indices.Explicit, tag.RuntimeIndex);
-                m_Indices.Explicit.Insert(index, tag.RuntimeIndex);
-            }
-
-            foreach (GameplayTag tagInHeirarchy in tag.HierarchyTags)
-            {
-                m_TagDelegateInfoMap.TryGetValue(tagInHeirarchy, out GameplayTagDelegateInfo delegateInfo);
-                m_TagCountMap.TryGetValue(tagInHeirarchy, out int previousTagCount);
-                m_TagCountMap[tagInHeirarchy] = previousTagCount + 1;
-
-                if (previousTagCount == 0)
-                {
-                    int index = ~BinarySearchUtility.Search(m_Indices.Implicit, tagInHeirarchy.RuntimeIndex);
-                    m_Indices.Implicit.Insert(index, tagInHeirarchy.RuntimeIndex);
-
-                    if (delegateInfo.OnNewOrRemove != null)
-                    {
-                        tagChangeDelegates.Add(new(tagInHeirarchy, 1, delegateInfo.OnNewOrRemove));
-                    }
-
-                    if (OnAnyTagNewOrRemove != null)
-                    {
-                        tagChangeDelegates.Add(new(tagInHeirarchy, 1, OnAnyTagNewOrRemove));
-                    }
-                }
-
-                if (delegateInfo.OnAnyChange != null)
-                {
-                    tagChangeDelegates.Add(new(tagInHeirarchy, previousTagCount + 1, delegateInfo.OnAnyChange));
-                }
-
-                if (OnAnyTagCountChange != null)
-                {
-                    tagChangeDelegates.Add(new(tagInHeirarchy, previousTagCount + 1, OnAnyTagCountChange));
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public void RemoveTag(GameplayTag tag)
-        {
-            using (ListPool<DeferredTagChangedDelegate>.Get(out List<DeferredTagChangedDelegate> tagChangeDelegates))
-            {
-                RemoveTagInternal(tag, tagChangeDelegates);
-
-                for (int i = 0; i < tagChangeDelegates.Count; i++)
-                {
-                    tagChangeDelegates[i].Execute();
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public void RemoveTags<T>(in T other) where T : IGameplayTagContainer
-        {
-            using (ListPool<DeferredTagChangedDelegate>.Get(out List<DeferredTagChangedDelegate> tagChangeDelegates))
-            {
-                foreach (GameplayTag gameplayTag in other.GetExplicitTags())
-                {
-                    RemoveTagInternal(gameplayTag, tagChangeDelegates);
-                }
-
-                for (int i = 0; i < tagChangeDelegates.Count; i++)
-                {
-                    tagChangeDelegates[i].Execute();
-                }
-            }
-        }
-
-        private void RemoveTagInternal(GameplayTag tag, List<DeferredTagChangedDelegate> tagChangeDelegates)
-        {
-            if (!m_ExplicitTagCountMap.TryGetValue(tag, out int explictTagCount))
-            {
-                GameplayTagUtility.WarnNotExplictlyAddedTagRemoval(tag);
+                for (int i = 0; i < hierarchy.Length; i++)
+                    Storage.AddTotal(hierarchy[i], amount);
                 return;
             }
 
-            if (explictTagCount == 1)
+            for (int i = 0; i < hierarchy.Length; i++)
             {
-                int index = BinarySearchUtility.Search(m_Indices.Explicit, tag.RuntimeIndex);
-                m_Indices.Explicit.RemoveAt(index);
-                m_ExplicitTagCountMap.Remove(tag);
+                int current = hierarchy[i];
+                int newCount = Storage.AddTotal(current, amount);
+                QueueChange(current, newCount, newCount == amount);
+            }
+        }
+
+        public void RemoveTag(GameplayTag tag) => RemoveTag(tag, 1);
+
+        /// <summary>
+        /// Removes a positive number of explicit occurrences. The amount must not exceed the current
+        /// explicit count. A tag with no explicit occurrences is ignored.
+        /// </summary>
+        public void RemoveTag(GameplayTag tag, int amount)
+        {
+            bool notify = HasListeners;
+            RemoveTagInternal(tag.RuntimeIndex, amount, notify);
+            if (notify)
+                FlushEvents();
+        }
+
+        /// <summary>Removes one occurrence of each distinct explicit tag in the source.</summary>
+        public void RemoveTags<T>(in T other) where T : IGameplayTagContainer
+        {
+            TagStorage source = other.Indices.Storage;
+            if (source == null)
+                return;
+
+            bool notify = HasListeners;
+            if (ReferenceEquals(source, Storage))
+            {
+                int count = source.ExplicitCount;
+                if (m_Snapshot.Length < count)
+                    Array.Resize(ref m_Snapshot, Math.Max(8, count));
+                for (int i = 0; i < count; i++)
+                    m_Snapshot[i] = source.Entries[source.ExplicitIndices[i]].Id;
+
+                for (int i = 0; i < count; i++)
+                    RemoveTagInternal(m_Snapshot[i], 1, notify);
             }
             else
             {
-                m_ExplicitTagCountMap[tag] = explictTagCount - 1;
+                for (int i = 0; i < source.ExplicitCount; i++)
+                {
+                    int id = source.Entries[source.ExplicitIndices[i]].Id;
+                    RemoveTagInternal(id, 1, notify);
+                }
             }
 
-            foreach (GameplayTag tagInHierarchy in tag.HierarchyTags)
-            {
-                m_TagDelegateInfoMap.TryGetValue(tagInHierarchy, out GameplayTagDelegateInfo delegateInfo);
-                if (!m_TagCountMap.TryGetValue(tagInHierarchy, out int tagCount))
-                {
-                    break;
-                }
-
-                if (tagCount == 1)
-                {
-                    int index = BinarySearchUtility.Search(m_Indices.Implicit, tagInHierarchy.RuntimeIndex);
-                    m_Indices.Implicit.RemoveAt(index);
-                    m_TagCountMap.Remove(tagInHierarchy);
-
-                    if (delegateInfo.OnNewOrRemove != null)
-                        tagChangeDelegates.Add(new DeferredTagChangedDelegate(tagInHierarchy, 0,
-                            delegateInfo.OnNewOrRemove));
-
-                    if (OnAnyTagNewOrRemove != null)
-                        tagChangeDelegates.Add(new DeferredTagChangedDelegate(tagInHierarchy, 0, OnAnyTagNewOrRemove));
-
-                    if (delegateInfo.OnAnyChange != null)
-                        tagChangeDelegates.Add(new DeferredTagChangedDelegate(tagInHierarchy, 0,
-                            delegateInfo.OnAnyChange));
-
-                    if (OnAnyTagCountChange != null)
-                        tagChangeDelegates.Add(new DeferredTagChangedDelegate(tagInHierarchy, 0, OnAnyTagNewOrRemove));
-
-                    continue;
-                }
-
-                m_TagCountMap[tagInHierarchy] = tagCount - 1;
-
-                if (delegateInfo.OnAnyChange != null)
-                    tagChangeDelegates.Add(new DeferredTagChangedDelegate(tagInHierarchy, tagCount - 1,
-                        delegateInfo.OnAnyChange));
-
-                if (OnAnyTagCountChange != null)
-                    tagChangeDelegates.Add(new DeferredTagChangedDelegate(tagInHierarchy, tagCount - 1,
-                        OnAnyTagNewOrRemove));
-            }
+            if (notify)
+                FlushEvents();
         }
 
-        /// <inheritdoc />
+        internal bool RemoveTagDeferred(int id, int amount) => RemoveTagInternal(id, amount, HasListeners);
+
+        private bool RemoveTagInternal(int id, int amount, bool notify)
+        {
+            if (Storage.RemoveExplicit(id, amount) < 0)
+                return false;
+
+            ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
+            if (!notify)
+            {
+                for (int i = 0; i < hierarchy.Length; i++)
+                    Storage.RemoveTotal(hierarchy[i], amount);
+                return true;
+            }
+
+            for (int i = 0; i < hierarchy.Length; i++)
+            {
+                int current = hierarchy[i];
+                int newCount = Storage.RemoveTotal(current, amount);
+                QueueChange(current, newCount, newCount == 0);
+            }
+
+            return true;
+        }
+
         public void Clear()
         {
-            using (ListPool<DeferredTagChangedDelegate>.Get(out List<DeferredTagChangedDelegate> tagChangeDelegates))
+            bool notify = HasListeners;
+            if (notify)
             {
-                foreach (GameplayTag tag in GetTags())
+                for (int i = 0; i < Storage.Count; i++)
+                    QueueChange(Storage.Entries[i].Id, 0, true);
+            }
+
+            Storage.Clear();
+            if (notify)
+                FlushEvents();
+        }
+
+        private void QueueChange(int id, int count, bool transition)
+        {
+            int index = FindCallback(id);
+            GameplayTagDelegateInfo callbacks = index < 0 ? default : m_Callbacks[index].Callbacks;
+            if (transition)
+            {
+                if (callbacks.OnNewOrRemove != null)
+                    Enqueue(id, count, callbacks.OnNewOrRemove);
+                if (OnAnyTagNewOrRemove != null)
+                    Enqueue(id, count, OnAnyTagNewOrRemove);
+            }
+
+            if (callbacks.OnAnyChange != null)
+                Enqueue(id, count, callbacks.OnAnyChange);
+            if (OnAnyTagCountChange != null)
+                Enqueue(id, count, OnAnyTagCountChange);
+        }
+
+        private void Enqueue(int id, int count, OnTagCountChangedDelegate callback)
+        {
+            if (m_EventCount == m_Events.Length)
+                Array.Resize(ref m_Events, m_EventCount == 0 ? 8 : m_EventCount * 2);
+            m_Events[m_EventCount++] = new DeferredTagChangedDelegate(id, count, callback);
+        }
+
+        internal void BeginBatch() => m_BatchDepth++;
+        internal void EndBatchWithoutDispatch() => m_BatchDepth--;
+
+        /// <summary>
+        /// Reentrant changes append to this queue. A thrown callback leaves committed state intact,
+        /// releases pending callback references, and permits the next mutation to dispatch normally.
+        /// </summary>
+        internal void FlushEvents()
+        {
+            if (m_BatchDepth != 0 || m_Dispatching || m_EventCount == 0)
+                return;
+
+            m_Dispatching = true;
+            try
+            {
+                while (m_NextEvent < m_EventCount)
                 {
-                    m_TagDelegateInfoMap.TryGetValue(tag, out GameplayTagDelegateInfo delegateInfo);
-
-                    if (delegateInfo.OnNewOrRemove != null)
-                        tagChangeDelegates.Add(new DeferredTagChangedDelegate(tag, 0, delegateInfo.OnNewOrRemove));
-
-                    if (OnAnyTagNewOrRemove != null)
-                        tagChangeDelegates.Add(new DeferredTagChangedDelegate(tag, 0, OnAnyTagNewOrRemove));
+                    DeferredTagChangedDelegate notification = m_Events[m_NextEvent];
+                    m_Events[m_NextEvent++] = default;
+                    notification.Execute();
                 }
-
-                m_ExplicitTagCountMap.Clear();
-                m_TagCountMap.Clear();
-                m_Indices.Clear();
-
-                foreach (DeferredTagChangedDelegate del in tagChangeDelegates)
-                    del.Execute();
+            }
+            finally
+            {
+                Array.Clear(m_Events, m_NextEvent, m_EventCount - m_NextEvent);
+                m_EventCount = 0;
+                m_NextEvent = 0;
+                m_Dispatching = false;
             }
         }
 
-        public GameplayTagEnumerator GetEnumerator()
+        internal void DiscardPendingEvents()
         {
-            return new GameplayTagEnumerator(m_Indices.Implicit);
+            // An active dispatcher owns its own exception cleanup and may have unrelated queued work.
+            if (m_Dispatching)
+                return;
+
+            Array.Clear(m_Events, 0, m_EventCount);
+            m_EventCount = 0;
+            m_NextEvent = 0;
         }
 
-        IEnumerator<GameplayTag> IEnumerable<GameplayTag>.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        public GameplayTagEnumerator GetEnumerator() => GetTags();
+        IEnumerator<GameplayTag> IEnumerable<GameplayTag>.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
