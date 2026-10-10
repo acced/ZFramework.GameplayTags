@@ -340,23 +340,11 @@ namespace GameplayTags
                 }
 
                 int head = 0;
-                // Most shallow unions finish in fewer than one queue revolution.
-                // Bound FIFO work by the source closure before switching to an
-                // ordered sweep. Checking at wraparound adds no per-node branch,
-                // and leaves the remaining circular queue contiguous at index zero.
-                int revolutions = Math.Max(2, source.Count / queue.Length);
                 while (queued != 0)
                 {
-                    if (head == queue.Length)
-                    {
-                        head = 0;
-                        if (--revolutions == 0)
-                        {
-                            AddOrderedContributions(queue, queued);
-                            break;
-                        }
-                    }
                     int index = queue[head++];
+                    if (head == queue.Length)
+                        head = 0;
                     queued--;
                     int pending = (int)((uint)Entries[index].ExplicitCount >> 1);
                     Entries[index].ExplicitCount &= 1;
@@ -370,36 +358,6 @@ namespace GameplayTags
             {
                 ArrayPool<int>.Shared.Return(queue, clearArray: false);
             }
-        }
-
-        // Preorder IDs make each subtree a contiguous interval. The queue owns
-        // every unfinished contribution, so its weighted ancestor closure can be
-        // added once with prefix differences, irrespective of insertion order.
-        // Counts temporarily subtract the running prefix on subtree entry and
-        // add it on exit; no depth-sized stack or retained scratch is needed.
-        private void AddOrderedContributions(int[] queue, int queued)
-        {
-            for (int i = 0; i < queued; i++)
-                queue[i] = Entries[queue[i]].Id;
-            Int32Sort.Sort(queue, 0, queued);
-
-            int depth = 0, prefix = 0;
-            ReadOnlySpan<int> previous = default;
-            for (int i = 0; i < queued; i++)
-            {
-                int id = queue[i];
-                while (depth != 0 && id >= GameplayTagManager.GetSubtreeEnd(previous[depth - 1]))
-                    AddTotal(previous[--depth], prefix);
-                ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
-                while (depth < path.Length)
-                    AddTotal(path[depth++], -prefix);
-                int index = Find(id);
-                prefix += (int)((uint)Entries[index].ExplicitCount >> 1);
-                Entries[index].ExplicitCount &= 1;
-                previous = path;
-            }
-            while (depth != 0)
-                AddTotal(previous[--depth], prefix);
         }
 
         private void QueueContribution(int id, int amount, int[] queue, ref int tail, ref int queued)

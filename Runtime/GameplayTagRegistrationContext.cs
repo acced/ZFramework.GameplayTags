@@ -39,6 +39,8 @@ namespace GameplayTags
                 {
                     node = new Node(prefix, name.Substring(start, end - start), parent);
                     m_ByName.Add(prefix, node);
+                    if (parent.Children == null)
+                        parent.Children = new List<Node>();
                     parent.Children.Add(node);
                 }
 
@@ -85,7 +87,7 @@ namespace GameplayTags
                 node.Parent.AggregateFlags |= node.AggregateFlags;
                 if (node.SubtreeEnd > node.Parent.SubtreeEnd)
                     node.Parent.SubtreeEnd = node.SubtreeEnd;
-                if (node.Children.Count == 0)
+                if (node.Children == null)
                     pathLength += node.Depth;
             }
 
@@ -95,7 +97,7 @@ namespace GameplayTags
             for (int i = 1; i < order.Count; ++i)
             {
                 Node leaf = order[i];
-                if (leaf.Children.Count != 0)
+                if (leaf.Children != null)
                     continue;
 
                 // Store each root-to-leaf path once. All its previously unassigned
@@ -138,6 +140,8 @@ namespace GameplayTags
 
         private static void PushChildren(Node node, Stack<Node> pending)
         {
+            if (node.Children == null)
+                return;
             node.Children.Sort(NodeLabelComparer.Instance);
             for (int i = node.Children.Count - 1; i >= 0; --i)
                 pending.Push(node.Children[i]);
@@ -163,7 +167,7 @@ namespace GameplayTags
             internal readonly string Label;
             internal readonly Node Parent;
             internal readonly int Depth;
-            internal readonly List<Node> Children = new List<Node>();
+            internal List<Node> Children;
             internal string Description = string.Empty;
             internal GameplayTagFlags DeclaredFlags;
             internal GameplayTagFlags AggregateFlags;
