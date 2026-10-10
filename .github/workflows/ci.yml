@@ -27,6 +27,8 @@ jobs:
         run: dotnet run --project Tests~/DeepHierarchy/GameplayTags.DeepHierarchy.Tests.csproj -c Release
       - name: Validate general intersection, integer sort and warm allocations
         run: dotnet run --project Tests~/Intersection/GameplayTags.Intersection.Tests.csproj -c Release
+      - name: Validate fixed evolution correctness matrix
+        run: dotnet run --project Tests~/Evolution/GameplayTags.Evolution.Tests.csproj -c Release -- test
       - name: Compile Unity allocation sample against contracts (not Unity execution)
         run: dotnet build Tests~/Intersection/GameplayTags.Intersection.Tests.csproj -c Release -p:ProbeCompile=true
       - name: Validate source generator against pinned Roslyn
@@ -74,3 +76,5 @@ jobs:
         with:
           name: intersection-runtime-evidence
           path: .artifacts/intersection-*.json
+          include-hidden-files: true
+          if-no-files-found: error
