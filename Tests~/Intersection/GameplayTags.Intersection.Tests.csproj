@@ -11,7 +11,7 @@
     <DefineConstants Condition="'$(ProbeCompile)' == 'true'">$(DefineConstants);UNITY_EDITOR;PROBE_STUBS</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(RuntimeRoot)/**/*.cs" />
+    <Compile Include="$(RuntimeRoot)/**/*.cs" Exclude="$(RuntimeRoot)/GameObjectGameplayTagContainer.cs" />
     <Compile Include="Program.cs;Benchmarks.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(ProbeCompile)' == 'true'">
