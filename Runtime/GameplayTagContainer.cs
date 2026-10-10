@@ -241,19 +241,59 @@ namespace GameplayTags
                 return;
             }
 
-            // Reused, non-aliased outputs gather IDs during the first lookup pass.
-            // Fresh outputs count first to allocate only the exact selected capacity.
-            // Without a workspace an alias must defer overwriting its explicit index
-            // until the full-hit/copy-minus-missing fast paths have been ruled out.
+            // A full hit needs only the membership pass and a storage copy. Delay
+            // materializing selected IDs until the first miss, so reused outputs
+            // and workspaces do not write a result they would immediately discard.
+            int prefix = 0;
+            if (aIsSet)
+            {
+                while (prefix < a.ExplicitCount &&
+                    b.ContainsExplicit(a.Entries[a.ExplicitIndices[prefix]].Id))
+                    prefix++;
+                if (prefix == a.ExplicitCount)
+                {
+                    output.CopyFrom(a);
+                    m_SerializedExplicitTags?.Clear();
+                    return;
+                }
+            }
             bool capture = workspace != null ||
                 (output.ExplicitIndices.Length != 0 && !ReferenceEquals(output, a) && !ReferenceEquals(output, b));
             int[] selectedIds = workspace == null ? output.ExplicitIndices : workspace.SelectedIds;
-            int matches = 0, previousId = 0;
+            int matches = prefix, previousId = 0;
             bool ordered = true;
+            if (capture && prefix != 0)
+            {
+                if (workspace == null)
+                {
+                    output.EnsureExplicitCapacity(prefix);
+                    selectedIds = output.ExplicitIndices;
+                }
+                else
+                {
+                    workspace.EnsureSelectedCapacity(prefix);
+                    selectedIds = workspace.SelectedIds;
+                }
+                for (int i = 0; i < prefix; i++)
+                {
+                    int id = a.Entries[a.ExplicitIndices[i]].Id;
+                    selectedIds[i] = id;
+                    ordered &= id > previousId;
+                    previousId = id;
+                }
+            }
             Span<int> missingIds = stackalloc int[8];
             int missing = 0;
             long missingPathWork = 0;
-            for (int i = 0; i < a.ExplicitCount; i++)
+            int scanStart = prefix;
+            if (aIsSet)
+            {
+                // The prefix scan already proved this first entry absent.
+                int id = a.Entries[a.ExplicitIndices[scanStart++]].Id;
+                missingIds[missing++] = id;
+                missingPathWork = GameplayTagManager.GetHierarchyIndices(id).Length;
+            }
+            for (int i = scanStart; i < a.ExplicitCount; i++)
             {
                 int id = a.Entries[a.ExplicitIndices[i]].Id;
                 if (b.ContainsExplicit(id))

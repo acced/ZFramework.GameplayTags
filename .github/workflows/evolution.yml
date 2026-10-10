@@ -1,0 +1,134 @@
+name: Evolution candidate evidence
+on:
+  push:
+    branches: [perf/compact-runtime-rewrite]
+    paths:
+      - 'Runtime/**'
+      - 'Tests~/Evolution/**'
+      - '.github/workflows/evolution.yml'
+permissions:
+  contents: read
+jobs:
+  paired-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [net, mono]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Install standalone Mono (not Unity Mono)
+        if: matrix.backend == 'mono'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-devel
+          mono --version
+      - name: Freeze original and previous accepted Runtime sources
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          data = json.loads(Path('Tests~/Evolution/baselines.json').read_text())
+          with open(os.environ['GITHUB_ENV'], 'a') as stream:
+              for name, key in [('ORIGINAL_SHA', 'original_sha'), ('PREVIOUS_SHA', 'previous_accepted_sha')]:
+                  value = data[key]
+                  if not re.fullmatch(r'[0-9a-f]{40}', value):
+                      raise ValueError('Expected a complete lowercase commit SHA: ' + key)
+                  stream.write(name + '=' + value + '\n')
+          PY
+      - name: Run fixed original / predecessor / candidate matrix
+        shell: bash
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+          DOTNET_TieredCompilation: '0'
+          DOTNET_gcServer: '0'
+          COMPlus_TieredCompilation: '0'
+          COMPlus_gcServer: '0'
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/evolution-original .artifacts/evolution-previous
+          git archive "$ORIGINAL_SHA" Runtime | tar -x -C .artifacts/evolution-original
+          git archive "$PREVIOUS_SHA" Runtime | tar -x -C .artifacts/evolution-previous
+          args=(--dotnet "$(command -v dotnet)" --before .artifacts/evolution-original --before-revision "$ORIGINAL_SHA" --after "$PWD" --after-revision "$GITHUB_SHA" --samples 14 --out .artifacts/evolution-evidence)
+          if [[ "$PREVIOUS_SHA" != "$ORIGINAL_SHA" ]]; then
+            args+=(--previous .artifacts/evolution-previous --previous-revision "$PREVIOUS_SHA")
+          fi
+          if [[ '${{ matrix.backend }}' == mono ]]; then
+            args+=(--mono "$(command -v mono)")
+          fi
+          python3 Tests~/Evolution/run.py "${args[@]}"
+      - name: Preserve fixed registry startup and memory guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --before .artifacts/evolution-original --after "$PWD" --before-revision "$ORIGINAL_SHA" --after-revision "$GITHUB_SHA" --rounds 14 --out .artifacts/evolution-registry-original)
+          if [[ '${{ matrix.backend }}' == mono ]]; then
+            args+=(--mono "$(command -v mono)" --nuget "$HOME/.nuget/packages")
+          fi
+          python3 Tests~/Evolution/Registry/paired.py "${args[@]}"
+          if [[ "$PREVIOUS_SHA" != "$ORIGINAL_SHA" ]]; then
+            args+=(--before .artifacts/evolution-previous --before-revision "$PREVIOUS_SHA" --out .artifacts/evolution-registry-previous)
+            python3 Tests~/Evolution/Registry/paired.py "${args[@]}"
+          fi
+      - name: Preserve original bulk-operation benchmark matrix
+        if: matrix.backend == 'net'
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --before .artifacts/evolution-original --after "$PWD" --samples 14 --baseline-commit "$ORIGINAL_SHA" --out .artifacts/evolution-bulk)
+          if [[ "$PREVIOUS_SHA" != "$ORIGINAL_SHA" ]]; then
+            args+=(--candidate "previous=$PWD/.artifacts/evolution-previous")
+          fi
+          python3 Benchmarks~/Bulk/run.py "${args[@]}"
+      - name: Preserve intersection scenarios and larger-registry guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --before .artifacts/evolution-original --before-revision "$ORIGINAL_SHA" --after "$PWD" --after-revision "$GITHUB_SHA" --out .artifacts/evolution-legacy)
+          if [[ "$PREVIOUS_SHA" != "$ORIGINAL_SHA" ]]; then
+            args+=(--previous .artifacts/evolution-previous --previous-revision "$PREVIOUS_SHA")
+          fi
+          if [[ '${{ matrix.backend }}' == mono ]]; then
+            args+=(--mono "$(command -v mono)")
+          fi
+          python3 Tests~/Evolution/legacy.py "${args[@]}"
+      - name: Print review flags (CI success is not optimization acceptance)
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import collections, json
+          from pathlib import Path
+          path = Path('.artifacts/evolution-evidence/comparison.json')
+          if not path.exists():
+              print('No complete comparison; inspect failed step and partial artifacts.')
+          else:
+              rows = json.loads(path.read_text())
+              print(json.dumps(dict(collections.Counter(row['Status'] for row in rows)), sort_keys=True))
+              for row in rows:
+                  print(json.dumps(row, sort_keys=True))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evolution-candidate-${{ matrix.backend }}-${{ github.sha }}
+          path: |
+            .artifacts/evolution-evidence/*.json
+            .artifacts/evolution-evidence/*.tsv
+            .artifacts/evolution-evidence/*-tests.txt
+            .artifacts/evolution-evidence/raw/*.json
+            .artifacts/evolution-registry-*/*.json
+            .artifacts/evolution-registry-*/raw/*
+            .artifacts/evolution-bulk/**/*.json
+            .artifacts/evolution-bulk/**/*.tsv
+            .artifacts/evolution-legacy/**/*.json
+            .artifacts/evolution-legacy/**/*.txt
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
