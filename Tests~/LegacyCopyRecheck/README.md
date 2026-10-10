@@ -1,0 +1,15 @@
+# Long-batch legacy Copy replication
+
+Investigates exact94ed registry-only candidate versus f7; supplemental only. Existing short-batch raw evidence stays intact and cannot be dismissed by changing workloads.
+
+The original Intersection harness has no iteration-override CLI: counts are hardcoded. Source generation changes ONLY three integer literals in RunBenchmarks: E1024.Copy.Reused1000→500000; E1024.Query200000→100000000; E1024.RemoveAdd10000→2000000. All original25 fixture/operation bodies and traversal order remain. In particular, every original case BEFORE the flagged Copy row has unchanged counts and context. Measure is asserted byte-for-byte unchanged, including120 warmup calls, its separate allocation pass, and its original timed Action loop. No GC, CPU, reflection or helper hooks are inserted into Measure.
+
+A clearly new small4-tag Copy case uses the original MakeBenchmarkInputs helper and is appended AFTER all25 original cases, immediately before final SINK reporting. It cannot affect the preceding original Copy fixture. It runs10000000 operations per original Measure pass, checks copied explicit names/closure cardinality and source immutability outside measurement, and retains the observed checksum.
+
+The original csproj build context is preserved: Runtime+Program.cs+Benchmarks.cs in one executable, Baseline=false, same project/assembly name. Generated csproj only points at original Program.cs, generated Benchmarks.cs, and the separate supplemental partial class. All sources/generated/project/assembly hashes and exact declared revisions, runtime/SDK/CPU/affinity are recorded. No timing/acceptance claims come from local smokes.
+
+Modes: AA invokes the exact before executable for both process slots; AB invokes original/candidate. Fourteen independent AB/BA pairs, shared fixed counts. Both builds and unchanged Intersection correctness suites finish before timing processes. All26 raw RESULT rows, stdout/stderr and checksums survive, while comparison.json summarizes only the four predeclared long rows. Preserve all process samples and investigate any material long-batch regression. Original legacy allocation measurement precedes its timed pass; neither is silently combined or redefined.
+
+No per-row CPU or GC data is available from unchanged Measure. *.process.json captures external WHOLE-PROCESS user/system CPU and wall time, including registration, every fixture, warmup, allocation/timing passes and reporting. It must not be attributed to a selected row. Row batch duration is derived from the original rounded RESULT ns/op × iterations, labelled accordingly.
+
+CLI: `python Tests~/LegacyCopyRecheck/run.py --dotnet PATH --before ORIGINAL --after CANDIDATE --before-revision EXACT_SHA --after-revision EXACT_SHA --out EMPTY_DIRECTORY --mode aa --rounds 14`. Repeat serially with --mode ab and another output directory. Optional --mono PATH uses original net472 project path; --padding N preserves the existing padding option. --rounds1 is a smoke, never an acceptance comparison. No package/runtime installation is performed.

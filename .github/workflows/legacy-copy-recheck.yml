@@ -1,0 +1,50 @@
+name: Legacy Copy guard diagnostic
+on:
+  push:
+    branches: [perf/compact-runtime-rewrite]
+    paths:
+      - 'Tests~/LegacyCopyRecheck/**'
+      - '.github/workflows/legacy-copy-recheck.yml'
+permissions:
+  contents: read
+jobs:
+  targeted-dotnet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Freeze exact original and lazy registry candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/copy-original .artifacts/copy-candidate
+          git archive f7c99546dbf029d70896c0f05e5119b19ffd6d26 Runtime | tar -x -C .artifacts/copy-original
+          git archive 94ed1d020b9dd8ad20b08b8079e7b81811b338a3 Runtime | tar -x -C .artifacts/copy-candidate
+      - name: Long-batch original legacy operations, isolated A/A then A/B
+        shell: bash
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+          DOTNET_TieredCompilation: '0'
+          DOTNET_gcServer: '0'
+          COMPlus_TieredCompilation: '0'
+          COMPlus_gcServer: '0'
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --before .artifacts/copy-original --after .artifacts/copy-candidate --before-revision f7c99546dbf029d70896c0f05e5119b19ffd6d26 --after-revision 94ed1d020b9dd8ad20b08b8079e7b81811b338a3 --rounds 14)
+          python3 Tests~/LegacyCopyRecheck/run.py "${args[@]}" --mode aa --out .artifacts/copy-aa
+          python3 Tests~/LegacyCopyRecheck/run.py "${args[@]}" --mode ab --out .artifacts/copy-ab
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: legacy-copy-diagnostic-${{ github.sha }}
+          path: |
+            .artifacts/copy-aa/
+            .artifacts/copy-ab/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
