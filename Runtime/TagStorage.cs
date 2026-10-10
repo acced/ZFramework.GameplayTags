@@ -95,16 +95,16 @@ namespace GameplayTags
         }
 
         // Set insertion and its duplicate semantics require just one lookup.
-        internal bool TryAddExplicit(int id)
+        internal int TryAddExplicitIndex(int id)
         {
             int index = Find(id);
             if (index < 0)
                 index = Insert(id);
             else if (Entries[index].ExplicitCount != 0)
-                return false;
+                return -1;
             Entries[index].ExplicitCount = 1;
             AddExplicitIndex(index);
-            return true;
+            return index;
         }
 
         private void AddExplicitIndex(int index)
@@ -306,11 +306,16 @@ namespace GameplayTags
                 for (int i = 0; i < source.ExplicitCount; i++)
                 {
                     int id = source.Entries[source.ExplicitIndices[i]].Id;
-                    if (!TryAddExplicit(id))
+                    int index = TryAddExplicitIndex(id);
+                    if (index < 0)
                         continue;
                     ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
-                    for (int j = 0; j < path.Length; j++)
+                    for (int j = 0; j < path.Length - 1; j++)
                         AddTotal(path[j]);
+                    // Ancestor insertion appends entries, so the dense index is
+                    // stable. Reload Entries after any capacity replacement.
+                    if (path.Length != 0)
+                        Entries[index].Count++;
                 }
                 return;
             }

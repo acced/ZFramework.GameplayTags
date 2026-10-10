@@ -173,24 +173,21 @@
         "Registrytrunk.NET median+14.5B/34.6MB is not established allocationgrowth: mixedpairdeltas,mean+11.875B99%interval-17.46..41.21,unchangedregistrycode. No unproven GC cause claimed.",
         "No successful optimization version counted."
       ]
-    }
-  ],
-  "verification_limits": [
-    "No Unity 6000.3.14f1 execution",
-    "No IL2CPP execution",
-    "No Alex comparison"
-  ],
-  "current_candidate_note": "Declared-duplicate shortcut plus generic root-name fast path on exact accepted f7 container/storage code. Root creation reuses the existing complete-name lookup and uses the whole name as its label; hierarchical traversal reuses the first separator scan. Node, eager Children and Build remain unchanged. All 24 three-source correctness suites, 1248 overflow differentials per backend, and 216 independent cold allocation probes passed locally. Six-round local Intel root timings are mixed and do not establish a repair. The unchanged full paired CI matrix, including root-only and long Copy guards, must decide acceptance. Original and previous accepted revision remain f7; count zero.",
-  "unaccepted_candidates": [
+    },
     {
       "sha": "8ac21da234ee940f607f3f0a167675ce545c6116",
       "ci_run": 38085229275,
-      "decision": "Not accepted. Preserve the consistent long-root unique startup slowdown while testing a generic root-name refinement. Mono full evidence was still running when this revision was prepared.",
+      "decision": "Rejected as-is: Mono tiny workspace and Remove/Add regressions are repeatable across long batches; independent long legacy Remove/Add reinforces the mutation regression. Duplicate gains cannot offset these guards.",
       "artifacts": [
         {
           "backend": ".NET 8 AMD EPYC 7763",
           "id": 11681982646,
           "sha256": "395532eba70202d0d333da6c63adfb91e9ac86c91aca21c716a6ebb71df31887"
+        },
+        {
+          "backend": "standalone Mono6.8 AMD EPYC7763",
+          "id": 11682744895,
+          "sha256": "e0975635b091cd405bd87e0b25dcb248328c9f75665c656fa6ec2d15aaccb515"
         }
       ],
       "findings": [
@@ -198,8 +195,42 @@
         "All 155 core rows have no review flags; all 24 retained object/array graphs are identical; Bulk and original legacy rows show no material regression. Long AMD Copy is tightly neutral.",
         "Long-root unique registration is slower 14/14: 1996937 to 2052422 ns, paired 99% speedup interval 0.9628 to 0.9822. This is a consistent roughly 2.8% tradeoff whose interval crosses the 3% investigation threshold, not a neutral result or accepted version.",
         "Small variable allocation deltas on unique roots/trunk have paired intervals crossing zero; no persistent growth established.",
-        "No successful optimization version counted."
+        "No successful optimization version counted.",
+        "Mono n4 empty/full workspace and depth3 Remove/Add are slower14/14, zeroGC/allocations, minimum batches399ms. Separate long legacy Remove/Add192.41->205.85ns,13/14 slower,99% speedup0.919-0.968,minimum380/406ms.",
+        "Mono duplicate build improves3.49x with exact2752512B saved; all unique registry allocations equal; all24 owned structural rows equal. Four noisy fullGC retained flags do not establish owned-storage growth."
+      ]
+    },
+    {
+      "sha": "dedbf632686200e9d9aeaee7119edac65e182272",
+      "ci_run": 38087273237,
+      "decision": "Rejected as-is:11 repeated zero-overlap/alias timing regressions in the .NET core matrix, independently reinforced by normal and padded legacy paths.",
+      "artifacts": [
+        {
+          "backend": ".NET8 AMD EPYC9V74",
+          "id": 11683605472,
+          "sha256": "4d0c3dc9f5cc3a93ab1e90eb383a8eeddeafab210f0fc4b2e8b9a5f30035a3cd"
+        },
+        {
+          "backend": "standalone Mono6.8 Intel8573C",
+          "id": 11683316415,
+          "sha256": "97e4b51c66e99c03476a40229ed2a54fac363c761d7ec3af53d66125940dcac2"
+        }
+      ],
+      "findings": [
+        "All11 core regression rows are slower14/14 in both orders, minimum121-153ms batches; n128/n1024 zero-overlap paths typically8-10percent slower. Warm rows and n1024 fresh/cold have zeroGC.",
+        "Legacy normal and padded reproduce all three n1024 empty-overlap regressions and SpecializedSort regression. Bulk has no paired material regression;24 retained structures are identical.",
+        "Duplicate registry builds improve3.14x and retain exact2752512B allocation savings. LongCopy neutral on this host.",
+        "Root-only timing within1percent on AMD9V74 does not demonstrate repair of the earlier AMD7763 signal.",
+        "No successful optimization version counted.",
+        "Mono adds seven small-cost core regression flags: four first-missing-leaf HasAll negatives and three duplicate-add guards, roughly1-1.8ns. Long legacy Query5.834->6.1475ns flags about5percent but only0.31ns absolute cost; retain materiality caveat. LongCopy and root-only guards neutral; duplicate3.43x with2752512B saved. Full evidence retained; not an accepted version."
       ]
     }
-  ]
+  ],
+  "verification_limits": [
+    "No Unity 6000.3.14f1 execution",
+    "No IL2CPP execution",
+    "No Alex comparison"
+  ],
+  "current_candidate_note": "Independent saved-entry-index insertion candidate on exact f7. TryAddExplicitIndex returns the stable dense entry index; strict ancestors update in original order, then self Count increments through the current Entries array, avoiding a second self hash lookup. Empty hierarchy and invalid-ID failure ordering remain unchanged. The small-source AddUnion path shares the improvement. All registry/query/workspace/adaptive-Union experiments are excluded.14 core suite runs plus fixed Evolution,729 supported overflow differentials/backend,70 edge outcomes/backend and65 independent fresh cold allocation/structure pairs/backend passed locally. Existing full original/predecessor matrix remains unchanged; no timing claim or successful optimization count yet.",
+  "unaccepted_candidates": []
 }
