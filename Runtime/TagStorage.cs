@@ -310,8 +310,24 @@ namespace GameplayTags
                 ResetIndex(BucketCapacityFor(count));
 
             EnsureOverwriteCapacity(count, other.ExplicitCount);
-            Array.Copy(other.Entries, Entries, count);
-            Array.Copy(other.ExplicitIndices, ExplicitIndices, other.ExplicitCount);
+            if (count <= LinearCapacity && other.ExplicitCount <= LinearCapacity)
+            {
+                // Tiny closures use the same bound as linear lookup. Avoid two
+                // bulk-copy calls while preserving both enumeration orders.
+                Entry[] sourceEntries = other.Entries;
+                Entry[] entries = Entries;
+                for (int i = 0; i < count; i++)
+                    entries[i] = sourceEntries[i];
+                int[] sourceExplicitIndices = other.ExplicitIndices;
+                int[] explicitIndices = ExplicitIndices;
+                for (int i = 0; i < other.ExplicitCount; i++)
+                    explicitIndices[i] = sourceExplicitIndices[i];
+            }
+            else
+            {
+                Array.Copy(other.Entries, Entries, count);
+                Array.Copy(other.ExplicitIndices, ExplicitIndices, other.ExplicitCount);
+            }
             Count = count;
             ExplicitCount = other.ExplicitCount;
             if (!copyBuckets)

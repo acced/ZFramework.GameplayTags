@@ -228,12 +228,17 @@
     {
       "sha": "7af5ba91f3975f75fadc45f560eca540440a43ce",
       "ci_run": 38089439330,
-      "decision": "Rejected as-is:19 long-batch core regressions and independent legacy regressions outweigh the small disjoint-Union benefit. Mono evidence remains running and will be retained.",
+      "decision": "Rejected as-is:19 long-batch core regressions and independent legacy regressions outweigh the small disjoint-Union benefit. Mono evidence is complete and retained.",
       "artifacts": [
         {
           "backend": ".NET8 AMD EPYC7763",
           "id": 11683274714,
           "sha256": "77361a705c88ce33ae2d164a841b026ddfa49669664eb6177cff6fee5943a29c"
+        },
+        {
+          "backend": "standalone Mono6.8 AMD EPYC7763",
+          "id": 11684591883,
+          "sha256": "342acb45db73655c5515978da49623a08ebc954ed9e30148f40f3d6ef7d8169b"
         }
       ],
       "findings": [
@@ -241,7 +246,34 @@
         "Legacy independently reproduces empty/partial intersection and SpecializedSort regressions. Bulk43 no material paired regression;24 retained structures identical.",
         "Small disjointUnion improves7.8percent, while long RemoveAdd improves only about1.8percent and its~96ms batch is flagged short. These do not offset substantive regressions.",
         "Registry code is exactf7; variable small allocation deltas on large build fixtures are retained for review, not automatically attributed to a specific cause.",
-        "No successful optimization version counted."
+        "No successful optimization version counted.",
+        "Mono adds five core timing flags: n4 empty reused intersection about10ns slower, emptyAny about1.47ns and AddTags-self about0.93ns. Registry allocations/timing and longCopy remain neutral; no benefit offsets the rejected .NET regressions."
+      ]
+    },
+    {
+      "sha": "b223e0b056fdcc5b17c3ea7f4a186674b78bf8b6",
+      "ci_run": 38090847955,
+      "decision": "Rejected as-is: fused explicit probes improve many queries, but Mono tiny Copy and two Copy+Clear guards regress in every long-batch pair. Retain the fused mechanism for a narrowly combined repair; no successful version counted.",
+      "artifacts": [
+        {
+          "backend": ".NET8 AMD EPYC9V74",
+          "id": 11683594464,
+          "sha256": "ec5f77f8ed828c892e50d34be625104902f3dba445a95f0fad96d383ff0cce30"
+        },
+        {
+          "backend": "standalone Mono6.8 AMD EPYC7763",
+          "id": 11685046282,
+          "sha256": "a37f9d97dacf34ae463f3a1b79653ccd32e97312f1aebe030bf47a7fc51b6c97"
+        }
+      ],
+      "findings": [
+        ".NET has31 improvement flags; n1024 full reused intersection5254.74->4526.04ns, exact query gains roughly12-36percent. Mono has49 improvement flags; long exact Query10.688->8.2005ns. These gains do not offset reproducible regressions.",
+        "Mono sparse Copy+Clear restore81.641->91.234ns and81.301->91.024ns, both14/14 slower, minimum344/382ms and371/413ms,zeroGC/allocations. These restore fixtures compact to a tiny closure before Clear.",
+        "Independent long smallCopy72.0265->78.8ns,14/14 slower,at least719/787ms batches,99percent speedup0.909-0.919,zero measured allocation. LargeCopy neutral.",
+        "NET AddTags-self n16 has a repeatable sub-nanosecond median increase about0.41ns,14/14,minimum151/157ms,zeroGC; n1024 has a smaller modal increase with wider uncertainty. The absolute-cost caveat is preserved, not relabeled absent.",
+        "All42 Runtime source hashes verified against exact revisions on each backend; all24 owned retained object/array graphs identical. Approximate Mono fullGC flags do not establish owned-storage growth.",
+        "Legacy normal14/padded4, Registry/RootOnly and NET Bulk43 add no material paired regression or sustained allocation increase. Mono Bulk was not measured.",
+        "No accepted optimization version. The next candidate adds only guarded tiny CopyFrom loops to fused ContainsExplicit and must pass the same complete matrix."
       ]
     }
   ],
@@ -250,6 +282,6 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Independent fused ContainsExplicit probe on exact f7; saved-index insertion and all other rejected experiments removed. Find, Hash, thresholds and HasAll/Any remain unchanged. Both linear and hashed probes return the first matching entry contribution directly, avoiding a second Entries reload/bounds/address calculation observed in native callers. Native probe shrinks1565->1504B and HasAny996->918B; misses can incur an additional LEA, so no speed claim yet. Both backends pass supported overflow, failed-build edge, cold/warm allocation, retained-layout and fixed correctness checks. Original and previous accepted remain f7,count0; unchanged full CI matrix decides acceptance.",
+  "current_candidate_note": "Preparing fused ContainsExplicit plus only guarded tiny CopyFrom direct loops. All other runtime code remains original f7. No candidate accepted; original and previous accepted remain f7. The full unchanged matrix and all existing correctness/cold/retained checks decide acceptance.",
   "unaccepted_candidates": []
 }
