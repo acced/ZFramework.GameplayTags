@@ -241,67 +241,21 @@ namespace GameplayTags
                 return;
             }
 
-            TagStorage.Entry[] sourceEntries = a.Entries;
-            int[] sourceExplicit = a.ExplicitIndices;
-            int sourceCount = a.ExplicitCount;
-            // A full hit needs only the membership pass and a storage copy. Delay
-            // materializing selected IDs until the first miss, so reused outputs
-            // and workspaces do not write a result they would immediately discard.
-            // On tiny sets the original single capture loop avoids the fixed
-            // prefix/backfill bookkeeping cost; larger sets amortize that cost.
-            bool scanPrefix = aIsSet && sourceCount > 16;
-            int prefix = 0;
-            if (scanPrefix)
-            {
-                while (prefix < sourceCount &&
-                    b.ContainsExplicit(sourceEntries[sourceExplicit[prefix]].Id))
-                    prefix++;
-                if (prefix == sourceCount)
-                {
-                    output.CopyFrom(a);
-                    m_SerializedExplicitTags?.Clear();
-                    return;
-                }
-            }
+            // Reused, non-aliased outputs gather IDs during the first lookup pass.
+            // Fresh outputs count first to allocate only the exact selected capacity.
+            // Without a workspace an alias must defer overwriting its explicit index
+            // until the full-hit/copy-minus-missing fast paths have been ruled out.
             bool capture = workspace != null ||
                 (output.ExplicitIndices.Length != 0 && !ReferenceEquals(output, a) && !ReferenceEquals(output, b));
             int[] selectedIds = workspace == null ? output.ExplicitIndices : workspace.SelectedIds;
-            int matches = prefix, previousId = 0;
+            int matches = 0, previousId = 0;
             bool ordered = true;
-            if (capture && prefix != 0)
-            {
-                if (workspace == null)
-                {
-                    output.EnsureExplicitCapacity(prefix);
-                    selectedIds = output.ExplicitIndices;
-                }
-                else
-                {
-                    workspace.EnsureSelectedCapacity(prefix);
-                    selectedIds = workspace.SelectedIds;
-                }
-                for (int i = 0; i < prefix; i++)
-                {
-                    int id = sourceEntries[sourceExplicit[i]].Id;
-                    selectedIds[i] = id;
-                    ordered &= id > previousId;
-                    previousId = id;
-                }
-            }
             Span<int> missingIds = stackalloc int[8];
             int missing = 0;
             long missingPathWork = 0;
-            int scanStart = prefix;
-            if (scanPrefix)
+            for (int i = 0; i < a.ExplicitCount; i++)
             {
-                // The prefix scan already proved this first entry absent.
-                int id = sourceEntries[sourceExplicit[scanStart++]].Id;
-                missingIds[missing++] = id;
-                missingPathWork = GameplayTagManager.GetHierarchyIndices(id).Length;
-            }
-            for (int i = scanStart; i < sourceCount; i++)
-            {
-                int id = sourceEntries[sourceExplicit[i]].Id;
+                int id = a.Entries[a.ExplicitIndices[i]].Id;
                 if (b.ContainsExplicit(id))
                 {
                     if (capture)
@@ -336,7 +290,7 @@ namespace GameplayTags
                 Clear();
                 return;
             }
-            if (aIsSet && sourceCount - matches <= missingIds.Length &&
+            if (aIsSet && a.ExplicitCount - matches <= missingIds.Length &&
                 (missing == 0 || missingPathWork <= a.Count / 2))
             {
                 output.CopyFrom(a);
@@ -350,9 +304,9 @@ namespace GameplayTags
             {
                 output.EnsureExplicitCapacity(matches);
                 int selected = 0;
-                for (int i = 0; i < sourceCount; i++)
+                for (int i = 0; i < a.ExplicitCount; i++)
                 {
-                    int id = sourceEntries[sourceExplicit[i]].Id;
+                    int id = a.Entries[a.ExplicitIndices[i]].Id;
                     if (b.ContainsExplicit(id))
                     {
                         // Forward compaction is safe for an aliased input: selected

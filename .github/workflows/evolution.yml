@@ -56,7 +56,7 @@ jobs:
           mkdir -p .artifacts/evolution-original .artifacts/evolution-previous
           git archive "$ORIGINAL_SHA" Runtime | tar -x -C .artifacts/evolution-original
           git archive "$PREVIOUS_SHA" Runtime | tar -x -C .artifacts/evolution-previous
-          args=(--dotnet "$(command -v dotnet)" --before .artifacts/evolution-original --before-revision "$ORIGINAL_SHA" --after "$PWD" --after-revision "$GITHUB_SHA" --samples 14 --iterations-file "Tests~/Evolution/iterations/iterations-${{ matrix.backend }}.tsv" --out .artifacts/evolution-evidence)
+          args=(--dotnet "$(command -v dotnet)" --before .artifacts/evolution-original --before-revision "$ORIGINAL_SHA" --after "$PWD" --after-revision "$GITHUB_SHA" --samples 14 --iterations-file "Tests~/Evolution/iterations/iterations-union-v2-${{ matrix.backend }}.tsv" --out .artifacts/evolution-evidence)
           if [[ "$PREVIOUS_SHA" != "$ORIGINAL_SHA" ]]; then
             args+=(--previous .artifacts/evolution-previous --previous-revision "$PREVIOUS_SHA")
           fi
@@ -64,6 +64,19 @@ jobs:
             args+=(--mono "$(command -v mono)")
           fi
           python3 Tests~/Evolution/run.py "${args[@]}"
+      - name: Audit exact retained object and array layouts
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")")
+          if [[ '${{ matrix.backend }}' == mono ]]; then
+            args+=(--mono "$(command -v mono)" --nuget "$HOME/.nuget/packages")
+          fi
+          python3 Tests~/Evolution/RetentionLayout/run.py "${args[@]}" --source .artifacts/evolution-original --revision "$ORIGINAL_SHA" --variant before --out .artifacts/evolution-layout/before.json
+          python3 Tests~/Evolution/RetentionLayout/run.py "${args[@]}" --source "$PWD" --revision "$GITHUB_SHA" --variant after --out .artifacts/evolution-layout/after.json
+          if [[ "$PREVIOUS_SHA" != "$ORIGINAL_SHA" ]]; then
+            python3 Tests~/Evolution/RetentionLayout/run.py "${args[@]}" --source .artifacts/evolution-previous --revision "$PREVIOUS_SHA" --variant previous --out .artifacts/evolution-layout/previous.json
+          fi
       - name: Preserve fixed registry startup and memory guards
         shell: bash
         run: |
@@ -123,6 +136,7 @@ jobs:
             .artifacts/evolution-evidence/*.tsv
             .artifacts/evolution-evidence/*-tests.txt
             .artifacts/evolution-evidence/raw/*.json
+            .artifacts/evolution-layout/*.json
             .artifacts/evolution-registry-*/*.json
             .artifacts/evolution-registry-*/raw/*
             .artifacts/evolution-bulk/**/*.json

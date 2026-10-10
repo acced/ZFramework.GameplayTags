@@ -25,6 +25,26 @@
         "Unchanged-code timing regressions and conservative Mono retained-heap flags remain unresolved; they are not discarded as noise.",
         "No optimization version was accepted from this commit."
       ]
+    },
+    {
+      "sha": "89db5270b066bdfe94de231945610687c11333c0",
+      "ci_run": 38073714602,
+      "decision": "Rejected as-is: cached source reads and tiny-set fallback did not eliminate empty/partial intersection regressions. Restore original f7 intersection before evaluating other runtime directions.",
+      "artifacts": [
+        {
+          "backend": ".NET 8",
+          "id": 11678356893,
+          "sha256": "22e91629837d937c444e6acc6eed376217828b9804fc19573b4a5aea0c563d21"
+        }
+      ],
+      "mono_evidence_status": "Run still in progress when this rejection was recorded; .NET regressions alone fail the gate. Preserve and review the eventual Mono artifact as well.",
+      "findings": [
+        "Full exact-source correctness passed on both standalone local backends and ordinary CI.",
+        "n1024 zero-overlap reused intersection1853.5->2632.6ns, all14 pairs slower; paired99% speedup interval0.676-0.720.",
+        "n128 zero-overlap workspace and n1024 half-overlap workspace also slower in all14 pairs, with0GC and at least85ms batches.",
+        "No sustained allocation increase; structural24-fixture audit has22 identical graphs and2 full-hit workspace array-capacity reductions on .NET and Mono.",
+        "No optimization version accepted; original and previous accepted Runtime remain f7."
+      ]
     }
   ],
   "verification_limits": [
