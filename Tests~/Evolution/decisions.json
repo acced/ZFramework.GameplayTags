@@ -224,6 +224,25 @@
         "No successful optimization version counted.",
         "Mono adds seven small-cost core regression flags: four first-missing-leaf HasAll negatives and three duplicate-add guards, roughly1-1.8ns. Long legacy Query5.834->6.1475ns flags about5percent but only0.31ns absolute cost; retain materiality caveat. LongCopy and root-only guards neutral; duplicate3.43x with2752512B saved. Full evidence retained; not an accepted version."
       ]
+    },
+    {
+      "sha": "7af5ba91f3975f75fadc45f560eca540440a43ce",
+      "ci_run": 38089439330,
+      "decision": "Rejected as-is:19 long-batch core regressions and independent legacy regressions outweigh the small disjoint-Union benefit. Mono evidence remains running and will be retained.",
+      "artifacts": [
+        {
+          "backend": ".NET8 AMD EPYC7763",
+          "id": 11683274714,
+          "sha256": "77361a705c88ce33ae2d164a841b026ddfa49669664eb6177cff6fee5943a29c"
+        }
+      ],
+      "findings": [
+        "All19 core regression flags have at least143ms batches;18 slower14/14 and HasAll hierarchical self13/14. Warm workspace82.16->93.21ns, n128/n1024 zero-overlap paths roughly5-7percent slower, all relevant warm/query/duplicate rows zeroGC.",
+        "Legacy independently reproduces empty/partial intersection and SpecializedSort regressions. Bulk43 no material paired regression;24 retained structures identical.",
+        "Small disjointUnion improves7.8percent, while long RemoveAdd improves only about1.8percent and its~96ms batch is flagged short. These do not offset substantive regressions.",
+        "Registry code is exactf7; variable small allocation deltas on large build fixtures are retained for review, not automatically attributed to a specific cause.",
+        "No successful optimization version counted."
+      ]
     }
   ],
   "verification_limits": [
@@ -231,6 +250,6 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Independent saved-entry-index insertion candidate on exact f7. TryAddExplicitIndex returns the stable dense entry index; strict ancestors update in original order, then self Count increments through the current Entries array, avoiding a second self hash lookup. Empty hierarchy and invalid-ID failure ordering remain unchanged. The small-source AddUnion path shares the improvement. All registry/query/workspace/adaptive-Union experiments are excluded.14 core suite runs plus fixed Evolution,729 supported overflow differentials/backend,70 edge outcomes/backend and65 independent fresh cold allocation/structure pairs/backend passed locally. Existing full original/predecessor matrix remains unchanged; no timing claim or successful optimization count yet.",
+  "current_candidate_note": "Independent fused ContainsExplicit probe on exact f7; saved-index insertion and all other rejected experiments removed. Find, Hash, thresholds and HasAll/Any remain unchanged. Both linear and hashed probes return the first matching entry contribution directly, avoiding a second Entries reload/bounds/address calculation observed in native callers. Native probe shrinks1565->1504B and HasAny996->918B; misses can incur an additional LEA, so no speed claim yet. Both backends pass supported overflow, failed-build edge, cold/warm allocation, retained-layout and fixed correctness checks. Original and previous accepted remain f7,count0; unchanged full CI matrix decides acceptance.",
   "unaccepted_candidates": []
 }

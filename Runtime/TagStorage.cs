@@ -66,8 +66,30 @@ namespace GameplayTags
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool ContainsExplicit(int id)
         {
-            int index = Find(id);
-            return index >= 0 && Entries[index].ExplicitCount != 0;
+            int[] buckets = m_Buckets;
+            Entry[] entries = Entries;
+            int mask = m_BucketMask;
+            if (mask == 0)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    ref Entry entry = ref entries[i];
+                    if (entry.Id == id)
+                        return entry.ExplicitCount != 0;
+                }
+                return false;
+            }
+
+            int slot = Hash(id) & mask;
+            int encoded;
+            while ((encoded = buckets[slot]) != 0)
+            {
+                ref Entry entry = ref entries[encoded - 1];
+                if (entry.Id == id)
+                    return entry.ExplicitCount != 0;
+                slot = (slot + 1) & mask;
+            }
+            return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -95,16 +117,16 @@ namespace GameplayTags
         }
 
         // Set insertion and its duplicate semantics require just one lookup.
-        internal int TryAddExplicitIndex(int id)
+        internal bool TryAddExplicit(int id)
         {
             int index = Find(id);
             if (index < 0)
                 index = Insert(id);
             else if (Entries[index].ExplicitCount != 0)
-                return -1;
+                return false;
             Entries[index].ExplicitCount = 1;
             AddExplicitIndex(index);
-            return index;
+            return true;
         }
 
         private void AddExplicitIndex(int index)
@@ -306,16 +328,11 @@ namespace GameplayTags
                 for (int i = 0; i < source.ExplicitCount; i++)
                 {
                     int id = source.Entries[source.ExplicitIndices[i]].Id;
-                    int index = TryAddExplicitIndex(id);
-                    if (index < 0)
+                    if (!TryAddExplicit(id))
                         continue;
                     ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
-                    for (int j = 0; j < path.Length - 1; j++)
+                    for (int j = 0; j < path.Length; j++)
                         AddTotal(path[j]);
-                    // Ancestor insertion appends entries, so the dense index is
-                    // stable. Reload Entries after any capacity replacement.
-                    if (path.Length != 0)
-                        Entries[index].Count++;
                 }
                 return;
             }

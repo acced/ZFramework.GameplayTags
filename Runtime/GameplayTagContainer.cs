@@ -115,15 +115,11 @@ namespace GameplayTags
         public bool TryAddTag(GameplayTag tag)
         {
             TagStorage storage = m_Indices.Storage;
-            int index = storage.TryAddExplicitIndex(tag.RuntimeIndex);
-            if (index < 0)
+            if (!storage.TryAddExplicit(tag.RuntimeIndex))
                 return false;
             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(tag.RuntimeIndex);
-            for (int i = 0; i < hierarchy.Length - 1; i++)
+            for (int i = 0; i < hierarchy.Length; i++)
                 storage.AddTotal(hierarchy[i]);
-            // Preserve empty-hierarchy behavior and reload the possibly grown array.
-            if (hierarchy.Length != 0)
-                storage.Entries[index].Count++;
             return true;
         }
 
