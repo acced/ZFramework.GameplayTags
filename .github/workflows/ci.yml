@@ -60,8 +60,8 @@ jobs:
           BASE="$PWD/.artifacts/intersection-base/Runtime"
           dotnet build "$PROJECT" -c Release -p:RuntimeRoot="$BASE" -p:Baseline=true -p:BaseIntermediateOutputPath="$PWD/.artifacts/obj-before-net/" -o .artifacts/before-net
           dotnet build "$PROJECT" -c Release -p:BaseIntermediateOutputPath="$PWD/.artifacts/obj-after-net/" -o .artifacts/after-net
-          dotnet build "$PROJECT" -c Release -p:TargetFramework=net472 -p:RuntimeRoot="$BASE" -p:Baseline=true -p:BaseIntermediateOutputPath="$PWD/.artifacts/obj-before-mono/" -o .artifacts/before-mono
-          dotnet build "$PROJECT" -c Release -p:TargetFramework=net472 -p:BaseIntermediateOutputPath="$PWD/.artifacts/obj-after-mono/" -o .artifacts/after-mono
+          dotnet build "$PROJECT" -c Release -p:MonoTarget=true -p:RuntimeRoot="$BASE" -p:Baseline=true -p:BaseIntermediateOutputPath="$PWD/.artifacts/obj-before-mono/" -o .artifacts/before-mono
+          dotnet build "$PROJECT" -c Release -p:MonoTarget=true -p:BaseIntermediateOutputPath="$PWD/.artifacts/obj-after-mono/" -o .artifacts/after-mono
       - name: Validate behavior and allocations on standalone Mono
         run: mono .artifacts/after-mono/GameplayTags.Intersection.Tests.exe
       - name: Paired .NET comparison (14 samples per version)

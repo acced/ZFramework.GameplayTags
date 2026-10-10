@@ -22,7 +22,7 @@ warmed bytes. These assertions do not claim zero cold/growth allocation.
 Standalone Mono (NOT Unity's fork):
 
 ```sh
-dotnet build Tests~/Intersection/GameplayTags.Intersection.Tests.csproj -c Release -p:TargetFramework=net472 -o .artifacts/intersection-mono
+dotnet build Tests~/Intersection/GameplayTags.Intersection.Tests.csproj -c Release -p:MonoTarget=true -o .artifacts/intersection-mono
 mono .artifacts/intersection-mono/GameplayTags.Intersection.Tests.exe
 ```
 
