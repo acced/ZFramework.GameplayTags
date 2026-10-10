@@ -89,6 +89,50 @@
         "All24 exact retained object/layout/capacity graphs match on both runtimes. Mono fullGC deltas remain approximate and cannot establish owned-storage growth.",
         "No accepted optimization version. Adaptive patch retained in commit history for later combined improvement; no artificial method padding or discarded samples."
       ]
+    },
+    {
+      "sha": "94ed1d020b9dd8ad20b08b8079e7b81811b338a3",
+      "ci_run": 38079462356,
+      "decision": "Rejected as-is. Lazy registry leaf child-list allocation saves startup memory and improves shallow builds, but AMD7763 large Copy regression reproduces with long original-method batches and stable same-binary AA. Intel nonreproduction does not waive the hardware-specific regression.",
+      "artifacts": [
+        {
+          "backend": ".NET 8",
+          "id": 11680192637,
+          "sha256": "a3c8d93e2991492833ee1a7ec890ed29c215a43f25875e3ea9bd839c993b8361"
+        },
+        {
+          "backend": "standalone Mono 6.8",
+          "id": 11680472505,
+          "sha256": "f2248cea0a12549376b25103df867b2611437c649a47de0e1383725761c9308e"
+        }
+      ],
+      "diagnostics": [
+        {
+          "run": 38081512720,
+          "artifact": 11680846740,
+          "sha256": "7e14cfe0263db198c7cc5bad8ba8b37513bd65d5bf2e5061f043328ceb24cd5f",
+          "result": "Intel8573C: long Copy AA stable;AB810.63->813.98ns,99%0.989-1.003. Different CPU from original regression; not a clearance of AMD signal."
+        },
+        {
+          "run": 38081858510,
+          "artifact": 11681100589,
+          "sha256": "d2bcde16abd32828b4ae3a29f4f6327f20f088f8e0868408c3615efb5b1a403e",
+          "result": "AMD7763 matched slot1: long Copy AA852.90->853.46ns,99%0.996-1.006;AB853.77->955.13ns,14/14 slower,99%0.823-0.930,at least423ms batches,0B. Reproduced regression."
+        },
+        {
+          "run": 38081858510,
+          "artifact": 11680995478,
+          "sha256": "e116506835f3ed3df9bb3bba5fa32b41da26bc2a3dc52a5eaf646a21b01d70b0",
+          "result": "Slot2 CPU did not match; only no-match metadata. Not timing evidence or a pass."
+        }
+      ],
+      "findings": [
+        "Both standalone correctness suites pass. Root131 timing rows show no material regressions on either backend; all24 owned-storage graph/layout fixtures equal.",
+        "Shallow4096 registry paired speedup1.069 on.NET and1.047 onMono. Startup allocation reduced32B.NET/40BMono perleaf, frozen array payload unchanged.",
+        "No established chain allocation increase: noisy.NET eight-build paired99% difference interval crosses0, while six independent one-build samples show exact32B saving; Mono exact40B saving. Do not attribute variation to an unproven GC cause.",
+        "Mono approximate fullGC retention flags do not establish owned-storage growth; structural fixtures remain equal.",
+        "Existing legacy largeCopy AMD regression is reproduced, so no successful version is counted. Lazy registry patch remains isolated for a principled future repair."
+      ]
     }
   ],
   "verification_limits": [
@@ -96,5 +140,5 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Registry lazy child-list allocation only, based on accepted f7 Runtime. Returns to original baseline-calibrated iteration maps because adaptive Union is removed; identical131 workload IDs and shared baseline/candidate counts remain, including every regressed guard. Adaptive-specific long maps are preserved for later adaptive candidates."
+  "current_candidate_note": "Combined adaptive Union plus general workspace ref-local propagation and tiny CopyFrom loops (both live and explicit counts <=8), based on exact f7. Restores original registry. This is one candidate, never three successful versions. All original131 workloads and prior regressions remain; adaptive-specific shared long iteration maps restored. Exact local correctness, overflow differentials and cold/storage probes passed on both standalone runtimes; acceptance pending full CI."
 }

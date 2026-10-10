@@ -288,8 +288,24 @@ namespace GameplayTags
                 ResetIndex(BucketCapacityFor(count));
 
             EnsureOverwriteCapacity(count, other.ExplicitCount);
-            Array.Copy(other.Entries, Entries, count);
-            Array.Copy(other.ExplicitIndices, ExplicitIndices, other.ExplicitCount);
+            if (count <= LinearCapacity && other.ExplicitCount <= LinearCapacity)
+            {
+                // Tiny closures use the same bound as linear lookup. Avoid two
+                // bulk-copy calls while preserving both enumeration orders.
+                Entry[] sourceEntries = other.Entries;
+                Entry[] entries = Entries;
+                for (int i = 0; i < count; i++)
+                    entries[i] = sourceEntries[i];
+                int[] sourceExplicitIndices = other.ExplicitIndices;
+                int[] explicitIndices = ExplicitIndices;
+                for (int i = 0; i < other.ExplicitCount; i++)
+                    explicitIndices[i] = sourceExplicitIndices[i];
+            }
+            else
+            {
+                Array.Copy(other.Entries, Entries, count);
+                Array.Copy(other.ExplicitIndices, ExplicitIndices, other.ExplicitCount);
+            }
             Count = count;
             ExplicitCount = other.ExplicitCount;
             if (!copyBuckets)
@@ -340,11 +356,23 @@ namespace GameplayTags
                 }
 
                 int head = 0;
+                // Most shallow unions finish in fewer than one queue revolution.
+                // Bound FIFO work by the source closure before switching to an
+                // ordered sweep. Checking at wraparound adds no per-node branch,
+                // and leaves the remaining circular queue contiguous at index zero.
+                int revolutions = Math.Max(2, source.Count / queue.Length);
                 while (queued != 0)
                 {
-                    int index = queue[head++];
                     if (head == queue.Length)
+                    {
                         head = 0;
+                        if (--revolutions == 0)
+                        {
+                            AddOrderedContributions(queue, queued);
+                            break;
+                        }
+                    }
+                    int index = queue[head++];
                     queued--;
                     int pending = (int)((uint)Entries[index].ExplicitCount >> 1);
                     Entries[index].ExplicitCount &= 1;
@@ -358,6 +386,36 @@ namespace GameplayTags
             {
                 ArrayPool<int>.Shared.Return(queue, clearArray: false);
             }
+        }
+
+        // Preorder IDs make each subtree a contiguous interval. The queue owns
+        // every unfinished contribution, so its weighted ancestor closure can be
+        // added once with prefix differences, irrespective of insertion order.
+        // Counts temporarily subtract the running prefix on subtree entry and
+        // add it on exit; no depth-sized stack or retained scratch is needed.
+        private void AddOrderedContributions(int[] queue, int queued)
+        {
+            for (int i = 0; i < queued; i++)
+                queue[i] = Entries[queue[i]].Id;
+            Int32Sort.Sort(queue, 0, queued);
+
+            int depth = 0, prefix = 0;
+            ReadOnlySpan<int> previous = default;
+            for (int i = 0; i < queued; i++)
+            {
+                int id = queue[i];
+                while (depth != 0 && id >= GameplayTagManager.GetSubtreeEnd(previous[depth - 1]))
+                    AddTotal(previous[--depth], prefix);
+                ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
+                while (depth < path.Length)
+                    AddTotal(path[depth++], -prefix);
+                int index = Find(id);
+                prefix += (int)((uint)Entries[index].ExplicitCount >> 1);
+                Entries[index].ExplicitCount &= 1;
+                previous = path;
+            }
+            while (depth != 0)
+                AddTotal(previous[--depth], prefix);
         }
 
         private void QueueContribution(int id, int amount, int[] queue, ref int tail, ref int queued)
@@ -523,14 +581,19 @@ namespace GameplayTags
             for (int i = 0; i < next; i++)
             {
                 int node = i;
-                while (node >= 0 && entries[node].ExplicitCount == 0)
+                while (node >= 0)
                 {
-                    int parent = entries[node].ExplicitIndex;
-                    entries[node].ExplicitCount = -1;
+                    ref Entry entry = ref entries[node];
+                    if (entry.ExplicitCount != 0)
+                        break;
+                    int parent = entry.ExplicitIndex;
+                    entry.ExplicitCount = -1;
                     if (parent >= 0)
                     {
-                        entries[parent].Count += entries[node].Count;
-                        entries[parent].ExplicitCount--;
+                        int contribution = entry.Count;
+                        ref Entry parentEntry = ref entries[parent];
+                        parentEntry.Count += contribution;
+                        parentEntry.ExplicitCount--;
                     }
                     node = parent;
                 }
@@ -539,9 +602,9 @@ namespace GameplayTags
                 entries[i].ExplicitCount = 0;
             for (int i = 0; i < explicitCount; i++)
             {
-                int index = ExplicitIndices[i];
-                entries[index].ExplicitCount = 1;
-                entries[index].ExplicitIndex = i;
+                ref Entry entry = ref entries[ExplicitIndices[i]];
+                entry.ExplicitCount = 1;
+                entry.ExplicitIndex = i;
             }
             Count = next;
             ExplicitCount = explicitCount;
