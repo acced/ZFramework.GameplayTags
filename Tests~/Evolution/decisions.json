@@ -275,6 +275,33 @@
         "Legacy normal14/padded4, Registry/RootOnly and NET Bulk43 add no material paired regression or sustained allocation increase. Mono Bulk was not measured.",
         "No accepted optimization version. The next candidate adds only guarded tiny CopyFrom loops to fused ContainsExplicit and must pass the same complete matrix."
       ]
+    },
+    {
+      "sha": "a9d6097f422dad1f94b326ae7e3be6f39ef70334",
+      "ci_run": 38094194138,
+      "decision": "Rejected as-is: tiny Copy repairs succeed, but Intel Mono has ten substantive repeated core regressions, independently reinforced by legacy empty-intersection paths. Restore original f7 storage before isolating a direct-enumerator AddTags optimization.",
+      "artifacts": [
+        {
+          "backend": ".NET8 AMD EPYC9V74",
+          "id": 11685253022,
+          "sha256": "9e8ea1b965bfb8a64f8c13e53b494db7fffb4ecd34551940451be67bb750b3af"
+        },
+        {
+          "backend": "standalone Mono6.8 Intel8573C",
+          "id": 11685619016,
+          "sha256": "6e73a3a6e3ed06eb6905ed21cab9b0977dd9ed2e3a54b2ece864596f7a852486"
+        }
+      ],
+      "findings": [
+        "Both backends preserve24 owned structural graphs and exact42 Runtime source hashes. No correctness failure or sustained tested allocation increase.",
+        "NET41 improvement flags; tinyCopy18.4465->13.297ns,1.378x, longCopy neutral and legacy/Bulk guards clear. AddTags-self+0.272ns13/14 and AnyHiernonself+4.665ns0.49percent13/14 remain disclosed small tradeoffs; no blanketzero-regression claim.",
+        "NET RootOnly long-name median allocation+0.375B is not established persistent growth: pairedmean+0.147B,99percent interval-0.158..0.453B; all samples retained and no specific cause inferred.",
+        "Mono43 improvement flags but10 core regressions slower14/14,at least211ms batches. Six n1024 empty/alias rows roughly32-52percent slower; denseClear4098->4942ns and AnyExactnonself3109->3335ns. Warm guards zeroGC/allocations.",
+        "Mono legacy normal repeats all three empty-overlap paths; padded default reused/new and SpecializedSort also regress. No extra diagnostic required.",
+        "Mono tinyCopy69.021->36.6175ns,1.882x, and largeCopy neutral. These benefits do not offset substantive regressions.",
+        "Registry/RootOnly code unchanged, Mono allocation equal and timing neutral. Mono Bulk not measured.",
+        "No successful optimization version counted. Fused/tiny-copy composition remains preserved for future principled repair."
+      ]
     }
   ],
   "verification_limits": [
@@ -282,6 +309,6 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Preparing fused ContainsExplicit plus only guarded tiny CopyFrom direct loops. All other runtime code remains original f7. No candidate accepted; original and previous accepted remain f7. The full unchanged matrix and all existing correctness/cold/retained checks decide acceptance.",
+  "current_candidate_note": "Independent direct-enumerator AddTags loop on exact f7, with original generic signature/getter/alias guard and no helper/overload/attribute. Concrete GetEnumerator returns same advanced-state value and Dispose is empty. Mono native body/stack/zeroing shrink; NET native code previously identical in conditional preparation, not a proven NET self repair. All rejected storage/registry changes restored. Original and previous accepted remain f7,count0; unchanged full matrix decides acceptance.",
   "unaccepted_candidates": []
 }

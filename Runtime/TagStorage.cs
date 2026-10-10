@@ -66,30 +66,8 @@ namespace GameplayTags
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool ContainsExplicit(int id)
         {
-            int[] buckets = m_Buckets;
-            Entry[] entries = Entries;
-            int mask = m_BucketMask;
-            if (mask == 0)
-            {
-                for (int i = 0; i < Count; i++)
-                {
-                    ref Entry entry = ref entries[i];
-                    if (entry.Id == id)
-                        return entry.ExplicitCount != 0;
-                }
-                return false;
-            }
-
-            int slot = Hash(id) & mask;
-            int encoded;
-            while ((encoded = buckets[slot]) != 0)
-            {
-                ref Entry entry = ref entries[encoded - 1];
-                if (entry.Id == id)
-                    return entry.ExplicitCount != 0;
-                slot = (slot + 1) & mask;
-            }
-            return false;
+            int index = Find(id);
+            return index >= 0 && Entries[index].ExplicitCount != 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -310,24 +288,8 @@ namespace GameplayTags
                 ResetIndex(BucketCapacityFor(count));
 
             EnsureOverwriteCapacity(count, other.ExplicitCount);
-            if (count <= LinearCapacity && other.ExplicitCount <= LinearCapacity)
-            {
-                // Tiny closures use the same bound as linear lookup. Avoid two
-                // bulk-copy calls while preserving both enumeration orders.
-                Entry[] sourceEntries = other.Entries;
-                Entry[] entries = Entries;
-                for (int i = 0; i < count; i++)
-                    entries[i] = sourceEntries[i];
-                int[] sourceExplicitIndices = other.ExplicitIndices;
-                int[] explicitIndices = ExplicitIndices;
-                for (int i = 0; i < other.ExplicitCount; i++)
-                    explicitIndices[i] = sourceExplicitIndices[i];
-            }
-            else
-            {
-                Array.Copy(other.Entries, Entries, count);
-                Array.Copy(other.ExplicitIndices, ExplicitIndices, other.ExplicitCount);
-            }
+            Array.Copy(other.Entries, Entries, count);
+            Array.Copy(other.ExplicitIndices, ExplicitIndices, other.ExplicitCount);
             Count = count;
             ExplicitCount = other.ExplicitCount;
             if (!copyBuckets)
