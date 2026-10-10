@@ -180,5 +180,26 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Independent declared-duplicate registration fastpath on exact acceptedf7, eagerChildren/Node/Build unchanged. Only already-declared duplicate names skip prefix construction; first implicit-parent declarations preserve original allocation sequence.216freshprocessprobes show sixunique fixtures allocation-equal and hierarchicalduplicate fixtures savings. Fixedroot131/fourRegistry/legacy/Bulk guards retained, plus additive short/longroot-only and longCopy guards. FullpairedCI pending, count0."
+  "current_candidate_note": "Declared-duplicate shortcut plus generic root-name fast path on exact accepted f7 container/storage code. Root creation reuses the existing complete-name lookup and uses the whole name as its label; hierarchical traversal reuses the first separator scan. Node, eager Children and Build remain unchanged. All 24 three-source correctness suites, 1248 overflow differentials per backend, and 216 independent cold allocation probes passed locally. Six-round local Intel root timings are mixed and do not establish a repair. The unchanged full paired CI matrix, including root-only and long Copy guards, must decide acceptance. Original and previous accepted revision remain f7; count zero.",
+  "unaccepted_candidates": [
+    {
+      "sha": "8ac21da234ee940f607f3f0a167675ce545c6116",
+      "ci_run": 38085229275,
+      "decision": "Not accepted. Preserve the consistent long-root unique startup slowdown while testing a generic root-name refinement. Mono full evidence was still running when this revision was prepared.",
+      "artifacts": [
+        {
+          "backend": ".NET 8 AMD EPYC 7763",
+          "id": 11681982646,
+          "sha256": "395532eba70202d0d333da6c63adfb91e9ac86c91aca21c716a6ebb71df31887"
+        }
+      ],
+      "findings": [
+        "Duplicate registry fixture improves 3.2165x and saves exactly 2752512 bytes in every one of 14 samples.",
+        "All 155 core rows have no review flags; all 24 retained object/array graphs are identical; Bulk and original legacy rows show no material regression. Long AMD Copy is tightly neutral.",
+        "Long-root unique registration is slower 14/14: 1996937 to 2052422 ns, paired 99% speedup interval 0.9628 to 0.9822. This is a consistent roughly 2.8% tradeoff whose interval crosses the 3% investigation threshold, not a neutral result or accepted version.",
+        "Small variable allocation deltas on unique roots/trunk have paired intervals crossing zero; no persistent growth established.",
+        "No successful optimization version counted."
+      ]
+    }
+  ]
 }

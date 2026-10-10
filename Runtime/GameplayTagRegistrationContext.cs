@@ -37,29 +37,47 @@ namespace GameplayTags
             Node parent = existing;
             if (existing == null || !existing.IsDeclared)
             {
-                parent = m_Root;
-                int start = 0;
-                while (true)
+                int dot = name.IndexOf('.');
+                if (dot < 0)
                 {
-                    int dot = name.IndexOf('.', start);
-                    int end = dot < 0 ? name.Length : dot;
-                    string prefix = dot < 0 ? name : name.Substring(0, end);
-                    // Reuse the complete-name lookup; unique registrations do
-                    // not need an additional dictionary probe at their leaf.
-                    Node node = existing;
-                    if (dot >= 0)
-                        m_ByName.TryGetValue(prefix, out node);
-                    if (node == null)
+                    // A root label is the complete name. No prefix traversal or
+                    // whole-string substring is needed, including implicit-root
+                    // promotion; the initial name lookup already found its node.
+                    if (existing == null)
                     {
-                        node = new Node(prefix, name.Substring(start, end - start), parent);
-                        m_ByName.Add(prefix, node);
-                        parent.Children.Add(node);
+                        parent = new Node(name, name, m_Root);
+                        m_ByName.Add(name, parent);
+                        m_Root.Children.Add(parent);
                     }
+                }
+                else
+                {
+                    parent = m_Root;
+                    int start = 0;
+                    while (true)
+                    {
+                        int end = dot < 0 ? name.Length : dot;
+                        string prefix = dot < 0 ? name : name.Substring(0, end);
+                        // Reuse the complete-name lookup; unique registrations do
+                        // not need an additional dictionary probe at their leaf.
+                        Node node = existing;
+                        if (dot >= 0)
+                            m_ByName.TryGetValue(prefix, out node);
+                        if (node == null)
+                        {
+                            node = new Node(prefix, name.Substring(start, end - start), parent);
+                            m_ByName.Add(prefix, node);
+                            parent.Children.Add(node);
+                        }
 
-                    parent = node;
-                    if (dot < 0)
-                        break;
-                    start = dot + 1;
+                        parent = node;
+                        if (dot < 0)
+                            break;
+                        start = dot + 1;
+                        // The first scan selected this path; subsequent scans
+                        // begin after the separator already consumed above.
+                        dot = name.IndexOf('.', start);
+                    }
                 }
             }
 
