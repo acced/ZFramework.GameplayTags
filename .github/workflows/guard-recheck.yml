@@ -1,0 +1,50 @@
+name: Intersection guard diagnostic
+on:
+  push:
+    branches: [perf/compact-runtime-rewrite]
+    paths:
+      - 'Tests~/GuardRecheck/**'
+      - '.github/workflows/guard-recheck.yml'
+permissions:
+  contents: read
+jobs:
+  targeted-dotnet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Freeze exact original and adaptive Union candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/guard-original .artifacts/guard-candidate
+          git archive f7c99546dbf029d70896c0f05e5119b19ffd6d26 Runtime | tar -x -C .artifacts/guard-original
+          git archive 4df49f4f1252388c66a87f5df359f08a109ef838 Runtime | tar -x -C .artifacts/guard-candidate
+      - name: Same-binary same-delegate A/A, then adjacent A/B
+        shell: bash
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+          DOTNET_TieredCompilation: '0'
+          DOTNET_gcServer: '0'
+          COMPlus_TieredCompilation: '0'
+          COMPlus_gcServer: '0'
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --before .artifacts/guard-original --after .artifacts/guard-candidate --before-revision f7c99546dbf029d70896c0f05e5119b19ffd6d26 --after-revision 4df49f4f1252388c66a87f5df359f08a109ef838 --rounds 14 --iterations-file Tests~/GuardRecheck/iterations.tsv)
+          python3 Tests~/GuardRecheck/run.py "${args[@]}" --mode aa --out .artifacts/guard-aa
+          python3 Tests~/GuardRecheck/run.py "${args[@]}" --mode ab --out .artifacts/guard-ab
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: intersection-guard-diagnostic-${{ github.sha }}
+          path: |
+            .artifacts/guard-aa/
+            .artifacts/guard-ab/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
