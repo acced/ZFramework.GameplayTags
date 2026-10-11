@@ -66,8 +66,29 @@ namespace GameplayTags
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool ContainsExplicit(int id)
         {
-            int index = Find(id);
-            return index >= 0 && Entries[index].ExplicitCount != 0;
+            int[] buckets = m_Buckets;
+            Entry[] entries = Entries;
+            int mask = m_BucketMask;
+            if (mask == 0)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    if (entries[i].Id == id)
+                        return entries[i].ExplicitCount != 0;
+                }
+                return false;
+            }
+
+            int slot = Hash(id) & mask;
+            int encoded;
+            while ((encoded = buckets[slot]) != 0)
+            {
+                int index = encoded - 1;
+                if (entries[index].Id == id)
+                    return entries[index].ExplicitCount != 0;
+                slot = (slot + 1) & mask;
+            }
+            return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

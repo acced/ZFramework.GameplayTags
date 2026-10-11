@@ -32,6 +32,23 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y mono-devel
           mono --version
+      - name: Record existing hardware-counter capability without changing permissions
+        shell: bash
+        run: |
+          mkdir -p .artifacts/evolution-counter-support
+          if [[ -r /proc/sys/kernel/perf_event_paranoid ]]; then
+            cat /proc/sys/kernel/perf_event_paranoid > .artifacts/evolution-counter-support/perf_event_paranoid.txt
+          fi
+          if command -v perf > .artifacts/evolution-counter-support/tool-path.txt; then
+            if perf stat -x, -e cycles,ref-cycles,instructions -- true > .artifacts/evolution-counter-support/stdout.txt 2> .artifacts/evolution-counter-support/stderr.txt; then
+              echo 'existing-tool-counter-probe-succeeded; true command only, not benchmark evidence' > .artifacts/evolution-counter-support/status.txt
+            else
+              code=$?
+              echo "existing-tool-counter-probe-failed exit=$code; inspect stderr, no permission/settings changes attempted" > .artifacts/evolution-counter-support/status.txt
+            fi
+          else
+            echo 'perf tool unavailable; counter capability not established, no installation attempted' > .artifacts/evolution-counter-support/status.txt
+          fi
       - name: Freeze original and previous accepted Runtime sources
         shell: bash
         run: |
@@ -189,6 +206,7 @@ jobs:
             .artifacts/evolution-evidence/raw/*.json
             .artifacts/evolution-layout/*.json
             .artifacts/evolution-empty-*/
+            .artifacts/evolution-counter-support/
             .artifacts/evolution-registry-*/*.json
             .artifacts/evolution-registry-*/raw/*
             .artifacts/evolution-root-only-*/*.json

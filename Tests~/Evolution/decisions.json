@@ -328,6 +328,34 @@
         "No accepted optimization version.",
         "Independent Mono review: all3core andlongRemoveAdd slower14/14, coreminimum311ms andlongminimum295/334ms;zeroGC/allocations forcore,zero measuredallocation forlong.42sourcehashes exact and24graphs equal."
       ]
+    },
+    {
+      "sha": "33f99839e1f455a23b6e885d07a1f02c0fdcde51",
+      "ci_run": 38103538390,
+      "decision": "Rejected as-is: independent .NET and standalone Mono full-matrix evidence contains reproduced hot-path regressions despite deterministic empty-registry cold-allocation savings.",
+      "artifacts": [
+        {
+          "backend": ".NET 8 AMD EPYC 7763",
+          "id": 11689355374,
+          "sha256": "88f11692c9cde2fab062ad7babc9d4496cc5a88ac72c85382dab41cf7372dcf2"
+        },
+        {
+          "backend": "standalone Mono 6.8 AMD EPYC 7763; includes separately labeled .NET cold probes",
+          "id": 11689272283,
+          "sha256": "8fc0f87aeca87b928225c74f8b8449c75e3ba2bdf4823d909c82044f5c26e7f9"
+        }
+      ],
+      "findings": [
+        "Full-overlap n4 Union median 116.88 -> 125.15 ns, slower 14/14 pairs in both orders, minimum 290/312 ms batches, identical GC 86/0/0. Paired 99% speedup interval 0.9124-0.9484.",
+        "Partial n4 fresh intersection is slower 14/14, about 8 ns. Partial n16 aliases are also slower 14/14, about 13 ns, zero GC. Threshold-straddling intervals are disclosed, not called neutral.",
+        "All 42 Runtime source hashes match f7 and this exact candidate; 24 owned retained graphs are identical. Legacy normal/padded, Bulk 43 and long Copy add no material regression flags.",
+        "Six fresh-process samples each retain empty first/repeat savings of 144/96 bytes on .NET, with sampled nonempty allocations equal. Cold allocation benefits do not offset hot-path regressions.",
+        "Moving construction to a non-inlined helper reduces Build IL relative to the rejected inline candidate, but total native code grows. No causal conclusion about code layout follows from the measured timing shifts.",
+        "No accepted optimization version.",
+        "Mono workspace reused n4 empty 177.07 -> 185.71 ns, n4 full 202.82 -> 212.49 ns, n16 empty 384.72 -> 401.17 ns. All three have zero measured allocations and statistically adverse paired intervals. Long RemoveAdd also regresses 191.61 -> 207.05 ns, paired 99% speedup 0.9116-0.9631.",
+        "Mono registry and root-only unique allocation medians are unchanged. Fresh empty first/repeat savings remain 216/120 bytes in every one of six samples; sampled nonempty allocations equal. All 24 owned retained graphs are identical; six full-GC retained flags are preserved without claiming owned-storage growth.",
+        "Independent Mono audit verifies all 42 exact Runtime source hashes on AMD EPYC 7763. All three workspace rows are slower 14/14, minimum 398 ms batches, zero GC/allocations; ordinary legacy normal/padded adds no material flag."
+      ]
     }
   ],
   "verification_limits": [
@@ -335,7 +363,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Independent outlined fresh-empty Build shortcut on exactf7, same fresh sentinel/arrays/dictionary outputs and unchanged original nonempty statements. Empty-only construction moves into private nongeneric NoInlining helper; BuildIL727original->757 versus822inline,helper81. NativeBuildNET1712->1764,Mono2984->3080 plushelper358/792,so totalcodegrows.20correctness suites,408freshcold probes/accessor/edge/graphs andmainall/Unitycompile pass; sameemptyallocsavings/nonemptyequality. Full unchanged matrices andcold supplement still decide acceptance; original/previousacceptedf7,count0.",
+  "current_candidate_note": "Next prepared candidate: indexed ContainsExplicit on exact f7 only. Linear/hash slot order and first-match explicit-count behavior are preserved, without byrefs, new fields or allocations. Local focused semantics, supported mutation, overflow, serialization, cold/owned-layout checks and main all/Unity compile contracts pass. Independent static review passes. Performance remains unverified; the prior Mono evidence is complete and the candidate is prepared for publication. Original and previous accepted Runtime remain f7, accepted count 0.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",

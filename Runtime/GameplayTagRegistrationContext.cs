@@ -62,13 +62,6 @@ namespace GameplayTags
             out int[] parents, out int[] subtreeEnds, out int[] hierarchyIndices,
             out GameplayTag[] hierarchyTags, out Dictionary<string, int> indicesByName)
         {
-            if (m_ByName.Count == 0)
-            {
-                BuildEmpty(out definitions, out tags, out parents, out subtreeEnds,
-                    out hierarchyIndices, out hierarchyTags, out indicesByName);
-                return;
-            }
-
             var order = new List<Node>(m_ByName.Count + 1) { m_Root };
             var pending = new Stack<Node>();
             PushChildren(m_Root, pending);
@@ -148,22 +141,6 @@ namespace GameplayTags
             node.Children.Sort(NodeLabelComparer.Instance);
             for (int i = node.Children.Count - 1; i >= 0; --i)
                 pending.Push(node.Children[i]);
-        }
-
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-        private static void BuildEmpty(out GameplayTagDefinition[] definitions, out GameplayTag[] tags,
-            out int[] parents, out int[] subtreeEnds, out int[] hierarchyIndices,
-            out GameplayTag[] hierarchyTags, out Dictionary<string, int> indicesByName)
-        {
-            // Keep the empty-only construction out of the nonempty traversal body.
-            // Preserve fresh arrays and the original sentinel/dictionary layout.
-            definitions = new[] { GameplayTagDefinition.None };
-            tags = new GameplayTag[1];
-            parents = new int[1];
-            subtreeEnds = new[] { 1 };
-            hierarchyIndices = new int[0];
-            hierarchyTags = new GameplayTag[0];
-            indicesByName = new Dictionary<string, int>(0, StringComparer.Ordinal);
         }
 
         private sealed class NodeLabelComparer : IComparer<Node>
