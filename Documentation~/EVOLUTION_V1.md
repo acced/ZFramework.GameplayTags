@@ -1,12 +1,20 @@
 # Version 1 evidence: reusable Union output
 
-Accepted as version 1 on 2026-10-11 after independent gate review. Runtime commit `f53c5fb94c22c2750f54c33dcfdee443a72bf595`, compared with original and then-previous accepted `f7c99546dbf029d70896c0f05e5119b19ffd6d26`.
+Historically accepted as version 1 on 2026-10-11 under the original fixed matrix; broader qualification was reopened later the same day. **Currently 0 versions are fully qualified toward the requested total.** The historical acceptance audit and positive results remain preserved. Runtime commit `f53c5fb94c22c2750f54c33dcfdee443a72bf595`, compared with original and then-previous accepted `f7c99546dbf029d70896c0f05e5119b19ffd6d26`.
+
+## Qualification reopened: new supported alias regressions
+
+The [stronger existing-API comparison](https://github.com/acced/ZFramework.GameplayTags/actions/runs/38141813971) adds supported interface/delegate fixtures. Its .NET artifact `11703896488` (SHA256 `9516e1bdd298c2a5b3428afa7530868fc71f719f67e90fbb6b3c6fce8a23786b`) reports alias-left factory+Copy 2457.7 -> output 2752.0 ns, approximate 99% speedup 0.8803–0.9241; alias-right 2445.6 -> 2616.7 ns, 0.9225–0.9696. Same-revision factory controls are also adverse. Batches are about 67–81 ms. These new regressions reopen version 1; the earlier acceptance is not an unconditional current pass.
+
+Fresh-process allocation also exposes a tradeoff: for independent1024 inputs with0/50/100% overlap, all three samples allocate exactly5344B more with output Union than old left/seed chains (165232 vs159888;66880 vs61536;58664 vs53320B). Both are0B warm. Alias output first-call10672B versus seed-aware1048B, then7864B versus0B warm. These counts exclude documented delegate preparation; no object/cause is inferred.
+
+Healthy seed-aware old alias chains use 0 warm bytes but take about 3.49/3.60 us, versus 7864 bytes for the new output path. Independent 1024/50% old left/seed chains take about 28.8–28.9 us versus 11.9 us for the new API, all with 0 warm bytes, but the new row's 30–31 ms batches remain explicitly short. These are scoped tradeoffs and preliminary duration-limited results, not a universal best-strategy win. Mono and remaining independent review are pending. Repair is required before this version is counted as fully qualified again; any longer replication includes adverse and favorable rows.
 
 ## Comparator and statistical scope correction (2026-10-11)
 
 The reported speedups and 61.6 KB-to-zero warm allocation reductions are **only versus factory Union followed by Copy**. For healthy ordinary sets and independent output, the preexisting `Copy(output, left); output.AddTags(right)` chain is semantically usable and already capable of zero warm allocation. This report does **not** establish that the new overload beats that stronger existing-API alternative. A separately frozen time/allocation comparison is pending; all original measurements remain intact.
 
-Acceptance used a predeclared rule for detecting reproduced material regressions, **not a proof of global statistical noninferiority**. In the original version-1 root evidence, 45/131 .NET and 25/131 Mono approximate 99% speedup intervals still permit more than 3% slowdown. No flag is not proof that every workload stays within 3%. The matching-host right-alias interval below bounds that particular row only. Version 1 remains recorded under its original scoped gate; the comparator gap and wider row uncertainty are explicit.
+Acceptance used a predeclared rule for detecting reproduced material regressions, **not a proof of global statistical noninferiority**. In the original version-1 root evidence, 45/131 .NET and 25/131 Mono approximate 99% speedup intervals still permit more than 3% slowdown. No flag is not proof that every workload stays within 3%. The matching-host right-alias interval below bounds that particular row only. The original scoped acceptance remains in the audit trail, while current broader qualification is reopened; the comparator gap and wider row uncertainty are explicit.
 
 The new overload replaces an existing output:
 

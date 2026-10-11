@@ -92,7 +92,7 @@ GameplayTagContainer.Intersection(left, left, right);
 GameplayTagContainer.Copy(destination, source);
 ```
 
-可复用输出 Union 与 `Copy(destination, Union(left, right))` 的结果语义一致。独立输出可复用已有容量；别名保留原有归一化和稀疏索引行为。首次使用、扩容和部分别名路径仍可能分配，暖态零分配不代表首次零分配。已有普通集合、独立输出也可用 `Copy(destination, left); destination.AddTags(right)` 达到暖态零分配；当前性能表只比较 factory Union 后 Copy，尚未证明胜过该旧 API 组合。统计门槛用于识别已复现的实质回退，不证明所有场景都在 3% 以内。第一个按该限定门槛接受的优化版本及环境/不确定性见 [版本 1 证据](Documentation~/EVOLUTION_V1.md)。
+可复用输出 Union 与 `Copy(destination, Union(left, right))` 的结果语义一致。独立输出可复用已有容量；别名保留原有归一化和稀疏索引行为。首次使用、扩容和部分别名路径仍可能分配，暖态零分配不代表首次零分配。已有普通集合、独立输出也可用 `Copy(destination, left); destination.AddTags(right)` 达到暖态零分配；当前性能表只比较 factory Union 后 Copy，尚未证明胜过该旧 API 组合。统计门槛用于识别已复现的实质回退，不证明所有场景都在 3% 以内。版本1曾按原矩阵接受，但新增受支持别名对照发现约7–12%耗时回退，现已重开验证，当前全面确认数为0。历史证据和限制见 [版本 1 证据](Documentation~/EVOLUTION_V1.md)。
 
 ## 计数与事件
 

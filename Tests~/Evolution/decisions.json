@@ -53,7 +53,8 @@
         "Self speedups are large but fast candidate batches remain short-duration caveats (NETminimum66.5ms andMono shortflag); acceptance benefit rests on long n1024half rows. LongRemoveAdd retains short-review without adverse interval.",
         "Managed owned-layout evidence excludes globalpool residency, nativeJIT/OS/process memory. Alias expansion selected native footprint grows225B localCoreCLR/626B localMono. Negative fullGC retained estimates are diagnostic only.",
         "Unity6000.3.14f1 Editor/Player,IL2CPP andAlex unexecuted. Supported nonconcurrent valid-tag contract unchanged."
-      ]
+      ],
+      "current_qualification": "Reopened/provisional on2026-10-11 after expanded supported-domain alias regressions; historical acceptance decision above retained verbatim."
     }
   ],
   "rejected_candidates": [
@@ -592,7 +593,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Version2 attempt: source-order-only refinement of rejected909 closed-state adaptiveUnion, on acceptedf53. Move the same five new cold helper methods after all preexisting TagStorage methods; method bodies/signatures/attributes/calls unchanged. All31declared preexistingTagStorage metadata tokens nowmatchf53, restoring12shiftedby909; synthesized constructor token andsomeRVAs remain different. All376assemblymethods preserve normalizedIL/locals/maxstack/EH/attributes versus909 onbothframeworks. This is a verified metadata change, not proof that tokens caused prior regressions. ExactTagStorage93036c4a206ca4e43d04ef8fa9d8f3ae9ebf0d439c04495382c976ba8606701a;relocationpatch205fc6ba7e2cc430d6b898bc6498fb4d5eab0799745ea0fac69db0844c11c8cf;f53patch4cef20bee0e5bb017e558aaacacd971b8a1cc23b54f60460a4d4f76af8d29ad4. Sealedcompletion40d3db1545aa15833490fb169d721b1d9a1b13b5cc01810be575f9dd623f9eae,2736artifacthashes independentlyverified. BothMain7595855/API/Evolution/overflow/Unitycompile and324unchangedUnioncoldprocessespass;168544gettercases,15456fullstateobservations,121exactstreamcomparisons. BroadCI RemoveTagscoldfailure notcleared locally. AllsamefullCIgatesremain; originalf7 andacceptedf53 unchanged;1acceptedversion. Separatestrongerold-APIcomparator isrunning at38141813971 againstpinnedf7/f53, unaffectedbythisRuntimecandidate.",
+  "current_candidate_note": "Version2 attempt: source-order-only refinement of rejected909 closed-state adaptiveUnion, on acceptedf53. Move the same five new cold helper methods after all preexisting TagStorage methods; method bodies/signatures/attributes/calls unchanged. All31declared preexistingTagStorage metadata tokens nowmatchf53, restoring12shiftedby909; synthesized constructor token andsomeRVAs remain different. All376assemblymethods preserve normalizedIL/locals/maxstack/EH/attributes versus909 onbothframeworks. This is a verified metadata change, not proof that tokens caused prior regressions. ExactTagStorage93036c4a206ca4e43d04ef8fa9d8f3ae9ebf0d439c04495382c976ba8606701a;relocationpatch205fc6ba7e2cc430d6b898bc6498fb4d5eab0799745ea0fac69db0844c11c8cf;f53patch4cef20bee0e5bb017e558aaacacd971b8a1cc23b54f60460a4d4f76af8d29ad4. Sealedcompletion40d3db1545aa15833490fb169d721b1d9a1b13b5cc01810be575f9dd623f9eae,2736artifacthashes independentlyverified. BothMain7595855/API/Evolution/overflow/Unitycompile and324unchangedUnioncoldprocessespass;168544gettercases,15456fullstateobservations,121exactstreamcomparisons. BroadCI RemoveTagscoldfailure notcleared locally. AllsamefullCIgatesremain; originalf7 andacceptedf53 unchanged;0currentlyqualifiedversions; f53 is a historical accepted control with reopened qualification. Separatestrongerold-APIcomparator isrunning at38141813971 againstpinnedf7/f53, unaffectedbythisRuntimecandidate.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",
@@ -745,5 +746,27 @@
       "rows_per_backend": 131
     },
     "limits": "No original samples or threshold changed. A matching-row interval bounds only that row; no all-row within3percent claim."
+  },
+  "currently_qualified_optimization_versions": 0,
+  "historical_accepted_record_count": 1,
+  "qualification_reopened": {
+    "utc": "2026-10-11T13:35:00Z",
+    "runtime": "f53c5fb94c22c2750f54c33dcfdee443a72bf595",
+    "status": "Provisional; does not currently count toward the requested comprehensively qualified versions. Historical acceptance record and all positive evidence preserved.",
+    "reason": "New supported interface/delegate alias fixtures reveal material time regressions versus original AND same-revision factory+Copy. Earlier fixed-matrix acceptance does not waive expanded adverse evidence.",
+    "supplement_commit": "6425b07c840139830c596e1c63cffac4cc69d09d",
+    "ci_run": 38141813971,
+    "net_artifact": {
+      "id": 11703896488,
+      "sha256": "9516e1bdd298c2a5b3428afa7530868fc71f719f67e90fbb6b3c6fce8a23786b"
+    },
+    "initial_audited_findings": [
+      "Alias-left f7factory2457.7->f53output2752.0ns,99%speedup0.8803-0.9241; same-revision factory2527->2752ns,0.8928-0.9317.",
+      "Alias-right f7factory2445.6->f53output2616.7ns,0.9225-0.9696; same-revision factory2523->2617ns,0.9437-0.9791. Batches about67-81ms, not below50ms. Further raw review/Mono pending.",
+      "Healthy seed-aware alias chains are slower around3.49/3.60us but0B versus output7864B. This is a time/allocation tradeoff, not blanket best-existing-strategy superiority.",
+      "Independent1024/50% f7left28832.9ns andf7seed28930.3ns versus output11887.4ns, all0Bwarm; candidate30-31ms batches remain explicitly short/inconclusive. Any bounded longer replication includes adverse alias and favorable independent rows, with all previous samples preserved.",
+      "All three fresh-process samples at independent1024 overlap0/50/100 allocate5344B more onf53output thanf7literal-left/seed:165232vs159888,66880vs61536,58664vs53320B; allbecome0Bwarm. Aliasoutputfirst10672B vsseed-aware1048B, warm7864vs0B. No allocating object/cause inferred."
+    ],
+    "next": "Complete Mono and independent scope/provenance review; repair supported regressions before requalification. No universal noninferiority or all-rowwithin3percent claim."
   }
 }
