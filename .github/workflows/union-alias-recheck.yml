@@ -1,0 +1,77 @@
+name: Mono reusable Union alias diagnostic
+on:
+  push:
+    branches: [perf/compact-runtime-rewrite]
+    paths:
+      - 'Tests~/UnionAliasRecheck/**'
+      - '.github/workflows/union-alias-recheck.yml'
+permissions:
+  contents: read
+jobs:
+  targeted-mono:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        amd_probe: [1, 2]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record CPU and require original AMD model for this recheck
+        id: cpu
+        shell: bash
+        run: |
+          mkdir -p .artifacts/union-alias-host
+          lscpu > .artifacts/union-alias-host/lscpu.txt
+          if grep -q "AMD EPYC 9V74" /proc/cpuinfo; then
+            echo "matched=true" >> "$GITHUB_OUTPUT"
+            echo "Matched original AMD EPYC 9V74 model; paired timing will run." > .artifacts/union-alias-host/status.txt
+          else
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+            echo "CPU model did not match; no timing evidence or acceptance conclusion from this job." > .artifacts/union-alias-host/status.txt
+          fi
+      - uses: actions/setup-dotnet@v4
+        if: steps.cpu.outputs.matched == 'true'
+        with:
+          dotnet-version: 8.0.x
+      - name: Install standalone Mono
+        if: steps.cpu.outputs.matched == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-devel
+          mono --version
+      - name: Freeze exact original and captured-alias candidate
+        if: steps.cpu.outputs.matched == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/union-alias-original .artifacts/union-alias-candidate
+          git archive f7c99546dbf029d70896c0f05e5119b19ffd6d26 Runtime | tar -x -C .artifacts/union-alias-original
+          git archive f53c5fb94c22c2750f54c33dcfdee443a72bf595 Runtime | tar -x -C .artifacts/union-alias-candidate
+      - name: Frozen complete Union operations, same-binary A/A then A/B
+        if: steps.cpu.outputs.matched == 'true'
+        shell: bash
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+          DOTNET_TieredCompilation: '0'
+          DOTNET_gcServer: '0'
+          COMPlus_TieredCompilation: '0'
+          COMPlus_gcServer: '0'
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --mono "$(command -v mono)" --before .artifacts/union-alias-original --after .artifacts/union-alias-candidate --before-revision f7c99546dbf029d70896c0f05e5119b19ffd6d26 --after-revision f53c5fb94c22c2750f54c33dcfdee443a72bf595 --rounds 14 --iterations-file Tests~/UnionAliasRecheck/iterations.tsv)
+          python3 Tests~/UnionAliasRecheck/run.py "${args[@]}" --mode aa --out .artifacts/union-alias-aa
+          python3 Tests~/UnionAliasRecheck/run.py "${args[@]}" --mode ab --out .artifacts/union-alias-ab
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: union-alias-amd-probe-${{ matrix.amd_probe }}-${{ github.sha }}
+          path: |
+            .artifacts/union-alias-host/
+            .artifacts/union-alias-aa/
+            .artifacts/union-alias-ab/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
