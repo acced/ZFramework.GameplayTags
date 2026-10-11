@@ -152,8 +152,9 @@ namespace GameplayTags
                 Clear();
                 return;
             }
-            foreach (GameplayTag tag in other.GetExplicitTags())
-                RemoveTag(tag);
+            GameplayTagEnumerator tags = other.GetExplicitTags();
+            while (tags.MoveNext())
+                RemoveTag(tags.Current);
         }
 
         public void Clear()

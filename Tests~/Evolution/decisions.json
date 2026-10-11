@@ -564,7 +564,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Version1 accepted at exact f53 after independent full and matching-host review. Runtime unchanged in this evidence-only commit. Next versions must compare with both accepted f53 and original f7; original materiality and all correctness/allocation/cold/owned-layout gates remain.",
+  "current_candidate_note": "Version2 candidate: direct concrete-enumerator RemoveTags loop on accepted f53; all Union code unchanged. Original foreach returns the same advanced enumerator by value and has empty Dispose. f7/f53/candidate pass both-runtime polymorphism/getters/advanced enumerator, 8163successful mutation and3456legacy overflow states,45serialization recovery checks,Main7,595,855 assertions each andfixedEvolution. Warm allocations/owned layouts match. One newNET1024counted cold restore pair was59512B versus53320B; exactly9preregistered fresh controls gave f7[53320,53320,53320],acceptedf53[53320,53320,59512],candidate[53320,53320,53320]. Variation is not candidate-exclusive; cause unresolved and original sample retained. ColdGC fields are defaults, not measured counts. Existing frozen20-row RemoveTags supplement now joins fullCI: true-cold eachrow/source before500ms first-original-only calibration and14ABC/CBA pairs, comparing originalf7 andacceptedf53. Cold increases still stop that supplement beforetiming. Incremental patch60313c338dd8bb62f7a1dbbdd105306befdc6af9d3a8f6ece0c0273561ff23c2;Container429d004b8e7fd57a0045de31bcdbcc07e4b4b638dd5ecc8f392d2c7c6f197b45.1accepted version; candidate not counted.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",
@@ -637,6 +637,35 @@
         "preregistration_sha256": "11d5d807d506b0a979451cdb92288497c6f71abbb9db9bd655b6632e439bb431",
         "result": "All24f7 and24aa samples2174008B, all checks match; no recurrence. Inconclusive because local Intel/Linux6.18/glibc2.41 differs from CI AMD/Linux6.17/glibc2.39. Original+6192B samples preserved; no mechanism or blanket waiver."
       }
+    }
+  ],
+  "candidate_preparation_cold_observations": [
+    {
+      "candidate_patch_sha256": "60313c338dd8bb62f7a1dbbdd105306befdc6af9d3a8f6ece0c0273561ff23c2",
+      "base_sha": "f53c5fb94c22c2750f54c33dcfdee443a72bf595",
+      "row": "removetags/n1024/counted-equal-restore-pair",
+      "original_f7_bytes": 53320,
+      "accepted_f53_bytes": 53320,
+      "candidate_bytes": 59512,
+      "diagnostic_processes": 9,
+      "diagnostic_preregistration_sha256": "f17b6b7cbac9fb91d5066c8bf3ac71edf3306f5e03755022b1ee7ec370e9da7d",
+      "diagnostic_f7_bytes": [
+        53320,
+        53320,
+        53320
+      ],
+      "diagnostic_f53_bytes": [
+        53320,
+        53320,
+        59512
+      ],
+      "diagnostic_candidate_bytes": [
+        53320,
+        53320,
+        53320
+      ],
+      "mechanism_established": false,
+      "interpretation": "Baseline recurrence demonstrates variation outside candidate edits. No universal equality or absence-of-GC claim; all initial and diagnostic observations preserved."
     }
   ]
 }

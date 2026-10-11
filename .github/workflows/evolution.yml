@@ -11,13 +11,14 @@ on:
       - 'Tests~/UnionOutput/**'
       - 'Tests~/UnionOutputCold/**'
       - 'Tests~/UnionSelfState/**'
+      - 'Tests~/RemoveTags/**'
       - '.github/workflows/evolution.yml'
 permissions:
   contents: read
 jobs:
   paired-evidence:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -246,6 +247,17 @@ jobs:
           if grep -Fq "$signature" Runtime/GameplayTagContainer.cs; then args+=(--api-variant candidate); fi
           if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
           python3 Tests~/UnionOutput/run.py "${args[@]}"
+      - name: Measure RemoveTags against original and accepted predecessor
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --variant "original=$PWD/.artifacts/evolution-original" --revision "original=$ORIGINAL_SHA")
+          if [[ "$PREVIOUS_SHA" != "$ORIGINAL_SHA" ]]; then
+            args+=(--variant "previous=$PWD/.artifacts/evolution-previous" --revision "previous=$PREVIOUS_SHA")
+          fi
+          args+=(--variant "candidate=$PWD" --revision "candidate=$GITHUB_SHA" --samples 14 --batch-ms 500 --out .artifacts/evolution-removetags)
+          if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
+          python3 Tests~/RemoveTags/run.py "${args[@]}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -261,6 +273,7 @@ jobs:
             .artifacts/evolution-union-output/
             .artifacts/evolution-union-cold/
             .artifacts/evolution-union-self/
+            .artifacts/evolution-removetags/
             .artifacts/evolution-registry-*/*.json
             .artifacts/evolution-registry-*/raw/*
             .artifacts/evolution-root-only-*/*.json
