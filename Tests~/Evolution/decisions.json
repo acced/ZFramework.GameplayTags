@@ -356,6 +356,33 @@
         "Mono registry and root-only unique allocation medians are unchanged. Fresh empty first/repeat savings remain 216/120 bytes in every one of six samples; sampled nonempty allocations equal. All 24 owned retained graphs are identical; six full-GC retained flags are preserved without claiming owned-storage growth.",
         "Independent Mono audit verifies all 42 exact Runtime source hashes on AMD EPYC 7763. All three workspace rows are slower 14/14, minimum 398 ms batches, zero GC/allocations; ordinary legacy normal/padded adds no material flag."
       ]
+    },
+    {
+      "sha": "3e26bfdb272408b1a231a724491777e885bf41f6",
+      "ci_run": 38105975613,
+      "decision": "Not accepted as-is: real indexed-lookup gains coexist with repeated adverse workspace and AddTags-self results. Preserve all residuals and evaluate a separately validated combined repair rather than relaxing the gate.",
+      "artifacts": [
+        {
+          "backend": ".NET 8 AMD EPYC 7763",
+          "id": 11689963295,
+          "sha256": "dd719bbfcd906c3642b1138787cdcea8e92117240180ab72fac0489c2d95e17c"
+        },
+        {
+          "backend": "standalone Mono 6.8 AMD EPYC 7763; includes separately labeled .NET cold probes",
+          "id": 11690570946,
+          "sha256": "3a7609d8fbd70ea7545d97747b7fc26d6eeded1920d34b5b148a9aa1e1c1605a"
+        }
+      ],
+      "findings": [
+        "Both backends pass correctness. Independent audits verify 42 exact Runtime hashes per backend, 24 identical owned retained structures, and every sampled public/internal cold allocation delta equal to zero.",
+        "Long exact Query improves 4.273 -> 3.313 ns on .NET (paired speedup 1.291), 10.7005 -> 8.4555 ns on Mono (1.257). Root flags identify 32 and 44 timing improvements respectively.",
+        "NET n4 half-overlap workspace reuse 82.305 -> 84.553 ns is slower 14/14, >=192 ms, zero GC, paired 99% speedup 0.9677-0.9810. Corresponding cold growth 1181.957 -> 1260.437 ns is slower 13/14, >=198 ms, identical GC 358/35/0, interval 0.9015-0.9738. An automatic 3% flag threshold does not establish neutrality.",
+        "Mono n16/n1024 AddTags self 8.726 -> 9.034 and 8.718 -> 9.034 ns is slower 14/14, >=293 ms, zero GC/allocation. The approximately 0.31 ns absolute cost is disclosed rather than inflated or ignored.",
+        "Additional adverse intervals remain: NET n16 hierarchical Any nonself +0.80 ns and depth1024 descending Union about +1.2%; Mono n16 hierarchical All self +1.84 ns and dense Clear restore about +0.97%. These must be reviewed in the combined candidate.",
+        "Legacy normal/padded, Registry/RootOnly, long Copy and NET Bulk add no formal material regression or sustained allocation growth. Mono Bulk was not run.",
+        "Read-only hardware-counter probes on both hosts found /usr/bin/perf but failed exit 255 with perf_event_paranoid=4 and an access-denied message. Complete raw output is uploaded. No installation, permission or settings changes were attempted; cycles/instructions and the causal layout hypothesis remain unmeasured.",
+        "No accepted optimization version."
+      ]
     }
   ],
   "verification_limits": [
@@ -363,7 +390,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Next prepared candidate: indexed ContainsExplicit on exact f7 only. Linear/hash slot order and first-match explicit-count behavior are preserved, without byrefs, new fields or allocations. Local focused semantics, supported mutation, overflow, serialization, cold/owned-layout checks and main all/Unity compile contracts pass. Independent static review passes. Performance remains unverified; the prior Mono evidence is complete and the candidate is prepared for publication. Original and previous accepted Runtime remain f7, accepted count 0.",
+  "current_candidate_note": "Exact combined candidate on f7 contains only indexed ContainsExplicit, fixed-array workspace finalization refs and direct AddTags enumeration. Original/intermediate/combined both-runtime semantic, overflow, default-Mono derived dispatch, cold/layout and Evolution checks pass; main all and Unity compile contracts pass. Workspace qualification includes 144 fresh processes with 48 exact three-way allocation/capacity matches. No adaptive Union, tiny Copy, registry shortcut, RemoveTags, new overload, identity shortcut or inlining attributes. Independent cumulative static review passes. Cumulative patch SHA256 b9cd170a5f447f42242e0c588e8e0683370b0d5773783e15cee6ec9a0274594c. The unchanged full matrix must resolve every prior residual; if successful this composition counts only one version. Current accepted count0, original and previous accepted f7.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",
