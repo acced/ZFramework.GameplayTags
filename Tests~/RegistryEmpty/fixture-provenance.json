@@ -1,0 +1,17 @@
+{
+  "PublicColdGraphProgram.cs": {
+    "SHA256": "8565509362fa9ce9ca72b02d7fb09d8c164bece4d23b86e4e5a29b24cf0e2373",
+    "FrozenOrigin": "registry-empty-fresh-f7-only/Harness/PublicColdGraphProgram.cs",
+    "Modification": "none; complete driver byte-identical"
+  },
+  "SmallColdProgram.cs": {
+    "SHA256": "1906bde83bb326d66d3b946381daafd24467184c0448ddb4bcefe0bf5812f0b0",
+    "FrozenOrigin": "registry-empty-fresh-f7-only/Harness/SmallColdProgram.cs",
+    "Modification": "none; complete driver byte-identical"
+  },
+  "ColdAllocationProgram.cs": {
+    "SHA256": "4d18a3b30e69d66914550b64b61fc204a4cf24b69fdcedf61621bd823550ebb1",
+    "FrozenOrigin": "registry-empty-fresh-f7-only/Harness/ColdAllocationProgram.cs",
+    "Modification": "none; complete driver byte-identical"
+  }
+}

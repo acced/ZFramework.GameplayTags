@@ -309,6 +309,47 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Independent direct-enumerator AddTags loop on exact f7, with original generic signature/getter/alias guard and no helper/overload/attribute. Concrete GetEnumerator returns same advanced-state value and Dispose is empty. Mono native body/stack/zeroing shrink; NET native code previously identical in conditional preparation, not a proven NET self repair. All rejected storage/registry changes restored. Original and previous accepted remain f7,count0; unchanged full matrix decides acceptance.",
-  "unaccepted_candidates": []
+  "current_candidate_note": "Independent fresh-empty registry Build shortcut on exact f7. Empty traversal List/Stack work is skipped while original fresh zero-length arrays and sentinel/dictionary layout are preserved. Public/internal first-empty allocations save144B.NET/216BMono; repeated internalempty96/120B. Local nonempty allocations and retainedgraphs exactlyequal; no timing acceptance yet. All unaccepted runtime experiments removed; original/previousaccepted f7,count0. Full fixed timing matrix plus frozen fresh-process empty/nonempty allocation supplement decide acceptance.",
+  "unaccepted_candidates": [
+    {
+      "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",
+      "ci_run": 38096612969,
+      "decision": "Inconclusive and unaccepted, not a proven failed optimization. Mono self-call gains repeat, but an original alias-right slowdown is not conclusively resolved by bounded same-model AA/AB replication. Preserve evidence and move to independent fresh-empty registry candidate rather than repeatedly resampling.",
+      "artifacts": [
+        {
+          "backend": ".NET8 AMD7763",
+          "id": 11686451338,
+          "sha256": "ddfc854112dbddd76f75ec85c884c62965aa6c676f9dd21e30e02fc97094a463"
+        },
+        {
+          "backend": "standalone Mono6.8 AMD7763",
+          "id": 11686083464,
+          "sha256": "1997e364534e2b942b5b65599a8e866d1472116359261801b94a9d89f5e155bf"
+        }
+      ],
+      "diagnostics": [
+        {
+          "commit": "05c8233b215fd2529a697c26ed7b0cb678aa2669",
+          "run": 38099358858,
+          "artifact": 11687272770,
+          "sha256": "1e5fa00a4b8b4501cf7c5573ac30b8ccc0f9b7c86ba5eab6d8fa1fd917328bde",
+          "result": "AMD7763 slot1: original Mono merged Program/Runtime context, six baseline-calibrated500ms rows, all155 raw rows retained. Alias-right full128 AB2578.54->2588.86ns,slower8/14,speedup0.99746,99percent0.97319-1.02233; same-binaryAA slower7/14,speedup0.99934,99percent0.97493-1.02437. Comparable process variability observed, but original2.1percent effect remains inside AB interval. No proven attribution or nonregression. AddTags gain repeats14/14."
+        },
+        {
+          "run": 38099358858,
+          "artifact": 11687094156,
+          "sha256": "ee16fd7a2bcbbba8f29739f2e802071ac0b3b0e305ed94e03c6e4be28eb6d935",
+          "result": "Slot2 CPU no-match; metadata only, not a timing pass."
+        }
+      ],
+      "findings": [
+        "All tested correctness, cold/warm allocations and24owned structural graphs pass;42 exact Runtime hashes verified per backend. Native Mono AddTags reference400->280bytes andvalue396->284; NETinstructions unchanged.",
+        "NET130 timing rows inconclusive,24retained noflag,one fractional allocation flag unsupported by paired evidence. Deep descending1510calls per sample yield wholebatch deltas0,0,+4320,+240,+88,0,0,0,-4080,0,-88,0,-4232,-4080bytes;mean-0.370B/op,99percent-1.568..0.827. No cause or savings inferred.",
+        "Mono AddTags self8.72->8.41ns,about3.6-3.7percent,14/14,zeroGC,at least282ms batches. Ordinary restore paths neutral.",
+        "Original full-matrix n128 full alias-right2569.4->2657.3ns,slower11/14,paired speedup0.97874,99percent0.96165-0.99612,at least354ms,zeroGC. Both order groups trend slower.",
+        "Same-model bounded recheck uses same fixture bodies but reduced nonselected work; do not silently pool protocols or discard outliers. Interval includes the original adverse effect, so no accepted version.",
+        "Legacy normal/padded, longCopy, Registry/RootOnly and NETBulk add no material blocker; MonoBulk not measured. Two Mono fullGC retained flags do not establish owned-layout growth."
+      ]
+    }
+  ]
 }

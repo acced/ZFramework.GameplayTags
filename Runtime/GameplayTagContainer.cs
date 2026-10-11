@@ -141,9 +141,8 @@ namespace GameplayTags
             TagStorage source = other.Indices.Storage;
             if (ReferenceEquals(source, m_Indices.Storage))
                 return;
-            GameplayTagEnumerator tags = other.GetExplicitTags();
-            while (tags.MoveNext())
-                AddTag(tags.Current);
+            foreach (GameplayTag tag in other.GetExplicitTags())
+                AddTag(tag);
         }
 
         public void RemoveTags<T>(in T other) where T : IGameplayTagContainer

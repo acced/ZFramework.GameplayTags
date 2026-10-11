@@ -7,6 +7,7 @@ on:
       - 'Tests~/Evolution/**'
       - 'Tests~/RegistryRootOnly/**'
       - 'Tests~/LegacyCopyRecheck/**'
+      - 'Tests~/RegistryEmpty/**'
       - '.github/workflows/evolution.yml'
 permissions:
   contents: read
@@ -118,6 +119,22 @@ jobs:
             fi
             python3 Tests~/RegistryRootOnly/paired.py "${args[@]}"
           fi
+      - name: Preserve fresh empty and nonempty registry allocation boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --before .artifacts/evolution-original --after "$PWD" --before-revision "$ORIGINAL_SHA" --after-revision "$GITHUB_SHA" --nuget "$HOME/.nuget/packages" --out .artifacts/evolution-empty-original)
+          if [[ '${{ matrix.backend }}' == mono ]]; then
+            args+=(--mono "$(command -v mono)")
+          fi
+          python3 Tests~/RegistryEmpty/run.py "${args[@]}"
+          if [[ "$PREVIOUS_SHA" != "$ORIGINAL_SHA" ]]; then
+            args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --before .artifacts/evolution-previous --after "$PWD" --before-revision "$PREVIOUS_SHA" --after-revision "$GITHUB_SHA" --nuget "$HOME/.nuget/packages" --out .artifacts/evolution-empty-previous)
+            if [[ '${{ matrix.backend }}' == mono ]]; then
+              args+=(--mono "$(command -v mono)")
+            fi
+            python3 Tests~/RegistryEmpty/run.py "${args[@]}"
+          fi
       - name: Preserve intersection scenarios and larger-registry guard
         shell: bash
         run: |
@@ -171,6 +188,7 @@ jobs:
             .artifacts/evolution-evidence/*-tests.txt
             .artifacts/evolution-evidence/raw/*.json
             .artifacts/evolution-layout/*.json
+            .artifacts/evolution-empty-*/
             .artifacts/evolution-registry-*/*.json
             .artifacts/evolution-registry-*/raw/*
             .artifacts/evolution-root-only-*/*.json

@@ -62,6 +62,20 @@ namespace GameplayTags
             out int[] parents, out int[] subtreeEnds, out int[] hierarchyIndices,
             out GameplayTag[] hierarchyTags, out Dictionary<string, int> indicesByName)
         {
+            if (m_ByName.Count == 0)
+            {
+                // No traversal is needed when only the None sentinel exists.
+                // Preserve fresh empty arrays and the original sentinel/dictionary layout.
+                definitions = new[] { GameplayTagDefinition.None };
+                tags = new GameplayTag[1];
+                parents = new int[1];
+                subtreeEnds = new[] { 1 };
+                hierarchyIndices = new int[0];
+                hierarchyTags = new GameplayTag[0];
+                indicesByName = new Dictionary<string, int>(0, StringComparer.Ordinal);
+                return;
+            }
+
             var order = new List<Node>(m_ByName.Count + 1) { m_Root };
             var pending = new Stack<Node>();
             PushChildren(m_Root, pending);
