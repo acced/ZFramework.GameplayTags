@@ -1,0 +1,10 @@
+# Prefix each entry with the chosen --out directory. Never upload that directory recursively.
+report.json
+completion.json
+preflight-failure.json
+upload-allowlist.json
+logs/run-*/Stdout.gz
+logs/run-*/Stderr.gz
+binary-state/large-selected-alias-original.gz
+binary-state/large-selected-alias-previous.gz
+binary-state/large-selected-alias-candidate.gz

@@ -1,0 +1,19 @@
+{
+  "TimingAuthorized": true,
+  "SemanticValidationComplete": true,
+  "StaticAuditComplete": true,
+  "CoordinatorManifestSHA256": "f40dbe74332142bd6f6eea799664614a888620aa49403b1355444579430b3b1d",
+  "CandidatePatchSHA256": "d8f2ffe730a3462c35808f5d1959a8eaa8597240a774ec589400443e7b00ba89",
+  "SemanticSeal": {
+    "File": "semantic-summary.json",
+    "SHA256": "1a7af369e602ae6010680611043ddf7c7757fa6348b4a83c5bb1fffa6390c8bb"
+  },
+  "StaticAudit": {
+    "File": "static-audit.json",
+    "SHA256": "cbecb2637ef354c7b98b07ae51bd8ff9af50668eba56a2229019036157c414b6"
+  },
+  "Scope": "One fixed twelve-strategy validation per backend after both CI semantic jobs pass. No merge or deployment.",
+  "QualifiedVersions": 0,
+  "Prerequisite": "Local exact-source semantic validation is complete; actual CI semantics and cold gates are mandatory before interpreting timing.",
+  "DisclosureScope": "Only reviewed public source, configuration, numerical results, hashes and portable reproduction commands; use the exact public artifact allowlist."
+}

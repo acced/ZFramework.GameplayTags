@@ -1,0 +1,512 @@
+--- a/Runtime/GameplayTagContainer.cs
++++ b/Runtime/GameplayTagContainer.cs
+@@ -380,6 +380,38 @@
+                     output.m_SerializedExplicitTags?.Clear();
+                     return;
+                 }
++                // Snapshot a bounded opposite alias before replacing its storage.
++                if (aIsSet && bIsSet && output.GetType() == typeof(GameplayTagContainer) &&
++                    lhs is GameplayTagContainer plainLeft && plainLeft.GetType() == typeof(GameplayTagContainer) &&
++                    rhs is GameplayTagContainer plainRight && plainRight.GetType() == typeof(GameplayTagContainer))
++                {
++                    TagStorage seed = a.Count < b.Count ? b : a;
++                    TagStorage source = ReferenceEquals(seed, a) ? b : a;
++                    if (ReferenceEquals(output.m_Indices.Storage, seed) && seed.CanReuseSelectedUnionSeed(source))
++                    {
++                        if (source.ExplicitCount > TagStorage.LinearCapacity)
++                            seed.ReserveUnionExplicitCapacity(seed, source);
++                        seed.PrepareSameStorageUnion();
++                        if (source.ExplicitCount != 0)
++                        {
++                            if (source.ExplicitCount <= TagStorage.LinearCapacity)
++                                seed.AddSmallUnionForOutput(source);
++                            else if (source.ExplicitCount <= 1024)
++                                seed.AddUnionWithStackQueue(source);
++                            else if (!seed.TryAddUnionIntrusive(source))
++                                seed.AddUnion(source);
++                        }
++                        output.m_SerializedExplicitTags?.Clear();
++                        return;
++                    }
++                    if (ReferenceEquals(output.m_Indices.Storage, source) && source.ExplicitCount <= 1024 &&
++                        seed.CanReuseSelectedUnionSeed(source))
++                    {
++                        source.SetUnionFromSelectedSeed(seed);
++                        output.m_SerializedExplicitTags?.Clear();
++                        return;
++                    }
++                }
+                 // Preserve factory seeding and the final Copy for aliases, but
+                 // use the captured views so each input getter is evaluated once.
+                 var result = new GameplayTagContainer();
+@@ -398,11 +430,22 @@
+                 else
+                 {
+                     if (aIsSet)
++                    {
++                        if (b != null && b.ExplicitCount > TagStorage.LinearCapacity && !ReferenceEquals(a, b))
++                            result.m_Indices.Storage.ReserveUnionExplicitCapacity(a, b);
+                         result.m_Indices.Storage.CopyFrom(a);
++                    }
+                     else
+                         result.CopyExplicitStorage(a);
+                     if (b != null && b.ExplicitCount != 0 && !ReferenceEquals(a, b))
+-                        result.m_Indices.Storage.AddUnion(b);
++                    {
++                        if (b.ExplicitCount <= TagStorage.LinearCapacity)
++                            result.m_Indices.Storage.AddSmallUnionForOutput(b);
++                        else if (b.ExplicitCount <= 1024)
++                            result.m_Indices.Storage.AddUnionWithStackQueue(b);
++                        else if (!result.m_Indices.Storage.TryAddUnionIntrusive(b))
++                            result.m_Indices.Storage.AddUnion(b);
++                    }
+                 }
+                 Copy(output, result);
+                 return;
+@@ -429,11 +472,22 @@
+                 return;
+             }
+             if (aIsSet)
++            {
++                if (b != null && b.ExplicitCount > TagStorage.LinearCapacity && !ReferenceEquals(a, b))
++                    output.ReserveUnionExplicitCapacity(a, b);
+                 output.CopyFrom(a);
++            }
+             else
+                 CopyExplicitStorage(a);
+             if (b != null && b.ExplicitCount != 0 && !ReferenceEquals(a, b))
+-                output.AddUnion(b);
++            {
++                if (b.ExplicitCount <= TagStorage.LinearCapacity)
++                    output.AddSmallUnionForOutput(b);
++                else if (b.ExplicitCount <= 1024)
++                    output.AddUnionWithStackQueue(b);
++                else if (!output.TryAddUnionIntrusive(b))
++                    output.AddUnion(b);
++            }
+             m_SerializedExplicitTags?.Clear();
+         }
+ 
+--- a/Runtime/TagStorage.cs
++++ b/Runtime/TagStorage.cs
+@@ -623,5 +623,420 @@
+                 BuildIndex();
+             }
+         }
++
++        public TagStorage() { }
++
++        // Keep reusable-output small unions on their exact hierarchy-order path
++        // without entering the separate pool-bearing large-union method.
++        internal void AddSmallUnionForOutput(TagStorage source)
++        {
++            for (int i = 0; i < source.ExplicitCount; i++)
++            {
++                int id = source.Entries[source.ExplicitIndices[i]].Id;
++                if (!TryAddExplicit(id))
++                    continue;
++                ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
++                for (int j = 0; j < path.Length; j++)
++                    AddTotal(path[j]);
++            }
++        }
++
++        // A healthy destination starts with only the explicit low bit. Bound
++        // positive pending mass and dense indices before borrowing its high bits.
++        [MethodImpl(MethodImplOptions.NoInlining)]
++        internal bool TryAddUnionIntrusive(TagStorage source)
++        {
++            int explicitCount = source.ExplicitCount;
++            if (explicitCount <= LinearCapacity || ReferenceEquals(this, source) ||
++                !GameplayTagManager.IsInitialized)
++                return false;
++            int registeredCount = GameplayTagManager.TagCount;
++            if (!HasIntrusiveUnionState(registeredCount, true) ||
++                !source.HasIntrusiveUnionState(registeredCount, false))
++                return false;
++            long maximumCount = (long)Count + source.Count;
++            if (maximumCount > int.MaxValue)
++                return false;
++            int pendingBits = 0, linkBits = 0;
++            for (uint value = (uint)explicitCount; value != 0; value >>= 1)
++                pendingBits++;
++            for (uint value = (uint)maximumCount; value != 0; value >>= 1)
++                linkBits++;
++            if (pendingBits + linkBits > 31)
++                return false;
++            uint pendingMask = ((1u << pendingBits) - 1u) << 1;
++            int linkShift = pendingBits + 1;
++            bool completed = false;
++            try
++            {
++                int head = 0, tail = 0, queued = 0;
++                for (int i = 0; i < source.ExplicitCount; i++)
++                {
++                    int id = source.Entries[source.ExplicitIndices[i]].Id;
++                    int index = Find(id);
++                    if (index < 0)
++                        index = Insert(id);
++                    else if ((Entries[index].ExplicitCount & 1) != 0)
++                        continue;
++                    Entries[index].ExplicitCount |= 1;
++                    AddExplicitIndex(index);
++                    Entries[index].Count++;
++                    int parent = GameplayTagManager.GetParentIndex(id);
++                    if (parent != 0)
++                        QueueIntrusiveContribution(parent, 1, pendingMask, linkShift, ref head, ref tail, ref queued);
++                }
++
++                while (queued != 0)
++                {
++                    int index = head - 1;
++                    uint state = (uint)Entries[index].ExplicitCount;
++                    head = (int)(state >> linkShift);
++                    queued--;
++                    if (queued == 0)
++                        tail = 0;
++                    int pending = (int)((state & pendingMask) >> 1);
++                    Entries[index].ExplicitCount &= 1;
++                    Entries[index].Count += pending;
++                    int parent = GameplayTagManager.GetParentIndex(Entries[index].Id);
++                    if (parent != 0)
++                        QueueIntrusiveContribution(parent, pending, pendingMask, linkShift, ref head, ref tail, ref queued);
++                }
++                completed = true;
++            }
++            finally
++            {
++                // A successful drain already cleared every link. On ordinary
++                // unwind, restore only the representation, retaining old pending
++                // contributions and other partial mutations exactly as they stand.
++                if (!completed)
++                {
++                    uint keepMask = pendingMask | 1u;
++                    for (int i = 0; i < Count; i++)
++                        Entries[i].ExplicitCount = (int)((uint)Entries[i].ExplicitCount & keepMask);
++                }
++            }
++            return true;
++        }
++
++        private bool HasIntrusiveUnionState(int registeredCount, bool destination)
++        {
++            if (Entries == null || ExplicitIndices == null || m_Buckets == null ||
++                Count <= 0 || Count > Entries.Length || ExplicitCount < 0 ||
++                ExplicitCount > Count || ExplicitCount > ExplicitIndices.Length)
++                return false;
++            int mask = m_BucketMask;
++            if (mask == 0)
++            {
++                if (Count > LinearCapacity)
++                    return false;
++            }
++            else
++            {
++                long bucketCount = (long)mask + 1;
++                if (mask < 0 || bucketCount > m_Buckets.Length ||
++                    (bucketCount & (bucketCount - 1)) != 0 || bucketCount <= Count)
++                    return false;
++                int occupied = 0;
++                for (int i = 0; i <= mask; i++)
++                {
++                    int encoded = m_Buckets[i];
++                    if ((uint)encoded > (uint)Count)
++                        return false;
++                    if (encoded != 0)
++                        occupied++;
++                }
++                if (occupied != Count)
++                    return false;
++            }
++            for (int i = 0; i < Count; i++)
++            {
++                int id = Entries[i].Id;
++                int explicitCount = Entries[i].ExplicitCount;
++                if (id <= 0 || id > registeredCount || Find(id) != i ||
++                    (destination && explicitCount != 0 && explicitCount != 1))
++                    return false;
++                if (explicitCount != 0)
++                {
++                    int slot = Entries[i].ExplicitIndex;
++                    if ((uint)slot >= (uint)ExplicitCount || ExplicitIndices[slot] != i)
++                        return false;
++                }
++                int parent = GameplayTagManager.GetParentIndex(id);
++                if (parent != 0 && Find(parent) < 0)
++                    return false;
++            }
++            for (int i = 0; i < ExplicitCount; i++)
++            {
++                int index = ExplicitIndices[i];
++                if ((uint)index >= (uint)Count || Entries[index].ExplicitCount == 0 ||
++                    Entries[index].ExplicitIndex != i)
++                    return false;
++            }
++            return true;
++        }
++
++        private void QueueIntrusiveContribution(int id, int amount, uint pendingMask, int linkShift,
++            ref int head, ref int tail, ref int queued)
++        {
++            int index = Find(id);
++            if (index < 0)
++                index = Insert(id);
++            if (((uint)Entries[index].ExplicitCount & pendingMask) == 0)
++            {
++                int encoded = index + 1;
++                if (tail == 0)
++                    head = encoded;
++                else
++                {
++                    int previous = tail - 1;
++                    Entries[previous].ExplicitCount = unchecked((int)(
++                        ((uint)Entries[previous].ExplicitCount & (pendingMask | 1u)) |
++                        ((uint)encoded << linkShift)));
++                }
++                tail = encoded;
++                queued++;
++            }
++            Entries[index].ExplicitCount = unchecked(Entries[index].ExplicitCount + (amount << 1));
++        }
++
++        // Before a normal seed copy, skip intermediate explicit buffers only
++        // when the same conservative intrusive domain proves the final count.
++        [MethodImpl(MethodImplOptions.NoInlining)]
++        internal void ReserveUnionExplicitCapacity(TagStorage seed, TagStorage source)
++        {
++            if (seed == null || source == null || ReferenceEquals(seed, source) ||
++                ReferenceEquals(this, source) || Entries == null ||
++                ExplicitIndices == null || m_Buckets == null)
++                return;
++            int seedExplicitCount = seed.ExplicitCount;
++            int sourceExplicitCount = source.ExplicitCount;
++            if (seedExplicitCount <= 0 || sourceExplicitCount <= LinearCapacity)
++                return;
++            long maximumExplicitCount = checked((long)seedExplicitCount + sourceExplicitCount);
++            if (maximumExplicitCount > int.MaxValue)
++                return;
++
++            long copiedCapacity = ExplicitIndices.Length;
++            int copyAllocations = 0;
++            if (copiedCapacity < seedExplicitCount)
++            {
++                // Bound the rounding loop before doing any structural lookup.
++                if (seedExplicitCount > (1 << 30))
++                    return;
++                copiedCapacity = LinearCapacity;
++                while (copiedCapacity < seedExplicitCount)
++                    copiedCapacity = checked(copiedCapacity * 2);
++                copyAllocations = 1;
++            }
++            // Zero or one possible buffer cannot have an intermediate allocation
++            // removed by reserving early. This also skips warmed retained outputs.
++            if (maximumExplicitCount <= copiedCapacity ||
++                (copyAllocations == 0 && maximumExplicitCount <=
++                    Math.Max((long)LinearCapacity, checked(copiedCapacity * 2))))
++                return;
++
++            if (!GameplayTagManager.IsInitialized)
++                return;
++            int registeredCount = GameplayTagManager.TagCount;
++            if (!seed.HasIntrusiveUnionState(registeredCount, true) ||
++                !source.HasIntrusiveUnionState(registeredCount, false))
++                return;
++            long maximumCount = (long)seed.Count + source.Count;
++            if (maximumCount > int.MaxValue)
++                return;
++            int pendingBits = 0, linkBits = 0;
++            for (uint value = (uint)sourceExplicitCount; value != 0; value >>= 1)
++                pendingBits++;
++            for (uint value = (uint)maximumCount; value != 0; value >>= 1)
++                linkBits++;
++            if (pendingBits + linkBits > 31)
++                return;
++
++            long finalExplicitCount = seedExplicitCount;
++            for (int i = 0; i < sourceExplicitCount; i++)
++            {
++                int id = source.Entries[source.ExplicitIndices[i]].Id;
++                int index = seed.Find(id);
++                if (index < 0 || seed.Entries[index].ExplicitCount == 0)
++                    finalExplicitCount++;
++            }
++            long finalCapacity = copiedCapacity;
++            int allocations = copyAllocations;
++            while (finalCapacity < finalExplicitCount)
++            {
++                long nextCapacity = Math.Max((long)LinearCapacity, checked(finalCapacity * 2));
++                if (nextCapacity > int.MaxValue)
++                    return;
++                finalCapacity = nextCapacity;
++                allocations++;
++            }
++            if (allocations > 1)
++                Array.Resize(ref ExplicitIndices, (int)finalCapacity);
++        }
++
++        // Bound transient stack scratch to 4 KiB. Larger unions keep the pooled
++        // array path; this nonrecursive frame does not grow with hierarchy depth.
++        [MethodImpl(MethodImplOptions.NoInlining)]
++        internal void AddUnionWithStackQueue(TagStorage source)
++        {
++            Span<int> queue = stackalloc int[ArrayCapacityFor(source.ExplicitCount)];
++            int tail = 0, queued = 0;
++            for (int i = 0; i < source.ExplicitCount; i++)
++            {
++                int id = source.Entries[source.ExplicitIndices[i]].Id;
++                int index = Find(id);
++                if (index < 0)
++                    index = Insert(id);
++                else if ((Entries[index].ExplicitCount & 1) != 0)
++                    continue;
++                // High bits temporarily hold pending ancestor contributions.
++                // An implicit parent can be promoted while already queued.
++                Entries[index].ExplicitCount |= 1;
++                AddExplicitIndex(index);
++                Entries[index].Count++;
++                int parent = GameplayTagManager.GetParentIndex(id);
++                if (parent != 0)
++                    QueueStackContribution(parent, 1, queue, ref tail, ref queued);
++            }
++
++            int head = 0;
++            while (queued != 0)
++            {
++                int index = queue[head++];
++                if (head == queue.Length)
++                    head = 0;
++                queued--;
++                int pending = (int)((uint)Entries[index].ExplicitCount >> 1);
++                Entries[index].ExplicitCount &= 1;
++                Entries[index].Count += pending;
++                int parent = GameplayTagManager.GetParentIndex(Entries[index].Id);
++                if (parent != 0)
++                    QueueStackContribution(parent, pending, queue, ref tail, ref queued);
++            }
++        }
++
++        private void QueueStackContribution(int id, int amount, Span<int> queue, ref int tail, ref int queued)
++        {
++            int index = Find(id);
++            if (index < 0)
++                index = Insert(id);
++            if ((Entries[index].ExplicitCount & ~1) == 0)
++            {
++                queue[tail++] = index;
++                if (tail == queue.Length)
++                    tail = 0;
++                queued++;
++            }
++            Entries[index].ExplicitCount = unchecked(Entries[index].ExplicitCount + (amount << 1));
++        }
++        internal bool CanReuseSelectedUnionSeed(TagStorage source)
++        {
++            // Bound CopyFrom's Count*8 and every possible union growth calculation.
++            const int maximumCount = int.MaxValue / 8;
++            if (Count <= 0 || ExplicitCount <= 0 || Count > maximumCount ||
++                source.Count < 0 || source.Count > maximumCount - Count)
++                return false;
++            int registeredCount = GameplayTagManager.TagCount;
++            return HasReusableUnionState(registeredCount) && source.HasReusableUnionState(registeredCount);
++        }
++
++        private bool HasReusableUnionState(int registeredCount)
++        {
++            if ((uint)Count > (uint)Entries.Length || (uint)ExplicitCount > (uint)ExplicitIndices.Length)
++                return false;
++            for (int i = 0; i < ExplicitCount; i++)
++            {
++                int index = ExplicitIndices[i];
++                if ((uint)index >= (uint)Count || Entries[index].ExplicitCount != 1 || Entries[index].ExplicitIndex != i)
++                    return false;
++            }
++            for (int i = 0; i < Count; i++)
++            {
++                Entry entry = Entries[i];
++                if (entry.Id <= 0 || entry.Id > registeredCount || entry.Count <= 0 ||
++                    (entry.ExplicitCount != 0 && entry.ExplicitCount != 1) || Find(entry.Id) != i)
++                    return false;
++                if (entry.ExplicitCount == 1 && ((uint)entry.ExplicitIndex >= (uint)ExplicitCount ||
++                    ExplicitIndices[entry.ExplicitIndex] != i))
++                    return false;
++                int parent = GameplayTagManager.GetParentIndex(entry.Id);
++                if (parent != 0 && Find(parent) < 0)
++                    return false;
++            }
++            return true;
++        }
++
++        // IDs and FIFO coexist for at most 8 KiB of stack payload, plus frames.
++        // This is bounded, nonrecursive scratch, not a caller-stack guarantee.
++        [MethodImpl(MethodImplOptions.NoInlining)]
++        internal void SetUnionFromSelectedSeed(TagStorage seed)
++        {
++            int count = ExplicitCount;
++            Span<int> ids = stackalloc int[count];
++            for (int i = 0; i < count; i++)
++                ids[i] = Entries[ExplicitIndices[i]].Id;
++            CopyFrom(seed);
++            if (count <= 8)
++            {
++                for (int i = 0; i < count; i++)
++                {
++                    int id = ids[i];
++                    if (!TryAddExplicit(id))
++                        continue;
++                    ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
++                    for (int j = 0; j < path.Length; j++)
++                        AddTotal(path[j]);
++                }
++                return;
++            }
++
++            Span<int> queue = stackalloc int[ArrayCapacityFor(count)];
++            int tail = 0, queued = 0;
++            for (int i = 0; i < count; i++)
++            {
++                int id = ids[i];
++                int index = Find(id);
++                if (index < 0)
++                    index = Insert(id);
++                else if ((Entries[index].ExplicitCount & 1) != 0)
++                    continue;
++                Entries[index].ExplicitCount |= 1;
++                AddExplicitIndex(index);
++                Entries[index].Count++;
++                int parent = GameplayTagManager.GetParentIndex(id);
++                if (parent != 0)
++                    QueueSnapshotContribution(parent, 1, queue, ref tail, ref queued);
++            }
++            int head = 0;
++            while (queued != 0)
++            {
++                int index = queue[head++];
++                if (head == queue.Length)
++                    head = 0;
++                queued--;
++                int pending = (int)((uint)Entries[index].ExplicitCount >> 1);
++                Entries[index].ExplicitCount &= 1;
++                Entries[index].Count += pending;
++                int parent = GameplayTagManager.GetParentIndex(Entries[index].Id);
++                if (parent != 0)
++                    QueueSnapshotContribution(parent, pending, queue, ref tail, ref queued);
++            }
++        }
++
++        private void QueueSnapshotContribution(int id, int amount, Span<int> queue, ref int tail, ref int queued)
++        {
++            int index = Find(id);
++            if (index < 0)
++                index = Insert(id);
++            if ((Entries[index].ExplicitCount & ~1) == 0)
++            {
++                queue[tail++] = index;
++                if (tail == queue.Length)
++                    tail = 0;
++                queued++;
++            }
++            Entries[index].ExplicitCount = unchecked(Entries[index].ExplicitCount + (amount << 1));
++        }
++
+     }
+ }

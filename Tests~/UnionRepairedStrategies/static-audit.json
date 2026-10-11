@@ -1,0 +1,21 @@
+{
+  "Protocol": "repaired-output-public-v1",
+  "CoordinatorManifestSHA256": "f40dbe74332142bd6f6eea799664614a888620aa49403b1355444579430b3b1d",
+  "SourceLevelReview": "passed, conditional on explicit public artifact allowlist",
+  "MeasuredInputs": "Program, project, candidate patch, Runtime sources and maps byte-identical; comparison function AST identical",
+  "MockOrchestrationCasesPassed": 10,
+  "DisclosureMarkerCasesPassed": 4,
+  "PrivatePathCredentialScanFindings": 0,
+  "SourceFilesReviewed": 107,
+  "ExecutionPerformed": false,
+  "PublicationAuthorizedByThisReview": false,
+  "DiagnosticLimit": "Original diagnostic hashes do not reconstruct omitted stream content",
+  "RequiredArtifactPatterns": [
+    "*.json",
+    "iterations.tsv",
+    "failure.txt",
+    "command-logs/*.txt",
+    "cold/*.json",
+    "raw/*.json"
+  ]
+}

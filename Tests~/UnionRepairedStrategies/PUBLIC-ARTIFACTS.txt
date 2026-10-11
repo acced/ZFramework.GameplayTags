@@ -1,0 +1,9 @@
+# Paths relative to the selected output directory. Explicit positive upload list.
+*.json
+iterations.tsv
+failure.txt
+command-logs/*.txt
+cold/*.json
+raw/*.json
+# Do not upload per-variant bin/ or obj/ directories, PDBs, or arbitrary extra files.
+# Configure the workflow with these exact patterns, including on failure/timeout.

@@ -1,0 +1,62 @@
+[
+  {
+    "label": "f7-left",
+    "strategy": "literal-left",
+    "source_id": "original"
+  },
+  {
+    "label": "f7-right",
+    "strategy": "literal-right",
+    "source_id": "original"
+  },
+  {
+    "label": "f7-seed",
+    "strategy": "seed-alias-aware",
+    "source_id": "original"
+  },
+  {
+    "label": "f7-clear",
+    "strategy": "clear-add-both",
+    "source_id": "original"
+  },
+  {
+    "label": "f7-factory",
+    "strategy": "factory-copy",
+    "source_id": "original"
+  },
+  {
+    "label": "f53-left",
+    "strategy": "literal-left",
+    "source_id": "f53"
+  },
+  {
+    "label": "f53-right",
+    "strategy": "literal-right",
+    "source_id": "f53"
+  },
+  {
+    "label": "f53-seed",
+    "strategy": "seed-alias-aware",
+    "source_id": "f53"
+  },
+  {
+    "label": "f53-clear",
+    "strategy": "clear-add-both",
+    "source_id": "f53"
+  },
+  {
+    "label": "f53-factory",
+    "strategy": "factory-copy",
+    "source_id": "f53"
+  },
+  {
+    "label": "f53-output",
+    "strategy": "reusable",
+    "source_id": "f53"
+  },
+  {
+    "label": "repaired-output",
+    "strategy": "reusable",
+    "source_id": "repaired"
+  }
+]

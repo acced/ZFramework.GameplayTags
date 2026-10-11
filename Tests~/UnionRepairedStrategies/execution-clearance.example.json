@@ -1,0 +1,9 @@
+{
+  "TimingAuthorized": false,
+  "SemanticValidationComplete": false,
+  "StaticAuditComplete": false,
+  "CoordinatorManifestSHA256": "REPLACE_WITH_FINAL_PUBLIC_MANIFEST_SHA256",
+  "CandidatePatchSHA256": "d8f2ffe730a3462c35808f5d1959a8eaa8597240a774ec589400443e7b00ba89",
+  "SemanticSeal": {"File": "semantic-summary.json", "SHA256": "REPLACE_WITH_SEMANTIC_SUMMARY_SHA256"},
+  "StaticAudit": {"File": "static-audit.json", "SHA256": "REPLACE_WITH_PUBLIC_REVIEW_SHA256"}
+}

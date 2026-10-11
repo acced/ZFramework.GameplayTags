@@ -1,0 +1,24 @@
+{
+  "Scope": "Prior exact candidate source semantic and allocation checks; no performance qualification",
+  "CandidatePatchSHA256": "d8f2ffe730a3462c35808f5d1959a8eaa8597240a774ec589400443e7b00ba89",
+  "RuntimeReference": {
+    "DotnetSDK": "8.0.425",
+    "DotnetRuntime": "8.0.31",
+    "Mono": "6.12.0.199"
+  },
+  "Results": {
+    "CoreTargetProcessesPassed": 125,
+    "LargeAliasCasesPerSourceBackend": 288,
+    "StrongerColdCalls": 1722,
+    "EmptyDirtyColdCalls": 336,
+    "PositiveColdOrWarmAllocationDeltasInThoseMatrices": 0,
+    "FrozenPoolObservationReviewFlagsRetained": 18
+  },
+  "EvidenceSHA256": {
+    "SemanticAndColdManifest": "4549490bcb2a65e3bdd9084d7c80ea1667f09dbdd448bd32e7a79b1f816c9b1b",
+    "CoreManifest": "2682ac2df22ff3506d24880cdf6c31774e5038ecb476d5543c77c49c4ce009e5",
+    "LargeAliasManifest": "e2ffad93bdead6d7ccab59a1c8d5c8e9e7d790696e7e94d9e86d106f98b95190",
+    "MetadataManifest": "53da508c67d856560457c4a7ca8a136c83321e46fda3daa939c849ae512d158c"
+  },
+  "PublicAdapterValidation": "Privacy revision is statically reviewed separately; no new candidate fixture, cold or timing execution is implied."
+}

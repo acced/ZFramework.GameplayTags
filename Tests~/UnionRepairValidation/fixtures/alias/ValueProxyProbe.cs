@@ -1,0 +1,13 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using GameplayTags;
+internal static class Program
+{
+ static readonly Func<long> Alloc=(Func<long>)Delegate.CreateDelegate(typeof(Func<long>),typeof(GC).GetMethod("GetAllocatedBytesForCurrentThread",Type.EmptyTypes));
+ struct Proxy:IGameplayTagContainer{readonly GameplayTagContainer inner;internal Proxy(GameplayTagContainer c){inner=c;}public bool IsEmpty=>inner.IsEmpty;public int ExplicitTagCount=>inner.ExplicitTagCount;public int TagCount=>inner.TagCount;public GameplayTagContainerIndices Indices=>inner.Indices;public void AddTag(GameplayTag t)=>inner.AddTag(t);public void RemoveTag(GameplayTag t)=>inner.RemoveTag(t);public void AddTags<T>(in T x)where T:IGameplayTagContainer=>inner.AddTags(x);public void RemoveTags<T>(in T x)where T:IGameplayTagContainer=>inner.RemoveTags(x);public GameplayTagEnumerator GetTags()=>inner.GetTags();public GameplayTagEnumerator GetExplicitTags()=>inner.GetExplicitTags();public void Clear()=>inner.Clear();public void GetParentTags(GameplayTag t,List<GameplayTag>o)=>inner.GetParentTags(t,o);public void GetChildTags(GameplayTag t,List<GameplayTag>o)=>inner.GetChildTags(t,o);public void GetExplicitParentTags(GameplayTag t,List<GameplayTag>o)=>inner.GetExplicitParentTags(t,o);public void GetExplicitChildTags(GameplayTag t,List<GameplayTag>o)=>inner.GetExplicitChildTags(t,o);public IEnumerator<GameplayTag>GetEnumerator()=>((IEnumerable<GameplayTag>)inner).GetEnumerator();IEnumerator IEnumerable.GetEnumerator()=>GetEnumerator();}
+ [MethodImpl(MethodImplOptions.NoInlining)]static void Apply(GameplayTagContainer output,GameplayTagContainer source,Proxy alias,bool left){if(left)GameplayTagContainer.Union(output,alias,source);else GameplayTagContainer.Union(output,source,alias);}
+ static void Main(){var regs=new List<GameplayTagRegistration>();for(int i=0;i<40;i++)regs.Add(new GameplayTagRegistration("F"+i));GameplayTagManager.Initialize(regs.ToArray());var source=new GameplayTagContainer();for(int i=0;i<32;i++)source.AddTag(GameplayTagManager.RequestTag("F"+i));var restore=new GameplayTagContainer();restore.AddTag(GameplayTagManager.RequestTag("F39"));var output=new GameplayTagContainer(128);var alias=new Proxy(output);Alloc();foreach(bool left in new[]{false,true}){for(int i=0;i<20;i++){GameplayTagContainer.Copy(output,restore);Apply(output,source,alias,left);}long bytes=0;for(int i=0;i<1000;i++){GameplayTagContainer.Copy(output,restore);long before=Alloc();Apply(output,source,alias,left);bytes+=Alloc()-before;if(output.ExplicitTagCount!=33)throw new Exception("bad union");}Console.WriteLine((left?"left":"right")+" warm bytes/operation="+(bytes/1000.0));}}
+}

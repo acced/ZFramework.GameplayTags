@@ -1,0 +1,111 @@
+name: Repaired Union snapshot evidence
+on:
+  push:
+    branches: [perf/compact-runtime-rewrite]
+    paths:
+      - 'Tests~/UnionRepairedStrategies/**'
+      - 'Tests~/UnionRepairValidation/**'
+      - '.github/workflows/union-repaired-strategies.yml'
+permissions:
+  contents: read
+jobs:
+  semantic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [net, mono]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.425
+            10.0.401
+      - name: Install standalone Mono (not Unity Mono)
+        if: matrix.backend == 'mono'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-devel
+          mono --version
+      - name: Verify frozen repaired snapshot semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --git-repository "$GITHUB_WORKSPACE" --candidate-source "$GITHUB_WORKSPACE/Tests~/UnionRepairedStrategies/sources/repaired" --candidate-snapshot-commit "$GITHUB_SHA" --out "$GITHUB_WORKSPACE/.artifacts/union-repair-semantics")
+          if [[ '${{ matrix.backend }}' == mono ]]; then
+            args+=(--mono "$(command -v mono)")
+          fi
+          python3 Tests~/UnionRepairValidation/run.py "${args[@]}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: union-repair-semantics-${{ matrix.backend }}-${{ github.sha }}
+          path: |
+            .artifacts/union-repair-semantics/report.json
+            .artifacts/union-repair-semantics/completion.json
+            .artifacts/union-repair-semantics/preflight-failure.json
+            .artifacts/union-repair-semantics/upload-allowlist.json
+            .artifacts/union-repair-semantics/logs/run-*/Stdout.gz
+            .artifacts/union-repair-semantics/logs/run-*/Stderr.gz
+            .artifacts/union-repair-semantics/binary-state/large-selected-alias-original.gz
+            .artifacts/union-repair-semantics/binary-state/large-selected-alias-previous.gz
+            .artifacts/union-repair-semantics/binary-state/large-selected-alias-candidate.gz
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
+  compare:
+    needs: semantic
+    runs-on: ubuntu-latest
+    timeout-minutes: 190
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [net, mono]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.425
+            10.0.401
+      - name: Install standalone Mono (not Unity Mono)
+        if: matrix.backend == 'mono'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-devel
+          mono --version
+      - name: Run frozen twelve-strategy cold and paired timing matrix
+        shell: bash
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+          DOTNET_TieredCompilation: '0'
+          DOTNET_gcServer: '0'
+          COMPlus_TieredCompilation: '0'
+          COMPlus_gcServer: '0'
+        run: |
+          set -euo pipefail
+          args=(--backend '${{ matrix.backend }}' --mode measure --dotnet "$(readlink -f "$(command -v dotnet)")" --git-repository "$GITHUB_WORKSPACE" --out "$GITHUB_WORKSPACE/.artifacts/union-repaired-strategies" --clearance "$GITHUB_WORKSPACE/Tests~/UnionRepairedStrategies/execution-clearance.json")
+          if [[ '${{ matrix.backend }}' == mono ]]; then
+            args+=(--mono "$(command -v mono)")
+          fi
+          python3 Tests~/UnionRepairedStrategies/coordinate.py "${args[@]}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: union-repaired-strategies-${{ matrix.backend }}-${{ github.sha }}
+          path: |
+            .artifacts/union-repaired-strategies/*.json
+            .artifacts/union-repaired-strategies/iterations.tsv
+            .artifacts/union-repaired-strategies/failure.txt
+            .artifacts/union-repaired-strategies/command-logs/*.txt
+            .artifacts/union-repaired-strategies/cold/*.json
+            .artifacts/union-repaired-strategies/raw/*.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90

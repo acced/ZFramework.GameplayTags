@@ -1,0 +1,6 @@
+using System;
+using GameplayTags;
+internal static class Program
+{
+ static void Main(){GameplayTagManager.Initialize(new[]{new GameplayTagRegistration("A.X"),new GameplayTagRegistration("B.X")});var a=new GameplayTagContainer();var b=new GameplayTagContainer();a.AddTag(GameplayTagManager.RequestTag("A.X"));b.AddTag(GameplayTagManager.RequestTag("B.X"));var x=a.Indices.Storage;var y=b.Indices.Storage;int ac=x.Count,bc=y.Count,n=0;var xe=x.Entries;var xx=x.ExplicitIndices;var ye=y.Entries;var yx=y.ExplicitIndices;int limit=int.MaxValue/8;foreach(int c in new[]{-1,0,limit-1,limit,limit+1,int.MaxValue})foreach(int d in new[]{-1,0,limit-1,limit,limit+1,int.MaxValue}){x.Count=c;y.Count=d;try{if(x.CanReuseSelectedUnionSeed(y))throw new Exception("synthetic invalid bound admitted");if(x.Count!=c||y.Count!=d||!ReferenceEquals(xe,x.Entries)||!ReferenceEquals(xx,x.ExplicitIndices)||!ReferenceEquals(ye,y.Entries)||!ReferenceEquals(yx,y.ExplicitIndices))throw new Exception("gate mutated synthetic input");n++;}finally{x.Count=ac;y.Count=bc;}}if(!x.CanReuseSelectedUnionSeed(y))throw new Exception("ordinary control rejected");Console.WriteLine("PASS "+n+" synthetic private Count arithmetic/bounds rejections plus ordinary control; not claimed public histories");}
+}

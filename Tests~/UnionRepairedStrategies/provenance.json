@@ -1,0 +1,28 @@
+{
+  "Protocol": "repaired-output-public-v1",
+  "CandidatePatchSHA256": "d8f2ffe730a3462c35808f5d1959a8eaa8597240a774ec589400443e7b00ba89",
+  "ImmutableMeasuredInputs": {
+    "Program.cs": "eacc400177b731f96835ffa330d0f75352d7543ca4b69ad2e940c80308ae7016",
+    "Comparator.csproj": "ffc70f7305e315ac1e0d2287974b2ccec113785bbb7d6e769e65f8361a0af89c",
+    "candidate.patch": "d8f2ffe730a3462c35808f5d1959a8eaa8597240a774ec589400443e7b00ba89"
+  },
+  "BalancedWarmV1": {
+    "Maps": {
+      "net": {
+        "SHA256": "149a3ef7cb84482297c55ea1c60854bc954be043a5766b8d6e53a66cf0554a51",
+        "Derivation": "derivation/net.json",
+        "DerivationSHA256": "29d9361894d8aa074168c479bfba656928d997c5c3dcb26f4ce89fbcbe6b21a6"
+      },
+      "mono": {
+        "SHA256": "4ab82f1970e6a28d612d67d8eaa7e3f56e1ed9eb326a703c1f7e161e482c6621",
+        "Derivation": "derivation/mono.json",
+        "DerivationSHA256": "17dbf53be065a5dde5b2b570141291469b27abfb1d5e605209139d42e0d64943"
+      }
+    }
+  },
+  "OrderChange": "Append repaired-output to the eleven-control forward order; reverse the entire twelve-label order on odd rounds. No controls are omitted.",
+  "CalibrationChange": "No new pilots. Reuse fixed original-only maps; omitting the old five pilot processes changes pre-run orchestration only.",
+  "LoggingChange": "Public derivative retains identical child commands, operation bodies, counts, order, stop rules and timeouts. Process diagnostics use private temporary files and are not published; only selected versions, CPU/configuration, portable commands, relative file identities, numerical reports and their hashes are persisted. No full environment or command transcript is included.",
+  "SemanticSummary": "semantic-summary.json",
+  "SemanticSummarySHA256": "1a7af369e602ae6010680611043ddf7c7757fa6348b4a83c5bb1fffa6390c8bb"
+}

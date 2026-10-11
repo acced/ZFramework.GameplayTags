@@ -1,0 +1,695 @@
+{
+  "Schema": 1,
+  "NoStopwatchBenchmarks": true,
+  "BackendSelection": "--mono selects Mono only for target semantic fixtures; otherwise .NET. Metadata reader always runs on .NET.",
+  "Variants": [
+    "original",
+    "previous",
+    "candidate"
+  ],
+  "Runs": [
+    {
+      "Name": "factory-boundaries",
+      "Fixture": "fixtures/core/fixtures/factory-boundaries/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": false,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "03f33a5c0e98de3e5f751720394833c77f337781a9342866f09e73cc557ef4b6",
+          "StdoutSHA256": "be4670c0d91178a5ccd4d3b57dbdeb0f88fce3a07a74dfa269d30ef494124198"
+        },
+        "Cases": 483,
+        "Observations": 6762
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": null
+    },
+    {
+      "Name": "frozen-reusable-boundaries",
+      "Fixture": "fixtures/core/fixtures/frozen-reusable-boundaries/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "d2cbb018fe4ad7c3abf545d058fbb223ffb3a10d7682fb5c1be9901639a09aa6",
+          "StdoutSHA256": "396ede7420ba45a7c6fb5f2a8e17e2f3978360aba84ab31e8dfba9c0c1e5de8b"
+        },
+        "Cases": 483,
+        "Observations": 7728
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": null
+    },
+    {
+      "Name": "frozen-counted-overflow",
+      "Fixture": "fixtures/core/fixtures/frozen-counted-overflow/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "7a4abf2d4393980a34c8c746809d962d54d534cf8a4caebfebd9ec3b0aace2ff",
+          "StdoutSHA256": "3b89d4ed0f2aef6100f1cd49da5d70f4249b33c5f97bb6207546cb1492f3617a"
+        },
+        "Cases": 18,
+        "Observations": 234
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": null
+    },
+    {
+      "Name": "original-getters",
+      "Fixture": "fixtures/core/fixtures/original-getters/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "98749217ec9bbb59d50bdecff70de83ef782d2e240e5793d437c4d0dd382d4fb",
+          "StdoutSHA256": "38224961e2f98f0a133b3130f289213bab3f84f9355db4c3f3c2c83c43cf800a"
+        },
+        "Cases": 21068,
+        "Observations": null
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": null
+    },
+    {
+      "Name": "original-deep-overflow",
+      "Fixture": "fixtures/core/fixtures/original-deep-overflow/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": false,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "4be7d0cea8d4a8614e6de3c1a3525ede4b1d116f9ff2df7410b231c41cfcf7cc",
+          "StdoutSHA256": "d18e786a8ff5147a2b7811f24d3228c03f1092d1501716d43218ea0dfb29d19a"
+        },
+        "Cases": 18,
+        "Observations": null
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": null
+    },
+    {
+      "Name": "intrusive-reusable-boundaries",
+      "Fixture": "fixtures/core/fixtures/intrusive-reusable-boundaries/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "d2cbb018fe4ad7c3abf545d058fbb223ffb3a10d7682fb5c1be9901639a09aa6",
+          "StdoutSHA256": "85c2e81a32986e58f7b7cdfcbcfe082dc3ed75dca4f70f6636f7dd1528f19f72"
+        },
+        "Cases": 483,
+        "Observations": 7728
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": null
+    },
+    {
+      "Name": "intrusive-counted-overflow",
+      "Fixture": "fixtures/core/fixtures/intrusive-counted-overflow/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "7a4abf2d4393980a34c8c746809d962d54d534cf8a4caebfebd9ec3b0aace2ff",
+          "StdoutSHA256": "3b89d4ed0f2aef6100f1cd49da5d70f4249b33c5f97bb6207546cb1492f3617a"
+        },
+        "Cases": 18,
+        "Observations": 234
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": null
+    },
+    {
+      "Name": "intrusive-extended",
+      "Fixture": "fixtures/core/fixtures/intrusive-extended/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "9d10feb15db9be629558d73721e771c32e43bd46cf894b8101a001f0f8d53155",
+          "StdoutSHA256": "9f586f2c07429e334a0c22cc9444f5dac6726d3df380261cf92b0ae88a27eb0e"
+        },
+        "Cases": 674,
+        "Observations": 6720
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": "INTRUSIVE"
+    },
+    {
+      "Name": "capacity",
+      "Fixture": "fixtures/core/fixtures/capacity/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [
+        "public"
+      ],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "51fd57d07c246a68f876ab2ea33b7229f9861ed602ecb8609f9d06216afeb1e2",
+          "StdoutSHA256": "a8d64acf9cd42a5b4f1b3a1a24bf30e40a42589720b5f176b516957920c0076f"
+        },
+        "Cases": 1374,
+        "Observations": 15114
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": null
+    },
+    {
+      "Name": "maximum-pending",
+      "Fixture": "fixtures/core/fixtures/maximum-pending/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [
+        "public"
+      ],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "a343a2f78f286a20faaddabc3473598cdf0a0b757a1d9f8fc7a495d4dee5bae4",
+          "StdoutSHA256": "56fc98b04dabef4cf78e63528a345197cd8a698aa01ffbbcbaac678297840639"
+        },
+        "Cases": 2,
+        "Observations": 18
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": null
+    },
+    {
+      "Name": "historical-overflow",
+      "Fixture": "fixtures/core/fixtures/historical-overflow/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "StdoutSHA256": "99edc5db68f0111370d282cf45295913927151771c8210b5b83902a4a847de79"
+        },
+        "Cases": 704,
+        "Observations": null
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": null
+    },
+    {
+      "Name": "historical-edges",
+      "Fixture": "fixtures/core/fixtures/historical-edges/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "StdoutSHA256": "5aba1868ec08be4c1b46be908e99f06da06e2a8eebbe6272cc1d0ffb4b9a5e49"
+        },
+        "Cases": 320,
+        "Observations": null
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": null
+    },
+    {
+      "Name": "historical-sparse-distinct",
+      "Fixture": "fixtures/core/fixtures/historical-sparse-distinct/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "StdoutSHA256": "a4191116abd746ce2ce8713b7cff7ee0b5bc317a100bb3d7aca88e41bf4be9f9"
+        },
+        "Cases": 208,
+        "Observations": null
+      },
+      "CompareVariants": true,
+      "Kind": "semantic",
+      "CandidateExtraDefine": null
+    },
+    {
+      "Name": "intrusive-private-targeted",
+      "Fixture": "fixtures/core/fixtures/intrusive-reusable-boundaries/Program.cs",
+      "Labels": [
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [
+        "diagnostic"
+      ],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "5139186a2c6cff60e05538cc313f32d783efce853993a6bd10dce85132fe0d73",
+          "StdoutSHA256": "0e32e18385fe072ae83ceaed50975edffd37c4b17b4df54e305447960b3dc287"
+        },
+        "Checks": 483
+      },
+      "CompareVariants": false,
+      "Kind": "private-diagnostic"
+    },
+    {
+      "Name": "intrusive-private-overflow",
+      "Fixture": "fixtures/core/fixtures/intrusive-counted-overflow/Program.cs",
+      "Labels": [
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [
+        "diagnostic"
+      ],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "dbb3f538b61ef2720732c627a361c14a14dfbf7670d771c1905e421a884d903b",
+          "StdoutSHA256": "a64fbbefc3b403781cb4cf3a3cbd556c54aadffc9ee404ca1e13b361d76773f6"
+        },
+        "Checks": 18
+      },
+      "CompareVariants": false,
+      "Kind": "private-diagnostic"
+    },
+    {
+      "Name": "intrusive-private-extended",
+      "Fixture": "fixtures/core/fixtures/intrusive-extended/Program.cs",
+      "Labels": [
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [
+        "diagnostic"
+      ],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "c9df91a6db21282a62af275b6e000adc860ab5d0a875f30e0051a49bf2e5d460",
+          "StdoutSHA256": "d5b7681688a09539c29644bf8c9afefc246ca760fa8581b425a57daf10ce5c32"
+        },
+        "Checks": 674
+      },
+      "CompareVariants": false,
+      "Kind": "private-diagnostic",
+      "CandidateExtraDefine": "INTRUSIVE"
+    },
+    {
+      "Name": "reservation-private-capacity",
+      "Fixture": "fixtures/core/fixtures/capacity/Program.cs",
+      "Labels": [
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [
+        "diagnostic"
+      ],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "1f765ba11d35f9c5565807718e470e3ffd9b39bab4028a7c4085b55d1d61c2aa",
+          "StdoutSHA256": "cf6bdbcb85d1ee7a755edeaf66d61955db916258400190c77cd7e36220b7317d"
+        },
+        "Checks": 1682
+      },
+      "CompareVariants": false,
+      "Kind": "private-diagnostic"
+    },
+    {
+      "Name": "intrusive-private-max",
+      "Fixture": "fixtures/core/fixtures/maximum-pending/Program.cs",
+      "Labels": [
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [
+        "diagnostic"
+      ],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "e5160e3ac36111f936ae8779710de58a69c5d1bddc67857145532f3ee3f1d38b",
+          "StdoutSHA256": "9f17fff3da7680dfedd6fb8e425dac1b49b989da5694e637dba37cd2b6b1d505"
+        },
+        "Checks": 2
+      },
+      "CompareVariants": false,
+      "Kind": "private-diagnostic"
+    },
+    {
+      "Name": "intrusive-private-gates",
+      "Fixture": "fixtures/core/fixtures/intrusive-private-gates/Program.cs",
+      "Labels": [
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StderrSHA256": "da0ac1677b5fec571ed3381ef92659ff3cb372efc8edcbe26eb24bbe867d2232",
+          "StdoutSHA256": "adfadf787dab578c8dbbc118c04fa6768bd18601b3daba663d880fea1d44c0b7"
+        },
+        "Checks": 141
+      },
+      "CompareVariants": false,
+      "Kind": "private-diagnostic"
+    },
+    {
+      "Name": "pending-barrier",
+      "Fixture": "fixtures/legacy/PublicCounterexample.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": false,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StdoutSHA256": "e5dd7e88bf2480ddf9e0a9c42484df25dfb69fab87c3ab53b12775d2bdc5943c",
+          "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "CompareVariants": true,
+      "Kind": "semantic"
+    },
+    {
+      "Name": "stale-public",
+      "Fixture": "fixtures/legacy/StalePublic.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": false,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StdoutSHA256": "9439f06396799deb0db258366616d3c097117dcd24033754d309ca9d80d906cb",
+          "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "CompareVariants": true,
+      "Kind": "semantic"
+    },
+    {
+      "Name": "continuation-public",
+      "Fixture": "fixtures/legacy/ContinuationPublic.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": false,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StdoutSHA256": "1468093ec86a887a193ce3d18bea598403362a30b45a559005a8aff7012099e2",
+          "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "CompareVariants": true,
+      "Kind": "semantic"
+    },
+    {
+      "Name": "full-state-257",
+      "Fixture": "fixtures/legacy/ClosedState.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [
+        "257"
+      ],
+      "Check": {
+        "Expected": {
+          "StdoutSHA256": "239b363febd1f039093772031d77a3b14c20cec729e8e9686afcd1c55b694097",
+          "StderrSHA256": "ae34e1c8366d5adf5bc21144bee19f8efdb06fb9496579a398c1f5a1320f147e"
+        },
+        "Counts": {
+          "Cases": 84,
+          "Observations": 1764,
+          "InputAndCopyImmutabilityChecks": 210,
+          "WithinProcessReferenceComparisons": 6132
+        }
+      },
+      "CompareVariants": true,
+      "Kind": "semantic"
+    },
+    {
+      "Name": "full-state-769",
+      "Fixture": "fixtures/legacy/ClosedState.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [
+        "769"
+      ],
+      "Check": {
+        "Expected": {
+          "StdoutSHA256": "2d66af097da77d97d3294990718754dfd49bd719f18c4df12ce16524e0f97556",
+          "StderrSHA256": "6681b846d0291ea46144e5af9658bf08963215e2cd45140670d57e5beab45b72"
+        },
+        "Counts": {
+          "Cases": 8,
+          "Observations": 168,
+          "InputAndCopyImmutabilityChecks": 20,
+          "WithinProcessReferenceComparisons": 584
+        }
+      },
+      "CompareVariants": true,
+      "Kind": "semantic"
+    },
+    {
+      "Name": "selected-seed",
+      "Fixture": "fixtures/alias/SelectedSeedProbe.cs",
+      "Labels": [
+        "candidate"
+      ],
+      "ReusableDefine": false,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StdoutSHA256": "905eed5b09e25e25e8488f276c5489fd6339e231d589d6109d354097416069c5",
+          "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "CompareVariants": false,
+      "Kind": "private-and-public-alias-diagnostic"
+    },
+    {
+      "Name": "arithmetic-gates",
+      "Fixture": "fixtures/alias/ArithmeticGateProbe.cs",
+      "Labels": [
+        "candidate"
+      ],
+      "ReusableDefine": false,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StdoutSHA256": "04715d13be6f5fc9ad91af8f36a52279e81773237dd242ce90e4f55712732d6e",
+          "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "CompareVariants": false,
+      "Kind": "private-and-public-alias-diagnostic"
+    },
+    {
+      "Name": "opposite-seed",
+      "Fixture": "fixtures/alias/OppositeSeedProbe.cs",
+      "Labels": [
+        "candidate"
+      ],
+      "ReusableDefine": false,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Expected": {
+          "StdoutSHA256": "a3698b258ccf901e935c852308bc3f1aed6cd27935ff61c47302bb5bf2ddbf8f",
+          "StderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "CompareVariants": false,
+      "Kind": "private-and-public-alias-diagnostic"
+    },
+    {
+      "Name": "getter-failures",
+      "Fixture": "fixtures/alias/GetterFailureProbe.cs",
+      "Labels": [
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": false,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "Text": "PASS 36 getter failure/stateful/mutating callback cases; captured once/order, full arrays/tails, output/storage/cache identity; no timing"
+      },
+      "CompareVariants": true,
+      "Kind": "semantic"
+    },
+    {
+      "Name": "value-proxy-warm",
+      "Fixture": "fixtures/alias/ValueProxyProbe.cs",
+      "Labels": [
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": false,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "WarmProxyNoRegression": true
+      },
+      "CompareVariants": false,
+      "Kind": "bounded-warm-proxy-counter"
+    },
+    {
+      "Name": "large-selected-alias",
+      "Fixture": "fixtures/large-alias/Program.cs",
+      "Labels": [
+        "original",
+        "previous",
+        "candidate"
+      ],
+      "ReusableDefine": true,
+      "Defines": [],
+      "Arguments": [],
+      "Check": {
+        "BoundarySummary": {
+          "Cases": 288,
+          "Observations": 4896,
+          "ExactStateComparisons": 5760,
+          "IdentityFieldComparisons": 46080,
+          "SourceImmutabilityChecks": 1152,
+          "GrowthCases": 96,
+          "RetainedCases": 96,
+          "SparseCases": 96,
+          "SmallCases": 48,
+          "StackCases": 96,
+          "LargeCases": 144,
+          "Timing": false
+        },
+        "RawStateSHA256": "da5b439acb3de9039f3988ea769ac230a44b53b0965d30da8c1d557d18e3cb22",
+        "RawStateBytes": 2094910491
+      },
+      "CompareVariants": false,
+      "Kind": "binary-state"
+    }
+  ],
+  "CoreTargetProcesses": {
+    "net": 16,
+    "mono": 13
+  },
+  "MatrixTargetProcesses": 70,
+  "BuildTimeoutSeconds": 300,
+  "ProcessTimeoutSeconds": 1800,
+  "TotalTimeoutSeconds": 4920,
+  "PackageSourcePins": {
+    "original": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+    "previous": "f53c5fb94c22c2750f54c33dcfdee443a72bf595"
+  },
+  "Limits": [
+    "No cold revalidation in this semantic stage.",
+    "API test mode retains three existing GC.GetTotalMemory cohorts of 64 results per process; no Stopwatch timing or reported retained-memory result.",
+    "Warm generic value-proxy fixture retains its fixed 1000-iteration/side allocation counter and semantic checks; two processes per backend.",
+    "Historical allocation-only sparse-alias excluded; successful full-state/identity/tails covered by selected-seed and large-selected-alias suites, no replacement warm-byte qualification claimed.",
+    "Four historical helper-only throw clones are provenance only. No final public OOM/stack-exhaustion equality claim.",
+    "Opposite selected alias E>1024 retains original temporary fallback.",
+    "Stack payload 4 KiB normal /8 KiB opposite snapshot+queue, excluding frames."
+  ]
+}

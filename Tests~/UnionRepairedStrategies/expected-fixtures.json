@@ -1,0 +1,3335 @@
+{
+  "f7-left": [
+    {
+      "Id": "flat/n4/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/small-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/large-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/fresh",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/empty-reserved8192",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/grown1024-drained",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/old-deep",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-both",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-both",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/left/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/right/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/both/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/both",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "same-source/independent",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "fallback/incoherent-enumerator",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/stateful-indices",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/proxy-alias-right/restore-pair",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    }
+  ],
+  "f7-right": [
+    {
+      "Id": "flat/n4/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/small-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/large-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/fresh",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/empty-reserved8192",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/grown1024-drained",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/old-deep",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-both",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-both",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/left/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/right/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/both/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/both",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "same-source/independent",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "fallback/incoherent-enumerator",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/stateful-indices",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/proxy-alias-right/restore-pair",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    }
+  ],
+  "f7-seed": [
+    {
+      "Id": "flat/n4/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/small-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/large-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/fresh",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/empty-reserved8192",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/grown1024-drained",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/old-deep",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-both",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-both",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/left/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "in-place-add-plus-cache-clear",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/right/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "in-place-add-plus-cache-clear",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/both/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "in-place-add-plus-cache-clear",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/both",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "same-source/independent",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "fallback/incoherent-enumerator",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/stateful-indices",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/proxy-alias-right/restore-pair",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    }
+  ],
+  "f7-clear": [
+    {
+      "Id": "flat/n4/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/small-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/large-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/fresh",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/empty-reserved8192",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/grown1024-drained",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/old-deep",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-both",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-both",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/left/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/right/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/both/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/both",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "same-source/independent",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "fallback/incoherent-enumerator",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/stateful-indices",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/proxy-alias-right/restore-pair",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    }
+  ],
+  "f7-factory": [
+    {
+      "Id": "flat/n4/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/small-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/large-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/fresh",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/empty-reserved8192",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/grown1024-drained",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/old-deep",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-both",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-both",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/left/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/right/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/both/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/both",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "same-source/independent",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "fallback/incoherent-enumerator",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/stateful-indices",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/proxy-alias-right/restore-pair",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    }
+  ],
+  "f53-left": [
+    {
+      "Id": "flat/n4/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/small-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/large-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/fresh",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/empty-reserved8192",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/grown1024-drained",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/old-deep",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-both",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-both",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/left/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/right/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/both/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/both",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "same-source/independent",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "fallback/incoherent-enumerator",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/stateful-indices",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/proxy-alias-right/restore-pair",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    }
+  ],
+  "f53-right": [
+    {
+      "Id": "flat/n4/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/small-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/large-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/fresh",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/empty-reserved8192",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/grown1024-drained",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/old-deep",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-both",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-both",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/left/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/right/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/both/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/both",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/left",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/right",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "same-source/independent",
+      "Domain": "HealthyIndependent",
+      "Route": "literal-Copy-right-plus-AddTags-left",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "fallback/incoherent-enumerator",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/stateful-indices",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/proxy-alias-right/restore-pair",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    }
+  ],
+  "f53-seed": [
+    {
+      "Id": "flat/n4/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/small-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/large-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/fresh",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/empty-reserved8192",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/grown1024-drained",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/old-deep",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-both",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-both",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/left/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "in-place-add-plus-cache-clear",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/right/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "in-place-add-plus-cache-clear",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/both/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "in-place-add-plus-cache-clear",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/both",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/left",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/right",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "same-source/independent",
+      "Domain": "HealthyIndependent",
+      "Route": "seed-selected-Copy-plus-AddTags",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "fallback/incoherent-enumerator",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/stateful-indices",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/proxy-alias-right/restore-pair",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    }
+  ],
+  "f53-clear": [
+    {
+      "Id": "flat/n4/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/small-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/large-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/fresh",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/empty-reserved8192",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/grown1024-drained",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/old-deep",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-both",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-both",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/left/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/right/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/both/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/both",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/left",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/right",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "same-source/independent",
+      "Domain": "HealthyIndependent",
+      "Route": "Clear-plus-AddTags-left-plus-AddTags-right",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "fallback/incoherent-enumerator",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/stateful-indices",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/proxy-alias-right/restore-pair",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy-fallback",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    }
+  ],
+  "f53-factory": [
+    {
+      "Id": "flat/n4/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/small-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/large-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/fresh",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/empty-reserved8192",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/grown1024-drained",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/old-deep",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-both",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-both",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/left/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/right/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/both/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/both",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/left",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/right",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "same-source/independent",
+      "Domain": "HealthyIndependent",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "fallback/incoherent-enumerator",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/stateful-indices",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/proxy-alias-right/restore-pair",
+      "Domain": "FactoryFallback",
+      "Route": "factory-copy",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    }
+  ],
+  "f53-output": [
+    {
+      "Id": "flat/n4/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n4/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n128/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap0",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap50",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "flat/n1024/overlap100",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/small-left",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "unbalanced/large-left",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/fresh",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/empty-reserved8192",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/grown1024-drained",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "history/old-deep",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-left",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-right",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/counted-both",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-left",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-right",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "kind/stable-proxy-both",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/left/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/right/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "alias/both/restore-pair",
+      "Domain": "HealthyPlainAlias",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d128/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d1024/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/ascending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-left",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "deep/d3000/descending/seed-right",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/both",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/left",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "empty/right",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "same-source/independent",
+      "Domain": "HealthyIndependent",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    },
+    {
+      "Id": "fallback/incoherent-enumerator",
+      "Domain": "FactoryFallback",
+      "Route": "reusable-output-API",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/stateful-indices",
+      "Domain": "FactoryFallback",
+      "Route": "reusable-output-API",
+      "ColdEligible": false,
+      "ColdExclusionReason": "Stateful or incoherent proxy: correctness-only, not a repeatable warm fixture"
+    },
+    {
+      "Id": "fallback/proxy-alias-right/restore-pair",
+      "Domain": "FactoryFallback",
+      "Route": "reusable-output-API",
+      "ColdEligible": true,
+      "ColdExclusionReason": null
+    }
+  ]
+}

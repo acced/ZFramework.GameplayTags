@@ -1,0 +1,247 @@
+[
+  {
+    "Id": "flat/n4/overlap0/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "flat/n4/overlap50/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "flat/n4/overlap50/fresh-output-process-warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "flat/n4/overlap50/retained-result",
+    "Cohort": 32,
+    "WarmupIterations": 0
+  },
+  {
+    "Id": "flat/n4/overlap100/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "flat/n128/overlap0/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "flat/n128/overlap50/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "flat/n128/overlap50/fresh-output-process-warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "flat/n128/overlap50/retained-result",
+    "Cohort": 32,
+    "WarmupIterations": 0
+  },
+  {
+    "Id": "flat/n128/overlap100/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "flat/n1024/overlap0/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "flat/n1024/overlap50/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "flat/n1024/overlap50/fresh-output-process-warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "flat/n1024/overlap50/retained-result",
+    "Cohort": 32,
+    "WarmupIterations": 0
+  },
+  {
+    "Id": "flat/n1024/overlap100/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "unbalanced/small-left/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "unbalanced/large-left/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "history/fresh/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "history/empty-reserved8192/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "history/grown1024-drained/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "history/old-deep/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "kind/counted-left/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "kind/counted-right/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "kind/counted-both/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "kind/counted-both/fresh-output-process-warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "kind/counted-both/retained-result",
+    "Cohort": 32,
+    "WarmupIterations": 0
+  },
+  {
+    "Id": "kind/stable-proxy-left/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "kind/stable-proxy-right/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "kind/stable-proxy-both/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "alias/left/restore-pair/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "alias/right/restore-pair/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "alias/both/restore-pair/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "deep/d128/ascending/seed-left/warm",
+    "Cohort": 0,
+    "WarmupIterations": 4
+  },
+  {
+    "Id": "deep/d128/ascending/seed-right/warm",
+    "Cohort": 0,
+    "WarmupIterations": 4
+  },
+  {
+    "Id": "deep/d128/descending/seed-left/warm",
+    "Cohort": 0,
+    "WarmupIterations": 4
+  },
+  {
+    "Id": "deep/d128/descending/seed-right/warm",
+    "Cohort": 0,
+    "WarmupIterations": 4
+  },
+  {
+    "Id": "deep/d1024/ascending/seed-left/warm",
+    "Cohort": 0,
+    "WarmupIterations": 4
+  },
+  {
+    "Id": "deep/d1024/ascending/seed-right/warm",
+    "Cohort": 0,
+    "WarmupIterations": 4
+  },
+  {
+    "Id": "deep/d1024/descending/seed-left/warm",
+    "Cohort": 0,
+    "WarmupIterations": 4
+  },
+  {
+    "Id": "deep/d1024/descending/seed-right/warm",
+    "Cohort": 0,
+    "WarmupIterations": 4
+  },
+  {
+    "Id": "deep/d3000/ascending/seed-left/warm",
+    "Cohort": 0,
+    "WarmupIterations": 4
+  },
+  {
+    "Id": "deep/d3000/ascending/seed-right/warm",
+    "Cohort": 0,
+    "WarmupIterations": 4
+  },
+  {
+    "Id": "deep/d3000/descending/seed-left/warm",
+    "Cohort": 0,
+    "WarmupIterations": 4
+  },
+  {
+    "Id": "deep/d3000/descending/seed-right/warm",
+    "Cohort": 0,
+    "WarmupIterations": 4
+  },
+  {
+    "Id": "empty/both/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "empty/left/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "empty/right/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "same-source/independent/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  },
+  {
+    "Id": "fallback/proxy-alias-right/restore-pair/warm",
+    "Cohort": 0,
+    "WarmupIterations": 64
+  }
+]

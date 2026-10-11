@@ -1,0 +1,51 @@
+{
+  "CandidatePatchSHA256": "d8f2ffe730a3462c35808f5d1959a8eaa8597240a774ec589400443e7b00ba89",
+  "BaseRevision": "f53c5fb94c22c2750f54c33dcfdee443a72bf595",
+  "OriginalRevision": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "QualifiedVersions": 0,
+  "HistoricalF53Accepted": false,
+  "TimingPerformed": false,
+  "StrongerColdCalls": 1722,
+  "FinalSourceEmptyDirtyColdCalls": 336,
+  "ColdMatrixResults": {
+    "all-existing-cold": {
+      "net": {
+        "ColdRegressionFixtureCount": 0,
+        "WarmRegressionFixtureCount": 0,
+        "CandidateVsF53ColdRegressionFixtureCount": 0,
+        "CandidateVsF53WarmRegressionFixtureCount": 0
+      },
+      "mono": {
+        "ColdRegressionFixtureCount": 0,
+        "WarmRegressionFixtureCount": 0,
+        "CandidateVsF53ColdRegressionFixtureCount": 0,
+        "CandidateVsF53WarmRegressionFixtureCount": 0
+      }
+    },
+    "final-source-empty-dirty-cold": {
+      "net": {
+        "ColdRegressionFixtureCount": 0,
+        "WarmRegressionFixtureCount": 0,
+        "CandidateVsF53ColdRegressionFixtureCount": 0,
+        "CandidateVsF53WarmRegressionFixtureCount": 0
+      },
+      "mono": {
+        "ColdRegressionFixtureCount": 0,
+        "WarmRegressionFixtureCount": 0,
+        "CandidateVsF53ColdRegressionFixtureCount": 0,
+        "CandidateVsF53WarmRegressionFixtureCount": 0
+      }
+    }
+  },
+  "CompleteColdOwnedStatesEqualToF53": true,
+  "ActualCIMono68Run": false,
+  "LocalMonoVersion": "6.12.0.199",
+  "ActualUnityIL2CPPRun": false,
+  "UnityStubsRun": true,
+  "ResourceFailurePartialStateEqualityClaimed": false,
+  "UniversalAllocationOrPerformanceImprovementClaimed": false,
+  "Status": "Scoped pre-CI semantic/cold results; unqualified",
+  "EvidenceSealSHA256": "4549490bcb2a65e3bdd9084d7c80ea1667f09dbdd448bd32e7a79b1f816c9b1b",
+  "RetainedPoolOnlyReviewFlagCount": 18,
+  "Limitations": "Summary only. No raw environment data, command transcripts or internal evidence locations are included. Historical f53 qualification is reopened; timing and broader gates remain pending."
+}

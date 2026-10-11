@@ -1,0 +1,3180 @@
+{
+  "Protocol": "balanced-warm-v1",
+  "Backend": "net",
+  "OriginalRevision": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "ReferenceRevision": "f53c5fb94c22c2750f54c33dcfdee443a72bf595",
+  "Formula": "max(oldN, ceil(500000000 / min reported Ns across five original strategies x fourteen rounds)); Decimal precision 80. Other 38 rows unchanged.",
+  "Rounds": 14,
+  "OriginalStrategyLabels": [
+    "f7-left",
+    "f7-right",
+    "f7-seed",
+    "f7-clear",
+    "f7-factory"
+  ],
+  "ChangedRows": [
+    {
+      "Id": "flat/n1024/overlap0/warm",
+      "OldIterations": 2246,
+      "NewIterations": 16145,
+      "TargetMilliseconds": 500,
+      "OriginalObservations": [
+        {
+          "Label": "f7-left",
+          "Round": 0,
+          "NsLiteral": "48517.27159394479",
+          "RawFile": "raw/f7-left-0.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 1,
+          "NsLiteral": "48521.845948352624",
+          "RawFile": "raw/f7-left-1.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 2,
+          "NsLiteral": "48806.21905609973",
+          "RawFile": "raw/f7-left-2.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 3,
+          "NsLiteral": "48850.37177203918",
+          "RawFile": "raw/f7-left-3.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 4,
+          "NsLiteral": "48921.05164737311",
+          "RawFile": "raw/f7-left-4.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 5,
+          "NsLiteral": "50177.56812110419",
+          "RawFile": "raw/f7-left-5.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 6,
+          "NsLiteral": "47852.83081032948",
+          "RawFile": "raw/f7-left-6.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 7,
+          "NsLiteral": "49173.81522707035",
+          "RawFile": "raw/f7-left-7.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 8,
+          "NsLiteral": "48618.47016918967",
+          "RawFile": "raw/f7-left-8.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 9,
+          "NsLiteral": "48144.42920747997",
+          "RawFile": "raw/f7-left-9.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 10,
+          "NsLiteral": "48169.16740872662",
+          "RawFile": "raw/f7-left-10.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 11,
+          "NsLiteral": "48966.349065004455",
+          "RawFile": "raw/f7-left-11.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 12,
+          "NsLiteral": "48681.052537845055",
+          "RawFile": "raw/f7-left-12.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 13,
+          "NsLiteral": "48321.34149599288",
+          "RawFile": "raw/f7-left-13.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 0,
+          "NsLiteral": "53252.475066785395",
+          "RawFile": "raw/f7-right-0.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 1,
+          "NsLiteral": "52581.52804986643",
+          "RawFile": "raw/f7-right-1.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 2,
+          "NsLiteral": "52965.76268922529",
+          "RawFile": "raw/f7-right-2.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 3,
+          "NsLiteral": "55114.142030276045",
+          "RawFile": "raw/f7-right-3.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 4,
+          "NsLiteral": "53566.57613535174",
+          "RawFile": "raw/f7-right-4.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 5,
+          "NsLiteral": "53066.750667853965",
+          "RawFile": "raw/f7-right-5.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 6,
+          "NsLiteral": "53103.631344612644",
+          "RawFile": "raw/f7-right-6.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 7,
+          "NsLiteral": "52692.91317898486",
+          "RawFile": "raw/f7-right-7.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 8,
+          "NsLiteral": "53029.66829919857",
+          "RawFile": "raw/f7-right-8.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 9,
+          "NsLiteral": "53205.45013357079",
+          "RawFile": "raw/f7-right-9.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 10,
+          "NsLiteral": "52208.49020480855",
+          "RawFile": "raw/f7-right-10.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 11,
+          "NsLiteral": "52976.02804986643",
+          "RawFile": "raw/f7-right-11.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 12,
+          "NsLiteral": "53665.718610863754",
+          "RawFile": "raw/f7-right-12.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 13,
+          "NsLiteral": "52997.36999109528",
+          "RawFile": "raw/f7-right-13.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 0,
+          "NsLiteral": "48871.53116651825",
+          "RawFile": "raw/f7-seed-0.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 1,
+          "NsLiteral": "49265.641139804095",
+          "RawFile": "raw/f7-seed-1.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 2,
+          "NsLiteral": "48753.083704363315",
+          "RawFile": "raw/f7-seed-2.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 3,
+          "NsLiteral": "48334.690115761354",
+          "RawFile": "raw/f7-seed-3.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 4,
+          "NsLiteral": "48236.142030276045",
+          "RawFile": "raw/f7-seed-4.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 5,
+          "NsLiteral": "48555.32635796972",
+          "RawFile": "raw/f7-seed-5.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 6,
+          "NsLiteral": "48255.79073909172",
+          "RawFile": "raw/f7-seed-6.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 7,
+          "NsLiteral": "49347.70837043633",
+          "RawFile": "raw/f7-seed-7.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 8,
+          "NsLiteral": "48933.34238646483",
+          "RawFile": "raw/f7-seed-8.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 9,
+          "NsLiteral": "48896.220391807656",
+          "RawFile": "raw/f7-seed-9.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 10,
+          "NsLiteral": "48580.074354407836",
+          "RawFile": "raw/f7-seed-10.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 11,
+          "NsLiteral": "49142.593054318786",
+          "RawFile": "raw/f7-seed-11.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 12,
+          "NsLiteral": "49183.77604630454",
+          "RawFile": "raw/f7-seed-12.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 13,
+          "NsLiteral": "47550.455476402494",
+          "RawFile": "raw/f7-seed-13.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 0,
+          "NsLiteral": "87482.86375779162",
+          "RawFile": "raw/f7-clear-0.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 1,
+          "NsLiteral": "90785.46349065004",
+          "RawFile": "raw/f7-clear-1.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 2,
+          "NsLiteral": "87539.70302760463",
+          "RawFile": "raw/f7-clear-2.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 3,
+          "NsLiteral": "86625.51068566341",
+          "RawFile": "raw/f7-clear-3.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 4,
+          "NsLiteral": "87561.0445235975",
+          "RawFile": "raw/f7-clear-4.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 5,
+          "NsLiteral": "89533.89225289403",
+          "RawFile": "raw/f7-clear-5.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 6,
+          "NsLiteral": "86737.8944790739",
+          "RawFile": "raw/f7-clear-6.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 7,
+          "NsLiteral": "86867.13089937667",
+          "RawFile": "raw/f7-clear-7.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 8,
+          "NsLiteral": "87225.30587711486",
+          "RawFile": "raw/f7-clear-8.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 9,
+          "NsLiteral": "84520.3303650935",
+          "RawFile": "raw/f7-clear-9.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 10,
+          "NsLiteral": "86192.67408726625",
+          "RawFile": "raw/f7-clear-10.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 11,
+          "NsLiteral": "87130.30632235085",
+          "RawFile": "raw/f7-clear-11.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 12,
+          "NsLiteral": "87809.66206589493",
+          "RawFile": "raw/f7-clear-12.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 13,
+          "NsLiteral": "85955.74354407836",
+          "RawFile": "raw/f7-clear-13.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 0,
+          "NsLiteral": "34380.4982190561",
+          "RawFile": "raw/f7-factory-0.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 1,
+          "NsLiteral": "31624.8446126447",
+          "RawFile": "raw/f7-factory-1.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 2,
+          "NsLiteral": "31257.1821015138",
+          "RawFile": "raw/f7-factory-2.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 3,
+          "NsLiteral": "31651.23731077471",
+          "RawFile": "raw/f7-factory-3.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 4,
+          "NsLiteral": "31631.898486197686",
+          "RawFile": "raw/f7-factory-4.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 5,
+          "NsLiteral": "31600.962600178096",
+          "RawFile": "raw/f7-factory-5.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 6,
+          "NsLiteral": "31962.24176313446",
+          "RawFile": "raw/f7-factory-6.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 7,
+          "NsLiteral": "33249.585485307216",
+          "RawFile": "raw/f7-factory-7.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 8,
+          "NsLiteral": "31210.021816562778",
+          "RawFile": "raw/f7-factory-8.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 9,
+          "NsLiteral": "31485.459928762244",
+          "RawFile": "raw/f7-factory-9.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 10,
+          "NsLiteral": "30970.513357079253",
+          "RawFile": "raw/f7-factory-10.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 11,
+          "NsLiteral": "33559.886464826355",
+          "RawFile": "raw/f7-factory-11.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 12,
+          "NsLiteral": "32265.359305431877",
+          "RawFile": "raw/f7-factory-12.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 13,
+          "NsLiteral": "35256.817898486195",
+          "RawFile": "raw/f7-factory-13.json"
+        }
+      ]
+    },
+    {
+      "Id": "flat/n1024/overlap50/warm",
+      "OldIterations": 2591,
+      "NewIterations": 32374,
+      "TargetMilliseconds": 500,
+      "OriginalObservations": [
+        {
+          "Label": "f7-left",
+          "Round": 0,
+          "NsLiteral": "28603.65843303744",
+          "RawFile": "raw/f7-left-0.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 1,
+          "NsLiteral": "28857.864917020455",
+          "RawFile": "raw/f7-left-1.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 2,
+          "NsLiteral": "29251.489772288693",
+          "RawFile": "raw/f7-left-2.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 3,
+          "NsLiteral": "29011.36510999614",
+          "RawFile": "raw/f7-left-3.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 4,
+          "NsLiteral": "29396.438054805094",
+          "RawFile": "raw/f7-left-4.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 5,
+          "NsLiteral": "28899.642609031263",
+          "RawFile": "raw/f7-left-5.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 6,
+          "NsLiteral": "28731.0968737939",
+          "RawFile": "raw/f7-left-6.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 7,
+          "NsLiteral": "29018.09147047472",
+          "RawFile": "raw/f7-left-7.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 8,
+          "NsLiteral": "29490.94172134311",
+          "RawFile": "raw/f7-left-8.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 9,
+          "NsLiteral": "28392.3307603242",
+          "RawFile": "raw/f7-left-9.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 10,
+          "NsLiteral": "28737.538402161328",
+          "RawFile": "raw/f7-left-10.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 11,
+          "NsLiteral": "28807.887302199924",
+          "RawFile": "raw/f7-left-11.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 12,
+          "NsLiteral": "28806.763797761483",
+          "RawFile": "raw/f7-left-12.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 13,
+          "NsLiteral": "28712.20609803165",
+          "RawFile": "raw/f7-left-13.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 0,
+          "NsLiteral": "31903.978386723273",
+          "RawFile": "raw/f7-right-0.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 1,
+          "NsLiteral": "31951.565032805865",
+          "RawFile": "raw/f7-right-1.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 2,
+          "NsLiteral": "31760.291779235817",
+          "RawFile": "raw/f7-right-2.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 3,
+          "NsLiteral": "33292.1524507912",
+          "RawFile": "raw/f7-right-3.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 4,
+          "NsLiteral": "31746.161327672715",
+          "RawFile": "raw/f7-right-4.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 5,
+          "NsLiteral": "31892.88228483211",
+          "RawFile": "raw/f7-right-5.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 6,
+          "NsLiteral": "32027.284832111152",
+          "RawFile": "raw/f7-right-6.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 7,
+          "NsLiteral": "31594.068313392512",
+          "RawFile": "raw/f7-right-7.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 8,
+          "NsLiteral": "31900.75414897723",
+          "RawFile": "raw/f7-right-8.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 9,
+          "NsLiteral": "31758.087610961018",
+          "RawFile": "raw/f7-right-9.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 10,
+          "NsLiteral": "31637.480895407178",
+          "RawFile": "raw/f7-right-10.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 11,
+          "NsLiteral": "32180.519104592822",
+          "RawFile": "raw/f7-right-11.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 12,
+          "NsLiteral": "31895.15438054805",
+          "RawFile": "raw/f7-right-12.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 13,
+          "NsLiteral": "31804.638749517562",
+          "RawFile": "raw/f7-right-13.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 0,
+          "NsLiteral": "28672.858741798533",
+          "RawFile": "raw/f7-seed-0.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 1,
+          "NsLiteral": "28943.775376302587",
+          "RawFile": "raw/f7-seed-1.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 2,
+          "NsLiteral": "28974.09147047472",
+          "RawFile": "raw/f7-seed-2.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 3,
+          "NsLiteral": "29108.343882670782",
+          "RawFile": "raw/f7-seed-3.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 4,
+          "NsLiteral": "28812.536472404478",
+          "RawFile": "raw/f7-seed-4.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 5,
+          "NsLiteral": "28807.098803550754",
+          "RawFile": "raw/f7-seed-5.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 6,
+          "NsLiteral": "28916.830953299883",
+          "RawFile": "raw/f7-seed-6.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 7,
+          "NsLiteral": "29041.84677730606",
+          "RawFile": "raw/f7-seed-7.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 8,
+          "NsLiteral": "29183.15438054805",
+          "RawFile": "raw/f7-seed-8.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 9,
+          "NsLiteral": "28726.435353145505",
+          "RawFile": "raw/f7-seed-9.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 10,
+          "NsLiteral": "29148.533384793514",
+          "RawFile": "raw/f7-seed-10.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 11,
+          "NsLiteral": "28985.62871478194",
+          "RawFile": "raw/f7-seed-11.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 12,
+          "NsLiteral": "28861.67618680046",
+          "RawFile": "raw/f7-seed-12.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 13,
+          "NsLiteral": "28299.537630258586",
+          "RawFile": "raw/f7-seed-13.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 0,
+          "NsLiteral": "77308.41875723659",
+          "RawFile": "raw/f7-clear-0.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 1,
+          "NsLiteral": "76703.46622925511",
+          "RawFile": "raw/f7-clear-1.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 2,
+          "NsLiteral": "74194.90274025472",
+          "RawFile": "raw/f7-clear-2.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 3,
+          "NsLiteral": "74655.10034735623",
+          "RawFile": "raw/f7-clear-3.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 4,
+          "NsLiteral": "74947.59783867233",
+          "RawFile": "raw/f7-clear-4.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 5,
+          "NsLiteral": "75588.45156310305",
+          "RawFile": "raw/f7-clear-5.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 6,
+          "NsLiteral": "75162.60748745658",
+          "RawFile": "raw/f7-clear-6.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 7,
+          "NsLiteral": "74405.167888846",
+          "RawFile": "raw/f7-clear-7.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 8,
+          "NsLiteral": "74674.01350829795",
+          "RawFile": "raw/f7-clear-8.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 9,
+          "NsLiteral": "74471.30027016596",
+          "RawFile": "raw/f7-clear-9.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 10,
+          "NsLiteral": "73833.11462755693",
+          "RawFile": "raw/f7-clear-10.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 11,
+          "NsLiteral": "74908.76727132381",
+          "RawFile": "raw/f7-clear-11.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 12,
+          "NsLiteral": "76182.6615206484",
+          "RawFile": "raw/f7-clear-12.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 13,
+          "NsLiteral": "73962.25164029333",
+          "RawFile": "raw/f7-clear-13.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 0,
+          "NsLiteral": "17097.99421072945",
+          "RawFile": "raw/f7-factory-0.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 1,
+          "NsLiteral": "16236.67078348128",
+          "RawFile": "raw/f7-factory-1.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 2,
+          "NsLiteral": "15479.460054033192",
+          "RawFile": "raw/f7-factory-2.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 3,
+          "NsLiteral": "15777.168660748746",
+          "RawFile": "raw/f7-factory-3.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 4,
+          "NsLiteral": "15892.829795445774",
+          "RawFile": "raw/f7-factory-4.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 5,
+          "NsLiteral": "15842.892705519105",
+          "RawFile": "raw/f7-factory-5.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 6,
+          "NsLiteral": "16167.381319953685",
+          "RawFile": "raw/f7-factory-6.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 7,
+          "NsLiteral": "16598.252798147434",
+          "RawFile": "raw/f7-factory-7.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 8,
+          "NsLiteral": "15811.51447317638",
+          "RawFile": "raw/f7-factory-8.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 9,
+          "NsLiteral": "15614.074488614435",
+          "RawFile": "raw/f7-factory-9.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 10,
+          "NsLiteral": "15444.871092242378",
+          "RawFile": "raw/f7-factory-10.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 11,
+          "NsLiteral": "17065.79235816287",
+          "RawFile": "raw/f7-factory-11.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 12,
+          "NsLiteral": "15952.30297182555",
+          "RawFile": "raw/f7-factory-12.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 13,
+          "NsLiteral": "16966.409880355077",
+          "RawFile": "raw/f7-factory-13.json"
+        }
+      ]
+    },
+    {
+      "Id": "flat/n1024/overlap100/warm",
+      "OldIterations": 3328,
+      "NewIterations": 59593,
+      "TargetMilliseconds": 500,
+      "OriginalObservations": [
+        {
+          "Label": "f7-left",
+          "Round": 0,
+          "NsLiteral": "14978.685697115385",
+          "RawFile": "raw/f7-left-0.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 1,
+          "NsLiteral": "14802.162860576924",
+          "RawFile": "raw/f7-left-1.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 2,
+          "NsLiteral": "14533.674278846154",
+          "RawFile": "raw/f7-left-2.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 3,
+          "NsLiteral": "14789.470552884615",
+          "RawFile": "raw/f7-left-3.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 4,
+          "NsLiteral": "14716.250600961539",
+          "RawFile": "raw/f7-left-4.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 5,
+          "NsLiteral": "14799.701021634615",
+          "RawFile": "raw/f7-left-5.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 6,
+          "NsLiteral": "14612.44110576923",
+          "RawFile": "raw/f7-left-6.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 7,
+          "NsLiteral": "14867.088942307691",
+          "RawFile": "raw/f7-left-7.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 8,
+          "NsLiteral": "14989.930588942309",
+          "RawFile": "raw/f7-left-8.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 9,
+          "NsLiteral": "14782.17157451923",
+          "RawFile": "raw/f7-left-9.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 10,
+          "NsLiteral": "14528.870492788461",
+          "RawFile": "raw/f7-left-10.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 11,
+          "NsLiteral": "14956.564903846154",
+          "RawFile": "raw/f7-left-11.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 12,
+          "NsLiteral": "14797.07391826923",
+          "RawFile": "raw/f7-left-12.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 13,
+          "NsLiteral": "14659.929086538461",
+          "RawFile": "raw/f7-left-13.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 0,
+          "NsLiteral": "14670.091947115385",
+          "RawFile": "raw/f7-right-0.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 1,
+          "NsLiteral": "14677.587740384615",
+          "RawFile": "raw/f7-right-1.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 2,
+          "NsLiteral": "14278.752403846154",
+          "RawFile": "raw/f7-right-2.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 3,
+          "NsLiteral": "14700.266225961539",
+          "RawFile": "raw/f7-right-3.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 4,
+          "NsLiteral": "14655.819110576924",
+          "RawFile": "raw/f7-right-4.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 5,
+          "NsLiteral": "14644.876802884615",
+          "RawFile": "raw/f7-right-5.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 6,
+          "NsLiteral": "14640.296875",
+          "RawFile": "raw/f7-right-6.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 7,
+          "NsLiteral": "14673.819110576924",
+          "RawFile": "raw/f7-right-7.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 8,
+          "NsLiteral": "14612.294471153846",
+          "RawFile": "raw/f7-right-8.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 9,
+          "NsLiteral": "14665.996694711539",
+          "RawFile": "raw/f7-right-9.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 10,
+          "NsLiteral": "14645.06640625",
+          "RawFile": "raw/f7-right-10.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 11,
+          "NsLiteral": "14717.852163461539",
+          "RawFile": "raw/f7-right-11.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 12,
+          "NsLiteral": "14600.709134615385",
+          "RawFile": "raw/f7-right-12.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 13,
+          "NsLiteral": "14454.591346153846",
+          "RawFile": "raw/f7-right-13.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 0,
+          "NsLiteral": "15025.46063701923",
+          "RawFile": "raw/f7-seed-0.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 1,
+          "NsLiteral": "14724.2890625",
+          "RawFile": "raw/f7-seed-1.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 2,
+          "NsLiteral": "15008.47295673077",
+          "RawFile": "raw/f7-seed-2.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 3,
+          "NsLiteral": "14978.495492788461",
+          "RawFile": "raw/f7-seed-3.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 4,
+          "NsLiteral": "16320.524038461539",
+          "RawFile": "raw/f7-seed-4.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 5,
+          "NsLiteral": "14999.23798076923",
+          "RawFile": "raw/f7-seed-5.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 6,
+          "NsLiteral": "14778.90985576923",
+          "RawFile": "raw/f7-seed-6.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 7,
+          "NsLiteral": "14773.763521634615",
+          "RawFile": "raw/f7-seed-7.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 8,
+          "NsLiteral": "14812.473257211539",
+          "RawFile": "raw/f7-seed-8.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 9,
+          "NsLiteral": "14572.534254807691",
+          "RawFile": "raw/f7-seed-9.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 10,
+          "NsLiteral": "14654.67608173077",
+          "RawFile": "raw/f7-seed-10.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 11,
+          "NsLiteral": "14871.42998798077",
+          "RawFile": "raw/f7-seed-11.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 12,
+          "NsLiteral": "14768.733173076924",
+          "RawFile": "raw/f7-seed-12.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 13,
+          "NsLiteral": "14741.440805288461",
+          "RawFile": "raw/f7-seed-13.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 0,
+          "NsLiteral": "59705.384314903844",
+          "RawFile": "raw/f7-clear-0.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 1,
+          "NsLiteral": "62012.276442307695",
+          "RawFile": "raw/f7-clear-1.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 2,
+          "NsLiteral": "59892.625",
+          "RawFile": "raw/f7-clear-2.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 3,
+          "NsLiteral": "59740.38221153846",
+          "RawFile": "raw/f7-clear-3.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 4,
+          "NsLiteral": "59651.59585336538",
+          "RawFile": "raw/f7-clear-4.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 5,
+          "NsLiteral": "59737.051682692305",
+          "RawFile": "raw/f7-clear-5.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 6,
+          "NsLiteral": "59938.37620192308",
+          "RawFile": "raw/f7-clear-6.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 7,
+          "NsLiteral": "60140.403846153844",
+          "RawFile": "raw/f7-clear-7.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 8,
+          "NsLiteral": "60192.444411057695",
+          "RawFile": "raw/f7-clear-8.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 9,
+          "NsLiteral": "68698.70132211539",
+          "RawFile": "raw/f7-clear-9.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 10,
+          "NsLiteral": "59600.706129807695",
+          "RawFile": "raw/f7-clear-10.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 11,
+          "NsLiteral": "60954.88491586538",
+          "RawFile": "raw/f7-clear-11.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 12,
+          "NsLiteral": "60401.222956730766",
+          "RawFile": "raw/f7-clear-12.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 13,
+          "NsLiteral": "59512.198317307695",
+          "RawFile": "raw/f7-clear-13.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 0,
+          "NsLiteral": "9188.62890625",
+          "RawFile": "raw/f7-factory-0.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 1,
+          "NsLiteral": "9055.184795673076",
+          "RawFile": "raw/f7-factory-1.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 2,
+          "NsLiteral": "8606.098858173076",
+          "RawFile": "raw/f7-factory-2.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 3,
+          "NsLiteral": "8910.661959134615",
+          "RawFile": "raw/f7-factory-3.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 4,
+          "NsLiteral": "8412.62530048077",
+          "RawFile": "raw/f7-factory-4.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 5,
+          "NsLiteral": "8701.12890625",
+          "RawFile": "raw/f7-factory-5.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 6,
+          "NsLiteral": "8835.796274038461",
+          "RawFile": "raw/f7-factory-6.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 7,
+          "NsLiteral": "8762.007211538461",
+          "RawFile": "raw/f7-factory-7.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 8,
+          "NsLiteral": "8437.774338942309",
+          "RawFile": "raw/f7-factory-8.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 9,
+          "NsLiteral": "8639.608473557691",
+          "RawFile": "raw/f7-factory-9.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 10,
+          "NsLiteral": "8390.37139423077",
+          "RawFile": "raw/f7-factory-10.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 11,
+          "NsLiteral": "8835.279146634615",
+          "RawFile": "raw/f7-factory-11.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 12,
+          "NsLiteral": "8851.672475961539",
+          "RawFile": "raw/f7-factory-12.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 13,
+          "NsLiteral": "8909.07421875",
+          "RawFile": "raw/f7-factory-13.json"
+        }
+      ]
+    },
+    {
+      "Id": "alias/left/restore-pair/warm",
+      "OldIterations": 27905,
+      "NewIterations": 209213,
+      "TargetMilliseconds": 500,
+      "OriginalObservations": [
+        {
+          "Label": "f7-left",
+          "Round": 0,
+          "NsLiteral": "2867.270345816162",
+          "RawFile": "raw/f7-left-0.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 1,
+          "NsLiteral": "2823.5901092994086",
+          "RawFile": "raw/f7-left-1.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 2,
+          "NsLiteral": "2666.1576778355134",
+          "RawFile": "raw/f7-left-2.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 3,
+          "NsLiteral": "2668.4481992474466",
+          "RawFile": "raw/f7-left-3.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 4,
+          "NsLiteral": "2724.2569073642717",
+          "RawFile": "raw/f7-left-4.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 5,
+          "NsLiteral": "2644.1372155527683",
+          "RawFile": "raw/f7-left-5.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 6,
+          "NsLiteral": "2652.544741085827",
+          "RawFile": "raw/f7-left-6.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 7,
+          "NsLiteral": "2800.7922236158392",
+          "RawFile": "raw/f7-left-7.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 8,
+          "NsLiteral": "2725.978820999821",
+          "RawFile": "raw/f7-left-8.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 9,
+          "NsLiteral": "2812.5758466224693",
+          "RawFile": "raw/f7-left-9.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 10,
+          "NsLiteral": "2711.9869557426982",
+          "RawFile": "raw/f7-left-10.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 11,
+          "NsLiteral": "2676.175416592009",
+          "RawFile": "raw/f7-left-11.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 12,
+          "NsLiteral": "2744.4710266977245",
+          "RawFile": "raw/f7-left-12.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 13,
+          "NsLiteral": "2737.9369647016665",
+          "RawFile": "raw/f7-left-13.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 0,
+          "NsLiteral": "2824.4923848772623",
+          "RawFile": "raw/f7-right-0.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 1,
+          "NsLiteral": "2752.882960043003",
+          "RawFile": "raw/f7-right-1.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 2,
+          "NsLiteral": "2702.3203726930656",
+          "RawFile": "raw/f7-right-2.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 3,
+          "NsLiteral": "2761.950761512274",
+          "RawFile": "raw/f7-right-3.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 4,
+          "NsLiteral": "2796.7307292599894",
+          "RawFile": "raw/f7-right-4.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 5,
+          "NsLiteral": "2697.590933524458",
+          "RawFile": "raw/f7-right-5.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 6,
+          "NsLiteral": "2683.7306934241174",
+          "RawFile": "raw/f7-right-6.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 7,
+          "NsLiteral": "2808.6460132592724",
+          "RawFile": "raw/f7-right-7.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 8,
+          "NsLiteral": "2766.97839096936",
+          "RawFile": "raw/f7-right-8.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 9,
+          "NsLiteral": "2679.0999104103207",
+          "RawFile": "raw/f7-right-9.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 10,
+          "NsLiteral": "2668.195448844293",
+          "RawFile": "raw/f7-right-10.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 11,
+          "NsLiteral": "2687.055509765275",
+          "RawFile": "raw/f7-right-11.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 12,
+          "NsLiteral": "2705.5040315355673",
+          "RawFile": "raw/f7-right-12.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 13,
+          "NsLiteral": "2682.668159827988",
+          "RawFile": "raw/f7-right-13.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 0,
+          "NsLiteral": "3571.4670130800932",
+          "RawFile": "raw/f7-seed-0.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 1,
+          "NsLiteral": "3518.8192438631067",
+          "RawFile": "raw/f7-seed-1.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 2,
+          "NsLiteral": "3484.4393119512633",
+          "RawFile": "raw/f7-seed-2.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 3,
+          "NsLiteral": "3523.9850206056262",
+          "RawFile": "raw/f7-seed-3.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 4,
+          "NsLiteral": "3513.3951621573196",
+          "RawFile": "raw/f7-seed-4.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 5,
+          "NsLiteral": "3542.3481813295107",
+          "RawFile": "raw/f7-seed-5.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 6,
+          "NsLiteral": "3501.7576419996417",
+          "RawFile": "raw/f7-seed-6.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 7,
+          "NsLiteral": "3487.2966135101237",
+          "RawFile": "raw/f7-seed-7.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 8,
+          "NsLiteral": "3473.501630532163",
+          "RawFile": "raw/f7-seed-8.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 9,
+          "NsLiteral": "3478.88310338649",
+          "RawFile": "raw/f7-seed-9.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 10,
+          "NsLiteral": "3480.9334169503672",
+          "RawFile": "raw/f7-seed-10.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 11,
+          "NsLiteral": "3493.80293854148",
+          "RawFile": "raw/f7-seed-11.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 12,
+          "NsLiteral": "3481.945708654363",
+          "RawFile": "raw/f7-seed-12.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 13,
+          "NsLiteral": "3416.2690557247806",
+          "RawFile": "raw/f7-seed-13.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 0,
+          "NsLiteral": "2957.9555993549543",
+          "RawFile": "raw/f7-clear-0.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 1,
+          "NsLiteral": "2861.0559397957354",
+          "RawFile": "raw/f7-clear-1.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 2,
+          "NsLiteral": "2799.606235441677",
+          "RawFile": "raw/f7-clear-2.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 3,
+          "NsLiteral": "2937.7548468016485",
+          "RawFile": "raw/f7-clear-3.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 4,
+          "NsLiteral": "2712.451567819387",
+          "RawFile": "raw/f7-clear-4.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 5,
+          "NsLiteral": "2748.082745027773",
+          "RawFile": "raw/f7-clear-5.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 6,
+          "NsLiteral": "2759.476473750224",
+          "RawFile": "raw/f7-clear-6.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 7,
+          "NsLiteral": "2785.9878158036195",
+          "RawFile": "raw/f7-clear-7.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 8,
+          "NsLiteral": "2924.4971868840707",
+          "RawFile": "raw/f7-clear-8.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 9,
+          "NsLiteral": "2748.5624798423223",
+          "RawFile": "raw/f7-clear-9.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 10,
+          "NsLiteral": "2860.400501702204",
+          "RawFile": "raw/f7-clear-10.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 11,
+          "NsLiteral": "2732.417022039061",
+          "RawFile": "raw/f7-clear-11.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 12,
+          "NsLiteral": "2985.920587708296",
+          "RawFile": "raw/f7-clear-12.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 13,
+          "NsLiteral": "2914.739580720301",
+          "RawFile": "raw/f7-clear-13.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 0,
+          "NsLiteral": "2622.5954846801646",
+          "RawFile": "raw/f7-factory-0.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 1,
+          "NsLiteral": "2540.6907364271638",
+          "RawFile": "raw/f7-factory-1.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 2,
+          "NsLiteral": "2449.4368751119873",
+          "RawFile": "raw/f7-factory-2.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 3,
+          "NsLiteral": "2422.352302454757",
+          "RawFile": "raw/f7-factory-3.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 4,
+          "NsLiteral": "2389.9166457624083",
+          "RawFile": "raw/f7-factory-4.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 5,
+          "NsLiteral": "2439.415803619423",
+          "RawFile": "raw/f7-factory-5.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 6,
+          "NsLiteral": "2459.8622110732845",
+          "RawFile": "raw/f7-factory-6.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 7,
+          "NsLiteral": "2455.4824225049274",
+          "RawFile": "raw/f7-factory-7.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 8,
+          "NsLiteral": "2502.657229887117",
+          "RawFile": "raw/f7-factory-8.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 9,
+          "NsLiteral": "2428.2041211252463",
+          "RawFile": "raw/f7-factory-9.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 10,
+          "NsLiteral": "2393.201970972944",
+          "RawFile": "raw/f7-factory-10.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 11,
+          "NsLiteral": "2536.7816878695576",
+          "RawFile": "raw/f7-factory-11.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 12,
+          "NsLiteral": "2571.6170937108045",
+          "RawFile": "raw/f7-factory-12.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 13,
+          "NsLiteral": "2567.5315893209104",
+          "RawFile": "raw/f7-factory-13.json"
+        }
+      ]
+    },
+    {
+      "Id": "alias/right/restore-pair/warm",
+      "OldIterations": 29973,
+      "NewIterations": 208331,
+      "TargetMilliseconds": 500,
+      "OriginalObservations": [
+        {
+          "Label": "f7-left",
+          "Round": 0,
+          "NsLiteral": "2715.120641911053",
+          "RawFile": "raw/f7-left-0.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 1,
+          "NsLiteral": "2644.8929036132517",
+          "RawFile": "raw/f7-left-1.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 2,
+          "NsLiteral": "2641.4918426583927",
+          "RawFile": "raw/f7-left-2.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 3,
+          "NsLiteral": "2533.2284722917293",
+          "RawFile": "raw/f7-left-3.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 4,
+          "NsLiteral": "2636.298134988156",
+          "RawFile": "raw/f7-left-4.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 5,
+          "NsLiteral": "2520.945784539419",
+          "RawFile": "raw/f7-left-5.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 6,
+          "NsLiteral": "2527.5245053881827",
+          "RawFile": "raw/f7-left-6.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 7,
+          "NsLiteral": "2714.960264237814",
+          "RawFile": "raw/f7-left-7.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 8,
+          "NsLiteral": "2738.1666499849866",
+          "RawFile": "raw/f7-left-8.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 9,
+          "NsLiteral": "2611.124845694458",
+          "RawFile": "raw/f7-left-9.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 10,
+          "NsLiteral": "2576.247756314016",
+          "RawFile": "raw/f7-left-10.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 11,
+          "NsLiteral": "2541.131918726854",
+          "RawFile": "raw/f7-left-11.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 12,
+          "NsLiteral": "2740.2173622927303",
+          "RawFile": "raw/f7-left-12.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 13,
+          "NsLiteral": "2600.2606012077536",
+          "RawFile": "raw/f7-left-13.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 0,
+          "NsLiteral": "2860.6749741433955",
+          "RawFile": "raw/f7-right-0.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 1,
+          "NsLiteral": "2658.21829646682",
+          "RawFile": "raw/f7-right-1.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 2,
+          "NsLiteral": "2574.5292763487137",
+          "RawFile": "raw/f7-right-2.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 3,
+          "NsLiteral": "2674.3464784973144",
+          "RawFile": "raw/f7-right-3.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 4,
+          "NsLiteral": "2667.895906315684",
+          "RawFile": "raw/f7-right-4.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 5,
+          "NsLiteral": "2585.1781269809494",
+          "RawFile": "raw/f7-right-5.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 6,
+          "NsLiteral": "2597.4615820905483",
+          "RawFile": "raw/f7-right-6.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 7,
+          "NsLiteral": "2727.97764654856",
+          "RawFile": "raw/f7-right-7.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 8,
+          "NsLiteral": "2682.4014613151835",
+          "RawFile": "raw/f7-right-8.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 9,
+          "NsLiteral": "2646.1864344576784",
+          "RawFile": "raw/f7-right-9.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 10,
+          "NsLiteral": "2627.0330630901144",
+          "RawFile": "raw/f7-right-10.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 11,
+          "NsLiteral": "2600.0099422813864",
+          "RawFile": "raw/f7-right-11.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 12,
+          "NsLiteral": "2564.0771694525074",
+          "RawFile": "raw/f7-right-12.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 13,
+          "NsLiteral": "2592.868014546425",
+          "RawFile": "raw/f7-right-13.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 0,
+          "NsLiteral": "3608.623761385247",
+          "RawFile": "raw/f7-seed-0.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 1,
+          "NsLiteral": "3616.2460547826377",
+          "RawFile": "raw/f7-seed-1.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 2,
+          "NsLiteral": "3618.1126680679276",
+          "RawFile": "raw/f7-seed-2.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 3,
+          "NsLiteral": "3777.5973376038432",
+          "RawFile": "raw/f7-seed-3.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 4,
+          "NsLiteral": "3597.120041370567",
+          "RawFile": "raw/f7-seed-4.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 5,
+          "NsLiteral": "3605.1077302905946",
+          "RawFile": "raw/f7-seed-5.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 6,
+          "NsLiteral": "3974.1113668968737",
+          "RawFile": "raw/f7-seed-6.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 7,
+          "NsLiteral": "3602.07183131485",
+          "RawFile": "raw/f7-seed-7.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 8,
+          "NsLiteral": "3594.4581790277916",
+          "RawFile": "raw/f7-seed-8.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 9,
+          "NsLiteral": "3576.695692790178",
+          "RawFile": "raw/f7-seed-9.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 10,
+          "NsLiteral": "3596.2969005438226",
+          "RawFile": "raw/f7-seed-10.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 11,
+          "NsLiteral": "3591.1454976145196",
+          "RawFile": "raw/f7-seed-11.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 12,
+          "NsLiteral": "3597.952991025256",
+          "RawFile": "raw/f7-seed-12.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 13,
+          "NsLiteral": "3541.5368164681545",
+          "RawFile": "raw/f7-seed-13.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 0,
+          "NsLiteral": "2826.8468621759584",
+          "RawFile": "raw/f7-clear-0.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 1,
+          "NsLiteral": "2679.7610849764787",
+          "RawFile": "raw/f7-clear-1.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 2,
+          "NsLiteral": "2563.0443732692756",
+          "RawFile": "raw/f7-clear-2.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 3,
+          "NsLiteral": "2713.2431521702865",
+          "RawFile": "raw/f7-clear-3.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 4,
+          "NsLiteral": "2541.303072765489",
+          "RawFile": "raw/f7-clear-4.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 5,
+          "NsLiteral": "2602.823240916825",
+          "RawFile": "raw/f7-clear-5.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 6,
+          "NsLiteral": "2545.6313015046876",
+          "RawFile": "raw/f7-clear-6.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 7,
+          "NsLiteral": "2550.212858239082",
+          "RawFile": "raw/f7-clear-7.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 8,
+          "NsLiteral": "2684.7357955493276",
+          "RawFile": "raw/f7-clear-8.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 9,
+          "NsLiteral": "2533.87592166283",
+          "RawFile": "raw/f7-clear-9.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 10,
+          "NsLiteral": "2677.722483568545",
+          "RawFile": "raw/f7-clear-10.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 11,
+          "NsLiteral": "2858.9687051679844",
+          "RawFile": "raw/f7-clear-11.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 12,
+          "NsLiteral": "2790.4845694458345",
+          "RawFile": "raw/f7-clear-12.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 13,
+          "NsLiteral": "2731.3171187401995",
+          "RawFile": "raw/f7-clear-13.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 0,
+          "NsLiteral": "2632.3769058819603",
+          "RawFile": "raw/f7-factory-0.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 1,
+          "NsLiteral": "2492.323324325226",
+          "RawFile": "raw/f7-factory-1.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 2,
+          "NsLiteral": "2441.643545857939",
+          "RawFile": "raw/f7-factory-2.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 3,
+          "NsLiteral": "2429.3066092816866",
+          "RawFile": "raw/f7-factory-3.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 4,
+          "NsLiteral": "2403.5376171888033",
+          "RawFile": "raw/f7-factory-4.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 5,
+          "NsLiteral": "2429.8156340706637",
+          "RawFile": "raw/f7-factory-5.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 6,
+          "NsLiteral": "2449.5579354752613",
+          "RawFile": "raw/f7-factory-6.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 7,
+          "NsLiteral": "2453.951689854202",
+          "RawFile": "raw/f7-factory-7.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 8,
+          "NsLiteral": "2415.054449004104",
+          "RawFile": "raw/f7-factory-8.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 9,
+          "NsLiteral": "2420.27708270777",
+          "RawFile": "raw/f7-factory-9.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 10,
+          "NsLiteral": "2400.0344977146096",
+          "RawFile": "raw/f7-factory-10.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 11,
+          "NsLiteral": "2555.2143929536583",
+          "RawFile": "raw/f7-factory-11.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 12,
+          "NsLiteral": "2600.3883495145633",
+          "RawFile": "raw/f7-factory-12.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 13,
+          "NsLiteral": "2581.7242184632837",
+          "RawFile": "raw/f7-factory-13.json"
+        }
+      ]
+    },
+    {
+      "Id": "alias/both/restore-pair/warm",
+      "OldIterations": 47694,
+      "NewIterations": 4108415,
+      "TargetMilliseconds": 500,
+      "OriginalObservations": [
+        {
+          "Label": "f7-left",
+          "Round": 0,
+          "NsLiteral": "801.4074097370739",
+          "RawFile": "raw/f7-left-0.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 1,
+          "NsLiteral": "763.9290267119554",
+          "RawFile": "raw/f7-left-1.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 2,
+          "NsLiteral": "729.1180651654296",
+          "RawFile": "raw/f7-left-2.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 3,
+          "NsLiteral": "726.8954375812472",
+          "RawFile": "raw/f7-left-3.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 4,
+          "NsLiteral": "785.9363022602424",
+          "RawFile": "raw/f7-left-4.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 5,
+          "NsLiteral": "722.7370738457668",
+          "RawFile": "raw/f7-left-5.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 6,
+          "NsLiteral": "710.8141065962176",
+          "RawFile": "raw/f7-left-6.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 7,
+          "NsLiteral": "834.0139220866356",
+          "RawFile": "raw/f7-left-7.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 8,
+          "NsLiteral": "767.2625906822661",
+          "RawFile": "raw/f7-left-8.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 9,
+          "NsLiteral": "756.6030737618988",
+          "RawFile": "raw/f7-left-9.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 10,
+          "NsLiteral": "729.8139598272319",
+          "RawFile": "raw/f7-left-10.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 11,
+          "NsLiteral": "717.4569337862205",
+          "RawFile": "raw/f7-left-11.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 12,
+          "NsLiteral": "761.6572734515872",
+          "RawFile": "raw/f7-left-12.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 13,
+          "NsLiteral": "719.3447813142114",
+          "RawFile": "raw/f7-left-13.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 0,
+          "NsLiteral": "840.9623642386883",
+          "RawFile": "raw/f7-right-0.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 1,
+          "NsLiteral": "793.7200276764373",
+          "RawFile": "raw/f7-right-1.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 2,
+          "NsLiteral": "716.7268000167736",
+          "RawFile": "raw/f7-right-2.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 3,
+          "NsLiteral": "740.9540822744999",
+          "RawFile": "raw/f7-right-3.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 4,
+          "NsLiteral": "798.9133643644903",
+          "RawFile": "raw/f7-right-4.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 5,
+          "NsLiteral": "732.6297437832851",
+          "RawFile": "raw/f7-right-5.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 6,
+          "NsLiteral": "725.3225353293915",
+          "RawFile": "raw/f7-right-6.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 7,
+          "NsLiteral": "762.8749528242546",
+          "RawFile": "raw/f7-right-7.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 8,
+          "NsLiteral": "768.9591982219986",
+          "RawFile": "raw/f7-right-8.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 9,
+          "NsLiteral": "722.6729987000462",
+          "RawFile": "raw/f7-right-9.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 10,
+          "NsLiteral": "726.1061559105967",
+          "RawFile": "raw/f7-right-10.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 11,
+          "NsLiteral": "736.7068813687256",
+          "RawFile": "raw/f7-right-11.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 12,
+          "NsLiteral": "722.5162913574035",
+          "RawFile": "raw/f7-right-12.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 13,
+          "NsLiteral": "723.5366712794062",
+          "RawFile": "raw/f7-right-13.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 0,
+          "NsLiteral": "122.9837715435904",
+          "RawFile": "raw/f7-seed-0.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 1,
+          "NsLiteral": "122.66400385792763",
+          "RawFile": "raw/f7-seed-1.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 2,
+          "NsLiteral": "122.13970310730909",
+          "RawFile": "raw/f7-seed-2.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 3,
+          "NsLiteral": "123.18314672705162",
+          "RawFile": "raw/f7-seed-3.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 4,
+          "NsLiteral": "122.40713716610055",
+          "RawFile": "raw/f7-seed-4.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 5,
+          "NsLiteral": "121.70145091625781",
+          "RawFile": "raw/f7-seed-5.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 6,
+          "NsLiteral": "245.58552438461862",
+          "RawFile": "raw/f7-seed-6.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 7,
+          "NsLiteral": "126.26923722061476",
+          "RawFile": "raw/f7-seed-7.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 8,
+          "NsLiteral": "121.99469534951986",
+          "RawFile": "raw/f7-seed-8.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 9,
+          "NsLiteral": "122.22600327085168",
+          "RawFile": "raw/f7-seed-9.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 10,
+          "NsLiteral": "122.42571392628004",
+          "RawFile": "raw/f7-seed-10.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 11,
+          "NsLiteral": "122.81769195286618",
+          "RawFile": "raw/f7-seed-11.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 12,
+          "NsLiteral": "123.09229672495492",
+          "RawFile": "raw/f7-seed-12.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 13,
+          "NsLiteral": "121.92793642806222",
+          "RawFile": "raw/f7-seed-13.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 0,
+          "NsLiteral": "839.8693756028011",
+          "RawFile": "raw/f7-clear-0.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 1,
+          "NsLiteral": "764.8930263764834",
+          "RawFile": "raw/f7-clear-1.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 2,
+          "NsLiteral": "723.7406801694134",
+          "RawFile": "raw/f7-clear-2.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 3,
+          "NsLiteral": "758.2486056946367",
+          "RawFile": "raw/f7-clear-3.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 4,
+          "NsLiteral": "735.2466767308257",
+          "RawFile": "raw/f7-clear-4.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 5,
+          "NsLiteral": "735.9163836121944",
+          "RawFile": "raw/f7-clear-5.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 6,
+          "NsLiteral": "716.5274667673083",
+          "RawFile": "raw/f7-clear-6.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 7,
+          "NsLiteral": "724.474734767476",
+          "RawFile": "raw/f7-clear-7.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 8,
+          "NsLiteral": "786.6242713968214",
+          "RawFile": "raw/f7-clear-8.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 9,
+          "NsLiteral": "721.7481653876798",
+          "RawFile": "raw/f7-clear-9.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 10,
+          "NsLiteral": "747.9917390028096",
+          "RawFile": "raw/f7-clear-10.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 11,
+          "NsLiteral": "731.3873862540362",
+          "RawFile": "raw/f7-clear-11.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 12,
+          "NsLiteral": "859.0675976013754",
+          "RawFile": "raw/f7-clear-12.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 13,
+          "NsLiteral": "785.2026041011447",
+          "RawFile": "raw/f7-clear-13.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 0,
+          "NsLiteral": "797.3121566654087",
+          "RawFile": "raw/f7-factory-0.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 1,
+          "NsLiteral": "727.5390195831761",
+          "RawFile": "raw/f7-factory-1.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 2,
+          "NsLiteral": "692.3898603597937",
+          "RawFile": "raw/f7-factory-2.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 3,
+          "NsLiteral": "691.7545812890511",
+          "RawFile": "raw/f7-factory-3.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 4,
+          "NsLiteral": "688.0046337065459",
+          "RawFile": "raw/f7-factory-4.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 5,
+          "NsLiteral": "707.6706294292783",
+          "RawFile": "raw/f7-factory-5.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 6,
+          "NsLiteral": "716.9195705958821",
+          "RawFile": "raw/f7-factory-6.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 7,
+          "NsLiteral": "733.3476537929299",
+          "RawFile": "raw/f7-factory-7.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 8,
+          "NsLiteral": "712.70061223634",
+          "RawFile": "raw/f7-factory-8.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 9,
+          "NsLiteral": "701.8841573363526",
+          "RawFile": "raw/f7-factory-9.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 10,
+          "NsLiteral": "693.1947834109112",
+          "RawFile": "raw/f7-factory-10.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 11,
+          "NsLiteral": "757.812408269384",
+          "RawFile": "raw/f7-factory-11.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 12,
+          "NsLiteral": "779.9323604646287",
+          "RawFile": "raw/f7-factory-12.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 13,
+          "NsLiteral": "779.0080932612069",
+          "RawFile": "raw/f7-factory-13.json"
+        }
+      ]
+    },
+    {
+      "Id": "fallback/proxy-alias-right/restore-pair/warm",
+      "OldIterations": 68913,
+      "NewIterations": 207362,
+      "TargetMilliseconds": 500,
+      "OriginalObservations": [
+        {
+          "Label": "f7-left",
+          "Round": 0,
+          "NsLiteral": "2726.104407005935",
+          "RawFile": "raw/f7-left-0.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 1,
+          "NsLiteral": "2546.8785134880213",
+          "RawFile": "raw/f7-left-1.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 2,
+          "NsLiteral": "2519.051557761235",
+          "RawFile": "raw/f7-left-2.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 3,
+          "NsLiteral": "2478.1387836837753",
+          "RawFile": "raw/f7-left-3.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 4,
+          "NsLiteral": "2613.421705628836",
+          "RawFile": "raw/f7-left-4.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 5,
+          "NsLiteral": "2438.4448942869994",
+          "RawFile": "raw/f7-left-5.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 6,
+          "NsLiteral": "2475.098239809615",
+          "RawFile": "raw/f7-left-6.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 7,
+          "NsLiteral": "2604.402696153121",
+          "RawFile": "raw/f7-left-7.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 8,
+          "NsLiteral": "2584.1286985039105",
+          "RawFile": "raw/f7-left-8.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 9,
+          "NsLiteral": "2512.5856804956975",
+          "RawFile": "raw/f7-left-9.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 10,
+          "NsLiteral": "2491.0410952940665",
+          "RawFile": "raw/f7-left-10.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 11,
+          "NsLiteral": "2644.1277843077505",
+          "RawFile": "raw/f7-left-11.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 12,
+          "NsLiteral": "2467.3003061831587",
+          "RawFile": "raw/f7-left-12.json"
+        },
+        {
+          "Label": "f7-left",
+          "Round": 13,
+          "NsLiteral": "2448.3841945641607",
+          "RawFile": "raw/f7-left-13.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 0,
+          "NsLiteral": "2649.833369610959",
+          "RawFile": "raw/f7-right-0.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 1,
+          "NsLiteral": "2578.5073498469083",
+          "RawFile": "raw/f7-right-1.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 2,
+          "NsLiteral": "2461.492838796744",
+          "RawFile": "raw/f7-right-2.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 3,
+          "NsLiteral": "2615.648382743459",
+          "RawFile": "raw/f7-right-3.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 4,
+          "NsLiteral": "2474.5526098123723",
+          "RawFile": "raw/f7-right-4.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 5,
+          "NsLiteral": "2428.827420080391",
+          "RawFile": "raw/f7-right-5.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 6,
+          "NsLiteral": "2444.024291497976",
+          "RawFile": "raw/f7-right-6.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 7,
+          "NsLiteral": "2576.8571242000785",
+          "RawFile": "raw/f7-right-7.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 8,
+          "NsLiteral": "2572.6691915893953",
+          "RawFile": "raw/f7-right-8.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 9,
+          "NsLiteral": "2456.666274868312",
+          "RawFile": "raw/f7-right-9.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 10,
+          "NsLiteral": "2513.040630940461",
+          "RawFile": "raw/f7-right-10.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 11,
+          "NsLiteral": "2518.8553828740587",
+          "RawFile": "raw/f7-right-11.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 12,
+          "NsLiteral": "2526.1553117699127",
+          "RawFile": "raw/f7-right-12.json"
+        },
+        {
+          "Label": "f7-right",
+          "Round": 13,
+          "NsLiteral": "2465.563623699447",
+          "RawFile": "raw/f7-right-13.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 0,
+          "NsLiteral": "2721.3872709067955",
+          "RawFile": "raw/f7-seed-0.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 1,
+          "NsLiteral": "2483.941999332492",
+          "RawFile": "raw/f7-seed-1.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 2,
+          "NsLiteral": "2464.547676055316",
+          "RawFile": "raw/f7-seed-2.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 3,
+          "NsLiteral": "2644.159723129163",
+          "RawFile": "raw/f7-seed-3.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 4,
+          "NsLiteral": "2571.6245410880388",
+          "RawFile": "raw/f7-seed-4.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 5,
+          "NsLiteral": "2499.351951010695",
+          "RawFile": "raw/f7-seed-5.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 6,
+          "NsLiteral": "2587.476905663663",
+          "RawFile": "raw/f7-seed-6.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 7,
+          "NsLiteral": "2677.3914065560925",
+          "RawFile": "raw/f7-seed-7.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 8,
+          "NsLiteral": "2546.4844514097485",
+          "RawFile": "raw/f7-seed-8.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 9,
+          "NsLiteral": "2444.631013016412",
+          "RawFile": "raw/f7-seed-9.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 10,
+          "NsLiteral": "2443.654346785077",
+          "RawFile": "raw/f7-seed-10.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 11,
+          "NsLiteral": "2455.188730718442",
+          "RawFile": "raw/f7-seed-11.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 12,
+          "NsLiteral": "2439.2947774730455",
+          "RawFile": "raw/f7-seed-12.json"
+        },
+        {
+          "Label": "f7-seed",
+          "Round": 13,
+          "NsLiteral": "2612.8538447027413",
+          "RawFile": "raw/f7-seed-13.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 0,
+          "NsLiteral": "2727.7116654332276",
+          "RawFile": "raw/f7-clear-0.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 1,
+          "NsLiteral": "2804.743110878934",
+          "RawFile": "raw/f7-clear-1.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 2,
+          "NsLiteral": "2419.240172391276",
+          "RawFile": "raw/f7-clear-2.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 3,
+          "NsLiteral": "3149.7342010941334",
+          "RawFile": "raw/f7-clear-3.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 4,
+          "NsLiteral": "2512.235079012668",
+          "RawFile": "raw/f7-clear-4.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 5,
+          "NsLiteral": "2455.9789009330607",
+          "RawFile": "raw/f7-clear-5.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 6,
+          "NsLiteral": "2423.0840915357044",
+          "RawFile": "raw/f7-clear-6.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 7,
+          "NsLiteral": "2584.3021635975797",
+          "RawFile": "raw/f7-clear-7.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 8,
+          "NsLiteral": "2517.817030168473",
+          "RawFile": "raw/f7-clear-8.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 9,
+          "NsLiteral": "2496.714712753762",
+          "RawFile": "raw/f7-clear-9.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 10,
+          "NsLiteral": "2635.352502430601",
+          "RawFile": "raw/f7-clear-10.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 11,
+          "NsLiteral": "2503.777560112025",
+          "RawFile": "raw/f7-clear-11.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 12,
+          "NsLiteral": "2463.5690508322086",
+          "RawFile": "raw/f7-clear-12.json"
+        },
+        {
+          "Label": "f7-clear",
+          "Round": 13,
+          "NsLiteral": "2644.2930651691263",
+          "RawFile": "raw/f7-clear-13.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 0,
+          "NsLiteral": "2562.6298376213485",
+          "RawFile": "raw/f7-factory-0.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 1,
+          "NsLiteral": "2468.7083424027396",
+          "RawFile": "raw/f7-factory-1.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 2,
+          "NsLiteral": "2411.252956626471",
+          "RawFile": "raw/f7-factory-2.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 3,
+          "NsLiteral": "2572.364575624338",
+          "RawFile": "raw/f7-factory-3.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 4,
+          "NsLiteral": "2448.3933510368147",
+          "RawFile": "raw/f7-factory-4.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 5,
+          "NsLiteral": "2438.415146634162",
+          "RawFile": "raw/f7-factory-5.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 6,
+          "NsLiteral": "2479.3909712245877",
+          "RawFile": "raw/f7-factory-6.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 7,
+          "NsLiteral": "2456.5414363037453",
+          "RawFile": "raw/f7-factory-7.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 8,
+          "NsLiteral": "2531.2804550665332",
+          "RawFile": "raw/f7-factory-8.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 9,
+          "NsLiteral": "2440.9150378012855",
+          "RawFile": "raw/f7-factory-9.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 10,
+          "NsLiteral": "2463.510774454747",
+          "RawFile": "raw/f7-factory-10.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 11,
+          "NsLiteral": "2477.8820832063616",
+          "RawFile": "raw/f7-factory-11.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 12,
+          "NsLiteral": "2568.0736000464353",
+          "RawFile": "raw/f7-factory-12.json"
+        },
+        {
+          "Label": "f7-factory",
+          "Round": 13,
+          "NsLiteral": "2677.673646481796",
+          "RawFile": "raw/f7-factory-13.json"
+        }
+      ]
+    }
+  ],
+  "SourceRawHashes": {
+    "raw/f7-clear-0.json": "ad63a44c9969e741308e4bc6afb6d13df3f2319f4b4c23bf8451ff54354bc223",
+    "raw/f7-clear-1.json": "05bc67db59ab190b38acb1140aaee8b73d4b50860ab1c06a3a84d253f49e30e7",
+    "raw/f7-clear-10.json": "67117c844cabbfdde9b602383955a276f6fd997cd9bb3e7ab9e86b67f3e577b7",
+    "raw/f7-clear-11.json": "5a8becce99b898a94f1390949ef3ce8e281a76601d0fa88e6867ea886cc64455",
+    "raw/f7-clear-12.json": "001ac70982ad0801b966defdcfc07cbb7a2167e78edaff47c79afbb2a9201e88",
+    "raw/f7-clear-13.json": "e4437c0817f0130ca03bc4994a59ec5f53f74033e2e8868e23c6b63bd80cd3a5",
+    "raw/f7-clear-2.json": "03da15fc99108cfe4f03ecfb9e3cf6997fda00ed47b60c2daf93f278946f9d3e",
+    "raw/f7-clear-3.json": "74a5e6e09897746767b71d1e3ba6ae2404d6ab03e268a5f94251080314b01081",
+    "raw/f7-clear-4.json": "b3726108fff69b846e4e9b4f4778937cb3dcf4defd63328fcb0c8a9958349610",
+    "raw/f7-clear-5.json": "e01e013075848579110e15063926aabd488061bbda50d05cda70bc8531889433",
+    "raw/f7-clear-6.json": "b8f9c9f77a6b1b8cafc017cbe17b465d992a33b42d8f3cb9fe8167275a1638fc",
+    "raw/f7-clear-7.json": "35272ba4caee5cf9a33b3ac8274cdb2c0f0c6cefe4592ea768f02fec52f093ef",
+    "raw/f7-clear-8.json": "d015debbb1162685d32ff8a9bed62876906d1364384f943164cf12370692b284",
+    "raw/f7-clear-9.json": "065b73d4fc0a5517d0d952ecd99977ce3d4f9a287c1da8c2c67dbc9e3b100c6e",
+    "raw/f7-factory-0.json": "cba745162d878c00a9c8daf8cb8d7b956f10b5b60781aa1b1cbd149826593c99",
+    "raw/f7-factory-1.json": "95e06bc00ecf04dc7f86f9d6e7b8ee3980ea6fdc72893f14f500d1a3cb595bfa",
+    "raw/f7-factory-10.json": "2c0fc00d3e0e912021b9aa5e559cadf28e8ee695b1d4a36ae192390622fa391b",
+    "raw/f7-factory-11.json": "ec5c730afa370c5407eaa73a86f50628f1105ed07e4b66189ab5f61df4eb9998",
+    "raw/f7-factory-12.json": "aebe3f6c35dab0a0ff1dcda988e9071ef17b66294f6966a19744803c0c91a2bb",
+    "raw/f7-factory-13.json": "1d6eb2ce4c0318ef5535b5168004c45ebb1126bafa2380aba6c1227863f4b562",
+    "raw/f7-factory-2.json": "71d77c3f8b7698c7a24a0b1fd6eff254d2a5ba3309f6e299041e021d7aee0cfe",
+    "raw/f7-factory-3.json": "1720e6c1978cda1728fb8c4f5c88960ef28f43f097ffa0a6d5ea2e3200ec30fe",
+    "raw/f7-factory-4.json": "3809f9312dd11506878d3a3e6733202bc2fdee32bbb04619ad2a025ca9463732",
+    "raw/f7-factory-5.json": "10c3bf3c3f002dce367225474b7656c7eb795d9c5fa3adea083e16801260287a",
+    "raw/f7-factory-6.json": "84b2446bc4f4f457d3652e8c39900492b617620781f60fc3c035788d385cdfb8",
+    "raw/f7-factory-7.json": "abaf9d37145d854fbc4b15736d9240b16f18a53d98182a3b17f0c878b50afcdf",
+    "raw/f7-factory-8.json": "f6776ddb4215ef66c79ad552312b955f00ac5916c4bcc9a9e25f8981ce4fdd92",
+    "raw/f7-factory-9.json": "7eca5cd593de1a3a71176ee48eaccf730a5afa5368c3b751ce73145ec815cd87",
+    "raw/f7-left-0.json": "593e056755bb2159975c6710c3c463d2a179f4de7af543b4ed66526b0be69e69",
+    "raw/f7-left-1.json": "190d96578a84517f4fa9f89d30e54e8fd05a228390b0bf0a4f1ea650a5119769",
+    "raw/f7-left-10.json": "0b110a042c02fd25548d5d93b2571e5e8feca4cdee1a2ff82f747791e1e38902",
+    "raw/f7-left-11.json": "08bb99af508fc7f15a41cc3c31bef7b77da1102f93ced1ed904eed237d8f7c09",
+    "raw/f7-left-12.json": "b6092e1f3c4285be99496b11ca478732845330f3672a567a65487ca57ed4d46b",
+    "raw/f7-left-13.json": "fcdd27239ea6fd7fe11bab1d1e17c253bec9b8f56fa0248f1af9f34b95200ae9",
+    "raw/f7-left-2.json": "86dc0629dddad2ac9c15a83b4a9d1adbf054164dce3271d0f2ee4438c5547238",
+    "raw/f7-left-3.json": "1ae82499d3356767a0a2b17eb81f92f9c82d046428fe4061fcea1ff8668d2009",
+    "raw/f7-left-4.json": "88a4f43058d9f734f069992f05968f95dd57a0d93f5d05f75db1b9f1223153f1",
+    "raw/f7-left-5.json": "4d1c7cdc2b0467f25fe5f71f13baaab18adfb77f491d34ad1c397779a2f7e900",
+    "raw/f7-left-6.json": "319e4c23b8c39e111bd41a88faa5eaa96bed58765a5420dd2e8a3804e76882dd",
+    "raw/f7-left-7.json": "b980bbd74a22db4a8eaaf7abe4e0e34e18652a0651fe83de0dd70d69089262b1",
+    "raw/f7-left-8.json": "5e6bee69436def5b59e5f0d141fa74b374298f97793bddb2b896990502c651fb",
+    "raw/f7-left-9.json": "a951e4488bcb0ed5eef195803abd62ff9e074628d08c53452b755b4227a1d1be",
+    "raw/f7-right-0.json": "67f0b5939a8e907ca0926491468a281bdd87daa9471b4795263921dce77e5022",
+    "raw/f7-right-1.json": "78b283b1c4a1ca5b326bc6e399ab767b75af34a564cd2f67093f10fb579a92de",
+    "raw/f7-right-10.json": "89e59556f591a18cd028bc320bf78aee4601837da857bd58af7a4416522a5f5f",
+    "raw/f7-right-11.json": "f7e0b3ef54d1345544633c698aa2c98fc5cbbcc4c2dc296535055fbd7f31ffab",
+    "raw/f7-right-12.json": "9cd36db219ede0a40787f2cb05dc94efb52de8b6dc360683a3353e2611d556d8",
+    "raw/f7-right-13.json": "e0e86c93eeb5ef7bd9115b2ee21fa95839d7b29a5367fb42867441aa6b89eb54",
+    "raw/f7-right-2.json": "42056461d7a252ac95b6419dd903961ad53c38fddd7dfdea5c72f51a97825321",
+    "raw/f7-right-3.json": "3595f43887d79ccea625a466ce5879b24dedeb3d8539700195f29ef3255e6dec",
+    "raw/f7-right-4.json": "edbc209740e8b73357c9ae3f42139a8b21ea71ae3973026fca597b0c03c8100e",
+    "raw/f7-right-5.json": "3f0a963b5d5594128b92e832a13a6838e209779e65d9954dec42037b75ea8b1f",
+    "raw/f7-right-6.json": "fa705626ccf6c0c701cff0d0457494977d85e2b29014d07765a5ba10d2ada375",
+    "raw/f7-right-7.json": "7db06197800ce32fdde222fab6a221c0eaf24d84bb9334ef3f555a04b8df9c92",
+    "raw/f7-right-8.json": "f1a391ff93d7bfa897e012d242ca792f6a59c3e402dc44956a4ba79f1b420e03",
+    "raw/f7-right-9.json": "b7cc70d3e48b0ba79dc4a4e82dd01244808b42834103a20c63e9b57e3964b188",
+    "raw/f7-seed-0.json": "c485564fd9edc02d55944571f5560f6447be69bfd870236e294b0d7a06b1db73",
+    "raw/f7-seed-1.json": "1934ef048f852fd960c5356c32a79bfd12d7ad06b2b3b109e7a86eaa04468945",
+    "raw/f7-seed-10.json": "b74797579831266edc4f12153368cd8c4c870fb06ea0b0ef3efb8a731f3d9795",
+    "raw/f7-seed-11.json": "3628808ebee85a5e8ffc66409c8f86940e218f045a1966fd28e65f64bcdc0102",
+    "raw/f7-seed-12.json": "2b1a1c6b3cb31d0328a9887d79158e56df30e371debaa157737f52d452b26ff7",
+    "raw/f7-seed-13.json": "f2a3a4f17017b4bf3ef5c922cd7c5cea3dbb8150b4fd2235a80e480a2c73d707",
+    "raw/f7-seed-2.json": "83d283ac8fc04510a74fe0cc3c156fa7330a77a12a18f8d5004cdf2f6fd6a0ca",
+    "raw/f7-seed-3.json": "be5c276aad9ff06051ca1bdcfbf005551790ecb34e0b74c46d750a2e46eecaab",
+    "raw/f7-seed-4.json": "94cb6856353fe4185496294c3afd5e42aa6c65976e8c5ed39e9f358673707540",
+    "raw/f7-seed-5.json": "11abdacf0402a06320c89f034ee31336bc7b992e782bf117afee89b62bfd6eeb",
+    "raw/f7-seed-6.json": "53cd9b3ba2a6f9c62944bd92bf73c3db739f0c20312950daea58f9b0c21d8eda",
+    "raw/f7-seed-7.json": "24f4648b77fef4148e8c01d4c3fd641146e1d16c90f9b93d06ca0fb6141d74c0",
+    "raw/f7-seed-8.json": "67e61ac95679eb999f49a00e74f212e0a4e56b1302ec5bfe25f6bbceebce9bb1",
+    "raw/f7-seed-9.json": "cf33a7697dbad7f554efbdf7f1a114c6ee7dc68ad5c4a47706bc9ce56d9dba2f"
+  },
+  "MapSHA256": "149a3ef7cb84482297c55ea1c60854bc954be043a5766b8d6e53a66cf0554a51",
+  "SourceMapSHA256": "147dd220a3c59ef7001c4fcba3030c2b75b61e1efb4dda160a02c29945353f81",
+  "UnchangedRows": [
+    "flat/n4/overlap0/warm",
+    "flat/n4/overlap50/warm",
+    "flat/n4/overlap50/fresh-output-process-warm",
+    "flat/n4/overlap100/warm",
+    "flat/n128/overlap0/warm",
+    "flat/n128/overlap50/warm",
+    "flat/n128/overlap50/fresh-output-process-warm",
+    "flat/n128/overlap100/warm",
+    "flat/n1024/overlap50/fresh-output-process-warm",
+    "unbalanced/small-left/warm",
+    "unbalanced/large-left/warm",
+    "history/fresh/warm",
+    "history/empty-reserved8192/warm",
+    "history/grown1024-drained/warm",
+    "history/old-deep/warm",
+    "kind/counted-left/warm",
+    "kind/counted-right/warm",
+    "kind/counted-both/warm",
+    "kind/counted-both/fresh-output-process-warm",
+    "kind/stable-proxy-left/warm",
+    "kind/stable-proxy-right/warm",
+    "kind/stable-proxy-both/warm",
+    "deep/d128/ascending/seed-left/warm",
+    "deep/d128/ascending/seed-right/warm",
+    "deep/d128/descending/seed-left/warm",
+    "deep/d128/descending/seed-right/warm",
+    "deep/d1024/ascending/seed-left/warm",
+    "deep/d1024/ascending/seed-right/warm",
+    "deep/d1024/descending/seed-left/warm",
+    "deep/d1024/descending/seed-right/warm",
+    "deep/d3000/ascending/seed-left/warm",
+    "deep/d3000/ascending/seed-right/warm",
+    "deep/d3000/descending/seed-left/warm",
+    "deep/d3000/descending/seed-right/warm",
+    "empty/both/warm",
+    "empty/left/warm",
+    "empty/right/warm",
+    "same-source/independent/warm"
+  ],
+  "DeepCaps": {
+    "128": 4096,
+    "1024": 64,
+    "3000": 8
+  },
+  "Limitations": "Fastest individual original observation, not a median. Extrapolation does not guarantee a 500 ms future batch. No candidate input determines counts.",
+  "OriginalCounts": {
+    "flat/n4/overlap0/warm": 442463,
+    "flat/n4/overlap50/warm": 340331,
+    "flat/n4/overlap50/fresh-output-process-warm": 228327,
+    "flat/n4/overlap100/warm": 336303,
+    "flat/n128/overlap0/warm": 12208,
+    "flat/n128/overlap50/warm": 21571,
+    "flat/n128/overlap50/fresh-output-process-warm": 10717,
+    "flat/n128/overlap100/warm": 27706,
+    "flat/n1024/overlap0/warm": 2246,
+    "flat/n1024/overlap50/warm": 2591,
+    "flat/n1024/overlap50/fresh-output-process-warm": 1465,
+    "flat/n1024/overlap100/warm": 3328,
+    "unbalanced/small-left/warm": 32915,
+    "unbalanced/large-left/warm": 33146,
+    "history/fresh/warm": 20977,
+    "history/empty-reserved8192/warm": 21185,
+    "history/grown1024-drained/warm": 21335,
+    "history/old-deep/warm": 21634,
+    "kind/counted-left/warm": 20805,
+    "kind/counted-right/warm": 20767,
+    "kind/counted-both/warm": 20969,
+    "kind/counted-both/fresh-output-process-warm": 10600,
+    "kind/stable-proxy-left/warm": 19894,
+    "kind/stable-proxy-right/warm": 20273,
+    "kind/stable-proxy-both/warm": 20623,
+    "alias/left/restore-pair/warm": 27905,
+    "alias/right/restore-pair/warm": 29973,
+    "alias/both/restore-pair/warm": 47694,
+    "deep/d128/ascending/seed-left/warm": 2602,
+    "deep/d128/ascending/seed-right/warm": 2486,
+    "deep/d128/descending/seed-left/warm": 3101,
+    "deep/d128/descending/seed-right/warm": 3324,
+    "deep/d1024/ascending/seed-left/warm": 45,
+    "deep/d1024/ascending/seed-right/warm": 46,
+    "deep/d1024/descending/seed-left/warm": 64,
+    "deep/d1024/descending/seed-right/warm": 64,
+    "deep/d3000/ascending/seed-left/warm": 5,
+    "deep/d3000/ascending/seed-right/warm": 5,
+    "deep/d3000/descending/seed-left/warm": 8,
+    "deep/d3000/descending/seed-right/warm": 8,
+    "empty/both/warm": 3198002,
+    "empty/left/warm": 758452,
+    "empty/right/warm": 769185,
+    "same-source/independent/warm": 27423,
+    "fallback/proxy-alias-right/restore-pair/warm": 68913
+  }
+}
