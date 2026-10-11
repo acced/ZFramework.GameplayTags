@@ -738,7 +738,7 @@
   "acceptance_scope_correction": {
     "date": "2026-10-11",
     "accepted_runtime": "f53c5fb94c22c2750f54c33dcfdee443a72bf595",
-    "comparator": "Reported benefit is versus factory Union + Copy. Existing Copy(output,left); output.AddTags(right) can already be zero-warm-allocation for healthy ordinary sets and independent output; advantage versus this alternative is unproven pending separately frozen time/allocation tests.",
+    "comparator": "Historical reported benefit is versus factory Union + Copy. Stronger existing Copy+AddTags chains already use zero warm bytes for healthy ordinary independent output. Completed separately frozen comparison shows scoped warm gains but new cold allocation and alias timing regressions; historical qualification is reopened.",
     "statistical_rule": "No reproduced material regression under the predeclared flag/review protocol; not global statistical noninferiority.",
     "root_intervals_allowing_more_than_3_percent_slowdown": {
       "net": 45,
@@ -767,6 +767,16 @@
       "Independent1024/50% f7left28832.9ns andf7seed28930.3ns versus output11887.4ns, all0Bwarm; candidate30-31ms batches remain explicitly short/inconclusive. Any bounded longer replication includes adverse alias and favorable independent rows, with all previous samples preserved.",
       "All three fresh-process samples at independent1024 overlap0/50/100 allocate5344B more onf53output thanf7literal-left/seed:165232vs159888,66880vs61536,58664vs53320B; allbecome0Bwarm. Aliasoutputfirst10672B vsseed-aware1048B, warm7864vs0B. No allocating object/cause inferred."
     ],
-    "next": "Complete Mono and independent scope/provenance review; repair supported regressions before requalification. No universal noninferiority or all-rowwithin3percent claim."
+    "next": "Repair actual cold allocation and supported alias regressions against best semantically equivalent existing chains before requalification. Any longer shared map includes adverse and favorable frozen rows; do not rerun solely to obtain a pass.",
+    "mono_artifact": {
+      "id": 11703329836,
+      "sha256": "7b4ca67c54631de44548ea8ea8e8c3eeb1abaf222168363779b118362ebdba80"
+    },
+    "mono_audited_findings": [
+      "AMD EPYC 9V74 standalone Mono. All 42 Runtime hashes match exact f7/f53; shared maps and source/binary hashes immutable; all 1,353 cold records present. Each variant/fixture has identical bytes across three fresh samples.",
+      "Independent n1024 overlap 0/50/100 output first-call bytes are 172808/74440/66216 versus left/seed 159936/61568/53344: +12872 B in every sample, both 0 B warm. Healthy alias output first 18240 B / warm 7896 B versus seed-aware 1056 B / 0 B. No allocating object or cause established.",
+      "No nondeep output-versus-original timing interval wholly adverse on this Mono host. Alias factory comparisons remain inconclusive at 167-170 ms, approximate 99% speedup intervals around 0.968-1.006; this does not clear NET regressions or establish zero overhead.",
+      "Independent n1024 output minimum batches 52.7/35.9/22.4 ms at 0/50/100 overlap. Only 0% clears 50 ms, about 2.00x versus f7 left-chain with both 0 B warm; other warm speedups remain short-batch/descriptive."
+    ]
   }
 }
