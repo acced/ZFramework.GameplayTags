@@ -1,0 +1,145 @@
+name: Relay existing semantic artifacts
+on:
+  push:
+    branches: [perf/compact-runtime-rewrite]
+    paths:
+      - '.github/scripts/relay-union-semantics.py'
+      - '.github/scripts/relay-union-semantics.README.md'
+      - '.github/scripts/test-relay-union-semantics.py'
+      - '.github/workflows/relay-union-semantics.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: relay-existing-semantics-38170243660
+  cancel-in-progress: false
+jobs:
+  relay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [net, mono]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+      - name: Verify and partition the existing original ZIP
+        id: relay
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/relay-union-semantics.py --backend '${{ matrix.backend }}'
+      - name: Upload original ZIP part 01
+        if: steps.relay.outputs.part_count >= 1
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-zip-${{ matrix.backend }}-source-38170243660-part01
+          path: |
+            evidence-relay-output/parts/source.zip.part01
+            evidence-relay-output/parts/part01.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+          overwrite: false
+      - name: Upload original ZIP part 02
+        if: steps.relay.outputs.part_count >= 2
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-zip-${{ matrix.backend }}-source-38170243660-part02
+          path: |
+            evidence-relay-output/parts/source.zip.part02
+            evidence-relay-output/parts/part02.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+          overwrite: false
+      - name: Upload original ZIP part 03
+        if: steps.relay.outputs.part_count >= 3
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-zip-${{ matrix.backend }}-source-38170243660-part03
+          path: |
+            evidence-relay-output/parts/source.zip.part03
+            evidence-relay-output/parts/part03.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+          overwrite: false
+      - name: Upload original ZIP part 04
+        if: steps.relay.outputs.part_count >= 4
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-zip-${{ matrix.backend }}-source-38170243660-part04
+          path: |
+            evidence-relay-output/parts/source.zip.part04
+            evidence-relay-output/parts/part04.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+          overwrite: false
+      - name: Upload original ZIP part 05
+        if: steps.relay.outputs.part_count >= 5
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-zip-${{ matrix.backend }}-source-38170243660-part05
+          path: |
+            evidence-relay-output/parts/source.zip.part05
+            evidence-relay-output/parts/part05.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+          overwrite: false
+      - name: Upload original ZIP part 06
+        if: steps.relay.outputs.part_count >= 6
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-zip-${{ matrix.backend }}-source-38170243660-part06
+          path: |
+            evidence-relay-output/parts/source.zip.part06
+            evidence-relay-output/parts/part06.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+          overwrite: false
+      - name: Upload original ZIP part 07
+        if: steps.relay.outputs.part_count >= 7
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-zip-${{ matrix.backend }}-source-38170243660-part07
+          path: |
+            evidence-relay-output/parts/source.zip.part07
+            evidence-relay-output/parts/part07.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+          overwrite: false
+      - name: Upload original ZIP part 08
+        if: steps.relay.outputs.part_count >= 8
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-zip-${{ matrix.backend }}-source-38170243660-part08
+          path: |
+            evidence-relay-output/parts/source.zip.part08
+            evidence-relay-output/parts/part08.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+          overwrite: false
+      - name: Upload original public summaries and reconstruction manifest
+        if: success() && steps.relay.outputs.part_count != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: semantic-zip-${{ matrix.backend }}-source-38170243660-summary
+          path: |
+            evidence-relay-output/summary/manifest.json
+            evidence-relay-output/summary/report.json
+            evidence-relay-output/summary/completion.json
+            evidence-relay-output/summary/preflight-failure.json
+            evidence-relay-output/summary/upload-allowlist.json
+          if-no-files-found: error
+          retention-days: 90
+          overwrite: false
