@@ -1,0 +1,140 @@
+name: Combined candidate guard diagnostic
+on:
+  push:
+    branches: [perf/compact-runtime-rewrite]
+    paths:
+      - 'Tests~/CombinedGuardRecheck/**'
+      - 'Tests~/CombinedMonoGuardRecheck/**'
+      - '.github/workflows/combined-guard-recheck.yml'
+permissions:
+  contents: read
+jobs:
+  targeted-dotnet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        amd_probe: [1, 2]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record CPU and require original AMD model for this recheck
+        id: cpu
+        shell: bash
+        run: |
+          mkdir -p .artifacts/combined-host
+          lscpu > .artifacts/combined-host/lscpu.txt
+          if grep -q "AMD EPYC 7763" /proc/cpuinfo; then
+            echo "matched=true" >> "$GITHUB_OUTPUT"
+            echo "Matched original AMD EPYC 7763 model; paired timing will run." > .artifacts/combined-host/status.txt
+          else
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+            echo "CPU model did not match; no timing evidence or acceptance conclusion from this job." > .artifacts/combined-host/status.txt
+          fi
+      - uses: actions/setup-dotnet@v4
+        if: steps.cpu.outputs.matched == 'true'
+        with:
+          dotnet-version: 8.0.x
+      - name: Freeze exact original and indexed/workspace/AddTags candidate
+        if: steps.cpu.outputs.matched == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/combined-original .artifacts/combined-candidate
+          git archive f7c99546dbf029d70896c0f05e5119b19ffd6d26 Runtime | tar -x -C .artifacts/combined-original
+          git archive 579aaa1a56779694a4d16ba25ff38b53bafe93f2 Runtime | tar -x -C .artifacts/combined-candidate
+      - name: Long-batch original Evolution operations, isolated A/A then A/B
+        if: steps.cpu.outputs.matched == 'true'
+        shell: bash
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+          DOTNET_TieredCompilation: '0'
+          DOTNET_gcServer: '0'
+          COMPlus_TieredCompilation: '0'
+          COMPlus_gcServer: '0'
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --before .artifacts/combined-original --after .artifacts/combined-candidate --before-revision f7c99546dbf029d70896c0f05e5119b19ffd6d26 --after-revision 579aaa1a56779694a4d16ba25ff38b53bafe93f2 --rounds 14 --iterations-file Tests~/CombinedGuardRecheck/iterations.tsv)
+          python3 Tests~/CombinedGuardRecheck/isolated.py "${args[@]}" --mode aa --out .artifacts/combined-aa
+          python3 Tests~/CombinedGuardRecheck/isolated.py "${args[@]}" --mode ab --out .artifacts/combined-ab
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: combined-net-7763-probe-${{ matrix.amd_probe }}-${{ github.sha }}
+          path: |
+            .artifacts/combined-host/
+            .artifacts/combined-aa/
+            .artifacts/combined-ab/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
+  targeted-mono:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        amd_probe: [1, 2]
+        cpu_model: [7763, 9V74]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Record CPU and require original AMD model for this recheck
+        id: cpu
+        shell: bash
+        run: |
+          mkdir -p .artifacts/combined-host
+          lscpu > .artifacts/combined-host/lscpu.txt
+          if grep -q "AMD EPYC ${{ matrix.cpu_model }}" /proc/cpuinfo; then
+            echo "matched=true" >> "$GITHUB_OUTPUT"
+            echo "Matched original AMD EPYC ${{ matrix.cpu_model }} model; paired timing will run." > .artifacts/combined-host/status.txt
+          else
+            echo "matched=false" >> "$GITHUB_OUTPUT"
+            echo "CPU model did not match; no timing evidence or acceptance conclusion from this job." > .artifacts/combined-host/status.txt
+          fi
+      - uses: actions/setup-dotnet@v4
+        if: steps.cpu.outputs.matched == 'true'
+        with:
+          dotnet-version: 8.0.x
+      - name: Install standard standalone Mono for the matched diagnostic
+        if: steps.cpu.outputs.matched == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-devel
+          mono --version
+      - name: Freeze exact original and indexed/workspace/AddTags candidate
+        if: steps.cpu.outputs.matched == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .artifacts/combined-original .artifacts/combined-candidate
+          git archive f7c99546dbf029d70896c0f05e5119b19ffd6d26 Runtime | tar -x -C .artifacts/combined-original
+          git archive 579aaa1a56779694a4d16ba25ff38b53bafe93f2 Runtime | tar -x -C .artifacts/combined-candidate
+      - name: Long-batch original Evolution operations, isolated A/A then A/B
+        if: steps.cpu.outputs.matched == 'true'
+        shell: bash
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+          DOTNET_TieredCompilation: '0'
+          DOTNET_gcServer: '0'
+          COMPlus_TieredCompilation: '0'
+          COMPlus_gcServer: '0'
+        run: |
+          set -euo pipefail
+          args=(--mono "$(command -v mono)" --dotnet "$(readlink -f "$(command -v dotnet)")" --before .artifacts/combined-original --after .artifacts/combined-candidate --before-revision f7c99546dbf029d70896c0f05e5119b19ffd6d26 --after-revision 579aaa1a56779694a4d16ba25ff38b53bafe93f2 --rounds 14 --iterations-file Tests~/CombinedMonoGuardRecheck/iterations.tsv)
+          python3 Tests~/CombinedMonoGuardRecheck/run.py "${args[@]}" --mode aa --out .artifacts/combined-aa
+          python3 Tests~/CombinedMonoGuardRecheck/run.py "${args[@]}" --mode ab --out .artifacts/combined-ab
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: combined-mono-${{ matrix.cpu_model }}-probe-${{ matrix.amd_probe }}-${{ github.sha }}
+          path: |
+            .artifacts/combined-host/
+            .artifacts/combined-aa/
+            .artifacts/combined-ab/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90

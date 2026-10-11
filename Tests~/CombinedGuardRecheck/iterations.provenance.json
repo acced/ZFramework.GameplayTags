@@ -1,0 +1,48 @@
+{
+  "ArtifactId": 11689963295,
+  "ArtifactSHA256": "dd719bbfcd906c3642b1138787cdcea8e92117240180ab72fac0489c2d95e17c",
+  "BaselineRevision": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "Formula": "ceil(500000000/minimum of all14 baseline Ns); same counts both slots, other125 rows65",
+  "Rows": {
+    "n4/overlap50/workspace-reused": {
+      "FastestBaselineNs": 81.97170450933851,
+      "Iterations": 6099666
+    },
+    "n4/overlap50/workspace-cold-growth": {
+      "FastestBaselineNs": 1079.6599500888158,
+      "Iterations": 463109
+    },
+    "guard/n16/any-hierarchical-nonself": {
+      "FastestBaselineNs": 38.07607204926757,
+      "Iterations": 13131607
+    },
+    "guard/depth1024/union-larger-disjoint-seed-descending": {
+      "FastestBaselineNs": 36213.35868005739,
+      "Iterations": 13808
+    },
+    "guard/n16/addtags-self": {
+      "FastestBaselineNs": 8.09764127556784,
+      "Iterations": 61746376
+    },
+    "guard/n1024/addtags-self": {
+      "FastestBaselineNs": 8.100838165866513,
+      "Iterations": 61722009
+    }
+  },
+  "BaselineRawHashes": {
+    "before-0.json": "ba8e7e69761fbac7a0349bc9ae4805367b5d7ca723f48334e26f1aaafc0f2df2",
+    "before-1.json": "ce73054b8c4e6db0ce3e4e99820a212cc3e5309fc0ab674e2a5a9fb2a91c7416",
+    "before-2.json": "adbd284aa56f7828ef65178c7334d52e5fd11a61e97c913cf27aeadc0c857a03",
+    "before-3.json": "1a010f18d6c5edcacb712daebd09bf45d9a0c325cbd6033e9ee69b2cbd6cdb82",
+    "before-4.json": "2b36237ccd352a87f56f381efb7bb83cd75bc61e9370946d74feab548df4db51",
+    "before-5.json": "6da3713d7f037790058a3b11ca5d1f96b21fa4500877b8a44995a14998f130db",
+    "before-6.json": "682d736fd0d8314c8ebc85732968c778ae85963ee1ad5971358f77aa30f37511",
+    "before-7.json": "8cf890ff36d55be78a25c3a95b4e63b26540a3a061478ca21074d6006f84f96b",
+    "before-8.json": "e0c0c927119ec3800439fafd282e27387380f546663d33e6d1fd35480589e92a",
+    "before-9.json": "37f59bed9846fdfed7c0a8c30805cfc75c71eafcdc0775c000c9c72eab7a7d1d",
+    "before-10.json": "7d1949d9b31f677d17b8bee4d08c2c87426470109de9a95051ea8530203248c0",
+    "before-11.json": "609155293c30b262be792fc9fb4ed6f987477c5bf785d09772d03cd498419793",
+    "before-12.json": "5261dbcf8e29fa3db6865fcf5b478210601fedd289de64287259cb34de41aa10",
+    "before-13.json": "5556ea3e247e6c73c39f7a8083c459559b0293c577012029ebf4e0ce7ecedfdb"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "BaselineRevision": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "Artifacts": [
+    {
+      "Id": 11690570946,
+      "SHA256": "3a7609d8fbd70ea7545d97747b7fc26d6eeded1920d34b5b148a9aa1e1c1605a"
+    },
+    {
+      "Id": 11691339179,
+      "SHA256": "b80fdbf6963ae1b4442e1c7aeab66c723f547968de498dd695a3053b0f83cb10"
+    }
+  ],
+  "Formula": "ceil(500000000/minimum of all28 baseline Ns across both verified hosts); same counts all variants/hosts; other125 rows65",
+  "Rows": {
+    "guard/n16/addtags-self": {
+      "FastestBaselineNsAcrossBothHosts": 7.09024472532218,
+      "Iterations": 70519428
+    },
+    "guard/n1024/addtags-self": {
+      "FastestBaselineNsAcrossBothHosts": 7.08996036883573,
+      "Iterations": 70522256
+    },
+    "guard/n16/all-hierarchical-self": {
+      "FastestBaselineNsAcrossBothHosts": 135.5931761479,
+      "Iterations": 3687502
+    },
+    "guard/n1024/clear-dense-restore-pair": {
+      "FastestBaselineNsAcrossBothHosts": 3934.94488584618,
+      "Iterations": 127067
+    },
+    "guard/depth3/duplicate-add": {
+      "FastestBaselineNsAcrossBothHosts": 12.5824118188133,
+      "Iterations": 39738010
+    },
+    "guard/depth3000/duplicate-add": {
+      "FastestBaselineNsAcrossBothHosts": 12.5793223099365,
+      "Iterations": 39747770
+    }
+  },
+  "BaselineRawHashes": {
+    "ci-3e26bfd-mono/before-0.json": "b69e7107c7ab482ed8aff199ca9345d1f3db880a585851eeea90807b00431144",
+    "ci-3e26bfd-mono/before-1.json": "7ac5a5a5c1d2f8261c95a460f24e5f69abaa2e6b8ceda590745eb702953cf641",
+    "ci-3e26bfd-mono/before-2.json": "a65adc3b59f7ca83421ae4f7b0379264e705586f9361ef8b1af7799eabb5cb24",
+    "ci-3e26bfd-mono/before-3.json": "ba245c17011214eb8607afd2a8748a56027754a1dc6051f2169263389cb7fd58",
+    "ci-3e26bfd-mono/before-4.json": "873539fed079a54fb925a60a15920754e06b1f3b5a8f0628aa82702f8ae0acec",
+    "ci-3e26bfd-mono/before-5.json": "7deb73f5a05826cc784647ef84af50fc654c8cbb3716d3b49b3ec793e97dc392",
+    "ci-3e26bfd-mono/before-6.json": "e7a7f561951ef886935b70668fc247cd5a42cfdd09d97d2b95b589b993da1eaf",
+    "ci-3e26bfd-mono/before-7.json": "b157a661d3fc01cc99c09eec2c4849aa3b50e8770de23d48803393805e3968a8",
+    "ci-3e26bfd-mono/before-8.json": "13c8100d04884f067a3aa6e21c772886fd934080ea002dd96fa6f4332a2d5f15",
+    "ci-3e26bfd-mono/before-9.json": "9dbda9f74738352ea4cefc53c07b97b8899676f5a61237b2cd4f87e9133cdbd1",
+    "ci-3e26bfd-mono/before-10.json": "29a1d3f710bfe5ea52981ef9bd0af336da7f235a7da52c795df7ce184051cba0",
+    "ci-3e26bfd-mono/before-11.json": "0a6650865d9ae689d5b842c2394aa08a3cb37d55d270f93d5b2f58e6279f339b",
+    "ci-3e26bfd-mono/before-12.json": "472dfb8355f3926857b6a692b4a00ed13915534315578954c1d7fd4cd115b043",
+    "ci-3e26bfd-mono/before-13.json": "cb8ec3914f641df8b459b49aa19b41a098aabc8e7a46621dd0ee73bf90fed984",
+    "ci-579aaa1-mono/before-0.json": "71e66329c5209e03413b565a12c275fa2db52275682feb9f8162ab400c53196e",
+    "ci-579aaa1-mono/before-1.json": "112d8c09a14cde5b3b0ab2a28e59cf2240b97596bc69f335024abfd012bfd0cb",
+    "ci-579aaa1-mono/before-2.json": "5aca98d1223156c07332c4def686df26841c47bbffbd1f7f86e0b9bb6409eff4",
+    "ci-579aaa1-mono/before-3.json": "6596e44428c8d08a8c0a9797e8fb54cf7a78fc89ff8029c186b9e910b088fb7a",
+    "ci-579aaa1-mono/before-4.json": "c699428158f2f9612a092f51ce972ffc09feceed21eaad60b1a2c62b7bf73345",
+    "ci-579aaa1-mono/before-5.json": "ec98161d736ba3a486bd8319c9e5b524439a0451b05fce2b0d088011c28d245e",
+    "ci-579aaa1-mono/before-6.json": "4cce2acfbb5811aedbdd44614c96b86b7d801d016d751ade781a8ef547fe8a37",
+    "ci-579aaa1-mono/before-7.json": "2aa06d55dfc52974fecf40554f49e715b4604a977e6dfa07f0432c9cb6677305",
+    "ci-579aaa1-mono/before-8.json": "85808fc32f96774633e6a02dfc180279b4f1d349c038b29e533a7df5c6718e2e",
+    "ci-579aaa1-mono/before-9.json": "890bc0856a075691e81047737931813b72d754e64b371b10a7cbdf5ed74d2fc7",
+    "ci-579aaa1-mono/before-10.json": "88af6220b0c72048d63024b2bb3d329674ea62c9af7caf601d17fc23facba452",
+    "ci-579aaa1-mono/before-11.json": "1de3b5b6f35f7b79ce2b8acf271570cdfe8a94c7bee924f4371a288ddba65900",
+    "ci-579aaa1-mono/before-12.json": "0f303b9a503d82ff8ce6c0710efec172af7c43462ba1be98e18c4489f9889e45",
+    "ci-579aaa1-mono/before-13.json": "330bcde3a7cf2d8cd7dc82564d21e4209b13fd8567b3a794371cb8677e7f18b4"
+  }
+}
