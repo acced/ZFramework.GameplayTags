@@ -509,7 +509,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Same-storage normal-seed Union repair on c643 without helper inlining. Captured storage aliases use exact factory-plus-Copy Clear or sparse active-index compaction; both-nonset proxies retain normalization fallback. All 21,068 getter cases/source/backend, 1,026 five-phase full-array self cases plus 54 Count=0/stale-explicit guards/source/backend, existing API/overflow/sparse/Evolution/Main/Unity-compile suites and 468 fresh cold processes pass locally. Portable 9-file CI package smoke passes 104 fixture processes; unchanged frozen original matrices remain. Focused self first-use drops to 0 B on NET and 32 B on local Mono6.12, with exact retained arrays; actual CI Mono6.8 remains pending. Different-storage alias-right residual remains a required full-matrix gate. Complete f7 patch SHA256 e08a1a55dd895adb1343e8a66efeb8fdf1d041b6a0805d5a28d5c588f803d040; Container 8d05b0a705e896c4e6d16e7a6e5c206727947358839efe642945b9264e460f19; TagStorage 91756e880ca1ccea36be1db3ece270d7f4314089873eea80435671b42f55b56a. Accepted count0; original/previous accepted f7.",
+  "current_candidate_note": "Alias-only captured factory expansion on exact aa1a45e. Preserve temporary result and final Copy, source getter/type capture, same-storage shortcut, distinct helper and public factory. Remove only alias helper call and redundant fresh-temp null-cache clear. Both-runtime three-source21,068 getter cases each, API/overflow/edge/sparse/Evolution/Main/Unity-compile and468 cold processes pass;156 self-package processes verify full state/first-use. Native inspection confirms alias call removal, distinct call retained; selected reusable callers plus helper grow225B CoreCLR/626B Mono, so no advance speed or whole-process memory claim. Patch360efe7d1d64bc166a2e447cf3aa1128b8ce68a1d909e90ba72b9e0bd4f7cbd0; Container95131d0143ea6e58325cbf95518e91fb16db934e1695bb13e0dfd03d20db445e. Existing full CI matrices and all cold/self fixture bytes unchanged. Prior small alias cost and isolated internal cold-counter observation remain recorded; accepted count0 and original/previous accepted f7.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",
@@ -550,6 +550,38 @@
         "Same-model bounded recheck uses same fixture bodies but reduced nonselected work; do not silently pool protocols or discard outliers. Interval includes the original adverse effect, so no accepted version.",
         "Legacy normal/padded, longCopy, Registry/RootOnly and NETBulk add no material blocker; MonoBulk not measured. Two Mono fullGC retained flags do not establish owned-layout growth."
       ]
+    },
+    {
+      "sha": "aa1a45ed905fd24cfd62cc5d5c251be2a722e904",
+      "ci_run": 38118715630,
+      "decision": "Unaccepted pending resolution of repeatable small different-storage alias-right cost and isolated internal cold-counter observation. Same-storage repair has genuine benefits; no version counted.",
+      "artifacts": [
+        {
+          "backend": ".NET8 AMD EPYC9V45",
+          "id": 11694689296,
+          "sha256": "155fe06190a5af6bb7959dc5d166cc9cb421012ba7e7cf2a6cbae0543a9feb9d"
+        },
+        {
+          "backend": "standalone Mono6.8 AMD EPYC9V74",
+          "id": 11695212457,
+          "sha256": "42950f0b78ce39daf86ba3387d41b1d8d0016bd36e25160ff6bbd019f7bec5d4"
+        }
+      ],
+      "findings": [
+        "Independent audits verify42 exact Runtime hashes/backend and24 equal root owned graphs. No adverse root timing99% interval on either host. Legacy normal/padded, longCopy, NETBulk, Registry and RootOnly add no established material timing regression.",
+        "NET self-reused52.58->9.28ns,296->0B; Mono155.91->12.29ns,312->0B. Fast candidate batches remain duration caveats (NETminimum79ms; Mono short-batch flag), not sole qualifying evidence. NET1024half distinct gain is14/14 with>=206ms candidate and61624->0B.",
+        "All5400 self structural stages/source/backend match and new first-use self capacities/full arrays pass. NET self cold296/608/3744->0B; Mono344/664/3800->32B. Original Union cold comparator remains clean; unobserved pool events establish no pool-equivalence claim.",
+        "Mono128half alias-right restore pair4825.85->4842.44ns is slower13/14,>=566/569ms, identical7896B andGC233-234/0/0.99%speedup0.9891-0.9991. SameAMD9V74 direction occurred in c643/e2; this is repeatable subpercent overhead, not dismissed as noise.",
+        "Extra NET internal forest cold round5 allocates2180200 versus2174008B (+6192), other5 pairs equal. All public cold cases equal. Same isolated anomaly occurred579; no supported allocation mechanism established. Do not claim every cold row equal.",
+        "Three Mono root and one Union fullGC retention flags do not establish owned-storage growth; exact owned graphs and full retained-array snapshots remain separate evidence.",
+        "NET CPU9V45 and Mono9V74 scope remains explicit; no Unity Editor/Player,IL2CPP or Alex execution.",
+        "Guarded normal-seed alias shortcut cannot repair the measured right-alias row: both closure counts161 and factory tie chooses left. Stopped before implementation. No accepted version."
+      ],
+      "cold_control": {
+        "scope": "One preregistered48-process local control using exact saved CI f7/aa forest assemblies and runtime hashes;12 balanced four-process blocks, two labels per identical binary. No rebuild/warmup/extra rounds.",
+        "preregistration_sha256": "11d5d807d506b0a979451cdb92288497c6f71abbb9db9bd655b6632e439bb431",
+        "result": "All24f7 and24aa samples2174008B, all checks match; no recurrence. Inconclusive because local Intel/Linux6.18/glibc2.41 differs from CI AMD/Linux6.17/glibc2.39. Original+6192B samples preserved; no mechanism or blanket waiver."
+      }
     }
   ]
 }

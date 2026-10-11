@@ -383,7 +383,27 @@ namespace GameplayTags
                 // Preserve factory seeding and the final Copy for aliases, but
                 // use the captured views so each input getter is evaluated once.
                 var result = new GameplayTagContainer();
-                result.SetDistinctUnion(a, b, aIsSet, bIsSet);
+                // Use the factory's captured-view operations directly on the alias
+                // path; the fresh temporary has no serialized cache to invalidate.
+                if (a == null || (b != null && ((!aIsSet && bIsSet) ||
+                    (aIsSet == bIsSet && a.Count < b.Count))))
+                {
+                    TagStorage temporary = a;
+                    a = b;
+                    b = temporary;
+                    aIsSet = bIsSet;
+                }
+                if (a == null || a.ExplicitCount == 0)
+                    result.CopyExplicitStorage(b);
+                else
+                {
+                    if (aIsSet)
+                        result.m_Indices.Storage.CopyFrom(a);
+                    else
+                        result.CopyExplicitStorage(a);
+                    if (b != null && b.ExplicitCount != 0 && !ReferenceEquals(a, b))
+                        result.m_Indices.Storage.AddUnion(b);
+                }
                 Copy(output, result);
                 return;
             }
