@@ -1,0 +1,48 @@
+{
+  "ArtifactId": 11686083464,
+  "ArtifactSHA256": "1997e364534e2b942b5b65599a8e866d1472116359261801b94a9d89f5e155bf",
+  "BaselineRevision": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "Formula": "ceil(500000000 / minimum of all14 baseline Ns samples); shared counts for both slots; other125 rows65",
+  "Rows": {
+    "n128/overlap100/alias-right-restore-pair": {
+      "FastestBaselineNs": 2490.5518076701,
+      "Iterations": 200759
+    },
+    "guard/n16/addtags-self": {
+      "FastestBaselineNs": 8.71084185839642,
+      "Iterations": 57399734
+    },
+    "n128/overlap100/alias-left-restore-pair": {
+      "FastestBaselineNs": 2190.44622762676,
+      "Iterations": 228264
+    },
+    "n128/overlap50/alias-left-restore-pair": {
+      "FastestBaselineNs": 8211.2632292569,
+      "Iterations": 60892
+    },
+    "n128/overlap50/alias-right-restore-pair": {
+      "FastestBaselineNs": 8165.49226998839,
+      "Iterations": 61234
+    },
+    "guard/n1024/addtags-self": {
+      "FastestBaselineNs": 8.71213561382549,
+      "Iterations": 57391210
+    }
+  },
+  "BaselineRawHashes": {
+    "before-0.json": "be9658693a38a72d9626de7593642a6146f9a3ad078e50ef991d0618607cc8de",
+    "before-1.json": "f45d2107e55da0f6f341eb07198ba73af5c2393d112afbb7e363899199429ffd",
+    "before-2.json": "302abedda430bd4b75c5c73e87e4dba7cc2ae2742da205c357ebde77edc4827a",
+    "before-3.json": "d13fcf8a9b6bcd836b4463e5542735c84e769fe4a11baac32de498968ee050a3",
+    "before-4.json": "728d8428a74a3d0be844c501e4bb5a6c5df9db206b3789a3684f19503fc371a9",
+    "before-5.json": "91547f8ed0fa47d61fc07b5f16ad026b29034a6c6447ef1d316b42bd361171e8",
+    "before-6.json": "7a4b151100347d19c40acaa705603b63abca4fb1df06479f93f23ae15934127b",
+    "before-7.json": "87990ec4b877f196722d7c1b945eb74c09aaeab3bb19eb5b74d2d9babec1a680",
+    "before-8.json": "45c7a424928be5944b50383c3bca64bd20e169035d66df28864285497b721043",
+    "before-9.json": "350e96863fa20eb817cf005aa83ad48ab414505c98be52a100b610bdf790f1d0",
+    "before-10.json": "be791df0903c2b571ae32bed58f754e072ada7af1ecc1c0e6b90fc2f5bbaf934",
+    "before-11.json": "584508c0ddfeb4679c3bd68bce199ba0484fb1f93f1d224655c3df6edd25b4c3",
+    "before-12.json": "d5a58ff1f8f22f3e012e662df939030607c92f984bc4107594793df578450e1b",
+    "before-13.json": "3d1cb72bd4fa4dea17236a01778cfbd961662ec4be047fb3e92f31d1b6f059d1"
+  }
+}
