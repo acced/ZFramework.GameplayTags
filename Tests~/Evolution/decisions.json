@@ -449,6 +449,33 @@
         "No accepted optimization version.",
         "Independent final Mono7763 audit confirms42exactRuntime hashes per AA/AB in both slots. AllHierSelf adverse13/14 in each, >=603/611ms, zeroGC, about+2ns; selfAddTags neutral. No further diagnostic;NET rejection final."
       ]
+    },
+    {
+      "sha": "c643acbdb5c308176f7f3e63a03bf607573e1b9f",
+      "ci_run": 38113453246,
+      "decision": "Unaccepted as-is: reusable distinct output provides meaningful time/allocation gains, but the .NET self-alias replacement cost remains adverse. Evaluate a separately qualified private-helper inline refinement rather than waive the cost.",
+      "artifacts": [
+        {
+          "backend": ".NET8 AMD7763",
+          "id": 11693446015,
+          "sha256": "7548add196759935ca5b682507c55fdcfac106a7ea5ae8d7666cc4dbaa5b7bc2"
+        },
+        {
+          "backend": "standalone Mono6.8 AMD9V74, includes separate .NET registry cold probes",
+          "id": 11692474443,
+          "sha256": "093cf86f05d2b494ae74feabc9de3fd665e04b02dc45a77f707136c33594b8c1"
+        }
+      ],
+      "findings": [
+        "Each source getter is captured once. Correctness, frozen API and true-first-use probes pass on actual CI backends. Independent source review verifies42exactRuntime hashes/backend;24rootownedgraphs equal.",
+        "Existing131root timing rows are all inconclusive on both backends. NET n16emptyalias-right175.60->176.26ns has a small adverse interval (~0.38%); no blanketzero-cost claim. Mono root has no adverse99%interval. Legacy normal/padded, Registry/RootOnly, longCopy andNETBulk add no established material regression.",
+        "NET1024half replacement16.904->11.860us, warm61624->0B; Mono55.087->21.185us,61656->0B. Comparison baseline includes Union factory plusCopy, not isolatedfactory. Truefirst-use alias bytes andownedcapacities/masks match; distinct first-use allocation falls. No Mono pool-equivalence claim from unobserved events.",
+        "NETselfalias99.906->103.539ns is slower13/14, >=177/183ms, identicalGC32/0/0 and296B, bothorder ratios~1.04;99%speedup0.9473-0.9853. This credible adverse cost remains unresolved despite threshold-straddling interval. Mono selfalias neutral.",
+        "Mono128half alias-right4817.63->4852.48ns is slower10/14, >=226/228ms,7896B equal,99%speedup0.9870-0.9995. Its ~0.7% scoped cost is preserved.",
+        "Seven NETUnion supplement rows retain short-batch review;1024half candidate minimum91ms is also disclosed below100ms even though effect is large. Next independently declared run raises baseline-only calibration target200->500ms via existing CLI; identical selected counts remain shared across variants and actual batch durations must still be inspected. No old sample discarded.",
+        "Three Mono root and one tinyUnion fullGC retained flags do not establish owned-layout growth; a negative retained estimate is not a memory saving. Structural capacities andcoldmeasurements remain separate evidence.",
+        "No accepted optimization version."
+      ]
     }
   ],
   "verification_limits": [
@@ -456,7 +483,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Independent reusable-output Union overload on exact f7. Each source getter/type is captured once; aliases build a normal temporary from captured storage with the factory seed algorithm then Copy, distinct output reuses storage. Existing factory and all pre-existing methods remain unchanged. Earlier prepared double-getter alias version is preserved but not published: it fails8280getter cases/backend, including3117state and1052exception differences. Repaired version passes21068focused getter cases/backend, existing2,234,631APIchecks,704overflow,edge/sparse/Evolution,216truefirst-use processes, bothbackendMain7,595,855assertions andNETall/Unitycompile. Alias cold/warmbytes equal; distinct coldlower/warmzero in those probes;ownedcapacities/masks equal. Frozen28row output-replacement timing and truefirst-use supplements compare original\u2192all and adjacent accepted predecessor. Full unchanged CI gates still determine acceptance. Candidate and all prior compositions unaccepted,count0,original/previousf7. Complete f7 patch SHA256 d46e437d23650b01a6685613014e65812b7ae431b14262c623cfcb58a40cb8c3; exact Container SHA256 6e5599b1b2875b5b5cce1e21b70c313ca7b78bb45fddfdc5bfede5ab60a405c7. Optional Mono reflection IL inspection aborted on the unchanged baseline; preserved as unavailable, not a Runtime correctness pass or failure.",
+  "current_candidate_note": "Attribute-only AggressiveInlining on private nongeneric SetDistinctUnion on exactc643;public wrapper andalgorithms unchanged. Exactthree-source bothruntime21,068gettercases/API/Evolution/704overflow/320edge/208sparse and324freshcoldprocesses pass; current\u2192repair first/warmbytes andownedcapacities/masks equal. Mainboth7,595,855assertions andNETall/Unitycompile pass. Safe native diagnostics confirmhelpercallremoval; selectedcallers+sharedhelper footprint increases344B.NET/958BMono,notaguaranteeofspeed orwholeprocessmemoryequivalence. PatchSHA2568b564483083b543720e6ab9d650edc8bdc5ce55702e0d506dde8156526133437;ContainerSHA256a7fef376bc582bb5fc555f20e4624695a5945036eea4d6f6018decd8032bba24. Existingfullmatrices/workloadsources unchanged; Unionbaseline-only calibrationtarget500ms givesidenticalcounts toallvariants andactualdurationsstillreviewed. Acceptedcount0,original/previousacceptedf7.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",

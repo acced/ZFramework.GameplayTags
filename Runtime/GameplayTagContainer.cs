@@ -384,6 +384,7 @@ namespace GameplayTags
             output.SetDistinctUnion(a, b, aIsSet, bIsSet);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetDistinctUnion(TagStorage a, TagStorage b, bool aIsSet, bool bIsSet)
         {
             TagStorage output = m_Indices.Storage;

@@ -227,7 +227,7 @@ jobs:
             args+=(--variant "previous=$PWD/.artifacts/evolution-previous" --revision "previous=$PREVIOUS_SHA")
             if grep -Fq "$signature" .artifacts/evolution-previous/Runtime/GameplayTagContainer.cs; then args+=(--api-variant previous); fi
           fi
-          args+=(--variant "candidate=$PWD" --revision "candidate=$GITHUB_SHA" --samples 14 --out .artifacts/evolution-union-output)
+          args+=(--variant "candidate=$PWD" --revision "candidate=$GITHUB_SHA" --samples 14 --batch-ms 500 --out .artifacts/evolution-union-output)
           if grep -Fq "$signature" Runtime/GameplayTagContainer.cs; then args+=(--api-variant candidate); fi
           if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
           python3 Tests~/UnionOutput/run.py "${args[@]}"
