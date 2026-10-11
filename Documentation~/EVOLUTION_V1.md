@@ -2,6 +2,12 @@
 
 Accepted as version 1 on 2026-10-11 after independent gate review. Runtime commit `f53c5fb94c22c2750f54c33dcfdee443a72bf595`, compared with original and then-previous accepted `f7c99546dbf029d70896c0f05e5119b19ffd6d26`.
 
+## Comparator and statistical scope correction (2026-10-11)
+
+The reported speedups and 61.6 KB-to-zero warm allocation reductions are **only versus factory Union followed by Copy**. For healthy ordinary sets and independent output, the preexisting `Copy(output, left); output.AddTags(right)` chain is semantically usable and already capable of zero warm allocation. This report does **not** establish that the new overload beats that stronger existing-API alternative. A separately frozen time/allocation comparison is pending; all original measurements remain intact.
+
+Acceptance used a predeclared rule for detecting reproduced material regressions, **not a proof of global statistical noninferiority**. In the original version-1 root evidence, 45/131 .NET and 25/131 Mono approximate 99% speedup intervals still permit more than 3% slowdown. No flag is not proof that every workload stays within 3%. The matching-host right-alias interval below bounds that particular row only. Version 1 remains recorded under its original scoped gate; the comparator gap and wider row uncertainty are explicit.
+
 The new overload replaces an existing output:
 
 ```csharp
