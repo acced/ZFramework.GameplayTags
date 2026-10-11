@@ -302,6 +302,32 @@
         "Registry/RootOnly code unchanged, Mono allocation equal and timing neutral. Mono Bulk not measured.",
         "No successful optimization version counted. Fused/tiny-copy composition remains preserved for future principled repair."
       ]
+    },
+    {
+      "sha": "b53c121c643d7a6f9ef6ad2fe982aff084f91fb7",
+      "ci_run": 38101337127,
+      "decision": "Rejected as-is: genuine empty startup allocation savings do not offset fourteen .NET hot timing regressions and independent Mono mutation/Copy+Clear regressions. Evaluate one cold-path outlining refinement independently; no code-layout causal claim.",
+      "artifacts": [
+        {
+          "backend": ".NET8 AMD7763",
+          "id": 11687699633,
+          "sha256": "5e3e69ebfcb61c438f3eb2a5cafc1f8d1f41cbabfc77eb6950f50270a14f6d03"
+        },
+        {
+          "backend": "standalone Mono6.8 Intel8370C; includes separate .NETcold probes",
+          "id": 11689145899,
+          "sha256": "64922efbed890fb29c71633b131c3c05a329772ab98371442aa1ac18c7077724"
+        }
+      ],
+      "findings": [
+        "NET14core flags13-14/14 slower,minimum105-300ms; keywarm/query rowszeroGC. n128 empty486.8->518.3ns, n16AllHierSelf57.05->69.58ns, AnyExactnonself1442->1511ns. Legacy independently repeats empty/partial intersections and SpecializedSort regressions.",
+        "Mono three core flags include n4half reused212.97->225.50ns and two tinyCopy+Clear74.31->77.66ns/73.98->77.38ns. Independent longRemoveAdd148.30->168.66ns,99percent speedup0.8727-0.8900. These substantive signals preserve rejection.",
+        "Fresh-process coordinator confirms six-for-six first public/internal empty saves144B.NET/216BMono,immediate internalrepeat96/120B. Every measured one-root/forest nonempty sample has equal allocation. All raw samples/manifests uploaded.",
+        "Owned24retained structures equal; separate fresh-output graphs equal. WholeGC retained deltas are not substituted for owned graph evidence.",
+        "Cold-path outlining is a new mechanism hypothesis: smaller added Build IL but larger total native code. Neither this experiment nor prior identical-instruction diagnostics establishes a JIT/code-layout cause.",
+        "No accepted optimization version.",
+        "Independent Mono review: all3core andlongRemoveAdd slower14/14, coreminimum311ms andlongminimum295/334ms;zeroGC/allocations forcore,zero measuredallocation forlong.42sourcehashes exact and24graphs equal."
+      ]
     }
   ],
   "verification_limits": [
@@ -309,7 +335,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Independent fresh-empty registry Build shortcut on exact f7. Empty traversal List/Stack work is skipped while original fresh zero-length arrays and sentinel/dictionary layout are preserved. Public/internal first-empty allocations save144B.NET/216BMono; repeated internalempty96/120B. Local nonempty allocations and retainedgraphs exactlyequal; no timing acceptance yet. All unaccepted runtime experiments removed; original/previousaccepted f7,count0. Full fixed timing matrix plus frozen fresh-process empty/nonempty allocation supplement decide acceptance.",
+  "current_candidate_note": "Independent outlined fresh-empty Build shortcut on exactf7, same fresh sentinel/arrays/dictionary outputs and unchanged original nonempty statements. Empty-only construction moves into private nongeneric NoInlining helper; BuildIL727original->757 versus822inline,helper81. NativeBuildNET1712->1764,Mono2984->3080 plushelper358/792,so totalcodegrows.20correctness suites,408freshcold probes/accessor/edge/graphs andmainall/Unitycompile pass; sameemptyallocsavings/nonemptyequality. Full unchanged matrices andcold supplement still decide acceptance; original/previousacceptedf7,count0.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",
