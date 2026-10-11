@@ -590,12 +590,17 @@
     {
       "sha": "306c81f018e161844e235c36939e29f2f87cecd7",
       "ci_run": 38142108440,
-      "decision": "Rejected as-is after completed .NET evidence reproduces substantive fresh-single-add regression versus both original and historical predecessor. Mono is still running; preserve its outcome when complete. No further sampling solely to obtain a pass.",
+      "decision": "Rejected as-is: completed .NET evidence reproduces substantive fresh-single-add regression versus both original and historical predecessor. Completed Mono evidence has no corresponding adverse root intervals on its different host; it does not reverse the .NET rejection. No further sampling solely to obtain a pass.",
       "artifacts": [
         {
           "backend": ".NET 8.0.31 AMD EPYC 7763",
           "id": 11704882149,
           "sha256": "94acd856ae83f5c58d7056d6e094ae03c7f04d717ded508c6741bab954470ebb"
+        },
+        {
+          "backend": "standalone Mono 6.8.0.105 AMD EPYC 9V74",
+          "id": 11705638064,
+          "sha256": "83a5d8113c66719c2a94bd65aa67a877ec1ef95728789e7e80468153ccb012f9"
         }
       ],
       "findings": [
@@ -603,8 +608,11 @@
         "Self-reused Union predecessor 15.898 -> 16.513 ns, approximate 99% speedup 0.9593-0.9650. Other small guard flags remain in raw evidence.",
         "All 63 Runtime hashes match exact f7/f53/306 on AMD EPYC 7763. All 24 owned-layout graphs equal; adaptive 17-process semantic package and Union/self cold checks pass.",
         "RemoveTags cold comparisons and both RegistryEmpty cold supplements are equal in this run. This does not attribute or erase earlier failed cold samples, nor clear the stronger existing-chain cold costs.",
-        "Bulk 43 rows independently recomputed against BOTH original and predecessor are clean of adverse intervals or increased allocation; normal/padded legacy comparisons are also clean. Subsidiary review and Mono completion remain pending.",
-        "Restoring old declared method tokens did not repair the fresh-add guard. No code-layout causation is inferred from this negative result."
+        "Bulk 43 rows independently recomputed against BOTH original and predecessor are clean of adverse intervals or increased allocation; normal/padded legacy comparisons are also clean. Subsidiary review and both backends are complete.",
+        "Restoring old declared method tokens did not repair the fresh-add guard. No code-layout causation is inferred from this negative result.",
+        "Completed Mono: all 63 Runtime hashes verified, all 24 owned root graphs equal; 34 adaptive semantic processes pass. Union/self/RemoveTags cold comparisons and both RegistryEmpty sidecars have zero deltas.",
+        "Mono root and Union timing have no adverse approximate 99% interval against either reference. Ascending deep gains versus historical f53 are about 2.10x/40.42x/99.34x at depths 128/1024/3000. These are same-host comparisons and do not establish a causal repair of prior Intel-host Mono or current AMD7763 .NET regressions.",
+        "Mono eight root and three Union whole-GC retained review rows are not corroborated by owned-layout growth. Normal legacy14, predecessor padded4, registry/root-only and long predecessor controls are clean. Original padded4 E64/0%-new has a tiny adverse interval 0.9913-0.9987; retain this small-sample signal. RemoveTags timings have no candidate-adverse interval."
       ],
       "preparation_record": "Version2 attempt: source-order-only refinement of rejected909 closed-state adaptiveUnion, on acceptedf53. Move the same five new cold helper methods after all preexisting TagStorage methods; method bodies/signatures/attributes/calls unchanged. All31declared preexistingTagStorage metadata tokens nowmatchf53, restoring12shiftedby909; synthesized constructor token andsomeRVAs remain different. All376assemblymethods preserve normalizedIL/locals/maxstack/EH/attributes versus909 onbothframeworks. This is a verified metadata change, not proof that tokens caused prior regressions. ExactTagStorage93036c4a206ca4e43d04ef8fa9d8f3ae9ebf0d439c04495382c976ba8606701a;relocationpatch205fc6ba7e2cc430d6b898bc6498fb4d5eab0799745ea0fac69db0844c11c8cf;f53patch4cef20bee0e5bb017e558aaacacd971b8a1cc23b54f60460a4d4f76af8d29ad4. Sealedcompletion40d3db1545aa15833490fb169d721b1d9a1b13b5cc01810be575f9dd623f9eae,2736artifacthashes independentlyverified. BothMain7595855/API/Evolution/overflow/Unitycompile and324unchangedUnioncoldprocessespass;168544gettercases,15456fullstateobservations,121exactstreamcomparisons. BroadCI RemoveTagscoldfailure notcleared locally. AllsamefullCIgatesremain; originalf7 andacceptedf53 unchanged;0currentlyqualifiedversions; f53 is a historical accepted control with reopened qualification. Separatestrongerold-APIcomparator isrunning at38141813971 againstpinnedf7/f53, unaffectedbythisRuntimecandidate."
     }
@@ -614,7 +622,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Runtime remains rejected 306 pending preservation of the running Mono evidence. Current fully qualified count is 0. Historical f53 remains a comparison control with reopened qualification. Isolated alias storage-reuse and queue first-use repairs are undergoing untimed correctness, full-owned-state and cold-allocation checks before any timing or publication; stronger existing-chain penalties remain frozen gates.",
+  "current_candidate_note": "Both full 306 CI backends are complete and artifacts verified. Runtime remains rejected 306 until the next reviewed candidate replaces it; current fully qualified count is 0. Historical f53 remains a comparison control with reopened qualification. Isolated alias storage-reuse and borrowed-output queue repairs have passed their targeted untimed checks; a separately frozen composition is now running all41 stronger cold fixtures against all five old strategies and f53 (1722 fresh calls, no timing). Remaining deep/counted/tiny fallback costs are not waived. No new performance version is claimed.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",
