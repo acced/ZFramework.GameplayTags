@@ -66,29 +66,8 @@ namespace GameplayTags
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool ContainsExplicit(int id)
         {
-            int[] buckets = m_Buckets;
-            Entry[] entries = Entries;
-            int mask = m_BucketMask;
-            if (mask == 0)
-            {
-                for (int i = 0; i < Count; i++)
-                {
-                    if (entries[i].Id == id)
-                        return entries[i].ExplicitCount != 0;
-                }
-                return false;
-            }
-
-            int slot = Hash(id) & mask;
-            int encoded;
-            while ((encoded = buckets[slot]) != 0)
-            {
-                int index = encoded - 1;
-                if (entries[index].Id == id)
-                    return entries[index].ExplicitCount != 0;
-                slot = (slot + 1) & mask;
-            }
-            return false;
+            int index = Find(id);
+            return index >= 0 && Entries[index].ExplicitCount != 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -544,19 +523,14 @@ namespace GameplayTags
             for (int i = 0; i < next; i++)
             {
                 int node = i;
-                while (node >= 0)
+                while (node >= 0 && entries[node].ExplicitCount == 0)
                 {
-                    ref Entry entry = ref entries[node];
-                    if (entry.ExplicitCount != 0)
-                        break;
-                    int parent = entry.ExplicitIndex;
-                    entry.ExplicitCount = -1;
+                    int parent = entries[node].ExplicitIndex;
+                    entries[node].ExplicitCount = -1;
                     if (parent >= 0)
                     {
-                        int contribution = entry.Count;
-                        ref Entry parentEntry = ref entries[parent];
-                        parentEntry.Count += contribution;
-                        parentEntry.ExplicitCount--;
+                        entries[parent].Count += entries[node].Count;
+                        entries[parent].ExplicitCount--;
                     }
                     node = parent;
                 }
@@ -565,9 +539,9 @@ namespace GameplayTags
                 entries[i].ExplicitCount = 0;
             for (int i = 0; i < explicitCount; i++)
             {
-                ref Entry entry = ref entries[ExplicitIndices[i]];
-                entry.ExplicitCount = 1;
-                entry.ExplicitIndex = i;
+                int index = ExplicitIndices[i];
+                entries[index].ExplicitCount = 1;
+                entries[index].ExplicitIndex = i;
             }
             Count = next;
             ExplicitCount = explicitCount;

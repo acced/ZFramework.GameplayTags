@@ -141,9 +141,8 @@ namespace GameplayTags
             TagStorage source = other.Indices.Storage;
             if (ReferenceEquals(source, m_Indices.Storage))
                 return;
-            GameplayTagEnumerator tags = other.GetExplicitTags();
-            while (tags.MoveNext())
-                AddTag(tags.Current);
+            foreach (GameplayTag tag in other.GetExplicitTags())
+                AddTag(tag);
         }
 
         public void RemoveTags<T>(in T other) where T : IGameplayTagContainer
@@ -365,6 +364,51 @@ namespace GameplayTags
             if (b != null && b.ExplicitCount != 0 && !ReferenceEquals(a, b))
                 result.m_Indices.Storage.AddUnion(b);
             return result;
+        }
+
+        /// <summary>Replace output with the explicit union. Output may alias either input.</summary>
+        public static void Union<T, U>(GameplayTagContainer output, in T lhs, in U rhs)
+            where T : IGameplayTagContainer where U : IGameplayTagContainer
+        {
+            TagStorage a = lhs.Indices.Storage, b = rhs.Indices.Storage;
+            bool aIsSet = lhs is GameplayTagContainer, bIsSet = rhs is GameplayTagContainer;
+            if (ReferenceEquals(output.m_Indices.Storage, a) || ReferenceEquals(output.m_Indices.Storage, b))
+            {
+                // Preserve factory seeding and the final Copy for aliases, but
+                // use the captured views so each input getter is evaluated once.
+                var result = new GameplayTagContainer();
+                result.SetDistinctUnion(a, b, aIsSet, bIsSet);
+                Copy(output, result);
+                return;
+            }
+            output.SetDistinctUnion(a, b, aIsSet, bIsSet);
+        }
+
+        private void SetDistinctUnion(TagStorage a, TagStorage b, bool aIsSet, bool bIsSet)
+        {
+            TagStorage output = m_Indices.Storage;
+            // Prefer a normal seed: a counted input contributes existence only.
+            // Otherwise copying the larger closure leaves less work to append.
+            if (a == null || (b != null && ((!aIsSet && bIsSet) ||
+                (aIsSet == bIsSet && a.Count < b.Count))))
+            {
+                TagStorage temporary = a;
+                a = b;
+                b = temporary;
+                aIsSet = bIsSet;
+            }
+            if (a == null || a.ExplicitCount == 0)
+            {
+                CopyExplicitStorage(b);
+                return;
+            }
+            if (aIsSet)
+                output.CopyFrom(a);
+            else
+                CopyExplicitStorage(a);
+            if (b != null && b.ExplicitCount != 0 && !ReferenceEquals(a, b))
+                output.AddUnion(b);
+            m_SerializedExplicitTags?.Clear();
         }
 
         private void CopyExplicitStorage(TagStorage source)

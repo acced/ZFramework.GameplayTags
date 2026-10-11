@@ -8,6 +8,8 @@ on:
       - 'Tests~/RegistryRootOnly/**'
       - 'Tests~/LegacyCopyRecheck/**'
       - 'Tests~/RegistryEmpty/**'
+      - 'Tests~/UnionOutput/**'
+      - 'Tests~/UnionOutputCold/**'
       - '.github/workflows/evolution.yml'
 permissions:
   contents: read
@@ -195,6 +197,40 @@ jobs:
             fi
             python3 Tests~/LegacyCopyRecheck/run.py "${args[@]}"
           fi
+      - name: Preserve true first-use Union allocation and storage boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --variant "original=$PWD/.artifacts/evolution-original" --revision "original=$ORIGINAL_SHA")
+          signature='public static void Union<T, U>(GameplayTagContainer output'
+          if [[ "$PREVIOUS_SHA" != "$ORIGINAL_SHA" ]]; then
+            args+=(--variant "previous=$PWD/.artifacts/evolution-previous" --revision "previous=$PREVIOUS_SHA")
+            if grep -Fq "$signature" .artifacts/evolution-previous/Runtime/GameplayTagContainer.cs; then args+=(--api-variant previous); fi
+          fi
+          args+=(--variant "candidate=$PWD" --revision "candidate=$GITHUB_SHA" --out .artifacts/evolution-union-cold)
+          if grep -Fq "$signature" Runtime/GameplayTagContainer.cs; then args+=(--api-variant candidate); fi
+          if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
+          python3 Tests~/UnionOutputCold/run.py "${args[@]}"
+      - name: Measure reusable Union output against equivalent factory replacement
+        shell: bash
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+          DOTNET_TieredCompilation: '0'
+          DOTNET_gcServer: '0'
+          COMPlus_TieredCompilation: '0'
+          COMPlus_gcServer: '0'
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --variant "original=$PWD/.artifacts/evolution-original" --revision "original=$ORIGINAL_SHA")
+          signature='public static void Union<T, U>(GameplayTagContainer output'
+          if [[ "$PREVIOUS_SHA" != "$ORIGINAL_SHA" ]]; then
+            args+=(--variant "previous=$PWD/.artifacts/evolution-previous" --revision "previous=$PREVIOUS_SHA")
+            if grep -Fq "$signature" .artifacts/evolution-previous/Runtime/GameplayTagContainer.cs; then args+=(--api-variant previous); fi
+          fi
+          args+=(--variant "candidate=$PWD" --revision "candidate=$GITHUB_SHA" --samples 14 --out .artifacts/evolution-union-output)
+          if grep -Fq "$signature" Runtime/GameplayTagContainer.cs; then args+=(--api-variant candidate); fi
+          if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
+          python3 Tests~/UnionOutput/run.py "${args[@]}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -207,6 +243,8 @@ jobs:
             .artifacts/evolution-layout/*.json
             .artifacts/evolution-empty-*/
             .artifacts/evolution-counter-support/
+            .artifacts/evolution-union-output/
+            .artifacts/evolution-union-cold/
             .artifacts/evolution-registry-*/*.json
             .artifacts/evolution-registry-*/raw/*
             .artifacts/evolution-root-only-*/*.json

@@ -383,6 +383,72 @@
         "Read-only hardware-counter probes on both hosts found /usr/bin/perf but failed exit 255 with perf_event_paranoid=4 and an access-denied message. Complete raw output is uploaded. No installation, permission or settings changes were attempted; cycles/instructions and the causal layout hypothesis remain unmeasured.",
         "No accepted optimization version."
       ]
+    },
+    {
+      "sha": "579aaa1a56779694a4d16ba25ff38b53bafe93f2",
+      "ci_run": 38108817399,
+      "decision": "Rejected as-is: a bounded original-program AMD7763 diagnostic reproduces the workspace regression with stable same-binary controls, despite clean formal full-matrix flags on newer hosts. No further sampling is justified.",
+      "artifacts": [
+        {
+          "backend": ".NET8 AMD9V45",
+          "id": 11691011442,
+          "sha256": "807204652abfc2a60a3f04eab9712912a6f6237a6a14503408d1e573f10f8f50"
+        },
+        {
+          "backend": "standalone Mono6.8 AMD9V74, with separate .NET cold probes",
+          "id": 11691339179,
+          "sha256": "b80fdbf6963ae1b4442e1c7aeab66c723f547968de498dd695a3053b0f83cb10"
+        }
+      ],
+      "diagnostics": [
+        {
+          "commit": "0d67b3fbc3b955187fa69eeaf0dd2bf99c826171",
+          "run": 38110883211,
+          "artifact": 11691518756,
+          "sha256": "67b6cb0b1883f4e922c946455766bd0f1e2c5144930331187bf126c508ed41c5",
+          "result": "Matched .NET7763 slot2: same-binary AA workspace 82.21 -> 82.43ns with interval across1; AB82.27 ->85.96ns slower14/14, >=500/521ms, zero GC/alloc,99%0.9527-0.9687. Both AddTags-self AB8.105 ->8.416ns slower14/14, AAneutral. Independent exact42sourcehashes verified."
+        },
+        {
+          "run": 38110883211,
+          "artifact": 11691512986,
+          "sha256": "2d8e226e8ce5f60e651d4b28678b9fbbc1e0f4fe0452f9b66b8739805eacf5ce",
+          "result": "NET7763 slot1 no hardware match, metadata only."
+        },
+        {
+          "run": 38110883211,
+          "artifact": 11691048353,
+          "sha256": "409e974c0a7cc9104deeb5115912056a3e4b1e19e78092a58884a0ce23da7e7d",
+          "result": "Mono9V74 slot1 no hardware match, metadata only."
+        },
+        {
+          "run": 38110883211,
+          "artifact": 11691655948,
+          "sha256": "ceec4cf6efc0e428f0457e32f2ed04b9056c5ce57ee378338d292824066386e9",
+          "result": "Mono9V74 slot2 no hardware match, metadata only."
+        },
+        {
+          "run": 38110883211,
+          "artifact": 11692340703,
+          "sha256": "40796ccec51e84638481fad4009fbfda7880aa3e769419ca2c634a84857462c8",
+          "result": "Mono7763 slot1 retained independently: self AddTags neutral, AllHierSelf163.94->165.96ns adverse99%0.9773-0.9965; denseClear slight adverse interval. Does not test9V74 bimodal signal."
+        },
+        {
+          "run": 38110883211,
+          "artifact": 11692410491,
+          "sha256": "0bdea528d788e82b809e6b97fbf9c8bc5aaedb3418b6ae4659aa4017708f1959",
+          "result": "Mono7763 slot2 retained independently: self AddTags neutral, AllHierSelf164.05->166.22ns adverse99%0.9802-0.9946; denseClear mixed. Does not test9V74 bimodal signal."
+        }
+      ],
+      "findings": [
+        "Full .NET9V45 and Mono9V74 matrices report36/41 timing improvements and no formal timing-regression flags. Exact queries improve about1.23x/1.24x. These hosts do not establish repair of prior7763 residuals; matching recheck did reproduce a material regression.",
+        "Both full runs verify42exactRuntime hashes and24identical owned structures. NET n4half fresh intersection48.1-52.8ms and longRemoveAdd~49ms remain short-batch reviews, not qualifying improvements.",
+        "NET registry chain allocation median+13B is unsupported by paired consistency:7positive/7negative, range-529..+681B, approximate99%mean delta-278..+356B. No persistent growth or savings inferred.",
+        "Mono9V74 depth3duplicate-add preserves a mixed distribution: six candidate samples15.63-15.73ns versus other12.58-13.13ns; baseline mostly12.59-12.77ns. No unfavorable mode discarded or attributed without evidence.",
+        "Extra .NET cold internal forest in Mono artifact has one of six candidate samples+6192B; otherfive equal and all public/Mono cases equal. Checksums/graphs/source/binaries match. Saved-binary passive audit finds426methods, only3intended bodies differ; measured registry wrapper/callback/initializer closure reaches none. This bounds changed-code execution but does not explain or erase observed extra bytes. No additional cold probes were used to sample it away.",
+        "Full legacy/Bulk/Registry/RootOnly/longCopy adds no other established material blocker; MonoBulk unmeasured. FullGC retained anomalies do not establish owned-structure growth.",
+        "No accepted optimization version.",
+        "Independent final Mono7763 audit confirms42exactRuntime hashes per AA/AB in both slots. AllHierSelf adverse13/14 in each, >=603/611ms, zeroGC, about+2ns; selfAddTags neutral. No further diagnostic;NET rejection final."
+      ]
     }
   ],
   "verification_limits": [
@@ -390,7 +456,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Exact combined candidate on f7 contains only indexed ContainsExplicit, fixed-array workspace finalization refs and direct AddTags enumeration. Original/intermediate/combined both-runtime semantic, overflow, default-Mono derived dispatch, cold/layout and Evolution checks pass; main all and Unity compile contracts pass. Workspace qualification includes 144 fresh processes with 48 exact three-way allocation/capacity matches. No adaptive Union, tiny Copy, registry shortcut, RemoveTags, new overload, identity shortcut or inlining attributes. Independent cumulative static review passes. Cumulative patch SHA256 b9cd170a5f447f42242e0c588e8e0683370b0d5773783e15cee6ec9a0274594c. The unchanged full matrix must resolve every prior residual; if successful this composition counts only one version. Current accepted count0, original and previous accepted f7.",
+  "current_candidate_note": "Independent reusable-output Union overload on exact f7. Each source getter/type is captured once; aliases build a normal temporary from captured storage with the factory seed algorithm then Copy, distinct output reuses storage. Existing factory and all pre-existing methods remain unchanged. Earlier prepared double-getter alias version is preserved but not published: it fails8280getter cases/backend, including3117state and1052exception differences. Repaired version passes21068focused getter cases/backend, existing2,234,631APIchecks,704overflow,edge/sparse/Evolution,216truefirst-use processes, bothbackendMain7,595,855assertions andNETall/Unitycompile. Alias cold/warmbytes equal; distinct coldlower/warmzero in those probes;ownedcapacities/masks equal. Frozen28row output-replacement timing and truefirst-use supplements compare original\u2192all and adjacent accepted predecessor. Full unchanged CI gates still determine acceptance. Candidate and all prior compositions unaccepted,count0,original/previousf7. Complete f7 patch SHA256 d46e437d23650b01a6685613014e65812b7ae431b14262c623cfcb58a40cb8c3; exact Container SHA256 6e5599b1b2875b5b5cce1e21b70c313ca7b78bb45fddfdc5bfede5ab60a405c7. Optional Mono reflection IL inspection aborted on the unchanged baseline; preserved as unavailable, not a Runtime correctness pass or failure.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",
