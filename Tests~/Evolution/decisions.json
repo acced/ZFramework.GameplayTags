@@ -564,7 +564,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Version2 candidate: direct concrete-enumerator RemoveTags loop on accepted f53; all Union code unchanged. Original foreach returns the same advanced enumerator by value and has empty Dispose. f7/f53/candidate pass both-runtime polymorphism/getters/advanced enumerator, 8163successful mutation and3456legacy overflow states,45serialization recovery checks,Main7,595,855 assertions each andfixedEvolution. Warm allocations/owned layouts match. One newNET1024counted cold restore pair was59512B versus53320B; exactly9preregistered fresh controls gave f7[53320,53320,53320],acceptedf53[53320,53320,59512],candidate[53320,53320,53320]. Variation is not candidate-exclusive; cause unresolved and original sample retained. ColdGC fields are defaults, not measured counts. Existing frozen20-row RemoveTags supplement now joins fullCI: true-cold eachrow/source before500ms first-original-only calibration and14ABC/CBA pairs, comparing originalf7 andacceptedf53. Cold increases still stop that supplement beforetiming. Incremental patch60313c338dd8bb62f7a1dbbdd105306befdc6af9d3a8f6ece0c0273561ff23c2;Container429d004b8e7fd57a0045de31bcdbcc07e4b4b638dd5ecc8f392d2c7c6f197b45.1accepted version; candidate not counted.",
+  "current_candidate_note": "Version 2 attempt, separately qualified on accepted f53: closed-closure adaptive Union. RemoveTags is restored byte-for-byte to accepted f53; no rejected changes inherited. First FIFO revolution remains in AddUnion; a cold NoInlining remainder performs a conservative ownership, pending-mass, explicit-bijection and complete-ancestor-closure gate. Ineligible states permanently retain original FIFO. Admitted sweep inserts nothing and preserves full owned state, including retained tails and future overflow/Copy continuations. Private in-place heap avoids a separately observed Mono first-use +48 B sort-path cost without prewarming. Exact patch3c95e9915ce22b233057c56d1890983de50b4985272ea3be3e1d1b77764b7ae3; TagStorage ae1b90d08dfebbde3bc106f06121a24796c7445fc1f6c49e3550a8c207df3a7b. Sealed local package efe8fb43f9ee0ccc1a4f70aaa6713dc77014a63ed0a1155a661977057d72c088,2696 hashes independently checked,324 unchanged cold processes,11592 complete owned-state observations,126408 getter checks, Main7595855/backend and Evolution/overflow/Unity compile pass. Actual CI Mono6.8 and full timing pending. Existing131-row union-v2 shared maps restore only larger ascending counts16384/2048/512; all existing matrices, including RemoveTags cold failure gate, remain. No universal complexity improvement: partial closures/negative builder links retain FIFO; whole-destination scan and1032 extra IL bytes need measurement. Count stays1/10.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",
@@ -637,6 +637,35 @@
         "preregistration_sha256": "11d5d807d506b0a979451cdb92288497c6f71abbb9db9bd655b6632e439bb431",
         "result": "All24f7 and24aa samples2174008B, all checks match; no recurrence. Inconclusive because local Intel/Linux6.18/glibc2.41 differs from CI AMD/Linux6.17/glibc2.39. Original+6192B samples preserved; no mechanism or blanket waiver."
       }
+    },
+    {
+      "sha": "6b2fb5fa4b549e3b532c4888cfcbe51f23ab013a",
+      "ci_run": 38129821860,
+      "decision": "Unaccepted: .NET RemoveTags true-cold allocation gate failed before changed-API timing. A bounded object-observer diagnostic was inconclusive. Preserve the failure and continue from accepted f53 with a different implementation; no version counted.",
+      "artifacts": [
+        {
+          "backend": ".NET 8 AMD EPYC 9V45",
+          "id": 11699231045,
+          "sha256": "82b4a302c837f9ee0683b51d15884f77281678d29111dd8fbc629fbace39758c"
+        },
+        {
+          "backend": "standalone Mono 6.8 AMD EPYC 7763",
+          "id": 11701047100,
+          "sha256": "9d597ddaa4aedcecc91a9ef74cd0476e5a861b8a5b2e29a09f25807f8349f673"
+        }
+      ],
+      "findings": [
+        "NET n4 counted-equal Copy+RemoveTags first invocation: original and accepted predecessor 488 B, candidate 6680 B. Warm allocation and owned capacities agree. Frozen coordinator correctly stopped before calibration/timing; there is no NET RemoveTags timing evidence.",
+        "CoreCLR CastCache 128-to-256 growth allocates int[1542], exactly 6192 B on x64, and first-use JIT cast analysis can reach it. This is a source-supported hypothesis, not attribution of historical samples. Fixed nine-process ABC/BCA/CAB observer yielded nine 488 B samples with zero-allocation reads; eight tables stayed774 and one candidate was already1542 before measurement. No transition occurred. Stop after nine; no subtraction, repeat-until-pass or cold-gate change. Completion SHA256 3d3714a5bc05cc4f58805ed2100d11e0a4a61822386ca424a13b835f112aec73.",
+        "Same NET CI original-f7 registry forest sample4 also records2180200 B versus ordinary2174008 B. This establishes candidate edits unnecessary for the magnitude, without identifying its cause or waiving the failed RemoveTags row.",
+        "Both full root matrices compare original and accepted predecessor. NET predecessor n16 AnyHierSelf8.472->8.586ns has a small adverse99% interval0.9706-0.9979. Other root intervals show no established regression. All24 owned layouts compare three-way.",
+        "NET Bulk43 independently recomputed from14 raw rounds against BOTH original and accepted predecessor: no adverse99% interval or allocation increase. Legacy normal/padded and long guards retain original workloads. Registry positive median byte flags have paired intervals crossing zero; no counter cause inferred.",
+        "Mono RemoveTags cold checks passed. Empty-distinct20.982->20.134ns against predecessor, paired1.0403,99%1.0330-1.0476; all19other timing flags inconclusive. Restore-pair improvements are not isolated operation timings. No benefit can override the unresolved NET cold gate.",
+        "Mono Union alias-right original6367.81ns, accepted6440.09ns, candidate6415.68ns: both original comparisons have small adverse intervals, while predecessor-to-candidate does not. Preserve this scoped uncertainty within the original3% material gate; do not relabel accepted f53 as universally zero-cost.",
+        "No Unity Editor/Player, IL2CPP or Alex execution. Mono Bulk timing remains unmeasured.",
+        "Independent Mono audit: all63 Runtime hashes exact, all24 owned graphs equal, root no adverse interval, RemoveTags all60 cold comparisons pass and minimum timed batch488ms. Six root fullGC retained flags are unsupported by owned-layout growth.",
+        "Mono job separate .NET RegistryEmpty sidecar has candidate forest+6192B at sample1 against BOTH original and predecessor; all remaining five equal. Preserve this additional recurrence without cause attribution. Predecessor padded4 legacy E1024/full/default-new has broad adverse interval0.9142-0.9984 with short batches; inconclusive secondary signal, not silently discarded."
+      ]
     }
   ],
   "candidate_preparation_cold_observations": [
@@ -667,5 +696,14 @@
       "mechanism_established": false,
       "interpretation": "Baseline recurrence demonstrates variation outside candidate edits. No universal equality or absence-of-GC claim; all initial and diagnostic observations preserved."
     }
-  ]
+  ],
+  "adaptive_compatibility_failures": {
+    "scope": "Earlier rejected adaptive prototypes; accepted f53 contains no adaptive sweep. All failures preserved and represented by published supplemental public fixtures.",
+    "findings": [
+      "Old4df/3af sweep bypasses counted-storage pending barrier exposed through a valid public derived normal view; root3/129 becomes62/11 and subsequent removal differs.",
+      "Ownership/mass-only gate can fill a stale explicit dense slot with a different implicit ancestor after public overflow/removal: level40 versus943.",
+      "Mapping-only admission still changes retained tails observable after later public Copy of a legacy stale-slot source.",
+      "New complete-closure gate admits only propagation that inserts no entry; exact complete arrays and continuation state must match."
+    ]
+  }
 }

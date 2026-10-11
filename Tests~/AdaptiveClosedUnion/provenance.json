@@ -1,0 +1,50 @@
+{
+  "Schema": 1,
+  "Purpose": "Source-only supplemental adaptive closed-union correctness fixtures; no timing or cold-probe changes.",
+  "FrozenSourceEvidence": "adaptive-closed-union-validation",
+  "OriginalRevision": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "AcceptedRevision": "f53c5fb94c22c2750f54c33dcfdee443a72bf595",
+  "CandidateTagStorageSHA256": "ae1b90d08dfebbde3bc106f06121a24796c7445fc1f6c49e3550a8c207df3a7b",
+  "Harnesses": {
+    "PublicCounterexample.cs": {
+      "Origin": "gate-tests/PublicCounterexample.cs",
+      "SHA256": "a25d3beebc1b831f4c0547b2d2b0089beb6b27d7445bbe44a5e5685f3ba7ed0d"
+    },
+    "StalePublic.cs": {
+      "Origin": "gate-tests/stale-public/Program.cs",
+      "SHA256": "0fd047aa1cd9d17b805b471759d8fe08cb8c174263f689da15d1e443b58e4b22"
+    },
+    "ContinuationPublic.cs": {
+      "Origin": "gate-tests/continuation-public/Program.cs",
+      "SHA256": "720b3bd43906415bbccf4478fcc050e6010a9b5f66dc3abf4aebae0ef5692356"
+    },
+    "GateCases.cs": {
+      "Origin": "gate-tests/GateCases.cs",
+      "SHA256": "f2f02249b1ed6dd9052b230cc893a874a0bc95b550b4ee8eaf74f227046345b2"
+    },
+    "ClosedState.cs": {
+      "Origin": "closed-state/Program.cs",
+      "SHA256": "3e448232d97d9accf9e3e8c99ba1de9760226c50b5fd77693d08e9ccb7558962"
+    }
+  },
+  "ExpectedCounts": {
+    "GateCases": 208,
+    "Depth257": {
+      "Cases": 84,
+      "Observations": 1764,
+      "InputAndCopyImmutabilityChecks": 210,
+      "WithinProcessReferenceComparisons": 6132
+    },
+    "Depth769": {
+      "Cases": 8,
+      "Observations": 168,
+      "InputAndCopyImmutabilityChecks": 20,
+      "WithinProcessReferenceComparisons": 584
+    }
+  },
+  "Limitations": [
+    "Bounded semantics, not a proof for all possible inputs.",
+    "Separate original full semantic, Mono path trace, main, cold and timing evidence remains authoritative for that scope.",
+    "The local smoke uses Mono 6.12; actual Mono 6.8 remains a CI requirement."
+  ]
+}
