@@ -1,0 +1,94 @@
+{
+  "Schema": 1,
+  "Programs": {
+    "structure": {
+      "CommonSource": "Common.cs",
+      "ProgramSource": "Structural.cs",
+      "Cases": 1026,
+      "StagesPerCase": 5
+    },
+    "guard": {
+      "CommonSource": "CountZeroGuardCommon.cs",
+      "ProgramSource": "CountZeroGuard.cs",
+      "Cases": 54,
+      "StagesPerCase": 5
+    },
+    "cold": {
+      "CommonSource": "Common.cs",
+      "ProgramSource": "Cold.cs"
+    }
+  },
+  "ColdCases": [
+    [
+      1,
+      "fresh",
+      "flat"
+    ],
+    [
+      1,
+      "reserved8192",
+      "flat"
+    ],
+    [
+      1,
+      "grown1024-drained",
+      "flat"
+    ],
+    [
+      9,
+      "fresh",
+      "flat"
+    ],
+    [
+      9,
+      "reserved8192",
+      "flat"
+    ],
+    [
+      9,
+      "grown1024-drained",
+      "flat"
+    ],
+    [
+      65,
+      "fresh",
+      "flat"
+    ],
+    [
+      65,
+      "reserved8192",
+      "flat"
+    ],
+    [
+      65,
+      "grown1024-drained",
+      "flat"
+    ],
+    [
+      1,
+      "fresh",
+      "hierarchical"
+    ],
+    [
+      1,
+      "reserved8192",
+      "hierarchical"
+    ],
+    [
+      1,
+      "grown1024-drained",
+      "hierarchical"
+    ]
+  ],
+  "ColdModes": [
+    "allocation",
+    "audit"
+  ],
+  "SHA256": {
+    "Cold.cs": "f356c6a503db75b48b0ecc71628213bd6ffd64a7f1144f2ae1aa1e55b57ba282",
+    "Common.cs": "1cdaa14d53a50fa2632e4533eadb461e90f0cf28ec67c2d5cc72a3e76a651f95",
+    "CountZeroGuard.cs": "c3d66e0cbc6b7989ce83fdf8e80a5c92c838b37441205439a79f24fbd04e4968",
+    "CountZeroGuardCommon.cs": "1b9ea7faa619bb40b46593918522200ecc2b1576c6216e87211d697d2cb090df",
+    "Structural.cs": "d5157e0c2f5c92fec3d2784a988d13bfb9a3f02b0de7ea1c9bc14046310c33c2"
+  }
+}

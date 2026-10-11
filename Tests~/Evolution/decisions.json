@@ -476,6 +476,32 @@
         "Three Mono root and one tinyUnion fullGC retained flags do not establish owned-layout growth; a negative retained estimate is not a memory saving. Structural capacities andcoldmeasurements remain separate evidence.",
         "No accepted optimization version."
       ]
+    },
+    {
+      "sha": "e2bf89870c30a7ac61b89c70e4b6bfc5afacd6d6",
+      "ci_run": 38115903168,
+      "decision": "Rejected as-is: private helper inlining does not eliminate the reproducible .NET self-reused Union cost. A precise same-storage state-preserving repair is a new candidate, not a waiver.",
+      "artifacts": [
+        {
+          "backend": ".NET 8 AMD EPYC 9V45",
+          "id": 11693562564,
+          "sha256": "ab7eb61c8803bab8e293a31f3d58f4a77eb33d6ddbce5188ae6ab4f9aac6cd80"
+        },
+        {
+          "backend": "standalone Mono 6.8 AMD EPYC 9V74",
+          "id": 11694487411,
+          "sha256": "5fb40c74185804d3ebbc758b01ee8f0c20dfadfb60d00cbe1ccb81ff4ce8e228"
+        }
+      ],
+      "findings": [
+        "Independent source audit verifies all 42 Runtime hashes per backend. All 24 owned structural graphs match. True-first-use Union and sampled registry cold comparisons have no flags.",
+        "NET self-reused 53.13 -> 56.83 ns is slower 14/14, minimum 424/438 ms batches, identical 296 B and GC146/0/0, paired 99% speedup 0.9027-0.9686. This is a substantive blocker without further sampling. Different hardware from c643 means the attribute causal effect is not isolated.",
+        "Mono self-reused is neutral. Mono n128 half-overlap alias-right restore-pair 4947.24 -> 5033.54 ns has an adverse 99% speedup interval 0.9628-0.9969. Preserve this scoped cost alongside the earlier c643 signal.",
+        "Root timing has no formal regression flags on either backend; NET n1024 AllExactSelf 2344.12 -> 2379.84 ns has a smaller adverse interval 0.9797-0.9984. Mono root has no adverse 99% interval.",
+        "Negative full-GC estimates, including Mono Union -936 -> -148 B/object, cannot establish owned-storage growth or savings. Structural/cold evidence is reported separately.",
+        "Union calibration uses the predeclared 500 ms baseline-only target with shared iteration counts. No older short-batch samples are discarded. Existing factory-plus-Copy comparison and all frozen workloads remain intact.",
+        "No accepted optimization version."
+      ]
     }
   ],
   "verification_limits": [
@@ -483,7 +509,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Attribute-only AggressiveInlining on private nongeneric SetDistinctUnion on exactc643;public wrapper andalgorithms unchanged. Exactthree-source bothruntime21,068gettercases/API/Evolution/704overflow/320edge/208sparse and324freshcoldprocesses pass; current\u2192repair first/warmbytes andownedcapacities/masks equal. Mainboth7,595,855assertions andNETall/Unitycompile pass. Safe native diagnostics confirmhelpercallremoval; selectedcallers+sharedhelper footprint increases344B.NET/958BMono,notaguaranteeofspeed orwholeprocessmemoryequivalence. PatchSHA2568b564483083b543720e6ab9d650edc8bdc5ce55702e0d506dde8156526133437;ContainerSHA256a7fef376bc582bb5fc555f20e4624695a5945036eea4d6f6018decd8032bba24. Existingfullmatrices/workloadsources unchanged; Unionbaseline-only calibrationtarget500ms givesidenticalcounts toallvariants andactualdurationsstillreviewed. Acceptedcount0,original/previousacceptedf7.",
+  "current_candidate_note": "Same-storage normal-seed Union repair on c643 without helper inlining. Captured storage aliases use exact factory-plus-Copy Clear or sparse active-index compaction; both-nonset proxies retain normalization fallback. All 21,068 getter cases/source/backend, 1,026 five-phase full-array self cases plus 54 Count=0/stale-explicit guards/source/backend, existing API/overflow/sparse/Evolution/Main/Unity-compile suites and 468 fresh cold processes pass locally. Portable 9-file CI package smoke passes 104 fixture processes; unchanged frozen original matrices remain. Focused self first-use drops to 0 B on NET and 32 B on local Mono6.12, with exact retained arrays; actual CI Mono6.8 remains pending. Different-storage alias-right residual remains a required full-matrix gate. Complete f7 patch SHA256 e08a1a55dd895adb1343e8a66efeb8fdf1d041b6a0805d5a28d5c588f803d040; Container 8d05b0a705e896c4e6d16e7a6e5c206727947358839efe642945b9264e460f19; TagStorage 91756e880ca1ccea36be1db3ece270d7f4314089873eea80435671b42f55b56a. Accepted count0; original/previous accepted f7.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",

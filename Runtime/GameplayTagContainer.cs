@@ -374,6 +374,12 @@ namespace GameplayTags
             bool aIsSet = lhs is GameplayTagContainer, bIsSet = rhs is GameplayTagContainer;
             if (ReferenceEquals(output.m_Indices.Storage, a) || ReferenceEquals(output.m_Indices.Storage, b))
             {
+                if (ReferenceEquals(a, b) && (aIsSet || bIsSet))
+                {
+                    a.PrepareSameStorageUnion();
+                    output.m_SerializedExplicitTags?.Clear();
+                    return;
+                }
                 // Preserve factory seeding and the final Copy for aliases, but
                 // use the captured views so each input getter is evaluated once.
                 var result = new GameplayTagContainer();
@@ -384,7 +390,6 @@ namespace GameplayTags
             output.SetDistinctUnion(a, b, aIsSet, bIsSet);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetDistinctUnion(TagStorage a, TagStorage b, bool aIsSet, bool bIsSet)
         {
             TagStorage output = m_Indices.Storage;

@@ -10,6 +10,7 @@ on:
       - 'Tests~/RegistryEmpty/**'
       - 'Tests~/UnionOutput/**'
       - 'Tests~/UnionOutputCold/**'
+      - 'Tests~/UnionSelfState/**'
       - '.github/workflows/evolution.yml'
 permissions:
   contents: read
@@ -211,6 +212,20 @@ jobs:
           if grep -Fq "$signature" Runtime/GameplayTagContainer.cs; then args+=(--api-variant candidate); fi
           if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
           python3 Tests~/UnionOutputCold/run.py "${args[@]}"
+      - name: Preserve same-storage Union state and true first-use boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --variant "original=$PWD/.artifacts/evolution-original" --revision "original=$ORIGINAL_SHA")
+          signature='public static void Union<T, U>(GameplayTagContainer output'
+          if [[ "$PREVIOUS_SHA" != "$ORIGINAL_SHA" ]]; then
+            args+=(--variant "previous=$PWD/.artifacts/evolution-previous" --revision "previous=$PREVIOUS_SHA")
+            if grep -Fq "$signature" .artifacts/evolution-previous/Runtime/GameplayTagContainer.cs; then args+=(--api-variant previous); fi
+          fi
+          args+=(--variant "candidate=$PWD" --revision "candidate=$GITHUB_SHA" --out .artifacts/evolution-union-self)
+          if grep -Fq "$signature" Runtime/GameplayTagContainer.cs; then args+=(--api-variant candidate); fi
+          if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
+          python3 Tests~/UnionSelfState/run.py "${args[@]}"
       - name: Measure reusable Union output against equivalent factory replacement
         shell: bash
         env:
@@ -245,6 +260,7 @@ jobs:
             .artifacts/evolution-counter-support/
             .artifacts/evolution-union-output/
             .artifacts/evolution-union-cold/
+            .artifacts/evolution-union-self/
             .artifacts/evolution-registry-*/*.json
             .artifacts/evolution-registry-*/raw/*
             .artifacts/evolution-root-only-*/*.json

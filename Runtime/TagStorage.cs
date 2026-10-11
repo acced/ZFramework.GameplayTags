@@ -606,5 +606,22 @@ namespace GameplayTags
                 m_Buckets[slot] = i + 1;
             }
         }
+
+        // A normal same-storage union preserves dense contents, but factory-plus-
+        // Copy compacts a sparse active index and clears logically empty storage.
+        internal void PrepareSameStorageUnion()
+        {
+            if (ExplicitCount == 0 || Count == 0)
+            {
+                Clear();
+                return;
+            }
+            int sourceBucketCount = m_BucketMask == 0 ? 0 : m_BucketMask + 1;
+            if (sourceBucketCount > Math.Max(32, Count * 8))
+            {
+                ResetIndex(BucketCapacityFor(Count));
+                BuildIndex();
+            }
+        }
     }
 }
