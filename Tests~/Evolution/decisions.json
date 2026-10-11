@@ -557,6 +557,34 @@
         "Union calibration uses the predeclared 500 ms baseline-only target with shared iteration counts. No older short-batch samples are discarded. Existing factory-plus-Copy comparison and all frozen workloads remain intact.",
         "No accepted optimization version."
       ]
+    },
+    {
+      "sha": "90913a30bec6bd6e53d519806ede1ebbf6c3b1b6",
+      "ci_run": 38135845157,
+      "decision": "Rejected as-is: substantive timing regressions on both tested backends and unresolved NET RemoveTags first-use allocation failure. Full semantic and large deep-chain gains do not offset these blockers. No extra sampling to pass.",
+      "artifacts": [
+        {
+          "backend": ".NET8 AMD EPYC7763",
+          "id": 11701488579,
+          "sha256": "4668c8fcf89bbeb6a1e5a7b263ef64c4c9b1308830d3f989a077e56057adb3cb"
+        },
+        {
+          "backend": "standalone Mono6.8 Intel Xeon6973P-C",
+          "id": 11703016972,
+          "sha256": "006bca7816ea99c30c624913b098199060a464e8506baf753215dae08b55ba97"
+        }
+      ],
+      "findings": [
+        "All63 Runtime source hashes exact per backend;24 owned root graphs equal three-way. New adaptive semantic package completes17processes/30comparisons onNET and34/94 onMono job includingNET; no immutability violations. Union/self-state true-cold flags empty.",
+        "Deep ascending source versus acceptedf53 geometric gains: NET depth128/1024/3000=2.2117x/28.9062x/92.4992x; Mono=2.0038x/30.9892x/100.1895x, identical per-row warm allocated bytes. NETdepth3000candidate batches>=267ms. Reusable-output deep rows remain short diagnostics, not substitute acceptance evidence.",
+        "NET fresh-single-add original82.47->91.21ns,99%speedup0.8827-0.9526,>=269/300ms batches, identical59/0/0GC. Candidate14values89-93ns versus original mostly80-84. Predecessor one121ns outlier broadens that interval and is preserved. Small half-workspace82.2->84.8ns is slower14/14 versus both baselines,>=191ms,zeroGC,~3.2percent.",
+        "NET formal tiny guards and other small adverse intervals remain. Self-reusedUnion predecessor15.894->16.510ns is slower14/14,99%0.9563-0.9661,0B/GC and65-68ms candidate batches; preserve duration caveat.",
+        "NET RemoveTags cold candidate n4reference-proxy6680B versus488B on both references; acceptedf53 n4value-proxy also6680B versus original488B. No changed-API timing starts. This repeated6192magnitude remains unattributed; accepted-reference recurrence is not a waiver. RegistryEmpty cold comparisons in this run are equal.",
+        "Mono remove/add depth3 original86.16/previous85.99->95.61ns. Slower14/14original and12/14previous,>=186/205ms,all0GC/0B;99%speedup0.8469-0.9152 and0.8471-0.9632. This independently blocks acceptance.",
+        "Mono n1024empty workspace predecessor5927.88->6079.23ns has smaller adverse interval; unchangedRemoveTags n1disjoint69.31->70.90ns andn4valueproxy321.45->325.71ns also adverse but not formally beyond3percent,>=200ms. LongoriginalQuery99%0.9447-0.9963 has no predecessor flag. Do not attribute unchanged-method differences to a proven cause.",
+        "NETBulk43 recomputed against originalANDpredecessor has no adverseinterval or allocationincrease. Legacy normal/padded both references clean onbothbackends; registry/rootonlytiming noadditionalflag. NETregistrypositive median byteflags have pairedmean99% intervals spanningzero (trunk-28.7..38.2B;chain-295..452B).",
+        "Mono all60RemoveTags cold comparisons pass; both RegistryEmpty routes/backend probes have no cold deltas. MonoBulk remains unmeasured. No Unity/IL2CPP/Alex execution."
+      ]
     }
   ],
   "verification_limits": [
@@ -564,7 +592,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Version 2 attempt, separately qualified on accepted f53: closed-closure adaptive Union. RemoveTags is restored byte-for-byte to accepted f53; no rejected changes inherited. First FIFO revolution remains in AddUnion; a cold NoInlining remainder performs a conservative ownership, pending-mass, explicit-bijection and complete-ancestor-closure gate. Ineligible states permanently retain original FIFO. Admitted sweep inserts nothing and preserves full owned state, including retained tails and future overflow/Copy continuations. Private in-place heap avoids a separately observed Mono first-use +48 B sort-path cost without prewarming. Exact patch3c95e9915ce22b233057c56d1890983de50b4985272ea3be3e1d1b77764b7ae3; TagStorage ae1b90d08dfebbde3bc106f06121a24796c7445fc1f6c49e3550a8c207df3a7b. Sealed local package efe8fb43f9ee0ccc1a4f70aaa6713dc77014a63ed0a1155a661977057d72c088,2696 hashes independently checked,324 unchanged cold processes,11592 complete owned-state observations,126408 getter checks, Main7595855/backend and Evolution/overflow/Unity compile pass. Actual CI Mono6.8 and full timing pending. Existing131-row union-v2 shared maps restore only larger ascending counts16384/2048/512; all existing matrices, including RemoveTags cold failure gate, remain. No universal complexity improvement: partial closures/negative builder links retain FIFO; whole-destination scan and1032 extra IL bytes need measurement. Count stays1/10.",
+  "current_candidate_note": "Version2 attempt: source-order-only refinement of rejected909 closed-state adaptiveUnion, on acceptedf53. Move the same five new cold helper methods after all preexisting TagStorage methods; method bodies/signatures/attributes/calls unchanged. All31declared preexistingTagStorage metadata tokens nowmatchf53, restoring12shiftedby909; synthesized constructor token andsomeRVAs remain different. All376assemblymethods preserve normalizedIL/locals/maxstack/EH/attributes versus909 onbothframeworks. This is a verified metadata change, not proof that tokens caused prior regressions. ExactTagStorage93036c4a206ca4e43d04ef8fa9d8f3ae9ebf0d439c04495382c976ba8606701a;relocationpatch205fc6ba7e2cc430d6b898bc6498fb4d5eab0799745ea0fac69db0844c11c8cf;f53patch4cef20bee0e5bb017e558aaacacd971b8a1cc23b54f60460a4d4f76af8d29ad4. Sealedcompletion40d3db1545aa15833490fb169d721b1d9a1b13b5cc01810be575f9dd623f9eae,2736artifacthashes independentlyverified. BothMain7595855/API/Evolution/overflow/Unitycompile and324unchangedUnioncoldprocessespass;168544gettercases,15456fullstateobservations,121exactstreamcomparisons. BroadCI RemoveTagscoldfailure notcleared locally. AllsamefullCIgatesremain; originalf7 andacceptedf53 unchanged;1acceptedversion. Separatestrongerold-APIcomparator isrunning at38141813971 againstpinnedf7/f53, unaffectedbythisRuntimecandidate.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",

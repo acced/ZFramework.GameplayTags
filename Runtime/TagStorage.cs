@@ -364,165 +364,6 @@ namespace GameplayTags
             }
         }
 
-        // Ordinary unions finish in the first queue revolution. Keep adaptive
-        // budgeting and validation out of that path, including its native body.
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private void DrainUnionRemainder(int[] queue, int tail, int queued, int sourceCount)
-        {
-            int head = 0;
-            int revolutions = Math.Max(2, sourceCount / queue.Length) - 1;
-            while (queued != 0)
-            {
-                int index = queue[head++];
-                queued--;
-                int pending = (int)((uint)Entries[index].ExplicitCount >> 1);
-                Entries[index].ExplicitCount &= 1;
-                Entries[index].Count += pending;
-                int parent = GameplayTagManager.GetParentIndex(Entries[index].Id);
-                if (parent != 0)
-                    QueueContribution(parent, pending, queue, ref tail, ref queued);
-                if (head == queue.Length)
-                {
-                    head = 0;
-                    // A rejected gate stays on the original FIFO permanently.
-                    if (revolutions != 0 && --revolutions == 0 && queued != 0 &&
-                        CanOrderUnionContributions(queue, queued))
-                    {
-                        AddOrderedContributions(queue, queued);
-                        return;
-                    }
-                }
-            }
-        }
-
-        // Counted storage exposed by a normal-container view can carry unqueued
-        // high bits. Reordering must not bypass those barriers or pending wrap.
-        // Negative parent links from bulk builders conservatively retain FIFO.
-        private bool CanOrderUnionContributions(int[] queue, int queued)
-        {
-            Entry[] entries = Entries;
-            // A stale explicit slot can point into a future implicit insertion.
-            // Require both mapping directions before changing insertion order.
-            for (int i = 0; i < ExplicitCount; i++)
-            {
-                int index = ExplicitIndices[i];
-                if ((uint)index >= (uint)Count ||
-                    (entries[index].ExplicitCount & 1) == 0 ||
-                    entries[index].ExplicitIndex != i)
-                    return false;
-            }
-            for (int i = 0; i < Count; i++)
-            {
-                int explicitIndex = entries[i].ExplicitIndex;
-                if (explicitIndex < 0)
-                    return false;
-                if ((entries[i].ExplicitCount & 1) != 0 &&
-                    ((uint)explicitIndex >= (uint)ExplicitCount ||
-                     ExplicitIndices[explicitIndex] != i))
-                    return false;
-            }
-
-            // Preserve the full dense layout, including stale retained tails that
-            // later legacy copies can expose. Only reorder a complete closure.
-            for (int i = 0; i < Count; i++)
-            {
-                int parent = GameplayTagManager.GetParentIndex(entries[i].Id);
-                if (parent != 0 && Find(parent) < 0)
-                    return false;
-            }
-
-            int marked = 0, budget = int.MaxValue;
-            try
-            {
-                for (; marked < queued; marked++)
-                {
-                    int index = queue[marked];
-                    if ((uint)index >= (uint)Count)
-                        return false;
-                    ref Entry entry = ref entries[index];
-                    int pending = (int)((uint)entry.ExplicitCount >> 1);
-                    if (entry.ExplicitIndex < 0 || pending == 0 || pending > budget)
-                        return false;
-                    budget -= pending;
-                    entry.ExplicitIndex = ~entry.ExplicitIndex;
-                }
-                for (int i = 0; i < Count; i++)
-                    if ((entries[i].ExplicitCount & ~1) != 0 && entries[i].ExplicitIndex >= 0)
-                        return false;
-                return true;
-            }
-            finally
-            {
-                // Only unique, successfully marked indices enter this prefix.
-                for (int i = 0; i < marked; i++)
-                {
-                    int index = queue[i];
-                    entries[index].ExplicitIndex = ~entries[index].ExplicitIndex;
-                }
-            }
-        }
-
-        // Preorder IDs make each subtree a contiguous interval. The queue owns
-        // every unfinished contribution, so its weighted ancestor closure can be
-        // added once with prefix differences, irrespective of insertion order.
-        // Counts temporarily subtract the running prefix on subtree entry and
-        // add it on exit; no depth-sized stack or retained scratch is needed.
-        private void AddOrderedContributions(int[] queue, int queued)
-        {
-            for (int i = 0; i < queued; i++)
-                queue[i] = Entries[queue[i]].Id;
-            SortUnionQueue(queue, queued);
-
-            int depth = 0, prefix = 0;
-            ReadOnlySpan<int> previous = default;
-            for (int i = 0; i < queued; i++)
-            {
-                int id = queue[i];
-                while (depth != 0 && id >= GameplayTagManager.GetSubtreeEnd(previous[depth - 1]))
-                    AddTotal(previous[--depth], prefix);
-                ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
-                while (depth < path.Length)
-                    AddTotal(path[depth++], -prefix);
-                int index = Find(id);
-                prefix += (int)((uint)Entries[index].ExplicitCount >> 1);
-                Entries[index].ExplicitCount &= 1;
-                previous = path;
-            }
-            while (depth != 0)
-                AddTotal(previous[--depth], prefix);
-        }
-
-        // Keep this cold queue sort on the already-live storage type. The
-        // in-place heap is bounded O(n log n), with no new type or scratch array.
-        private static void SortUnionQueue(int[] queue, int length)
-        {
-            for (int root = length / 2 - 1; root >= 0; root--)
-                SiftUnionQueue(queue, root, length);
-            for (int end = length - 1; end > 0; end--)
-            {
-                int value = queue[0];
-                queue[0] = queue[end];
-                queue[end] = value;
-                SiftUnionQueue(queue, 0, end);
-            }
-        }
-
-        private static void SiftUnionQueue(int[] queue, int root, int length)
-        {
-            int value = queue[root];
-            while (root < length / 2)
-            {
-                int child = root * 2 + 1;
-                if (child + 1 < length && queue[child] < queue[child + 1])
-                    child++;
-                if (value >= queue[child])
-                    break;
-                queue[root] = queue[child];
-                root = child;
-            }
-            queue[root] = value;
-        }
-
         private void QueueContribution(int id, int amount, int[] queue, ref int tail, ref int queued)
         {
             int index = Find(id);
@@ -785,6 +626,165 @@ namespace GameplayTags
                 ResetIndex(BucketCapacityFor(Count));
                 BuildIndex();
             }
+        }
+
+        // Ordinary unions finish in the first queue revolution. Keep adaptive
+        // budgeting and validation out of that path, including its native body.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void DrainUnionRemainder(int[] queue, int tail, int queued, int sourceCount)
+        {
+            int head = 0;
+            int revolutions = Math.Max(2, sourceCount / queue.Length) - 1;
+            while (queued != 0)
+            {
+                int index = queue[head++];
+                queued--;
+                int pending = (int)((uint)Entries[index].ExplicitCount >> 1);
+                Entries[index].ExplicitCount &= 1;
+                Entries[index].Count += pending;
+                int parent = GameplayTagManager.GetParentIndex(Entries[index].Id);
+                if (parent != 0)
+                    QueueContribution(parent, pending, queue, ref tail, ref queued);
+                if (head == queue.Length)
+                {
+                    head = 0;
+                    // A rejected gate stays on the original FIFO permanently.
+                    if (revolutions != 0 && --revolutions == 0 && queued != 0 &&
+                        CanOrderUnionContributions(queue, queued))
+                    {
+                        AddOrderedContributions(queue, queued);
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Counted storage exposed by a normal-container view can carry unqueued
+        // high bits. Reordering must not bypass those barriers or pending wrap.
+        // Negative parent links from bulk builders conservatively retain FIFO.
+        private bool CanOrderUnionContributions(int[] queue, int queued)
+        {
+            Entry[] entries = Entries;
+            // A stale explicit slot can point into a future implicit insertion.
+            // Require both mapping directions before changing insertion order.
+            for (int i = 0; i < ExplicitCount; i++)
+            {
+                int index = ExplicitIndices[i];
+                if ((uint)index >= (uint)Count ||
+                    (entries[index].ExplicitCount & 1) == 0 ||
+                    entries[index].ExplicitIndex != i)
+                    return false;
+            }
+            for (int i = 0; i < Count; i++)
+            {
+                int explicitIndex = entries[i].ExplicitIndex;
+                if (explicitIndex < 0)
+                    return false;
+                if ((entries[i].ExplicitCount & 1) != 0 &&
+                    ((uint)explicitIndex >= (uint)ExplicitCount ||
+                     ExplicitIndices[explicitIndex] != i))
+                    return false;
+            }
+
+            // Preserve the full dense layout, including stale retained tails that
+            // later legacy copies can expose. Only reorder a complete closure.
+            for (int i = 0; i < Count; i++)
+            {
+                int parent = GameplayTagManager.GetParentIndex(entries[i].Id);
+                if (parent != 0 && Find(parent) < 0)
+                    return false;
+            }
+
+            int marked = 0, budget = int.MaxValue;
+            try
+            {
+                for (; marked < queued; marked++)
+                {
+                    int index = queue[marked];
+                    if ((uint)index >= (uint)Count)
+                        return false;
+                    ref Entry entry = ref entries[index];
+                    int pending = (int)((uint)entry.ExplicitCount >> 1);
+                    if (entry.ExplicitIndex < 0 || pending == 0 || pending > budget)
+                        return false;
+                    budget -= pending;
+                    entry.ExplicitIndex = ~entry.ExplicitIndex;
+                }
+                for (int i = 0; i < Count; i++)
+                    if ((entries[i].ExplicitCount & ~1) != 0 && entries[i].ExplicitIndex >= 0)
+                        return false;
+                return true;
+            }
+            finally
+            {
+                // Only unique, successfully marked indices enter this prefix.
+                for (int i = 0; i < marked; i++)
+                {
+                    int index = queue[i];
+                    entries[index].ExplicitIndex = ~entries[index].ExplicitIndex;
+                }
+            }
+        }
+
+        // Preorder IDs make each subtree a contiguous interval. The queue owns
+        // every unfinished contribution, so its weighted ancestor closure can be
+        // added once with prefix differences, irrespective of insertion order.
+        // Counts temporarily subtract the running prefix on subtree entry and
+        // add it on exit; no depth-sized stack or retained scratch is needed.
+        private void AddOrderedContributions(int[] queue, int queued)
+        {
+            for (int i = 0; i < queued; i++)
+                queue[i] = Entries[queue[i]].Id;
+            SortUnionQueue(queue, queued);
+
+            int depth = 0, prefix = 0;
+            ReadOnlySpan<int> previous = default;
+            for (int i = 0; i < queued; i++)
+            {
+                int id = queue[i];
+                while (depth != 0 && id >= GameplayTagManager.GetSubtreeEnd(previous[depth - 1]))
+                    AddTotal(previous[--depth], prefix);
+                ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
+                while (depth < path.Length)
+                    AddTotal(path[depth++], -prefix);
+                int index = Find(id);
+                prefix += (int)((uint)Entries[index].ExplicitCount >> 1);
+                Entries[index].ExplicitCount &= 1;
+                previous = path;
+            }
+            while (depth != 0)
+                AddTotal(previous[--depth], prefix);
+        }
+
+        // Keep this cold queue sort on the already-live storage type. The
+        // in-place heap is bounded O(n log n), with no new type or scratch array.
+        private static void SortUnionQueue(int[] queue, int length)
+        {
+            for (int root = length / 2 - 1; root >= 0; root--)
+                SiftUnionQueue(queue, root, length);
+            for (int end = length - 1; end > 0; end--)
+            {
+                int value = queue[0];
+                queue[0] = queue[end];
+                queue[end] = value;
+                SiftUnionQueue(queue, 0, end);
+            }
+        }
+
+        private static void SiftUnionQueue(int[] queue, int root, int length)
+        {
+            int value = queue[root];
+            while (root < length / 2)
+            {
+                int child = root * 2 + 1;
+                if (child + 1 < length && queue[child] < queue[child + 1])
+                    child++;
+                if (value >= queue[child])
+                    break;
+                queue[root] = queue[child];
+                root = child;
+            }
+            queue[root] = value;
         }
     }
 }

@@ -86,3 +86,9 @@ The ordered sweep resolves queued IDs through Find, while FIFO carries dense ind
 ## Managed code footprint and scope of measurement
 
 Raw nongeneric IL is AddUnion486 bytes at f53 versus506 here; rejected4df used527. The new cold methods are DrainUnionRemainder188, CanOrderUnionContributions449, AddOrderedContributions256, SortUnionQueue61 and SiftUnionQueue58 bytes. This is1,032 added IL bytes including the20-byte AddUnion delta. No preexisting fields, storage types, managed scratch buffers or mutable static caches are added. Native code size, runtime metadata residency and global pool residency are not inferred from IL or allocation counters. No native timing or speed claim is made.
+
+## Source-order refinement after rejected 909
+
+The next candidate relocates these same five cold helpers after the preexisting storage methods. No helper body, call, signature or attribute changes. Across both locally compiled target frameworks, all 376 assembly methods retain identical token-normalized IL, local signatures, max stack, exception regions and attributes versus 909. All 31 declared preexisting TagStorage method tokens match f53; 12 had been shifted by 909. The synthesized constructor token still shifts and some method RVAs remain different.
+
+This verifies a metadata-order change, not the cause of previous timing differences or a repaired performance result. The exact relocated TagStorage SHA256 is `93036c4a206ca4e43d04ef8fa9d8f3ae9ebf0d439c04495382c976ba8606701a`. Both-runtime semantic/full-state/overflow/Main and 324 unchanged Union cold processes pass locally. The separate CI RemoveTags first-use failure is not cleared by those local checks. All original and accepted-predecessor timing, cold, owned-state and compatibility gates remain required on the exact published revision.
