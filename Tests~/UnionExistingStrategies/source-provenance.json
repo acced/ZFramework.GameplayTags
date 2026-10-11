@@ -1,0 +1,184 @@
+{
+  "original": {
+    "Revision": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+    "RuntimeTree": "90435845cd1796ed1e382de52b3dcdeaf0edb911",
+    "Extraction": "git show exact_revision:path; verified byte-for-byte",
+    "Files": {
+      "Runtime/GameObjectGameplayTagContainer.cs": {
+        "GitBlob": "3c18e8c742d0a913b9d3ec14058eac85b4d97231",
+        "SHA256": "2826ab87baf0cd558d53a730f3bfb48bd94a8345b79b6dbbb1c98eb7abe79a74"
+      },
+      "Runtime/GameplayTag.cs": {
+        "GitBlob": "c9c1f01caab59ae6f774fe19946ec81026bd4cfb",
+        "SHA256": "0367808f8c540762b064c0ebd0e0d2ebb660b6eadf4dae724678029f49a37e7b"
+      },
+      "Runtime/GameplayTagAttribute.cs": {
+        "GitBlob": "c92fd5c82420b345d8a274e8274e71e277b4c0bc",
+        "SHA256": "5c0c71d0d7df69f26a2349018e69db7d5a01600a6b0d4335f5bb4da176353e64"
+      },
+      "Runtime/GameplayTagContainer.cs": {
+        "GitBlob": "c9295d47ef8a93b8c49d04a31475fd84bdb716e3",
+        "SHA256": "7bc90daac1e7cefc566dd34c5e45a9dccff2dca3c74a4ed3c4d97915d315ce2e"
+      },
+      "Runtime/GameplayTagContainerBinds.cs": {
+        "GitBlob": "fab988eec501e87dbda7a3e516d02d8b57691195",
+        "SHA256": "7c1f1faee1e486bab0ffda0539249a6cc20cbc8c570d6dd2bb2239cd72553150"
+      },
+      "Runtime/GameplayTagContainerDebugView.cs": {
+        "GitBlob": "b2c931d311b913ac3bf6d35b7b1865775ffdc8a2",
+        "SHA256": "329846fecdfe0a176cae5dd78856ef8d2b5e9a87c976bc05c61433c1fb3aa9f3"
+      },
+      "Runtime/GameplayTagContainerExtensionMethods.cs": {
+        "GitBlob": "13357408a4881f9666141f875a65dfd62f5e2e0d",
+        "SHA256": "96067d19715f0a516f818467f01180718f1fd8fe5176e1bb9e2b1c802d86454c"
+      },
+      "Runtime/GameplayTagContainerPool.cs": {
+        "GitBlob": "66ff62aaa2aa8416dc3826eed3b75c7a5a6f1a0d",
+        "SHA256": "f88beb9962b220ab5274f85450cd513b25e095915e257a605114d3a7dcbfad76"
+      },
+      "Runtime/GameplayTagContainerUtility.cs": {
+        "GitBlob": "94fbd87b67e0e08197b58d92f10c400cff7a7b08",
+        "SHA256": "f6f62ce3f41baf36ef5e71b92c31511833656aae3834b240535b420389f522c4"
+      },
+      "Runtime/GameplayTagCountContainer.cs": {
+        "GitBlob": "eb5da94022fd64140eb0fa59cef74ab0cce62510",
+        "SHA256": "2507f999f41b18019d3a5478f9d42599792dfd7a0e517730309e54cfa99ee858"
+      },
+      "Runtime/GameplayTagDefinition.cs": {
+        "GitBlob": "5a43504930f144fe1236e03c7c43a453cc0e2aa9",
+        "SHA256": "7cf498e3b14f6ae9d328898c9f833608fe71a05911805086deab27f684442c68"
+      },
+      "Runtime/GameplayTagEnumerator.cs": {
+        "GitBlob": "d4e1e75d9f3b14556f960e3435a20e0cbc45666e",
+        "SHA256": "5ceeaab6e65ee8ac0393e3cf5815b4d55d6d17b630a1a92f8fdc81e021e2daf9"
+      },
+      "Runtime/GameplayTagFlags.cs": {
+        "GitBlob": "aabf7ba1619e1ebc8f2ea8b58a4d4ef9371dc95e",
+        "SHA256": "6829706bccf06e412df84f3f01c163e225c23782c7c4fb09dfe445b1d8dcabe9"
+      },
+      "Runtime/GameplayTagHierarchicalContanier.cs": {
+        "GitBlob": "480939300385fea9013793b91142f46040ab8539",
+        "SHA256": "00bb82b1d7603d3579b511f6d3504d8d2771ccb662187350678ec4e706307c77"
+      },
+      "Runtime/GameplayTagIntersectionWorkspace.cs": {
+        "GitBlob": "2e8793d07926a0d3be3e1eef82dd7cbab670c499",
+        "SHA256": "4c24225b481517da1f308fd1f9f817bce0bc88d1818bd3a632c5d2db16f88bd4"
+      },
+      "Runtime/GameplayTagManager.cs": {
+        "GitBlob": "add0b8b24658f796be463892144f518e21a4df9d",
+        "SHA256": "4d931365b965aee5d59a0782314c7cddfbde97a73b09bb743d2c883752ddc341"
+      },
+      "Runtime/GameplayTagRegistrationContext.cs": {
+        "GitBlob": "8c5a5234ebee480f3481e9bdbf80ef60d334a5ea",
+        "SHA256": "5795ab0f7f6a7672a557841a327b673c00c0c8599302face56aeed3247f07ef8"
+      },
+      "Runtime/GameplayTagRequirements.cs": {
+        "GitBlob": "3562481b2c342d689d100600c19240a7ad9b5bcd",
+        "SHA256": "25982793636c07582d12acd77c63b02c8c38d4cdc4e6a1f9233c6417e7ccf4f9"
+      },
+      "Runtime/GameplayTagUtility.cs": {
+        "GitBlob": "3a2c936b1bc87ca261f1e3960c5575bcc29546ec",
+        "SHA256": "8c23380b52c53b8e9d707abdcf16f66bb8a5fec7627f5ec1c95e04d4f1c2a96d"
+      },
+      "Runtime/Int32Sort.cs": {
+        "GitBlob": "82b291cf5fefb1aba15493d5b866a0f606460d69",
+        "SHA256": "bd1df3ba875be9eb30a3e38122d8ecbab7e2a07ef85a068c8e7d0265a354bb4c"
+      },
+      "Runtime/TagStorage.cs": {
+        "GitBlob": "8adcb16ee049a959ec9b4aae0bd008cc11c2e3d9",
+        "SHA256": "ab8e7c720a5d0217a43b53e8a4a6cbb339584babb066b989a199bba89ebdb6db"
+      }
+    }
+  },
+  "accepted": {
+    "Revision": "f53c5fb94c22c2750f54c33dcfdee443a72bf595",
+    "RuntimeTree": "3baa7ceec50999e7dacdd638c8f66bdab8cda041",
+    "Extraction": "git show exact_revision:path; verified byte-for-byte",
+    "Files": {
+      "Runtime/GameObjectGameplayTagContainer.cs": {
+        "GitBlob": "3c18e8c742d0a913b9d3ec14058eac85b4d97231",
+        "SHA256": "2826ab87baf0cd558d53a730f3bfb48bd94a8345b79b6dbbb1c98eb7abe79a74"
+      },
+      "Runtime/GameplayTag.cs": {
+        "GitBlob": "c9c1f01caab59ae6f774fe19946ec81026bd4cfb",
+        "SHA256": "0367808f8c540762b064c0ebd0e0d2ebb660b6eadf4dae724678029f49a37e7b"
+      },
+      "Runtime/GameplayTagAttribute.cs": {
+        "GitBlob": "c92fd5c82420b345d8a274e8274e71e277b4c0bc",
+        "SHA256": "5c0c71d0d7df69f26a2349018e69db7d5a01600a6b0d4335f5bb4da176353e64"
+      },
+      "Runtime/GameplayTagContainer.cs": {
+        "GitBlob": "f2272a50e2a109c4403d3b18ac097c4f491015f5",
+        "SHA256": "95131d0143ea6e58325cbf95518e91fb16db934e1695bb13e0dfd03d20db445e"
+      },
+      "Runtime/GameplayTagContainerBinds.cs": {
+        "GitBlob": "fab988eec501e87dbda7a3e516d02d8b57691195",
+        "SHA256": "7c1f1faee1e486bab0ffda0539249a6cc20cbc8c570d6dd2bb2239cd72553150"
+      },
+      "Runtime/GameplayTagContainerDebugView.cs": {
+        "GitBlob": "b2c931d311b913ac3bf6d35b7b1865775ffdc8a2",
+        "SHA256": "329846fecdfe0a176cae5dd78856ef8d2b5e9a87c976bc05c61433c1fb3aa9f3"
+      },
+      "Runtime/GameplayTagContainerExtensionMethods.cs": {
+        "GitBlob": "13357408a4881f9666141f875a65dfd62f5e2e0d",
+        "SHA256": "96067d19715f0a516f818467f01180718f1fd8fe5176e1bb9e2b1c802d86454c"
+      },
+      "Runtime/GameplayTagContainerPool.cs": {
+        "GitBlob": "66ff62aaa2aa8416dc3826eed3b75c7a5a6f1a0d",
+        "SHA256": "f88beb9962b220ab5274f85450cd513b25e095915e257a605114d3a7dcbfad76"
+      },
+      "Runtime/GameplayTagContainerUtility.cs": {
+        "GitBlob": "94fbd87b67e0e08197b58d92f10c400cff7a7b08",
+        "SHA256": "f6f62ce3f41baf36ef5e71b92c31511833656aae3834b240535b420389f522c4"
+      },
+      "Runtime/GameplayTagCountContainer.cs": {
+        "GitBlob": "eb5da94022fd64140eb0fa59cef74ab0cce62510",
+        "SHA256": "2507f999f41b18019d3a5478f9d42599792dfd7a0e517730309e54cfa99ee858"
+      },
+      "Runtime/GameplayTagDefinition.cs": {
+        "GitBlob": "5a43504930f144fe1236e03c7c43a453cc0e2aa9",
+        "SHA256": "7cf498e3b14f6ae9d328898c9f833608fe71a05911805086deab27f684442c68"
+      },
+      "Runtime/GameplayTagEnumerator.cs": {
+        "GitBlob": "d4e1e75d9f3b14556f960e3435a20e0cbc45666e",
+        "SHA256": "5ceeaab6e65ee8ac0393e3cf5815b4d55d6d17b630a1a92f8fdc81e021e2daf9"
+      },
+      "Runtime/GameplayTagFlags.cs": {
+        "GitBlob": "aabf7ba1619e1ebc8f2ea8b58a4d4ef9371dc95e",
+        "SHA256": "6829706bccf06e412df84f3f01c163e225c23782c7c4fb09dfe445b1d8dcabe9"
+      },
+      "Runtime/GameplayTagHierarchicalContanier.cs": {
+        "GitBlob": "480939300385fea9013793b91142f46040ab8539",
+        "SHA256": "00bb82b1d7603d3579b511f6d3504d8d2771ccb662187350678ec4e706307c77"
+      },
+      "Runtime/GameplayTagIntersectionWorkspace.cs": {
+        "GitBlob": "2e8793d07926a0d3be3e1eef82dd7cbab670c499",
+        "SHA256": "4c24225b481517da1f308fd1f9f817bce0bc88d1818bd3a632c5d2db16f88bd4"
+      },
+      "Runtime/GameplayTagManager.cs": {
+        "GitBlob": "add0b8b24658f796be463892144f518e21a4df9d",
+        "SHA256": "4d931365b965aee5d59a0782314c7cddfbde97a73b09bb743d2c883752ddc341"
+      },
+      "Runtime/GameplayTagRegistrationContext.cs": {
+        "GitBlob": "8c5a5234ebee480f3481e9bdbf80ef60d334a5ea",
+        "SHA256": "5795ab0f7f6a7672a557841a327b673c00c0c8599302face56aeed3247f07ef8"
+      },
+      "Runtime/GameplayTagRequirements.cs": {
+        "GitBlob": "3562481b2c342d689d100600c19240a7ad9b5bcd",
+        "SHA256": "25982793636c07582d12acd77c63b02c8c38d4cdc4e6a1f9233c6417e7ccf4f9"
+      },
+      "Runtime/GameplayTagUtility.cs": {
+        "GitBlob": "3a2c936b1bc87ca261f1e3960c5575bcc29546ec",
+        "SHA256": "8c23380b52c53b8e9d707abdcf16f66bb8a5fec7627f5ec1c95e04d4f1c2a96d"
+      },
+      "Runtime/Int32Sort.cs": {
+        "GitBlob": "82b291cf5fefb1aba15493d5b866a0f606460d69",
+        "SHA256": "bd1df3ba875be9eb30a3e38122d8ecbab7e2a07ef85a068c8e7d0265a354bb4c"
+      },
+      "Runtime/TagStorage.cs": {
+        "GitBlob": "9858510f1efc0a1d25f823ff245b6a91d43335bf",
+        "SHA256": "91756e880ca1ccea36be1db3ece270d7f4314089873eea80435671b42f55b56a"
+      }
+    }
+  }
+}

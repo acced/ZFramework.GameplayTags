@@ -1,0 +1,71 @@
+name: Existing Union strategy comparison
+on:
+  push:
+    branches: [perf/compact-runtime-rewrite]
+    paths:
+      - 'Tests~/UnionExistingStrategies/**'
+      - '.github/workflows/union-existing-strategies.yml'
+permissions:
+  contents: read
+jobs:
+  compare-existing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 190
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [net, mono]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Install standalone Mono (not Unity Mono)
+        if: matrix.backend == 'mono'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-devel
+          mono --version
+      - name: Verify frozen comparator and exact original/accepted sources
+        run: |
+          python3 Tests~/UnionExistingStrategies/verify.py
+          python3 - <<'PY'
+          import hashlib, json, subprocess
+          from pathlib import Path
+          root = Path('Tests~/UnionExistingStrategies')
+          for label, sha in [('original', 'f7c99546dbf029d70896c0f05e5119b19ffd6d26'), ('accepted', 'f53c5fb94c22c2750f54c33dcfdee443a72bf595')]:
+              actual = root / 'sources' / label / 'Runtime'
+              expected = subprocess.check_output(['git', 'ls-tree', '-r', '--name-only', sha, 'Runtime'], text=True).splitlines()
+              expected = [p for p in expected if p.endswith('.cs')]
+              observed = sorted('Runtime/' + p.relative_to(actual).as_posix() for p in actual.rglob('*.cs'))
+              assert sorted(expected) == observed, (label, 'source set differs')
+              for path in expected:
+                  blob = subprocess.check_output(['git', 'show', sha + ':' + path])
+                  assert blob == (actual.parent / path).read_bytes(), (label, path)
+          print('Exact original and accepted Runtime source bytes verified against Git')
+          PY
+      - name: Run fixed original strategies and accepted controls
+        shell: bash
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+          DOTNET_TieredCompilation: '0'
+          DOTNET_gcServer: '0'
+          COMPlus_TieredCompilation: '0'
+          COMPlus_gcServer: '0'
+        run: |
+          set -euo pipefail
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --out .artifacts/union-existing-strategies --samples 14 --batch-ms 200 --cold-replicates 3 --time-budget-seconds 10800 --child-timeout-seconds 300)
+          if [[ '${{ matrix.backend }}' == mono ]]; then
+            args+=(--mono "$(command -v mono)")
+          fi
+          python3 Tests~/UnionExistingStrategies/run-default.py "${args[@]}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: union-existing-strategies-${{ matrix.backend }}-${{ github.sha }}
+          path: .artifacts/union-existing-strategies/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90
