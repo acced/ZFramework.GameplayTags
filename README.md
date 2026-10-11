@@ -87,9 +87,12 @@ GameplayTagContainer union = GameplayTagContainer.Union(left, right);
 GameplayTagContainer common = GameplayTagContainer.Intersection(left, right);
 
 // 支持覆盖输出及输入/输出别名。
+GameplayTagContainer.Union(destination, left, right);
 GameplayTagContainer.Intersection(left, left, right);
 GameplayTagContainer.Copy(destination, source);
 ```
+
+可复用输出 Union 与 `Copy(destination, Union(left, right))` 的结果语义一致。独立输出可复用已有容量；别名保留原有归一化和稀疏索引行为。首次使用、扩容和部分别名路径仍可能分配，暖态零分配不代表首次零分配。第一个通过完整对照的优化版本及环境/不确定性见 [版本 1 证据](Documentation~/EVOLUTION_V1.md)。
 
 ## 计数与事件
 

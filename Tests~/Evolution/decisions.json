@@ -1,6 +1,61 @@
 {
   "original_sha": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
-  "accepted_optimization_versions": [],
+  "accepted_optimization_versions": [
+    {
+      "version": 1,
+      "sha": "f53c5fb94c22c2750f54c33dcfdee443a72bf595",
+      "original_sha": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+      "previous_accepted_sha": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+      "accepted_utc": "2026-10-11T09:43:00Z",
+      "decision": "Accepted as one coherent reusable-output Union version after full fixed matrices and independent matching-host review. Meaningful benefit and no reproduced material regression in tested coverage; no universal zero-overhead claim.",
+      "gate_provenance": {
+        "material_threshold_percent": 3,
+        "present_before_candidate_in_commit": "c643acbdb5c308176f7f3e63a03bf607573e1b9f",
+        "path": "Tests~/UnionOutput/run.py",
+        "lines": "82-83",
+        "criterion": "Existing paired approximate99% timing comparison, correctness, cold/warm allocation and owned-layout gates; no retrospective threshold change."
+      },
+      "ci_run": 38123047785,
+      "artifacts": [
+        {
+          "backend": ".NET8.0.31 AMD7763",
+          "id": 11696523246,
+          "sha256": "a83d6cccf4b4066436cc1ca772e7fd4dad62e0ef3a61d748661914167cf5b1ab"
+        },
+        {
+          "backend": "standalone Mono6.8 AMD7763",
+          "id": 11697920732,
+          "sha256": "32923a254b2853c613cc1d12520400078247aeb0997bd2dbeca69116d1bdc8c9"
+        }
+      ],
+      "diagnostics": [
+        {
+          "commit": "6f1a87ce87d4b0af0c1f34055569e1592919a4d8",
+          "run": 38127134433,
+          "artifact": 11698156227,
+          "sha256": "d98deafc24dddbcc60d1249d51c8fe7e5bed16e1c5cf0ee02fa86f69011dca5e",
+          "result": "Matched AMD9V74 slot2: complete unchanged28-row Union fixture/count context,14 same-physical-binary AA and14 original/candidate AB pairs. Alias-right AB slower7/14 versus AA9/14, >=467ms, identical7896B andGC173-174/0/0. AB speedup1.00946,99%0.97525-1.04486; AA99%0.97417-1.00731. No consistent adverse parity direction. Approx99% bound permits about2.54% slowdown, below predeclared3% materiality, but old subpercent cost remains possible. No claim of zero overhead; all samples retained."
+        },
+        {
+          "run": 38127134433,
+          "artifact": 11696808994,
+          "sha256": "52a7dea372adb4059633323d21a30da806a44f0e06e4caeddd3339a6160fbc3e",
+          "result": "Slot1 CPU did not match; metadata only, not a timing pass."
+        }
+      ],
+      "findings": [
+        "Source/binary provenance, full correctness and allocation suites pass on both standalone backends. Independent audit verifies42 exact Runtime hashes/backend and per diagnostic mode.",
+        "Long n1024/50% reused output replacement: NET medians15.814->12.000us, paired1.302x; Mono68.270->29.831us,paired2.258x. Warm allocated bytes61624/61656->0. Baseline includes Union factory plusCopy, not isolatedfactory.",
+        "Fixed root and Union matrices have no adverse99% timing intervals on both full-run7763 hosts. Existing legacy normal/padded, longCopy, Registry/RootOnly andNETBulk add no established material regression. MonoBulk is not claimed.",
+        "All24 root owned graphs equal, original Union true-cold comparators clean and new5400self structural stages/source/backend match complete retained arrays including inactive tails. First-use allocations measured separately; no pool-equivalence inference from unobserved events.",
+        "All current sampled public/internal registry cold counts equal. Prior579/aa isolated+6192B internal observations and fixed48 local nonrecurrence remain preserved and unexplained; they are not erased or called a proven runtime-noise mechanism.",
+        "Registry trunk median+1.81B flag has mixed pair deltas -83.625..+52.5B,99%mean-delta -25.22..+27.16B, no established growth. Preserve rawflag.",
+        "Self speedups are large but fast candidate batches remain short-duration caveats (NETminimum66.5ms andMono shortflag); acceptance benefit rests on long n1024half rows. LongRemoveAdd retains short-review without adverse interval.",
+        "Managed owned-layout evidence excludes globalpool residency, nativeJIT/OS/process memory. Alias expansion selected native footprint grows225B localCoreCLR/626B localMono. Negative fullGC retained estimates are diagnostic only.",
+        "Unity6000.3.14f1 Editor/Player,IL2CPP andAlex unexecuted. Supported nonconcurrent valid-tag contract unchanged."
+      ]
+    }
+  ],
   "rejected_candidates": [
     {
       "sha": "413f41e3504bcaa164518be677d755db07a72487",
@@ -509,7 +564,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Alias-only captured factory expansion on exact aa1a45e. Preserve temporary result and final Copy, source getter/type capture, same-storage shortcut, distinct helper and public factory. Remove only alias helper call and redundant fresh-temp null-cache clear. Both-runtime three-source21,068 getter cases each, API/overflow/edge/sparse/Evolution/Main/Unity-compile and468 cold processes pass;156 self-package processes verify full state/first-use. Native inspection confirms alias call removal, distinct call retained; selected reusable callers plus helper grow225B CoreCLR/626B Mono, so no advance speed or whole-process memory claim. Patch360efe7d1d64bc166a2e447cf3aa1128b8ce68a1d909e90ba72b9e0bd4f7cbd0; Container95131d0143ea6e58325cbf95518e91fb16db934e1695bb13e0dfd03d20db445e. Existing full CI matrices and all cold/self fixture bytes unchanged. Prior small alias cost and isolated internal cold-counter observation remain recorded; accepted count0 and original/previous accepted f7.",
+  "current_candidate_note": "Version1 accepted at exact f53 after independent full and matching-host review. Runtime unchanged in this evidence-only commit. Next versions must compare with both accepted f53 and original f7; original materiality and all correctness/allocation/cold/owned-layout gates remain.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",
