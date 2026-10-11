@@ -586,6 +586,27 @@
         "NETBulk43 recomputed against originalANDpredecessor has no adverseinterval or allocationincrease. Legacy normal/padded both references clean onbothbackends; registry/rootonlytiming noadditionalflag. NETregistrypositive median byteflags have pairedmean99% intervals spanningzero (trunk-28.7..38.2B;chain-295..452B).",
         "Mono all60RemoveTags cold comparisons pass; both RegistryEmpty routes/backend probes have no cold deltas. MonoBulk remains unmeasured. No Unity/IL2CPP/Alex execution."
       ]
+    },
+    {
+      "sha": "306c81f018e161844e235c36939e29f2f87cecd7",
+      "ci_run": 38142108440,
+      "decision": "Rejected as-is after completed .NET evidence reproduces substantive fresh-single-add regression versus both original and historical predecessor. Mono is still running; preserve its outcome when complete. No further sampling solely to obtain a pass.",
+      "artifacts": [
+        {
+          "backend": ".NET 8.0.31 AMD EPYC 7763",
+          "id": 11704882149,
+          "sha256": "94acd856ae83f5c58d7056d6e094ae03c7f04d717ded508c6741bab954470ebb"
+        }
+      ],
+      "findings": [
+        "Fresh-single-add medians 86.065 ns original / 87.818 ns historical predecessor -> 95.350 ns candidate. Approximate 99% speedup intervals 0.8648-0.9427 and 0.8694-0.9633. Slower 14/14 original and 12/14 predecessor pairs; minimum batches 275/303 ms; every sample 296 B and GC 59/0/0.",
+        "Self-reused Union predecessor 15.898 -> 16.513 ns, approximate 99% speedup 0.9593-0.9650. Other small guard flags remain in raw evidence.",
+        "All 63 Runtime hashes match exact f7/f53/306 on AMD EPYC 7763. All 24 owned-layout graphs equal; adaptive 17-process semantic package and Union/self cold checks pass.",
+        "RemoveTags cold comparisons and both RegistryEmpty cold supplements are equal in this run. This does not attribute or erase earlier failed cold samples, nor clear the stronger existing-chain cold costs.",
+        "Bulk 43 rows independently recomputed against BOTH original and predecessor are clean of adverse intervals or increased allocation; normal/padded legacy comparisons are also clean. Subsidiary review and Mono completion remain pending.",
+        "Restoring old declared method tokens did not repair the fresh-add guard. No code-layout causation is inferred from this negative result."
+      ],
+      "preparation_record": "Version2 attempt: source-order-only refinement of rejected909 closed-state adaptiveUnion, on acceptedf53. Move the same five new cold helper methods after all preexisting TagStorage methods; method bodies/signatures/attributes/calls unchanged. All31declared preexistingTagStorage metadata tokens nowmatchf53, restoring12shiftedby909; synthesized constructor token andsomeRVAs remain different. All376assemblymethods preserve normalizedIL/locals/maxstack/EH/attributes versus909 onbothframeworks. This is a verified metadata change, not proof that tokens caused prior regressions. ExactTagStorage93036c4a206ca4e43d04ef8fa9d8f3ae9ebf0d439c04495382c976ba8606701a;relocationpatch205fc6ba7e2cc430d6b898bc6498fb4d5eab0799745ea0fac69db0844c11c8cf;f53patch4cef20bee0e5bb017e558aaacacd971b8a1cc23b54f60460a4d4f76af8d29ad4. Sealedcompletion40d3db1545aa15833490fb169d721b1d9a1b13b5cc01810be575f9dd623f9eae,2736artifacthashes independentlyverified. BothMain7595855/API/Evolution/overflow/Unitycompile and324unchangedUnioncoldprocessespass;168544gettercases,15456fullstateobservations,121exactstreamcomparisons. BroadCI RemoveTagscoldfailure notcleared locally. AllsamefullCIgatesremain; originalf7 andacceptedf53 unchanged;0currentlyqualifiedversions; f53 is a historical accepted control with reopened qualification. Separatestrongerold-APIcomparator isrunning at38141813971 againstpinnedf7/f53, unaffectedbythisRuntimecandidate."
     }
   ],
   "verification_limits": [
@@ -593,7 +614,7 @@
     "No IL2CPP execution",
     "No Alex comparison"
   ],
-  "current_candidate_note": "Version2 attempt: source-order-only refinement of rejected909 closed-state adaptiveUnion, on acceptedf53. Move the same five new cold helper methods after all preexisting TagStorage methods; method bodies/signatures/attributes/calls unchanged. All31declared preexistingTagStorage metadata tokens nowmatchf53, restoring12shiftedby909; synthesized constructor token andsomeRVAs remain different. All376assemblymethods preserve normalizedIL/locals/maxstack/EH/attributes versus909 onbothframeworks. This is a verified metadata change, not proof that tokens caused prior regressions. ExactTagStorage93036c4a206ca4e43d04ef8fa9d8f3ae9ebf0d439c04495382c976ba8606701a;relocationpatch205fc6ba7e2cc430d6b898bc6498fb4d5eab0799745ea0fac69db0844c11c8cf;f53patch4cef20bee0e5bb017e558aaacacd971b8a1cc23b54f60460a4d4f76af8d29ad4. Sealedcompletion40d3db1545aa15833490fb169d721b1d9a1b13b5cc01810be575f9dd623f9eae,2736artifacthashes independentlyverified. BothMain7595855/API/Evolution/overflow/Unitycompile and324unchangedUnioncoldprocessespass;168544gettercases,15456fullstateobservations,121exactstreamcomparisons. BroadCI RemoveTagscoldfailure notcleared locally. AllsamefullCIgatesremain; originalf7 andacceptedf53 unchanged;0currentlyqualifiedversions; f53 is a historical accepted control with reopened qualification. Separatestrongerold-APIcomparator isrunning at38141813971 againstpinnedf7/f53, unaffectedbythisRuntimecandidate.",
+  "current_candidate_note": "Runtime remains rejected 306 pending preservation of the running Mono evidence. Current fully qualified count is 0. Historical f53 remains a comparison control with reopened qualification. Isolated alias storage-reuse and queue first-use repairs are undergoing untimed correctness, full-owned-state and cold-allocation checks before any timing or publication; stronger existing-chain penalties remain frozen gates.",
   "unaccepted_candidates": [
     {
       "sha": "856eee86c1d2c5288bb6f9e5efa33992b81d90ce",
