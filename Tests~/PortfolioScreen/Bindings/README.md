@@ -1,0 +1,36 @@
+# Binding delegate reuse: fixed rejection screen
+
+Prepared protocol, not a qualification result. Every summary sets `AcceptanceEvidence=false`. The same-API comparator is original commit `f7c99546dbf029d70896c0f05e5119b19ffd6d26`; callers cannot suppress its second internal capturing-delegate conversion. The candidate creates one delegate local and passes it to both stored binding data and registration. It adds no runtime type, field, helper, or API.
+
+The pinned patch is exact. There is no assumption that a delegate is 64 bytes on every runtime. The screen checks actual emitted `Bind` IL for two delegate constructions before and one after, and compares the complete runtime type/field-layout fingerprint. Capturing delegate private reference identity intentionally changes. Public callback behavior, delegate equality, and lifetime semantics must agree. Allocation-failure partial-state timing is not claimed equivalent: the single candidate delegate is created before incrementing the binding count; the original first conversion occurs after the increment.
+
+## Fixed sequence and bounds
+
+1. Materialize all runtime and original core-test sources from the pinned commit, replace only `GameplayTagContainerBinds.cs`, and verify every source hash.
+2. Build all six binaries before any measured process using the existing direct-C#9 helper. SDK 8.0.425, CLR/reference pack 8.0.31; CI Mono 6.8.0.105 and the existing pinned `References.csproj` packages. Optimized deterministic builds, no PDB. Runtime settings request ReadyToRun=1, tiering=0, server GC=0, and disabled roll-forward identically. ReadyToRun/tiering do not apply to Mono. This portable CI setting differs from the earlier private .NET falsification, which disabled ReadyToRun.
+3. Inspect lowering/layout, then run the original core suite (7,595,855 checks) and portable focused suite (70 checks) once per variant, checking complete stdout identity. The focused suite retains its semantic bodies; its one `TakeLast(1)` call is expressed as `Skip(Count - 1)`, and JSON output is emitted without a serializer dependency. It covers duplicate actions/tags, shared struct copies, immediate callback reentrancy, exceptions/null/default state, external subscriptions, release and reuse.
+4. Validate all nine warm fixtures outside timing.
+5. FIRST-USE: each of three fixtures has exactly three fresh-process pairs in AB/BA/AB order. The single measured operation is the first `Bind` in that process, through a no-inline bridge whose first JIT cost is included identically. Fresh absent, fresh present (public `AddTag` setup), and existing two-listener external multicast (public direct registration setup) all use fresh binding state. No fixture setup calls `Bind`. Registration is already warmed by setup in the external-listener fixture; the container mutation path is warmed in the present fixture. Neither is an entirely cold container path. Registry, container, action construction, timer/allocation-counter initialization, and state inspection are outside timing. Unbinding and event probes occur after timing. All 18 declared calls finish before ordinary decisions. No repeated/replacement samples or allocation subtraction. All bytes, ticks, frequency, GC counts, event counts/checksums and final subscription state are retained. Integrity failure or the overall deadline can stop execution immediately. Any paired byte growth blocks the warm stage; any slower cold pair requires latency review. Three pairs cannot establish a latency pass, even when none happens to be slower.
+6. One original-only pilot process, one sample per warm row, after exactly 1,024 warmup cycles per row. Freeze the count map before candidate timing: max(seed, ceil(seed × 200 / pilot milliseconds)). No candidate calibration, adaptation, cap, rerun or extra samples.
+7. Four paired warm rounds in AB/BA/AB/BA order using that single map. Complete each declared process once. Negative, allocating and sub-200 ms rows remain visible. Candidate allocation must not exceed its paired baseline in any row. Warm allocation is legitimate; no zero-byte assertion is imposed. Timing losses and short batches remain review signals, never automatic acceptance.
+8. Recheck prepared inputs, source trees, iteration-map bytes, toolchain input hashes and complete build output trees around every target and at finalization. The whole coordinator's maximum 600-second deadline begins at main entry, including materialization and builds. Each child has its own process group; it is killed/reaped in all exit paths, including successful completion. There is no full gate or further sampling.
+
+`--preflight-only` builds all binaries and runs only policy/core/focused/fixture checks. It performs no first-use samples, pilot or timing. Full CI omits that flag. Use a new, separate `--out` and `--work` directory for each invocation; never upload the private work directory.
+
+## Nine measured warm cycles
+
+- `fresh-single`: construct a new count container and new binding wrapper, `Bind`, then `UnbindAll`, every iteration. Construction and fresh capacity allocation are included. The supplied action is prepared once outside timing.
+- `retained-absent`: one `Bind` and `UnbindAll`, tag absent, retained binding and callback-table capacity.
+- `retained-present`: the same with one present tag; initial `AddTag` is outside timing and the present state is retained.
+- `same-tag-eight`: eight same-action, same-tag binds followed by `UnbindAll`; multicast growth/removal is included.
+- `distinct-eight`: eight distinct depth-one tags, then `UnbindAll`.
+- `distinct-128`: 128 distinct depth-one tags, then `UnbindAll`.
+- `external-multicast`: one bind/unbind cycle alongside two pre-existing direct callbacks. They must survive every unbind operation in the same order and with the same delegate identities.
+- `direct-subscription`: unchanged direct registration/removal with a pre-created callback. No binding convenience API or synthesized candidate shortcut.
+- `direct-dispatch`: unchanged `AddTag`/`RemoveTag` cycle with two retained direct callbacks.
+
+All cycles include their restoration work with identical boundaries across sources. Warm binding rows measure immediate presence notifications; event-dispatch behavior is checked by explicit probes before and after each batch, outside timing. Those probes mutate tags while bound, unbind, mutate again, and verify that only external listeners survive. Probe callbacks, event checksums, final tag counts, cleared owned slots and exact final external invocation lists must match. Warm retained rows are genuinely warmed by those probes plus the fixed warmup; first-use processes do not execute them before measurement. The direct-dispatch row independently measures the unchanged event path.
+
+## Publication boundary
+
+Only files enumerated by `upload-allowlist.txt` may be uploaded as result artifacts. Public JSON uses explicit schemas containing numeric observations, fixed labels, booleans and verified hashes/version identifiers. Commands, machine paths, environment dumps, raw stdout/stderr, response files, exception text, private evidence and compiled binaries are never published. Sources/configuration/pins/protocol in this directory are the portable deliverable. No local measurement result is bundled or represented as CI evidence.

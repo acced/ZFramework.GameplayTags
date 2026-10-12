@@ -1,0 +1,141 @@
+{
+  "BaselineCommit": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "Purpose": "Rejection and review only; never qualification",
+  "Rows": [
+    {
+      "id": "fresh-single",
+      "binds": 1,
+      "tags": 1,
+      "external_listeners": 0,
+      "present": false,
+      "pilot_iterations": 8192,
+      "operation": "new container + new bindings + Bind + UnbindAll"
+    },
+    {
+      "id": "retained-absent",
+      "binds": 1,
+      "tags": 1,
+      "external_listeners": 0,
+      "present": false,
+      "pilot_iterations": 16384,
+      "operation": "retained Bind + UnbindAll (tag absent)"
+    },
+    {
+      "id": "retained-present",
+      "binds": 1,
+      "tags": 1,
+      "external_listeners": 0,
+      "present": true,
+      "pilot_iterations": 16384,
+      "operation": "retained Bind + UnbindAll (tag present)"
+    },
+    {
+      "id": "same-tag-eight",
+      "binds": 8,
+      "tags": 1,
+      "external_listeners": 0,
+      "present": false,
+      "pilot_iterations": 4096,
+      "operation": "8 same-tag Bind + UnbindAll"
+    },
+    {
+      "id": "distinct-eight",
+      "binds": 8,
+      "tags": 8,
+      "external_listeners": 0,
+      "present": false,
+      "pilot_iterations": 4096,
+      "operation": "8 distinct-tag Bind + UnbindAll"
+    },
+    {
+      "id": "distinct-128",
+      "binds": 128,
+      "tags": 128,
+      "external_listeners": 0,
+      "present": false,
+      "pilot_iterations": 256,
+      "operation": "128 distinct-tag Bind + UnbindAll"
+    },
+    {
+      "id": "external-multicast",
+      "binds": 1,
+      "tags": 1,
+      "external_listeners": 2,
+      "present": false,
+      "pilot_iterations": 8192,
+      "operation": "Bind + UnbindAll with 2 existing external listeners"
+    },
+    {
+      "id": "direct-subscription",
+      "binds": 0,
+      "tags": 1,
+      "external_listeners": 0,
+      "present": false,
+      "pilot_iterations": 32768,
+      "operation": "direct RegisterTagEventCallback + RemoveTagEventCallback"
+    },
+    {
+      "id": "direct-dispatch",
+      "binds": 0,
+      "tags": 1,
+      "external_listeners": 2,
+      "present": false,
+      "pilot_iterations": 32768,
+      "operation": "AddTag + RemoveTag with 2 direct external listeners"
+    }
+  ],
+  "ColdRows": [
+    "first-empty",
+    "first-present",
+    "first-external-multicast"
+  ],
+  "ColdRoundOrder": [
+    [
+      "before",
+      "after"
+    ],
+    [
+      "after",
+      "before"
+    ],
+    [
+      "before",
+      "after"
+    ]
+  ],
+  "RoundOrder": [
+    [
+      "before",
+      "after"
+    ],
+    [
+      "after",
+      "before"
+    ],
+    [
+      "before",
+      "after"
+    ],
+    [
+      "after",
+      "before"
+    ]
+  ],
+  "TargetBatchMs": 200,
+  "PilotWarmupCycles": 1024,
+  "PilotSamplesPerRow": 1,
+  "IterationRule": "max(pilot_iterations, ceil(pilot_iterations * 200 / pilot_batch_ms))",
+  "SDKVersion": "8.0.425",
+  "CLRVersion": "8.0.31",
+  "ExpectedCIMonoVersion": "6.8.0.105",
+  "DeadlineSeconds": 600,
+  "FirstUseByteGrowth": "Any paired candidate byte growth blocks warm pilot; all declared first-use calls finish before decision.",
+  "FirstUseTiming": "Three pairs are exploratory. Any slower candidate pair is a review flag; no automatic latency pass.",
+  "AcceptanceEvidence": false,
+  "RuntimeSettings": {
+    "ReadyToRunRequested": 1,
+    "TieredCompilationRequested": 0,
+    "ServerGCRequested": 0,
+    "MonoTieringAndReadyToRunApplicable": false
+  }
+}

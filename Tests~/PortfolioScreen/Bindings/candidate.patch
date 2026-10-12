@@ -1,0 +1,14 @@
+--- a/Runtime/GameplayTagContainerBinds.cs
++++ b/Runtime/GameplayTagContainerBinds.cs
+@@ -36,8 +36,9 @@
+ 
+             void OnChanged(GameplayTag _, int count) => onTagAddedOrRemoved(count != 0);
+ 
+-            state.Items[state.Count++] = new BindData { Tag = tag, Callback = OnChanged };
+-            state.Container.RegisterTagEventCallback(tag, GameplayTagEventType.NewOrRemoved, OnChanged);
++            OnTagCountChangedDelegate callback = OnChanged;
++            state.Items[state.Count++] = new BindData { Tag = tag, Callback = callback };
++            state.Container.RegisterTagEventCallback(tag, GameplayTagEventType.NewOrRemoved, callback);
+             onTagAddedOrRemoved(state.Container.GetTagCount(tag) != 0);
+         }
+ 
