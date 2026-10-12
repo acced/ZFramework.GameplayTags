@@ -1,0 +1,56 @@
+--- BindingRecordIds/Harness/Entry.cs
++++ DrainedEventQueueReuse/Harness/Entry.cs
+@@ -1,17 +1,25 @@
+ using System;
+ using System.Globalization;
++using System.IO;
+ using System.Reflection;
++using System.Reflection.Emit;
+ using System.Text.RegularExpressions;
++using GameplayTags;
+ 
+-internal static class PortableBindingEntry
++internal static class PortableDrainedQueueEntry
+ {
++    private static int ManagedSize(Type type)
++    {
++        var method = new DynamicMethod("ManagedRecordSize", typeof(int), Type.EmptyTypes, typeof(PortableDrainedQueueEntry).Module, true);
++        ILGenerator il = method.GetILGenerator(); il.Emit(OpCodes.Sizeof, type); il.Emit(OpCodes.Ret);
++        return ((Func<int>)method.CreateDelegate(typeof(Func<int>)))();
++    }
+     private static int Main(string[] args)
+     {
+         try
+         {
+             if (args.Length == 0) throw new ArgumentException("semantic, cold or warm mode required");
+-            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+-            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
++            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture; CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+             Type mono = Type.GetType("Mono.Runtime"); string monoVersion = "";
+             if (mono != null)
+             {
+@@ -21,13 +29,18 @@
+                 monoVersion = match.Value;
+             }
+             Console.WriteLine("PORTABLE_RUNTIME {\"EnvironmentVersion\":\"" + Environment.Version + "\",\"MonoVersion\":\"" + monoVersion + "\",\"PointerSize\":" + IntPtr.Size + "}");
+-            Type target; string[] forwarded;
+-            if (args[0] == "semantic" && args.Length == 4) target = typeof(BindingRecordCheck);
+-            else if (args[0] == "cold" && args.Length == 2) target = typeof(ColdBindingRecordScreen);
+-            else if (args[0] == "warm" && args.Length == 4 && args[1] == "timing") target = typeof(WarmBindingLauncher);
++            Type target; int count;
++            if (args[0] == "semantic" && args.Length == 7) { target = typeof(DrainedQueueCheck); count = 5; }
++            else if (args[0] == "cold" && args.Length == 4) { target = typeof(ColdDrainedQueueScreen); count = 3; }
++            else if (args[0] == "warm" && args.Length == 8 && args[1] == "timing") { target = typeof(WarmDrainedQueueScreen); count = 7; }
+             else throw new ArgumentException("Fixed portable mode arguments required");
+-            forwarded = new string[args.Length - 1]; Array.Copy(args, 1, forwarded, 0, forwarded.Length);
+-            return (int)target.GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { forwarded });
++            string[] forwarded = new string[count]; Array.Copy(args, 1, forwarded, 0, count);
++            int result = (int)target.GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { forwarded });
++            // Semantic-only, after fixture completion. Never reflects on target layout before a cold operation.
++            if (result == 0 && args[0] == "semantic")
++                using (var writer = new StreamWriter(new FileStream(args[6], FileMode.CreateNew)))
++                    writer.WriteLine("{\"PointerSize\":" + IntPtr.Size + ",\"GameplayTagSize\":" + ManagedSize(typeof(GameplayTag)) + ",\"DeferredEventSize\":" + ManagedSize(typeof(DeferredTagChangedDelegate)) + "}");
++            return result;
+         }
+         catch (TargetInvocationException ex) { Console.Error.WriteLine(ex.InnerException ?? ex); return 1; }
+         catch (Exception ex) { Console.Error.WriteLine(ex); return 1; }

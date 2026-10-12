@@ -1,0 +1,56 @@
+--- repo/Tests~/PortfolioScreen/BindingRecordIdsMonoCompletion/diagnostics.py
++++ DrainedEventQueueReuse/diagnostics.py
+@@ -12,11 +12,9 @@
+ 
+ 
+ MARKERS = {
+-    'NoneBeforeRegistry': 'PASS None and named-None before registry initialization',
+     'CoreSummary': '7,595,855 assertions; 0 failed groups;',
+-    'Binding70': '{"Checks":70,"FailedGroups":0}',
+-    'Supplemental13': 'PASS binding-record supplemental frames: 13',
+-    'MetadataComplete': 'PASS core and binding suites, record layout, complete portable metadata capture; no performance measurement',
++    'FocusedQueue': 'PASS drained queue: finite chain, multicast snapshot, throw recovery, hierarchy fanout, nested batch/discard, full one-pending resize',
++    'MetadataComplete': 'PASS unchanged core including BindingAndPooling; logical suffix and full storage/callback state; ordinary public callers exercised; no portable native capture; untimed only',
+ }
+ # Codes 100 through 116 preserve the previous fixed projection's numbering.
+ TYPES = (
+@@ -32,18 +30,19 @@
+     'System.IndexOutOfRangeException', 'System.BadImageFormatException',
+ )
+ FRAMES = {
+-    'ENTRY': 'PortableBindingEntry.Main',
+-    'SEMANTIC_MAIN': 'BindingRecordCheck.Main',
+-    'SEMANTIC_NONE': 'BindingRecordCheck.NoneBeforeRegistry',
+-    'SEMANTIC_NAMES': 'BindingRecordCheck.NamesGrowthAndHiddenMethods',
+-    'SEMANTIC_QUEUED': 'BindingRecordCheck.QueuedUnbind',
+-    'SEMANTIC_SNAPSHOT': 'BindingRecordCheck.Snapshot',
+-    'MANAGED_SIZE': 'BindingRecordCheck.ManagedSize',
+-    'CORE_MAIN': 'CoreProgram.Main',
+-    'CORE_GROUP': 'CoreProgram.Run',
++    'ENTRY': 'PortableDrainedQueueEntry.Main',
++    'SEMANTIC_MAIN': 'DrainedQueueCheck.Main',
++    'SEMANTIC_CHAIN': 'DrainedQueueCheck.Chain',
++    'SEMANTIC_MULTICAST': 'DrainedQueueCheck.Multicast',
++    'SEMANTIC_THROWING': 'DrainedQueueCheck.Throwing',
++    'SEMANTIC_PENDING': 'DrainedQueueCheck.PendingFallback',
++    'SEMANTIC_BATCH': 'DrainedQueueCheck.NestedBatchDiscard',
++    'SEMANTIC_HIERARCHY': 'DrainedQueueCheck.HierarchyFanout',
++    'SEMANTIC_SNAPSHOT': 'DrainedQueueCheck.Snapshot',
++    'MANAGED_SIZE': 'PortableDrainedQueueEntry.ManagedSize',
++    'CORE_MAIN': 'Program.Main',
++    'CORE_GROUP': 'Program.Run',
+     'CORE_REGISTRATION': 'FixtureRegistration.Register',
+-    'BINDING_LIFECYCLE': 'Probe.Test',
+-    'BINDING_RELEASE': 'Probe.ReleaseProbe',
+     'METADATA_MAIN': 'MetadataGate.Write',
+     'METADATA_TYPE': 'MetadataGate.CaptureType',
+     'METADATA_FIELD': 'MetadataGate.CaptureField',
+@@ -63,7 +62,7 @@
+ }
+ ARTIFACTS = ('Stdout', 'Stderr', 'Snapshot', 'Layout', 'Metadata')
+ _RUNTIME_KEYS = ('EnvironmentVersion', 'MonoVersion', 'PointerSize')
+-_LAYOUT_KEYS = ('PointerSize', 'GameplayTagSize', 'BindDataSize')
++_LAYOUT_KEYS = ('PointerSize', 'GameplayTagSize', 'DeferredEventSize')
+ 
+ 
+ def _unique_object(pairs):

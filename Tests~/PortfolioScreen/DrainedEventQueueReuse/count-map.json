@@ -1,0 +1,59 @@
+{
+  "Formula": "max(original_iterations, ceil(original_iterations * 250 * frequency / (1000 * minimum_original_tick_count)))",
+  "SourceObservationSHA256": "571c4955ba2f099e15ffa0198c0ba6c2b1de60f60bed12cdf8bd72ed01b76851",
+  "SourceIterationMapSHA256": "1de90bca7899c1651358b5c90608929f122b766b693979b83563c40b1c4457bf",
+  "SourceResultManifestSHA256": "c00705569fab3f9c625fbfd88cf1e18d14d5b3bd9bd4422d91324175c1def60f",
+  "TargetBaselineMs": 250,
+  "Rows": [
+    {
+      "Id": "single",
+      "Iterations": 3655224,
+      "OriginalIterations": 3021083,
+      "OriginalFourTicks": [
+        219928620,
+        206627773,
+        211748500,
+        224314736
+      ],
+      "StopwatchFrequency": 1000000000
+    },
+    {
+      "Id": "chain9",
+      "Iterations": 906602,
+      "OriginalIterations": 648536,
+      "OriginalFourTicks": [
+        205864231,
+        178837203,
+        195428295,
+        197453006
+      ],
+      "StopwatchFrequency": 1000000000
+    },
+    {
+      "Id": "chain1025",
+      "Iterations": 9309,
+      "OriginalIterations": 6958,
+      "OriginalFourTicks": [
+        186876290,
+        189214501,
+        187015779,
+        187099405
+      ],
+      "StopwatchFrequency": 1000000000
+    },
+    {
+      "Id": "pending",
+      "Iterations": 547456,
+      "OriginalIterations": 402348,
+      "OriginalFourTicks": [
+        183735518,
+        189118687,
+        190869215,
+        212120826
+      ],
+      "StopwatchFrequency": 1000000000
+    }
+  ],
+  "CandidateDataUsed": false,
+  "SharedAcrossBackends": true
+}

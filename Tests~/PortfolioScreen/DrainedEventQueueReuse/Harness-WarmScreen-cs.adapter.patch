@@ -1,0 +1,25 @@
+--- drained-event-queue-reuse-warm/Screen.cs
++++ DrainedEventQueueReuse/Harness/WarmScreen.cs
+@@ -10,6 +10,7 @@
+ 
+ internal static class WarmDrainedQueueScreen
+ {
++    private static readonly Func<long> Allocated = (Func<long>)Delegate.CreateDelegate(typeof(Func<long>), typeof(GC).GetMethod("GetAllocatedBytesForCurrentThread", BindingFlags.Public | BindingFlags.Static));
+     private const BindingFlags Fields = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+     private static readonly string[] Shapes = { "single", "chain9", "chain1025", "pending" };
+     private static readonly int[] Seeds = { 32768, 4096, 128, 4096 };
+@@ -171,11 +172,11 @@
+         Check(iterations >= Seeds[index] && iterations <= Caps[index], "Frozen count within fixed bounds");
+         Row row = Prepare(index); long warm = RunBatch(row, Warmups); Check(warm == (long)Warmups * row.ExpectedCycleChecksum, "Warmup checksum");
+         Validate(row, Warmups, null, out _);
+-        long frequency = Stopwatch.Frequency; GC.GetAllocatedBytesForCurrentThread(); Stopwatch.GetTimestamp(); GC.CollectionCount(0); GC.CollectionCount(1); GC.CollectionCount(2);
+-        long before = GC.GetAllocatedBytesForCurrentThread(); int g0 = GC.CollectionCount(0), g1 = GC.CollectionCount(1), g2 = GC.CollectionCount(2);
++        long frequency = Stopwatch.Frequency; Allocated(); Stopwatch.GetTimestamp(); GC.CollectionCount(0); GC.CollectionCount(1); GC.CollectionCount(2);
++        long before = Allocated(); int g0 = GC.CollectionCount(0), g1 = GC.CollectionCount(1), g2 = GC.CollectionCount(2);
+         Exception error = null; long checksum = -1; long start = Stopwatch.GetTimestamp();
+         try { checksum = RunBatch(row, iterations); } catch (Exception caught) { error = caught; }
+-        long ticks = Stopwatch.GetTimestamp() - start, bytes = GC.GetAllocatedBytesForCurrentThread() - before;
++        long ticks = Stopwatch.GetTimestamp() - start, bytes = Allocated() - before;
+         int delta0 = GC.CollectionCount(0) - g0, delta1 = GC.CollectionCount(1) - g1, delta2 = GC.CollectionCount(2) - g2;
+         Console.WriteLine("{\"RecordType\":\"measurement\",\"Mode\":\"" + mode + "\",\"Id\":\"" + row.Id + "\",\"Iterations\":" + iterations + ",\"Ticks\":" + ticks + ",\"Frequency\":" + frequency + ",\"Bytes\":" + bytes +
+             ",\"Gc0\":" + delta0 + ",\"Gc1\":" + delta1 + ",\"Gc2\":" + delta2 + ",\"Checksum\":" + checksum + ",\"N\":" + row.N + ",\"Control\":" + Bool(row.Control) + ",\"Warmups\":" + Warmups +

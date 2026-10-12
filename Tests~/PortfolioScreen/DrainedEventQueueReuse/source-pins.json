@@ -1,0 +1,189 @@
+{
+  "BaseRevision": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "RuntimeFiles": {
+    "original": {
+      "Runtime/GameObjectGameplayTagContainer.cs": "2826ab87baf0cd558d53a730f3bfb48bd94a8345b79b6dbbb1c98eb7abe79a74",
+      "Runtime/GameObjectGameplayTagContainer.cs.meta": "89cfcd79feeb21f2c81acb1adb56c4c150072558055c1f0eb2f319740c923776",
+      "Runtime/GameplayTag.cs": "0367808f8c540762b064c0ebd0e0d2ebb660b6eadf4dae724678029f49a37e7b",
+      "Runtime/GameplayTag.cs.meta": "25c8b3f7a1b8bf0beda73ee8399b4b59770aff10a0c05d50a3cae7c03c83cbef",
+      "Runtime/GameplayTagAttribute.cs": "5c0c71d0d7df69f26a2349018e69db7d5a01600a6b0d4335f5bb4da176353e64",
+      "Runtime/GameplayTagAttribute.cs.meta": "625df02f5fdb7048275a2d4868dd716dc79ada11541c7013a6c1fec94c63d927",
+      "Runtime/GameplayTagContainer.cs": "7bc90daac1e7cefc566dd34c5e45a9dccff2dca3c74a4ed3c4d97915d315ce2e",
+      "Runtime/GameplayTagContainer.cs.meta": "bee72c2d0c24a5b473b3482d9db4d54666df26a0ce49f7baa984e06667db472d",
+      "Runtime/GameplayTagContainerBinds.cs": "7c1f1faee1e486bab0ffda0539249a6cc20cbc8c570d6dd2bb2239cd72553150",
+      "Runtime/GameplayTagContainerBinds.cs.meta": "9582a0d8b1fe4ad8046a14d8951a55b467ccb1801c4cb664a858446eff318014",
+      "Runtime/GameplayTagContainerDebugView.cs": "329846fecdfe0a176cae5dd78856ef8d2b5e9a87c976bc05c61433c1fb3aa9f3",
+      "Runtime/GameplayTagContainerDebugView.cs.meta": "f5a7adcca0141164f56ab2206624272e4f3ef19d7dc02012f0428002fcdeba01",
+      "Runtime/GameplayTagContainerExtensionMethods.cs": "96067d19715f0a516f818467f01180718f1fd8fe5176e1bb9e2b1c802d86454c",
+      "Runtime/GameplayTagContainerExtensionMethods.cs.meta": "55f5d5a798c5a7edccce40b8f73967f65cc4b9cdb32fa56b7690c7dce1b5818d",
+      "Runtime/GameplayTagContainerPool.cs": "f88beb9962b220ab5274f85450cd513b25e095915e257a605114d3a7dcbfad76",
+      "Runtime/GameplayTagContainerPool.cs.meta": "447068723be372213733e327a07c53881541b4e1212a4f6cd3903f58ec9060a6",
+      "Runtime/GameplayTagContainerUtility.cs": "f6f62ce3f41baf36ef5e71b92c31511833656aae3834b240535b420389f522c4",
+      "Runtime/GameplayTagContainerUtility.cs.meta": "6e64d22f0fa21e5cea4606fbb08bd5623faf89f14fa05621b6ed84a4effbf8f1",
+      "Runtime/GameplayTagCountContainer.cs": "2507f999f41b18019d3a5478f9d42599792dfd7a0e517730309e54cfa99ee858",
+      "Runtime/GameplayTagCountContainer.cs.meta": "40b9bf55b344d99b391dbf412123ce5b672d9b339cf681356682791044e6313a",
+      "Runtime/GameplayTagDefinition.cs": "7cf498e3b14f6ae9d328898c9f833608fe71a05911805086deab27f684442c68",
+      "Runtime/GameplayTagDefinition.cs.meta": "d1b9e710b979d8034d78d347d924186d68596166b05d93677cda7a29adfc969e",
+      "Runtime/GameplayTagEnumerator.cs": "5ceeaab6e65ee8ac0393e3cf5815b4d55d6d17b630a1a92f8fdc81e021e2daf9",
+      "Runtime/GameplayTagEnumerator.cs.meta": "3f943268062839c74d2df3b8d6eaaf6e722888a6acf7611ddce0a466100aeace",
+      "Runtime/GameplayTagFlags.cs": "6829706bccf06e412df84f3f01c163e225c23782c7c4fb09dfe445b1d8dcabe9",
+      "Runtime/GameplayTagFlags.cs.meta": "98d43de2db13a410f7bf8727dcf666f9bdb68c1fba9a0bc571285646a5c925ee",
+      "Runtime/GameplayTagHierarchicalContanier.cs": "00bb82b1d7603d3579b511f6d3504d8d2771ccb662187350678ec4e706307c77",
+      "Runtime/GameplayTagHierarchicalContanier.cs.meta": "61f9867456b7058c66fe7bb28d9d048cc6431bbf54cc957e12d1a25c07440bc2",
+      "Runtime/GameplayTagIntersectionWorkspace.cs": "4c24225b481517da1f308fd1f9f817bce0bc88d1818bd3a632c5d2db16f88bd4",
+      "Runtime/GameplayTagIntersectionWorkspace.cs.meta": "78a179d2c98f24a14e06a6f169ffc0b544bb85cb966ef70f12fa42f34a51e7d9",
+      "Runtime/GameplayTagManager.cs": "4d931365b965aee5d59a0782314c7cddfbde97a73b09bb743d2c883752ddc341",
+      "Runtime/GameplayTagManager.cs.meta": "a5714a82be5a8ef08af622e555146e5267ff6a1673358311be1928a9f3306f0b",
+      "Runtime/GameplayTagRegistrationContext.cs": "5795ab0f7f6a7672a557841a327b673c00c0c8599302face56aeed3247f07ef8",
+      "Runtime/GameplayTagRegistrationContext.cs.meta": "a41718797e97069079f8cf0864fc20f2cc876850ca701ed4f5ee40672a499923",
+      "Runtime/GameplayTagRequirements.cs": "25982793636c07582d12acd77c63b02c8c38d4cdc4e6a1f9233c6417e7ccf4f9",
+      "Runtime/GameplayTagRequirements.cs.meta": "2e2ad102d60653bb60c15a89070eddbbe9e8a7d092325997b7dce76a90a83d26",
+      "Runtime/GameplayTagUtility.cs": "8c23380b52c53b8e9d707abdcf16f66bb8a5fec7627f5ec1c95e04d4f1c2a96d",
+      "Runtime/GameplayTagUtility.cs.meta": "10fa2ee12cecec21aec6420ce6cb90f06646ace1f2109f10fdcd425325e1349a",
+      "Runtime/Int32Sort.cs": "bd1df3ba875be9eb30a3e38122d8ecbab7e2a07ef85a068c8e7d0265a354bb4c",
+      "Runtime/Int32Sort.cs.meta": "92432ae0e0f6fe236a6f47fe9b7957dee8e6236b0a9c7e6e5ef7f8ca8bac4209",
+      "Runtime/TagStorage.cs": "ab8e7c720a5d0217a43b53e8a4a6cbb339584babb066b989a199bba89ebdb6db",
+      "Runtime/TagStorage.cs.meta": "cf4ce6325d3e6fd9f8b923a8f93ce777dc8fa1a8c293a313f2b7b72953c8239d",
+      "Runtime/ZFramework.GameplayTags.asmdef": "5d5ae26d82a69e140b8fda1ed4fd26b9f91ad6746cec9ba84fc1427a346f7fba",
+      "Runtime/ZFramework.GameplayTags.asmdef.meta": "c5554b79724f2425f9d911c59fe6993633db60f43964151f3f5239b0420ad6fd"
+    },
+    "candidate": {
+      "Runtime/GameObjectGameplayTagContainer.cs": "2826ab87baf0cd558d53a730f3bfb48bd94a8345b79b6dbbb1c98eb7abe79a74",
+      "Runtime/GameObjectGameplayTagContainer.cs.meta": "89cfcd79feeb21f2c81acb1adb56c4c150072558055c1f0eb2f319740c923776",
+      "Runtime/GameplayTag.cs": "0367808f8c540762b064c0ebd0e0d2ebb660b6eadf4dae724678029f49a37e7b",
+      "Runtime/GameplayTag.cs.meta": "25c8b3f7a1b8bf0beda73ee8399b4b59770aff10a0c05d50a3cae7c03c83cbef",
+      "Runtime/GameplayTagAttribute.cs": "5c0c71d0d7df69f26a2349018e69db7d5a01600a6b0d4335f5bb4da176353e64",
+      "Runtime/GameplayTagAttribute.cs.meta": "625df02f5fdb7048275a2d4868dd716dc79ada11541c7013a6c1fec94c63d927",
+      "Runtime/GameplayTagContainer.cs": "7bc90daac1e7cefc566dd34c5e45a9dccff2dca3c74a4ed3c4d97915d315ce2e",
+      "Runtime/GameplayTagContainer.cs.meta": "bee72c2d0c24a5b473b3482d9db4d54666df26a0ce49f7baa984e06667db472d",
+      "Runtime/GameplayTagContainerBinds.cs": "7c1f1faee1e486bab0ffda0539249a6cc20cbc8c570d6dd2bb2239cd72553150",
+      "Runtime/GameplayTagContainerBinds.cs.meta": "9582a0d8b1fe4ad8046a14d8951a55b467ccb1801c4cb664a858446eff318014",
+      "Runtime/GameplayTagContainerDebugView.cs": "329846fecdfe0a176cae5dd78856ef8d2b5e9a87c976bc05c61433c1fb3aa9f3",
+      "Runtime/GameplayTagContainerDebugView.cs.meta": "f5a7adcca0141164f56ab2206624272e4f3ef19d7dc02012f0428002fcdeba01",
+      "Runtime/GameplayTagContainerExtensionMethods.cs": "96067d19715f0a516f818467f01180718f1fd8fe5176e1bb9e2b1c802d86454c",
+      "Runtime/GameplayTagContainerExtensionMethods.cs.meta": "55f5d5a798c5a7edccce40b8f73967f65cc4b9cdb32fa56b7690c7dce1b5818d",
+      "Runtime/GameplayTagContainerPool.cs": "f88beb9962b220ab5274f85450cd513b25e095915e257a605114d3a7dcbfad76",
+      "Runtime/GameplayTagContainerPool.cs.meta": "447068723be372213733e327a07c53881541b4e1212a4f6cd3903f58ec9060a6",
+      "Runtime/GameplayTagContainerUtility.cs": "f6f62ce3f41baf36ef5e71b92c31511833656aae3834b240535b420389f522c4",
+      "Runtime/GameplayTagContainerUtility.cs.meta": "6e64d22f0fa21e5cea4606fbb08bd5623faf89f14fa05621b6ed84a4effbf8f1",
+      "Runtime/GameplayTagCountContainer.cs": "b50388ee614ea4431630683bffe586e106c4c905982437bc41b273f7b13c87f2",
+      "Runtime/GameplayTagCountContainer.cs.meta": "40b9bf55b344d99b391dbf412123ce5b672d9b339cf681356682791044e6313a",
+      "Runtime/GameplayTagDefinition.cs": "7cf498e3b14f6ae9d328898c9f833608fe71a05911805086deab27f684442c68",
+      "Runtime/GameplayTagDefinition.cs.meta": "d1b9e710b979d8034d78d347d924186d68596166b05d93677cda7a29adfc969e",
+      "Runtime/GameplayTagEnumerator.cs": "5ceeaab6e65ee8ac0393e3cf5815b4d55d6d17b630a1a92f8fdc81e021e2daf9",
+      "Runtime/GameplayTagEnumerator.cs.meta": "3f943268062839c74d2df3b8d6eaaf6e722888a6acf7611ddce0a466100aeace",
+      "Runtime/GameplayTagFlags.cs": "6829706bccf06e412df84f3f01c163e225c23782c7c4fb09dfe445b1d8dcabe9",
+      "Runtime/GameplayTagFlags.cs.meta": "98d43de2db13a410f7bf8727dcf666f9bdb68c1fba9a0bc571285646a5c925ee",
+      "Runtime/GameplayTagHierarchicalContanier.cs": "00bb82b1d7603d3579b511f6d3504d8d2771ccb662187350678ec4e706307c77",
+      "Runtime/GameplayTagHierarchicalContanier.cs.meta": "61f9867456b7058c66fe7bb28d9d048cc6431bbf54cc957e12d1a25c07440bc2",
+      "Runtime/GameplayTagIntersectionWorkspace.cs": "4c24225b481517da1f308fd1f9f817bce0bc88d1818bd3a632c5d2db16f88bd4",
+      "Runtime/GameplayTagIntersectionWorkspace.cs.meta": "78a179d2c98f24a14e06a6f169ffc0b544bb85cb966ef70f12fa42f34a51e7d9",
+      "Runtime/GameplayTagManager.cs": "4d931365b965aee5d59a0782314c7cddfbde97a73b09bb743d2c883752ddc341",
+      "Runtime/GameplayTagManager.cs.meta": "a5714a82be5a8ef08af622e555146e5267ff6a1673358311be1928a9f3306f0b",
+      "Runtime/GameplayTagRegistrationContext.cs": "5795ab0f7f6a7672a557841a327b673c00c0c8599302face56aeed3247f07ef8",
+      "Runtime/GameplayTagRegistrationContext.cs.meta": "a41718797e97069079f8cf0864fc20f2cc876850ca701ed4f5ee40672a499923",
+      "Runtime/GameplayTagRequirements.cs": "25982793636c07582d12acd77c63b02c8c38d4cdc4e6a1f9233c6417e7ccf4f9",
+      "Runtime/GameplayTagRequirements.cs.meta": "2e2ad102d60653bb60c15a89070eddbbe9e8a7d092325997b7dce76a90a83d26",
+      "Runtime/GameplayTagUtility.cs": "8c23380b52c53b8e9d707abdcf16f66bb8a5fec7627f5ec1c95e04d4f1c2a96d",
+      "Runtime/GameplayTagUtility.cs.meta": "10fa2ee12cecec21aec6420ce6cb90f06646ace1f2109f10fdcd425325e1349a",
+      "Runtime/Int32Sort.cs": "bd1df3ba875be9eb30a3e38122d8ecbab7e2a07ef85a068c8e7d0265a354bb4c",
+      "Runtime/Int32Sort.cs.meta": "92432ae0e0f6fe236a6f47fe9b7957dee8e6236b0a9c7e6e5ef7f8ca8bac4209",
+      "Runtime/TagStorage.cs": "ab8e7c720a5d0217a43b53e8a4a6cbb339584babb066b989a199bba89ebdb6db",
+      "Runtime/TagStorage.cs.meta": "cf4ce6325d3e6fd9f8b923a8f93ce777dc8fa1a8c293a313f2b7b72953c8239d",
+      "Runtime/ZFramework.GameplayTags.asmdef": "5d5ae26d82a69e140b8fda1ed4fd26b9f91ad6746cec9ba84fc1427a346f7fba",
+      "Runtime/ZFramework.GameplayTags.asmdef.meta": "c5554b79724f2425f9d911c59fe6993633db60f43964151f3f5239b0420ad6fd"
+    }
+  },
+  "CandidatePatchSHA256": "de6263cfe6b080f0ec5fb0af796b4399757854ff7a8e1604c8277904e2bc59c4",
+  "HistoricalStageBindings": {
+    "drained-event-queue-reuse": {
+      "source-pins.json": "7b919e6fe98f9a5a3c395304b0cb98044f96d787893ef740cfaf9d413e0d2ad4",
+      "RESULT.md": "b9182a430dae9b91a158e039a6f57014932b005eb4af56cd71ce1ed539beabb4",
+      "result-manifest.json": "21a87d50acd5639c7ec0e28c72bc0fc6a4e809d77b3d8344045361d564a93eca"
+    },
+    "drained-event-queue-reuse-natural": {
+      "source-pins.json": "23911541a2630a886fb0c43fe3a4f4bd4a2799a3206228029fb2713275073556",
+      "RESULT.md": "7584551fefd8487ab7b0b09de4dde78209d100e4b22b2420b37f9b3a420d63dc",
+      "result-manifest.json": "5e67ccf16513904197d58c17efa0e9eaa8267ad6c20927a1843a929b3dad706a"
+    },
+    "drained-event-queue-reuse-cold": {
+      "source-pins.json": "0f3d1f93ed524c23fcd840f3ac33e9301b7c2810ff8e02c606f9a5593f015ccb",
+      "RESULT.md": "5804adf1989c24c4b460d73f37e9476da5bdc3e3738ebb5ea404637a9e6cde77",
+      "result-manifest.json": "2c5533e0005073d72cd828da54c096e3232417c6b222b92b2098c673b50434df"
+    },
+    "drained-event-queue-reuse-warm": {
+      "source-pins.json": "985c23f85e8ccc650b8cf06323ef2c3028be9a80adf3cc5d5ca6fc4c28891c66",
+      "RESULT.md": "1972e1880c328749c623b689e536e501b194a79d17962e7c4be4dca72535e5af",
+      "result-manifest.json": "c00705569fab3f9c625fbfd88cf1e18d14d5b3bd9bd4422d91324175c1def60f"
+    }
+  },
+  "AdapterOriginalFiles": {
+    "Harness/CoreProgram.cs": {
+      "Source": "drained-event-queue-reuse-natural/CoreProgram.cs",
+      "SHA256": "5f84bba302032bcf73b38f0e3f97e437c46380f05a6bc85e7995615e49aca4dd"
+    },
+    "Harness/CoreFixtureRegistration.cs": {
+      "Source": "drained-event-queue-reuse-natural/CoreFixtureRegistration.cs",
+      "SHA256": "1f1402685f03030bf39057fe44d6c817118325dce35b527f3828378c78dfa60a"
+    },
+    "Harness/MetadataGate.cs": {
+      "Source": "drained-event-queue-reuse-natural/MetadataGate.cs",
+      "SHA256": "12b31470a0a952923d7986ad7b3e3e0ea5c4009b9d0a47ae3ea1e29af477fc1c"
+    },
+    "Harness/ColdScreen.cs": {
+      "Source": "drained-event-queue-reuse-cold/Screen.cs",
+      "SHA256": "b92eae6e87252065fd976162c4aba1ccb519c43163fb61e051174066067dad2e"
+    },
+    "Harness/WarmScreen.cs": {
+      "Source": "drained-event-queue-reuse-warm/Screen.cs",
+      "SHA256": "1f4636ceb6188994ba23d1e0bf9244d72bb0d2279714c0b26c6cb59be7e038ad"
+    },
+    "Harness/SemanticChecks.cs": {
+      "Source": "drained-event-queue-reuse-natural/Check.cs",
+      "SHA256": "a35833d88094004dec10b3375b3517d50f9fd27115642225c890ea675e412500"
+    },
+    "metadata_compare.py": {
+      "Source": "drained-event-queue-reuse-natural/metadata_compare.py",
+      "SHA256": "115afd77594e3ce2576905a96670cfba7cce66fd0407bfe438825cdb19fc1cd6"
+    },
+    "candidate.patch": {
+      "Source": "drained-event-queue-reuse-natural/candidate.patch",
+      "SHA256": "de6263cfe6b080f0ec5fb0af796b4399757854ff7a8e1604c8277904e2bc59c4"
+    },
+    "candidate/GameplayTagCountContainer.cs": {
+      "Source": "drained-event-queue-reuse-natural/candidate/Runtime/GameplayTagCountContainer.cs",
+      "SHA256": "b50388ee614ea4431630683bffe586e106c4c905982437bc41b273f7b13c87f2"
+    },
+    "build_support.py": {
+      "Source": "repo/Tests~/PortfolioScreen/BindingRecordIds/build_support.py",
+      "SHA256": "c89505c038eed5c2d2f144eed49bebcaf4edc74a5dac5c4cfb3cfc214e565e71"
+    },
+    "run.py": {
+      "Source": "repo/Tests~/PortfolioScreen/BindingRecordIds/run.py",
+      "SHA256": "b6d0a65b45fb497182404e16e917fd28776b3421eb2cab2ba2abc87aae908ff2"
+    },
+    "diagnostics.py": {
+      "Source": "repo/Tests~/PortfolioScreen/BindingRecordIdsMonoCompletion/diagnostics.py",
+      "SHA256": "868d683c5912beb1f7edecc6fd7f06c05056293ddd5f5e676883bcd7f9a1be8a"
+    },
+    "mechanism_compare.py": {
+      "Source": "drained-event-queue-reuse-natural/mechanism_compare.py",
+      "SHA256": "61fde392f8719fc21cf94533e2e454a6214eb9198c25469b3613aef8c9f39683"
+    },
+    "References.csproj": {
+      "Source": "repo/Tests~/PortfolioScreen/BindingRecordIds/References.csproj",
+      "SHA256": "0af6ae5d8e08055944974cd88d1affd6c155f417fc064dcddebdf6ce01c65821"
+    },
+    "upload-allowlist.txt": {
+      "Source": "repo/Tests~/PortfolioScreen/BindingRecordIds/upload-allowlist.txt",
+      "SHA256": "2ceba95b1e22946cc10962122ff9f8aa636adfa537afb953b175b9f7885de003"
+    }
+  },
+  "PreservedResults": {
+    "OldCollector": "STOP_INCOMPLETE",
+    "NaturalLocal": "PASS_UNTIMED_NATURAL_CONTEXT_ONLY",
+    "Cold": "MEMORY_BENEFIT_LATENCY_UNRESOLVED",
+    "Warm": "NO_DECLARED_REJECTION_NO_LATENCY_PASS"
+  },
+  "QualificationCount": 0
+}

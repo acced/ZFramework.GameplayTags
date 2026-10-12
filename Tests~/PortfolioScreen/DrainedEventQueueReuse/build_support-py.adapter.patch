@@ -1,0 +1,11 @@
+--- repo/Tests~/PortfolioScreen/BindingRecordIds/build_support.py
++++ DrainedEventQueueReuse/build_support.py
+@@ -59,7 +59,7 @@
+     for package in packages:
+         shutil.copy2(package, out / package.name)
+     files = sorted(p for p in (source / 'Runtime').rglob('*.cs') if p.name != 'GameObjectGameplayTagContainer.cs') + sorted(program.parent.glob('*.cs'))
+-    flags = ['-main:PortableBindingEntry', '-nologo', '-optimize+', '-langversion:9.0', '-nullable:disable', '-deterministic+', '-target:exe', '-out:"' + str(assembly) + '"']
++    flags = ['-main:PortableDrainedQueueEntry', '-nologo', '-optimize+', '-langversion:9.0', '-nullable:disable', '-deterministic+', '-target:exe', '-out:"' + str(assembly) + '"']
+     flags += ['-r:"' + str(p) + '"' for p in refs] + ['"' + str(p) + '"' for p in files]
+     response = out / 'compile.rsp'
+     response.write_text('\n'.join(flags))

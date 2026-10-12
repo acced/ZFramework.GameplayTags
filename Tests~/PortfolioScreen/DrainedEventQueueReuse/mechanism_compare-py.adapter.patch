@@ -1,0 +1,101 @@
+--- drained-event-queue-reuse-natural/mechanism_compare.py
++++ DrainedEventQueueReuse/mechanism_compare.py
+@@ -1,48 +1,11 @@
+-"""Inspect persisted semantic/metadata/native evidence only. Never execute target code."""
++"""Inspect persisted semantic/metadata/queue evidence only. Never execute target code."""
+ from collections import Counter
+-import copy, difflib, json, re
++import copy, json
+ from pathlib import Path
+ import metadata_compare as reused
+ OWNER = 'GameplayTags.GameplayTagCountContainer'
+ CHANGED = OWNER + '::Enqueue(System.Int32,System.Int32,GameplayTags.OnTagCountChangedDelegate):System.Void'
+-REQUIRED_NATURAL = ('QueueChange', 'AddTagInternal', 'RemoveTagInternal', 'NativeAdd', 'NativeRemove', 'NativeClear', 'NativeBulk')
+-RUNTIME = ('Enqueue', 'QueueChange', 'AddTagInternal', 'RemoveTagInternal', 'AddTag', 'RemoveTag', 'Clear', 'AddTags', 'RemoveTags')
+-CALLERS = ('NativeAdd', 'NativeRemove', 'NativeClear', 'NativeBulk')
+ DECLARATION = 'Only Enqueue body differs; private queue indices/capacities/array identities and resource-failure behavior intentionally differ; public traces and logical pending suffix compare exactly\n'
+-
+-def native(path):
+-    if not path.is_file(): return {}, ['Native artifact missing']
+-    found = {}; gaps = []
+-    for chunk in path.read_text().split('; Assembly listing for method ')[1:]:
+-        header = chunk.splitlines()[0]
+-        matches = [name for name in RUNTIME if header.startswith(OWNER + ':' + name + '(') or header.startswith(OWNER + ':' + name + '[')]
+-        matches += [name for name in CALLERS if header.startswith('DrainedQueueCheck:' + name + '(')]
+-        if len(matches) != 1: gaps.append('Unexpected native context: ' + header); continue
+-        name = matches[0]
+-        if header in found: gaps.append('Duplicate native context: ' + header); continue
+-        sizes = re.findall(r'; Total bytes of code (\d+)', chunk)
+-        instructions = []
+-        for line in chunk.splitlines():
+-            line = line.split(';', 1)[0].strip()
+-            if not line or line == header: continue
+-            line = re.sub(r'0x[0-9a-fA-F]{9,}', '<address>', line)
+-            line = re.sub(r'G_M[0-9a-fA-F]+_IG', 'G_M_IG', line)
+-            instructions.append(' '.join(line.split()))
+-        # Expression-bodied public methods may end with a resolved same-container
+-        # tail call. Arbitrary unresolved jumps never count as complete returns.
+-        tails = [line for index,line in enumerate(instructions)
+-            if line.startswith('tail.jmp [' + OWNER + ':')
+-            and line.endswith(']') and (index + 1 == len(instructions) or instructions[index + 1].endswith(':'))]
+-        row = {'name':name, 'header':header, 'text':chunk, 'normalized':'\n'.join(instructions)+'\n',
+-            'code_bytes':int(sizes[0]) if len(sizes) == 1 else None,
+-            'fullopts':'; FullOpts code' in chunk, 'x64':'X64' in chunk.upper(),
+-            'has_return':'ret' in instructions, 'resolved_tail_exits':tails,
+-            'calls':[line for line in instructions if line.startswith(('call ', 'tail.jmp '))],
+-            'stack_mentions':[line for line in instructions if '[rsp' in line or '[rbp' in line]}
+-        found[header] = row
+-        if row['code_bytes'] is None or not row['fullopts'] or not row['x64'] or not (row['has_return'] or tails):
+-            gaps.append('Incomplete FullOpts x64 native context: ' + header)
+-    return found, gaps
+ 
+ def compare(folder):
+     folder = Path(folder)
+@@ -94,35 +57,18 @@
+     if not queue_rows['original'] or [r['label'] for r in queue_rows['original']] != [r['label'] for r in queue_rows['candidate']]: failures.append('Queue observation inventory mismatch')
+     for old,new in zip(queue_rows['original'],queue_rows['candidate']):
+         if any(old[k]!=new[k] for k in ('label','batch','dispatching','pending')): failures.append('Logical queue ownership observation mismatch')
+-    natives={}; gaps={}
+-    for v in snapshots:
+-        # run() has observed target exit 0 before this post-process read. The exact
+-        # fixture has no native-file copy or forced method preparation at all.
+-        natives[v],gaps[v]=native(folder/(v+'.native.txt'))
+-        for name in REQUIRED_NATURAL + ('Enqueue',):
+-            if sum(r['name']==name for r in natives[v].values()) != 1:
+-                gaps[v].append('Missing/ambiguous required complete natural context: '+name+'; absence does not prove inlining')
+-        if gaps[v]: failures.append('Required completed natural capture gap: '+v)
+-    equal={}
+-    for header in sorted(set(natives['original']) | set(natives['candidate'])):
+-        old=natives['original'].get(header); new=natives['candidate'].get(header)
+-        # Preserve disappeared/new standalone captures as inlining evidence, not assumed equality.
+-        tag=re.sub(r'[^A-Za-z0-9_.-]+','_',header)
+-        oldtext=old['text'] if old else ''; newtext=new['text'] if new else ''
+-        (folder/(tag+'.native.diff')).write_text(''.join(difflib.unified_diff(oldtext.splitlines(True),newtext.splitlines(True),fromfile='original',tofile='candidate')))
+-        equal[header]=old['normalized']==new['normalized'] if old and new else False
+-    report={'schema':'drained-event-queue-reuse-natural-mechanism-v1','status':'FAIL' if failures else 'PASS',
+-        'decision':'STOP' if failures else 'UNTIMED_GATE_PASS_INDEPENDENT_NATIVE_REVIEW_REQUIRED',
++    layouts = {v:json.loads((folder/(v+'.managed-layout.json')).read_text()) for v in snapshots}
++    keys = {'PointerSize','GameplayTagSize','DeferredEventSize'}
++    for v,layout in layouts.items():
++        if set(layout) != keys or any(type(layout[k]) is not int or layout[k] <= 0 for k in keys) or layout['PointerSize'] != 8:
++            failures.append('Invalid actual managed layout: '+v)
++    if layouts['original'] != layouts['candidate']: failures.append('Unchanged managed value layouts differ')
++    report={'schema':'drained-event-queue-reuse-portable-mechanism-v1','status':'FAIL' if failures else 'PASS',
+         'failures':failures,'metadata_differences':differences,'unrelated_raw_il_failures':raw,'token_changes':tokens,'changed_bodies':bodies,
+-        'queue_observations':queue_rows,'native_gaps':gaps,'preparation_provenance':{'forced_preparation_used':False,'capture_read_after_successful_target_exit':True},'normalized_native_equal':equal,
+-        'native_descriptive':{v:{n:{k:x for k,x in row.items() if k not in ('text','normalized')} for n,row in ns.items()} for v,ns in natives.items()},
+-        'native_stopping_condition':'Independent review must verify allocation bypass only on fully drained full arrays and unchanged positive-pending resize, inspect all natural QueueChange enqueue sites and natural public mutation callers for lost inlining/new calls/spills/register or frame costs. All captures are natural, read only after process exit; absent/partial bodies never prove inlining. Capture gaps stop; no rescue variant, setting change or retry authorized.',
+-        'limitations':['Logical pending/public traces and full storage/callback states compare; raw queue indices/capacities/array identities intentionally do not.',
+-            'Avoided Array.Resize changes resource-failure and GC behavior; no resource-failure equivalence claimed.',
+-            'Raw capacity is structural memory evidence, not an allocation counter or total retained-heap measurement.',
+-            'Exact f7 with the same callback-driven reentrant workflow is the comparator; a manual outer loop changes observable callback ordering/timing.',
+-            'Only .NET 8.0.31 FullOpts fixed diagnostic context; no timing, cold, Mono, Unity or IL2CPP evidence.',
+-            'Metadata retains the reused R2 collector scope, excluding global compiler PrivateImplementationDetails, PE RVAs/MVID and absent conditionals.'],
+-        'performance_authorized':False,'performance_claim':None}
++        'types_compared':len(snapshots['original']['types']),'methods_compared':len(methods['original']),
++        'managed_layout':layouts,'queue_observations':queue_rows,'native_capture_performed':False,
++        'limitations':['Logical pending/public traces and full storage/callback state compare; physical queue capacity/indices/identity and resource failures intentionally differ.',
++            'Portable combined assembly context; no native or inlining portability claim. Earlier local natural capture stays separate.',
++            'Reused R2 collector excludes compiler global PrivateImplementationDetails, PE RVAs/MVID and absent conditionals.']}
+     with (folder/'mechanism-report.json').open('x') as f: json.dump(report,f,indent=2); f.write('\n')
+     return report

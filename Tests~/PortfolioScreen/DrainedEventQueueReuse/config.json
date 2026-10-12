@@ -1,0 +1,130 @@
+{
+  "Rows": [
+    {
+      "Id": "single",
+      "Seed": 32768,
+      "MaxCount": 4194304,
+      "N": 1,
+      "Control": false,
+      "EventsPerCycle": 2,
+      "CycleChecksum": 196612,
+      "EventCapacityOriginal": 8,
+      "EventCapacityCandidate": 8
+    },
+    {
+      "Id": "chain9",
+      "Seed": 4096,
+      "MaxCount": 1048576,
+      "N": 9,
+      "Control": false,
+      "EventsPerCycle": 10,
+      "CycleChecksum": 3604820,
+      "EventCapacityOriginal": 16,
+      "EventCapacityCandidate": 8
+    },
+    {
+      "Id": "chain1025",
+      "Seed": 128,
+      "MaxCount": 65536,
+      "N": 1025,
+      "Control": false,
+      "EventsPerCycle": 1026,
+      "CycleChecksum": 34887723012,
+      "EventCapacityOriginal": 2048,
+      "EventCapacityCandidate": 8
+    },
+    {
+      "Id": "pending",
+      "Seed": 4096,
+      "MaxCount": 1048576,
+      "N": 8,
+      "Control": true,
+      "EventsPerCycle": 18,
+      "CycleChecksum": 63898620,
+      "EventCapacityOriginal": 16,
+      "EventCapacityCandidate": 16
+    }
+  ],
+  "PairOrders": [
+    [
+      "original",
+      "candidate"
+    ],
+    [
+      "candidate",
+      "original"
+    ],
+    [
+      "candidate",
+      "original"
+    ],
+    [
+      "original",
+      "candidate"
+    ]
+  ],
+  "Warmups": 128,
+  "MaxBuilds": 2,
+  "MeasuredTargetProcesses": 8,
+  "DeadlineSeconds": 300,
+  "BenefitRows": [
+    "chain9",
+    "chain1025"
+  ],
+  "ForcedGC": false,
+  "WarmTiming": true,
+  "ColdRerun": false,
+  "CandidatePilot": false,
+  "ReplacementSamples": false,
+  "AcceptanceEvidence": false,
+  "AutomaticContinuation": false,
+  "MeasuredRows": 32,
+  "ProcessContext": "Per backend:2 semantic targets,40 cold fresh targets,8 warm fresh processes with four rows in fixed order; no CI pilot. Combined assembly context differs from preserved local stages.",
+  "RejectionRule": "Close if any semantic pair is incomplete/invalid, any paired allocation increase occurs, or any row is slower in at least three of its four pairs. This is a descriptive rejection rule, not a causal/statistical regression claim. Otherwise request review only; cold latency remains unresolved.",
+  "Restoration": "Every cycle returns to empty using RemoveTag(target,N), or RemoveTag(leaf,1) followed by RemoveTag(Z,1) for pending. All restoration notifications and observer work are included.",
+  "PendingControl": "Already-grown capacity16 on both variants; unchanged hierarchy/reentrant ordering workflow. Not repeated full-array growth; that evidence remains in bound cold/semantic stages.",
+  "ColdShapes": [
+    "chain-1",
+    "chain-8",
+    "chain-9",
+    "chain-1025",
+    "full-with-pending"
+  ],
+  "ExpectedEvents": {
+    "chain-1": 1,
+    "chain-8": 8,
+    "chain-9": 9,
+    "chain-1025": 1025,
+    "full-with-pending": 9
+  },
+  "ExpectedEventCapacity": {
+    "original": {
+      "chain-1": 8,
+      "chain-8": 8,
+      "chain-9": 16,
+      "chain-1025": 2048,
+      "full-with-pending": 16
+    },
+    "candidate": {
+      "chain-1": 8,
+      "chain-8": 8,
+      "chain-9": 8,
+      "chain-1025": 8,
+      "full-with-pending": 16
+    }
+  },
+  "ExpectedAllocationBenefitShapes": [
+    "chain-9",
+    "chain-1025"
+  ],
+  "SemanticProcesses": 2,
+  "ColdProcesses": 40,
+  "WarmProcesses": 8,
+  "PilotProcesses": 0,
+  "SDKVersion": "8.0.425",
+  "CLRVersion": "8.0.31",
+  "MonoVersion": "6.8.0.105",
+  "TargetBaselineMs": 250,
+  "SharedWarmCounts": true,
+  "NativeCapture": false
+}

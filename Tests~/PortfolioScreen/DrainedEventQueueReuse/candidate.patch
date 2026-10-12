@@ -1,0 +1,19 @@
+--- a/Runtime/GameplayTagCountContainer.cs
++++ b/Runtime/GameplayTagCountContainer.cs
+@@ -340,7 +340,15 @@
+         private void Enqueue(int id, int count, OnTagCountChangedDelegate callback)
+         {
+             if (m_EventCount == m_Events.Length)
+-                Array.Resize(ref m_Events, m_EventCount == 0 ? 8 : m_EventCount * 2);
++            {
++                if (m_NextEvent != 0 && m_NextEvent == m_EventCount)
++                {
++                    m_EventCount = 0;
++                    m_NextEvent = 0;
++                }
++                else
++                    Array.Resize(ref m_Events, m_EventCount == 0 ? 8 : m_EventCount * 2);
++            }
+             m_Events[m_EventCount++] = new DeferredTagChangedDelegate(id, count, callback);
+         }
+ 

@@ -1,0 +1,11 @@
+--- drained-event-queue-reuse-natural/Check.cs
++++ DrainedEventQueueReuse/Harness/SemanticChecks.cs
+@@ -285,7 +285,7 @@
+             writer.WriteLine("Only Enqueue body differs; private queue indices/capacities/array identities and resource-failure behavior intentionally differ; public traces and logical pending suffix compare exactly");
+         MetadataGate.Write(args[2]);
+         Console.WriteLine("PASS drained queue: finite chain, multicast snapshot, throw recovery, hierarchy fanout, nested batch/discard, full one-pending resize");
+-        Console.WriteLine("PASS unchanged core including BindingAndPooling; logical suffix and full storage/callback state; natural callers captured without forced preparation; untimed only");
++        Console.WriteLine("PASS unchanged core including BindingAndPooling; logical suffix and full storage/callback state; ordinary public callers exercised; no portable native capture; untimed only");
+         return 0;
+     }
+ }

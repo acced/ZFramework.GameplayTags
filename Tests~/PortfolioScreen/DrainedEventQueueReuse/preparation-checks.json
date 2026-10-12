@@ -1,0 +1,34 @@
+{
+  "PreparationOnly": true,
+  "PythonASTFiles": [
+    "build_support.py",
+    "diagnostics.py",
+    "mechanism_compare.py",
+    "metadata_compare.py",
+    "run.py"
+  ],
+  "SavedLocalNumericRowsProjectionChecked": 72,
+  "SyntheticProjectionSafetyChecksPass": true,
+  "OriginalOnly250msCounts": {
+    "single": 3655224,
+    "chain9": 906602,
+    "chain1025": 9309,
+    "pending": 547456
+  },
+  "MetadataQueueComparatorPrefixUnchanged": true,
+  "ExactR2Collector": true,
+  "UnchangedFixturesVerified": true,
+  "PublicPathLeakScanPass": true,
+  "TargetBuilds": 0,
+  "TargetExecutions": 0,
+  "PerformanceSamples": 0,
+  "Limits": {
+    "BuildsPerBackend": 2,
+    "SemanticTargets": 2,
+    "ColdTargets": 40,
+    "WarmProcesses": 8,
+    "WarmRows": 32,
+    "PilotTargets": 0,
+    "Seconds": 300
+  }
+}
