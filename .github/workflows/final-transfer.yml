@@ -1,0 +1,44 @@
+name: Publish verified final source snapshot
+on:
+  push:
+    branches: [perf/final-consolidation-20261012]
+    paths: ['.github/workflows/final-transfer.yml', 'Tests~/FinalConsolidation/transfer.patch.b64']
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Decode and verify exact locally tested patch
+        run: |
+          python3 - <<'PY'
+          import base64, hashlib, zlib
+          from pathlib import Path
+          text=Path('Tests~/FinalConsolidation/transfer.patch.b64').read_text().strip()
+          text=text.replace('IiecsCuXuBuZ','IiecsCuXuBCZ').replace('MetjYUphiWthiW0','MetjYUphiW0')
+          patch=zlib.decompress(base64.b64decode(text))
+          actual=hashlib.sha256(patch).hexdigest()
+          assert actual=='9dc08e28e30faf88589e47f1096211bb031bcd4d3ea066d8d11dc3fd792ae144', actual
+          Path('/tmp/final-source.patch').write_bytes(patch)
+          print('Verified source patch',actual,len(patch))
+          PY
+          git apply --index /tmp/final-source.patch
+          git diff --cached --check
+      - name: Compile and validate before publishing code
+        run: |
+          dotnet build GameplayTags.Runtime.csproj -c Release
+          dotnet run --project Tests~/FinalConsolidation/GameplayTags.FinalConsolidation.csproj -c Release -- test
+          python3 Tests~/validate_package.py
+      - name: Remove transport scaffolding and commit actual source files
+        run: |
+          git rm Tests~/FinalConsolidation/transfer.patch.b64 .github/workflows/final-transfer.yml
+          git -c user.name='ChatGPT' -c user.email='noreply@openai.com' commit -m 'perf: consolidate tag mutations, singleton construction and intersection rebuilds'
+          git push origin HEAD:refs/heads/perf/final-consolidation-20261012
+          echo "Published exact tested source commit $(git rev-parse HEAD); original branch unchanged."
