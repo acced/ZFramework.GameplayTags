@@ -226,6 +226,19 @@ namespace GameplayTags
                 return;
             }
 
+            // A single hierarchy node or callback entry offers no useful
+            // cross-node search narrowing. Keep the original notification path.
+            if (hierarchy.Length <= 1 || m_CallbackCount <= 1)
+            {
+                for (int i = 0; i < hierarchy.Length; i++)
+                {
+                    int current = hierarchy[i];
+                    int newCount = Storage.AddTotal(current, amount);
+                    QueueChange(current, newCount, newCount == amount);
+                }
+                return;
+            }
+
             int callbackCursor = 0;
             for (int i = 0; i < hierarchy.Length; i++)
             {
@@ -294,6 +307,19 @@ namespace GameplayTags
             {
                 for (int i = 0; i < hierarchy.Length; i++)
                     Storage.RemoveTotal(hierarchy[i], amount);
+                return true;
+            }
+
+            // A single hierarchy node or callback entry offers no useful
+            // cross-node search narrowing. Keep the original notification path.
+            if (hierarchy.Length <= 1 || m_CallbackCount <= 1)
+            {
+                for (int i = 0; i < hierarchy.Length; i++)
+                {
+                    int current = hierarchy[i];
+                    int newCount = Storage.RemoveTotal(current, amount);
+                    QueueChange(current, newCount, newCount == 0);
+                }
                 return true;
             }
 

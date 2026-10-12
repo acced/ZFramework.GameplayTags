@@ -1,9 +1,22 @@
 --- a/Runtime/GameplayTagCountContainer.cs
 +++ b/Runtime/GameplayTagCountContainer.cs
-@@ -226,11 +226,13 @@
+@@ -226,11 +226,26 @@
                  return;
              }
  
++            // A single hierarchy node or callback entry offers no useful
++            // cross-node search narrowing. Keep the original notification path.
++            if (hierarchy.Length <= 1 || m_CallbackCount <= 1)
++            {
++                for (int i = 0; i < hierarchy.Length; i++)
++                {
++                    int current = hierarchy[i];
++                    int newCount = Storage.AddTotal(current, amount);
++                    QueueChange(current, newCount, newCount == amount);
++                }
++                return;
++            }
++
 +            int callbackCursor = 0;
              for (int i = 0; i < hierarchy.Length; i++)
              {
@@ -15,10 +28,23 @@
              }
          }
  
-@@ -295,11 +297,13 @@
+@@ -295,11 +310,26 @@
                  return true;
              }
  
++            // A single hierarchy node or callback entry offers no useful
++            // cross-node search narrowing. Keep the original notification path.
++            if (hierarchy.Length <= 1 || m_CallbackCount <= 1)
++            {
++                for (int i = 0; i < hierarchy.Length; i++)
++                {
++                    int current = hierarchy[i];
++                    int newCount = Storage.RemoveTotal(current, amount);
++                    QueueChange(current, newCount, newCount == 0);
++                }
++                return true;
++            }
++
 +            int callbackCursor = 0;
              for (int i = 0; i < hierarchy.Length; i++)
              {
@@ -30,7 +56,7 @@
              }
  
              return true;
-@@ -389,5 +393,61 @@
+@@ -389,5 +419,61 @@
          public GameplayTagEnumerator GetEnumerator() => GetTags();
          IEnumerator<GameplayTag> IEnumerable<GameplayTag>.GetEnumerator() => GetEnumerator();
          IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

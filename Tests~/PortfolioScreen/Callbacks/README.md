@@ -1,7 +1,10 @@
 # Callback cursor: compact portable rejection screen
 
-Prepared source only. This is not an executed CI screen, accepted optimization,
-or Unity result. No shared Runtime or workflow changes are part of this package.
+The current source is one bounded repair following the rejected first CI screen;
+see [FIRST_SCREEN.md](FIRST_SCREEN.md) for every retained adverse row and artifact
+identity. The repair has passed standalone correctness but has not been timed.
+It is not an accepted optimization or Unity result. No shared Runtime change is
+part of this package.
 
 ## Exact sources
 
@@ -11,6 +14,20 @@ Runtime directory from Git, then creates the candidate by replacing only
 repository-relative source hash maps. `candidate.patch` is the reviewed delta.
 The original QueueChange signature/body and original method order are retained;
 two helpers are appended and cursor locals follow no-listener early returns.
+
+The sole repair selects the original full notification loop when
+`hierarchy.Length <= 1 || m_CallbackCount <= 1`, after the existing no-listener
+return. Otherwise it uses the same cursor loop. There is no per-node gate.
+Explicit-count mutation, total-count mutation, QueueChange order and returns
+remain unchanged. This intentionally gives up possible exhausted-table gains;
+the added admission branches and larger methods may still cost time. All twelve
+rows, including every prior adverse control, retain the original protocol.
+
+Independent static review cleared this exact fallback. Baseline and repaired
+candidate each passed 7,599,843 assertions on .NET 8.0.31 and standalone Mono
+6.12.0.199 in one bounded four-check correctness run. No timeout or failure
+occurred. Those private logs/manifests are not copied into this package, and the
+local Mono result does not replace the CI Mono 6.8.0.105 screen.
 
 `Harness/Correctness.cs` combines the existing main correctness suite and its
 fixture registration with one focused cursor group. It checks sorted lookup,
