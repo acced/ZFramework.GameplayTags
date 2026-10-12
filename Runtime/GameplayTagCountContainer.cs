@@ -217,21 +217,25 @@ namespace GameplayTags
 
         private void AddTagInternal(int id, int amount, bool notify)
         {
-            Storage.AddExplicit(id, amount);
+            TagStorage storage = Storage;
+            int selfCount = storage.AddOccurrence(id, amount);
             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
+            int parents = hierarchy.Length - 1;
             if (!notify)
             {
-                for (int i = 0; i < hierarchy.Length; i++)
-                    Storage.AddTotal(hierarchy[i], amount);
+                for (int i = 0; i < parents; i++)
+                    storage.AddTotal(hierarchy[i], amount);
                 return;
             }
-
-            for (int i = 0; i < hierarchy.Length; i++)
+            // Preserve root-to-self notification order; dispatch is still deferred
+            // until every contribution has committed, including reentrant batches.
+            for (int i = 0; i < parents; i++)
             {
                 int current = hierarchy[i];
-                int newCount = Storage.AddTotal(current, amount);
+                int newCount = storage.AddTotal(current, amount);
                 QueueChange(current, newCount, newCount == amount);
             }
+            QueueChange(id, selfCount, selfCount == amount);
         }
 
         public void RemoveTag(GameplayTag tag) => RemoveTag(tag, 1);
@@ -284,24 +288,24 @@ namespace GameplayTags
 
         private bool RemoveTagInternal(int id, int amount, bool notify)
         {
-            if (Storage.RemoveExplicit(id, amount) < 0)
+            TagStorage storage = Storage;
+            if (!storage.RemoveOccurrence(id, amount, out int selfCount))
                 return false;
-
             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
+            int parents = hierarchy.Length - 1;
             if (!notify)
             {
-                for (int i = 0; i < hierarchy.Length; i++)
-                    Storage.RemoveTotal(hierarchy[i], amount);
+                for (int i = 0; i < parents; i++)
+                    storage.RemoveTotal(hierarchy[i], amount);
                 return true;
             }
-
-            for (int i = 0; i < hierarchy.Length; i++)
+            for (int i = 0; i < parents; i++)
             {
                 int current = hierarchy[i];
-                int newCount = Storage.RemoveTotal(current, amount);
+                int newCount = storage.RemoveTotal(current, amount);
                 QueueChange(current, newCount, newCount == 0);
             }
-
+            QueueChange(id, selfCount, selfCount == 0);
             return true;
         }
 

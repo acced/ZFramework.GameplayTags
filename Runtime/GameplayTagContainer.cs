@@ -112,26 +112,17 @@ namespace GameplayTags
 
         public void AddTag(GameplayTag tag) => TryAddTag(tag);
 
-        public bool TryAddTag(GameplayTag tag)
-        {
-            TagStorage storage = m_Indices.Storage;
-            if (!storage.TryAddExplicit(tag.RuntimeIndex))
-                return false;
-            ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(tag.RuntimeIndex);
-            for (int i = 0; i < hierarchy.Length; i++)
-                storage.AddTotal(hierarchy[i]);
-            return true;
-        }
+        public bool TryAddTag(GameplayTag tag) => m_Indices.Storage.TryAddSetTag(tag.RuntimeIndex);
 
         public void RemoveTag(GameplayTag tag) => TryRemoveTag(tag);
 
         public bool TryRemoveTag(GameplayTag tag)
         {
             TagStorage storage = m_Indices.Storage;
-            if (storage.RemoveExplicit(tag.RuntimeIndex) < 0)
+            if (!storage.RemoveOccurrence(tag.RuntimeIndex, 1, out _))
                 return false;
             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(tag.RuntimeIndex);
-            for (int i = 0; i < hierarchy.Length; i++)
+            for (int i = 0; i < hierarchy.Length - 1; i++)
                 storage.RemoveTotal(hierarchy[i]);
             return true;
         }
@@ -241,6 +232,22 @@ namespace GameplayTags
                 return;
             }
 
+            // Complete normal-set hits need neither captured IDs nor a sort.
+            // Reuse the proven prefix instead of repeating its membership probes.
+            int prefix = 0;
+            if (aIsSet && a.ExplicitCount > 8)
+            {
+                while (prefix < a.ExplicitCount &&
+                    b.ContainsExplicit(a.Entries[a.ExplicitIndices[prefix]].Id))
+                    prefix++;
+                if (prefix == a.ExplicitCount)
+                {
+                    output.CopyFrom(a);
+                    m_SerializedExplicitTags?.Clear();
+                    return;
+                }
+            }
+
             // Reused, non-aliased outputs gather IDs during the first lookup pass.
             // Fresh outputs count first to allocate only the exact selected capacity.
             // Without a workspace an alias must defer overwriting its explicit index
@@ -248,12 +255,35 @@ namespace GameplayTags
             bool capture = workspace != null ||
                 (output.ExplicitIndices.Length != 0 && !ReferenceEquals(output, a) && !ReferenceEquals(output, b));
             int[] selectedIds = workspace == null ? output.ExplicitIndices : workspace.SelectedIds;
-            int matches = 0, previousId = 0;
+            int matches = prefix, previousId = 0;
             bool ordered = true;
+            if (capture && prefix != 0)
+            {
+                if (selectedIds.Length < prefix)
+                {
+                    if (workspace == null)
+                    {
+                        output.EnsureExplicitCapacity(prefix);
+                        selectedIds = output.ExplicitIndices;
+                    }
+                    else
+                    {
+                        workspace.EnsureSelectedCapacity(prefix);
+                        selectedIds = workspace.SelectedIds;
+                    }
+                }
+                for (int i = 0; i < prefix; i++)
+                {
+                    int id = a.Entries[a.ExplicitIndices[i]].Id;
+                    selectedIds[i] = id;
+                    ordered &= id > previousId;
+                    previousId = id;
+                }
+            }
             Span<int> missingIds = stackalloc int[8];
             int missing = 0;
             long missingPathWork = 0;
-            for (int i = 0; i < a.ExplicitCount; i++)
+            for (int i = prefix; i < a.ExplicitCount; i++)
             {
                 int id = a.Entries[a.ExplicitIndices[i]].Id;
                 if (b.ContainsExplicit(id))
@@ -282,7 +312,8 @@ namespace GameplayTags
                 else if (missing < missingIds.Length)
                 {
                     missingIds[missing++] = id;
-                    missingPathWork += GameplayTagManager.GetHierarchyIndices(id).Length;
+                    if (a.ExplicitCount <= 8)
+                        missingPathWork += GameplayTagManager.GetHierarchyIndices(id).Length;
                 }
             }
             if (matches == 0)
@@ -290,14 +321,21 @@ namespace GameplayTags
                 Clear();
                 return;
             }
-            if (aIsSet && a.ExplicitCount - matches <= missingIds.Length &&
-                (missing == 0 || missingPathWork <= a.Count / 2))
+            if (aIsSet && a.ExplicitCount - matches <= missingIds.Length)
             {
-                output.CopyFrom(a);
-                for (int i = 0; i < missing; i++)
-                    RemoveTag(GameplayTagManager.GetTagFromRuntimeIndex(missingIds[i]));
-                m_SerializedExplicitTags?.Clear();
-                return;
+                // Depths matter only when copy-minus-missing is still possible.
+                // General/empty intersections do not inspect eight unused paths.
+                if (a.ExplicitCount > 8)
+                    for (int i = 0; i < missing; i++)
+                        missingPathWork += GameplayTagManager.GetHierarchyIndices(missingIds[i]).Length;
+                if (missing == 0 || missingPathWork <= a.Count / 2)
+                {
+                    output.CopyFrom(a);
+                    for (int i = 0; i < missing; i++)
+                        RemoveTag(GameplayTagManager.GetTagFromRuntimeIndex(missingIds[i]));
+                    m_SerializedExplicitTags?.Clear();
+                    return;
+                }
             }
 
             if (!capture)
@@ -307,7 +345,7 @@ namespace GameplayTags
                 for (int i = 0; i < a.ExplicitCount; i++)
                 {
                     int id = a.Entries[a.ExplicitIndices[i]].Id;
-                    if (b.ContainsExplicit(id))
+                    if (i < prefix || b.ContainsExplicit(id))
                     {
                         // Forward compaction is safe for an aliased input: selected
                         // never exceeds i; lookups use Entries/buckets, not this index.

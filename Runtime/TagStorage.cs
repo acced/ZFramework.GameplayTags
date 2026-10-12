@@ -66,8 +66,29 @@ namespace GameplayTags
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool ContainsExplicit(int id)
         {
-            int index = Find(id);
-            return index >= 0 && Entries[index].ExplicitCount != 0;
+            int[] buckets = m_Buckets;
+            Entry[] entries = Entries;
+            int mask = m_BucketMask;
+            if (mask == 0)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    if (entries[i].Id == id)
+                        return entries[i].ExplicitCount != 0;
+                }
+                return false;
+            }
+
+            int slot = Hash(id) & mask;
+            int encoded;
+            while ((encoded = buckets[slot]) != 0)
+            {
+                int index = encoded - 1;
+                if (entries[index].Id == id)
+                    return entries[index].ExplicitCount != 0;
+                slot = (slot + 1) & mask;
+            }
+            return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -86,9 +107,7 @@ namespace GameplayTags
 
         internal int AddExplicit(int id, int amount = 1)
         {
-            int index = Find(id);
-            if (index < 0)
-                index = Insert(id);
+            int index = FindOrInsert(id);
             if (Entries[index].ExplicitCount == 0)
                 AddExplicitIndex(index);
             return Entries[index].ExplicitCount += amount;
@@ -104,6 +123,88 @@ namespace GameplayTags
                 return false;
             Entries[index].ExplicitCount = 1;
             AddExplicitIndex(index);
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal bool TryAddSetTag(int id)
+        {
+            int index = Find(id);
+            if (index >= 0 && Entries[index].ExplicitCount != 0)
+                return false;
+            AddSetTag(id, index);
+            return true;
+        }
+
+        private void AddSetTag(int id, int index)
+        {
+            if (index < 0)
+            {
+                if (Count == 0)
+                {
+                    AddSingleton(id);
+                    return;
+                }
+                index = Insert(id);
+            }
+            ref Entry entry = ref Entries[index];
+            entry.ExplicitCount = 1;
+            entry.Count++;
+            AddExplicitIndex(index);
+            ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
+            for (int i = 0; i < path.Length - 1; i++)
+                AddTotal(path[i]);
+        }
+
+        // An empty destination has no live index to preserve. Reserve the complete
+        // path once instead of geometrically growing and rehashing at every level.
+        // Keep the old leaf-first dense order, including the cheap small-set hit.
+        private void AddSingleton(int id)
+        {
+            ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
+            int count = path.Length;
+            EnsureOverwriteCapacity(count, 1);
+            if (count > LinearCapacity && m_BucketMask < count * 2 - 1)
+                ResetIndex(BucketCapacityFor(count));
+            Entry[] entries = Entries;
+            entries[0] = new Entry { Id = id, Count = 1, ExplicitCount = 1, ExplicitIndex = 0 };
+            for (int i = 1; i < count; i++)
+                entries[i] = new Entry { Id = path[i - 1], Count = 1 };
+            ExplicitIndices[0] = 0;
+            Count = count;
+            ExplicitCount = 1;
+            BuildIndex();
+        }
+
+        internal int AddOccurrence(int id, int amount)
+        {
+            int index = FindOrInsert(id);
+            if (Entries[index].ExplicitCount == 0)
+                AddExplicitIndex(index);
+            ref Entry entry = ref Entries[index];
+            entry.ExplicitCount += amount;
+            return entry.Count += amount;
+        }
+
+        internal bool RemoveOccurrence(int id, int amount, out int total)
+        {
+            int index = Find(id);
+            total = 0;
+            if (index < 0 || Entries[index].ExplicitCount == 0)
+                return false;
+            int count = Entries[index].ExplicitCount -= amount;
+            if (count == 0)
+            {
+                int hole = Entries[index].ExplicitIndex;
+                int movedIndex = ExplicitIndices[--ExplicitCount];
+                ExplicitIndices[hole] = movedIndex;
+                Entries[movedIndex].ExplicitIndex = hole;
+            }
+            if (count < 0)
+                return false;
+            total = Entries[index].Count -= amount;
+            if (total == 0)
+                RemoveAt(index);
             return true;
         }
 
@@ -148,6 +249,48 @@ namespace GameplayTags
             if (count == 0)
                 RemoveAt(index);
             return count;
+        }
+
+        // Locate a present entry or reuse the empty probe slot for insertion.
+        // A resize invalidates that slot only when it changes the active mask.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int FindOrInsert(int id)
+        {
+            Entry[] entries = Entries;
+            int mask = m_BucketMask;
+            if (mask == 0)
+            {
+                for (int i = 0; i < Count; i++)
+                    if (entries[i].Id == id)
+                        return i;
+                return Insert(id);
+            }
+            int[] buckets = m_Buckets;
+            int slot = Hash(id) & mask;
+            int encoded;
+            while ((encoded = buckets[slot]) != 0)
+            {
+                if (entries[encoded - 1].Id == id)
+                    return encoded - 1;
+                slot = (slot + 1) & mask;
+            }
+            return InsertAtEmptySlot(id, slot, mask);
+        }
+
+        private int InsertAtEmptySlot(int id, int slot, int oldMask)
+        {
+            EnsureEntryCapacity(Count + 1);
+            int index = Count++;
+            Entries[index] = new Entry { Id = id };
+            int mask = m_BucketMask;
+            if (mask != oldMask)
+            {
+                slot = Hash(id) & mask;
+                while (m_Buckets[slot] != 0)
+                    slot = (slot + 1) & mask;
+            }
+            m_Buckets[slot] = index + 1;
+            return index;
         }
 
         private int Insert(int id)
@@ -240,20 +383,24 @@ namespace GameplayTags
 
         internal void Clear()
         {
-            // Only occupied buckets need clearing; a large, mostly empty retained
-            // buffer must not turn Clear into an operation over its capacity.
+            int count = Count;
             int[] buckets = m_Buckets;
             int mask = m_BucketMask;
-            if (mask != 0)
+            if (mask != 0 && count != 0)
             {
-                // Match the encoded dense index, deliberately scanning past holes
-                // made earlier in this loop (ordinary Find would stop too soon).
-                for (int i = 0; i < Count; i++)
+                if (count >= 32 && mask < (long)count * 8)
+                    Array.Clear(buckets, 0, mask + 1);
+                else
                 {
-                    int slot = Hash(Entries[i].Id) & mask;
-                    while (buckets[slot] != i + 1)
-                        slot = (slot + 1) & mask;
-                    buckets[slot] = 0;
+                    // Sparse retained indexes visit occupied slots only. Match
+                    // dense indices, scanning past holes cleared earlier here.
+                    for (int i = 0; i < count; i++)
+                    {
+                        int slot = Hash(Entries[i].Id) & mask;
+                        while (buckets[slot] != i + 1)
+                            slot = (slot + 1) & mask;
+                        buckets[slot] = 0;
+                    }
                 }
             }
             Count = 0;
@@ -301,17 +448,13 @@ namespace GameplayTags
         // Shared parents combine pending contributions before forwarding them.
         internal void AddUnion(TagStorage source)
         {
-            if (source.ExplicitCount <= 8)
+            if (source.ExplicitCount <= 8 ||
+                (source.ExplicitCount <= 32 && source.Count <= 128))
             {
+                // A bounded shallow input does not amortize renting/draining a
+                // contribution queue. Fuse each new tag with its own contribution.
                 for (int i = 0; i < source.ExplicitCount; i++)
-                {
-                    int id = source.Entries[source.ExplicitIndices[i]].Id;
-                    if (!TryAddExplicit(id))
-                        continue;
-                    ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
-                    for (int j = 0; j < path.Length; j++)
-                        AddTotal(path[j]);
-                }
+                    TryAddSetTag(source.Entries[source.ExplicitIndices[i]].Id);
                 return;
             }
 
@@ -476,6 +619,23 @@ namespace GameplayTags
                 Clear();
                 return;
             }
+            // Tiny selected sets are cheaper to order locally than to prepare a
+            // registry-sized lookup. This also avoids that retained allocation.
+            if (explicitCount <= LinearCapacity)
+            {
+                EnsureExplicitCapacity(explicitCount);
+                bool ordered = true;
+                int previous = 0;
+                for (int i = 0; i < explicitCount; i++)
+                {
+                    int id = workspace.SelectedIds[i];
+                    ExplicitIndices[i] = id;
+                    ordered &= id > previous;
+                    previous = id;
+                }
+                BuildFromExplicitIds(explicitCount, ordered);
+                return;
+            }
             workspace.PrepareLookup();
             EnsureExplicitCapacity(explicitCount);
             int[] positions = workspace.Positions;
@@ -527,14 +687,18 @@ namespace GameplayTags
             for (int i = 0; i < next; i++)
             {
                 int node = i;
-                while (node >= 0 && entries[node].ExplicitCount == 0)
+                while (node >= 0)
                 {
-                    int parent = entries[node].ExplicitIndex;
-                    entries[node].ExplicitCount = -1;
+                    ref Entry entry = ref entries[node];
+                    if (entry.ExplicitCount != 0)
+                        break;
+                    int parent = entry.ExplicitIndex;
+                    entry.ExplicitCount = -1;
                     if (parent >= 0)
                     {
-                        entries[parent].Count += entries[node].Count;
-                        entries[parent].ExplicitCount--;
+                        ref Entry parentEntry = ref entries[parent];
+                        parentEntry.Count += entry.Count;
+                        parentEntry.ExplicitCount--;
                     }
                     node = parent;
                 }
