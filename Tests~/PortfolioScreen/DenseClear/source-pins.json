@@ -1,6 +1,6 @@
 {
   "BaselineCommit": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
-  "CandidatePatchSHA256": "6b8f0f8ed0832bf1db37f9f27c2b4640898767a47c7595a94480686f8666b3fb",
+  "CandidatePatchSHA256": "23eddbeb558d27f5f977a9e2ea73997ea1dd5af550776ce68050c4452fe71ef0",
   "Rows": [
     "empty-linear/empty-clear",
     "empty-retained/empty-clear",
@@ -103,12 +103,13 @@
       "Runtime/GameplayTagUtility.cs.meta": "10fa2ee12cecec21aec6420ce6cb90f06646ace1f2109f10fdcd425325e1349a",
       "Runtime/Int32Sort.cs": "bd1df3ba875be9eb30a3e38122d8ecbab7e2a07ef85a068c8e7d0265a354bb4c",
       "Runtime/Int32Sort.cs.meta": "92432ae0e0f6fe236a6f47fe9b7957dee8e6236b0a9c7e6e5ef7f8ca8bac4209",
-      "Runtime/TagStorage.cs": "4da9a4905fa56b9f103135c94ceef0f66589cf54c0ade125b4fe5c8b349a44c4",
+      "Runtime/TagStorage.cs": "7f198fcb262eba7e012f4554f7099a0eacdf7e4ac9051126221f0fcf0905ac92",
       "Runtime/TagStorage.cs.meta": "cf4ce6325d3e6fd9f8b923a8f93ce777dc8fa1a8c293a313f2b7b72953c8239d",
       "Runtime/ZFramework.GameplayTags.asmdef": "5d5ae26d82a69e140b8fda1ed4fd26b9f91ad6746cec9ba84fc1427a346f7fba",
       "Runtime/ZFramework.GameplayTags.asmdef.meta": "c5554b79724f2425f9d911c59fe6993633db60f43964151f3f5239b0420ad6fd"
     }
   },
-  "CandidateRefinement": "Widen only the density product from count * 8 to (long)count * 8",
-  "PriorMin64CachedPatchSHA256": "9947a6851428fc29155f6bfe5d67e9c8f47a2a63510cbe6e0910e889632b0310"
+  "CandidateRefinement": "One bounded repair: tiny Clear wrapper with unconditional count resets; append explicit original-position empty constructor and NoInlining bucket helper",
+  "PriorMin64CachedPatchSHA256": "9947a6851428fc29155f6bfe5d67e9c8f47a2a63510cbe6e0910e889632b0310",
+  "PriorWideCandidatePatchSHA256": "6b8f0f8ed0832bf1db37f9f27c2b4640898767a47c7595a94480686f8666b3fb"
 }

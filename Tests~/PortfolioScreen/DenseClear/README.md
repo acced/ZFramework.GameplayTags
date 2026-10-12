@@ -1,26 +1,32 @@
 # Dense Clear: compact rejection screen
 
-This package prepares one reviewed dense Clear candidate, with its density
-product widened to avoid scalar overflow, against original
-`f7c99546dbf029d70896c0f05e5119b19ffd6d26`. It is a rejection screen, not an accepted
-optimization, a new qualified version, or Unity performance evidence. No shared
-Runtime change is part of this package.
+This package prepares the sole bounded repair after the first dense Clear screen
+was rejected. See [FIRST_SCREEN.md](FIRST_SCREEN.md) for both preserved backend
+results and artifact identities. It is not an accepted optimization, qualified
+version, or Unity performance evidence. No shared Runtime change is included.
 
 ## Candidate and strongest existing comparator
 
-`candidate.patch` changes only `TagStorage.Clear`: inside the original nonzero
-mask branch, cache Count/Entries and use `Array.Clear(buckets, 0, mask + 1)` when
-Count is at least 64 and the active prefix is at most eight times Count.
-The density comparison uses `(long)count * 8`; all other candidate lines retain
-the prior min64-cached structure. The
-original occupied-slot loop handles all other indexed states; mask-zero Clear
-retains its original path. No callback or Union change is included.
+The comparator remains exact original public Clear and Runtime from
+`f7c99546dbf029d70896c0f05e5119b19ffd6d26`, with the same AddTag restore sequence and
+measurement boundary. The complete source maps differ only in TagStorage.cs.
 
-The comparator is the exact original public Clear API and Runtime, not a new
-allocation or an artificially weaker implementation. Both variants use the same
-public AddTag restore sequence and measurement boundary. Source hashes cover the
-entire materialized Runtime; only TagStorage.cs differs. The runner replaces that
-one file from the reviewed complete candidate and verifies both source maps.
+This one repair makes Clear a small wrapper: call bucket work only when mask and
+Count are nonzero, then reset both Count and ExplicitCount unconditionally. Thus
+a zero total Count with a nonzero ExplicitCount still resets both, as before.
+Private `ClearBuckets`, appended after the old methods, is marked NoInlining and
+retains the wide density rule plus original occupied-slot fallback. An explicit
+empty public constructor occupies the old synthesized constructor's position
+before the appended helper. Fields and old method order are unchanged; emitted
+constructor initialization, flags and position must be checked after compilation.
+
+Native inspection of the first candidate did not demonstrate lost inlining: both
+original and candidate had the same public Clear callsite expansion and called
+TagStorage.Clear out of line. The candidate's body and saved-register frame were
+larger. This motivates isolating bucket work, but does not prove that difference
+caused all observed timing cost. The helper adds a method and a call for nonempty
+indexed storage; generated footprint and inlining remain backend-dependent. No
+performance improvement is claimed before the unchanged screen evaluates it.
 
 ## Twelve fixed rows
 
@@ -59,10 +65,9 @@ is not used to restore any timing row or as a sparse timing result.
 checks fresh and truly sparse live counts 8/9/15/16/17/31/32/33/63/64/65 and density
 127/128/129 against active 1,024, with three Clear/full-regrowth/reverse-drain
 passes each. Before and after must produce exactly equal structural rows.
-The original min64-cached structure has prior independent standalone semantic
-review. This package widens only the density product and retains the same small
-correctness gate; it does not copy the full main suite or substitute for its
-final rerun.
+The original min64-cached structure and the wide-product first screen passed
+standalone semantic checks. This wrapper repair retains the same small correctness
+gate; it does not copy the full main suite or substitute for its final rerun.
 
 Untimed scalar checks cover the minimum/density edges and positive 32-bit Counts
 through `int.MaxValue`, including the old 32-bit product overflow boundaries.
@@ -71,8 +76,8 @@ policy mathematically consistent and avoiding an added multiplication overflow
 under checked compilation. Even `int.MaxValue * 8L` fits in a signed 64-bit value.
 Mask plus one is representable for a coherent active array prefix. The scalar
 checks do not allocate fabricated huge storage, establish reachability of giant
-states, or claim full checked-build testing. The original min64-cached patch is
-preserved separately; no unrelated production policy or path is changed here.
+states, or claim full checked-build testing. The prior narrow and wide candidate snapshots are preserved separately. The
+wrapper and appended helper are the sole bounded repair, with no new timing rows.
 
 ## Frozen process protocol
 

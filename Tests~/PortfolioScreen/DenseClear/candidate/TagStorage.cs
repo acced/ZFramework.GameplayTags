@@ -240,28 +240,9 @@ namespace GameplayTags
 
         internal void Clear()
         {
-            // Small or sparse active indexes clear only their occupied slots.
-            int[] buckets = m_Buckets;
-            int mask = m_BucketMask;
-            if (mask != 0)
-            {
-                int count = Count;
-                Entry[] entries = Entries;
-                if (count >= 64 && mask + 1 <= (long)count * 8)
-                    Array.Clear(buckets, 0, mask + 1);
-                else
-                {
-                    // Match the encoded dense index, deliberately scanning past holes
-                    // made earlier in this loop (ordinary Find would stop too soon).
-                    for (int i = 0; i < count; i++)
-                    {
-                        int slot = Hash(entries[i].Id) & mask;
-                        while (buckets[slot] != i + 1)
-                            slot = (slot + 1) & mask;
-                        buckets[slot] = 0;
-                    }
-                }
-            }
+            // Empty and linear storage need no bucket work or its larger frame.
+            if (m_BucketMask != 0 && Count != 0)
+                ClearBuckets();
             Count = 0;
             ExplicitCount = 0;
         }
@@ -610,6 +591,31 @@ namespace GameplayTags
                 while (m_Buckets[slot] != 0)
                     slot = (slot + 1) & mask;
                 m_Buckets[slot] = i + 1;
+            }
+        }
+
+        // Preserve the original synthesized constructor's position before helpers.
+        public TagStorage() { }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void ClearBuckets()
+        {
+            int[] buckets = m_Buckets;
+            int mask = m_BucketMask;
+            int count = Count;
+            Entry[] entries = Entries;
+            if (count >= 64 && mask + 1 <= (long)count * 8)
+                Array.Clear(buckets, 0, mask + 1);
+            else
+            {
+                // Match encoded indices past holes made earlier in this loop.
+                for (int i = 0; i < count; i++)
+                {
+                    int slot = Hash(entries[i].Id) & mask;
+                    while (buckets[slot] != i + 1)
+                        slot = (slot + 1) & mask;
+                    buckets[slot] = 0;
+                }
             }
         }
     }

@@ -17,7 +17,9 @@ The ten-minute internal limit and fifteen-minute job limit are hard bounds. An i
 
 ## Current screen selection
 
-DenseClear is the next independent preparation. The exact widened candidate has passed 25 threshold/capacity cases plus twelve untimed fixture checks on both standalone runtimes; timing is still unmeasured. Earlier core-suite evidence belongs to the preserved narrow-product variant. Its screen will compare the original public Clear with the candidate under identical refill boundaries, retaining empty and true-sparse active-table controls. Root Runtime remains unchanged.
+DenseClear is selected for one bounded wrapper repair. Its [first screen](https://github.com/acced/ZFramework.GameplayTags/actions/runs/38200701706) showed roughly 4–8% gains on several dense refill + Clear cycles, but .NET empty Clear was consistently slower. The exact source is held. Local untimed native inspection found a larger Clear register-saving frame, while both versions still called it out-of-line; this does not establish exclusive timing causality. See [the complete first decision](DenseClear/FIRST_SCREEN.md).
+
+The repair keeps a tiny reset wrapper and outlines bucket work, preserving both count resets and the original constructor metadata. It passed the same 25 threshold/capacity cases and twelve untimed fixtures on both runtimes. The same fixed twelve-row screen will decide whether further qualification is worthwhile. Nonempty rows measure refill + Clear, not isolated Clear. No further revision or full matrix is queued if substantive losses persist. Root Runtime remains unchanged.
 
 Both callback screens are held after their declared bounded repair. The [first screen](https://github.com/acced/ZFramework.GameplayTags/actions/runs/38199196551) had single-node large-table hit/miss costs on both runtimes. The [one repair](https://github.com/acced/ZFramework.GameplayTags/actions/runs/38199660773) retained four adverse .NET late-miss pairs and four roughly 11% adverse Mono sparse-gap pairs. No further callback revision, sampling or full qualification is queued. See [the first callback decision](Callbacks/FIRST_SCREEN.md).
 
