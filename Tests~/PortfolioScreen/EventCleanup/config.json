@@ -1,0 +1,282 @@
+{
+  "BaselineCommit": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "Purpose": "Cold-only portable rejection screen; no qualification",
+  "Rows": [
+    {
+      "id": "dense-path/d64",
+      "depth": 64,
+      "callback_entries": 64,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "Specific AnyCountChange on each of 64 ancestors, producing 64 events per mutation."
+    },
+    {
+      "id": "exhausted-path/d64",
+      "depth": 64,
+      "callback_entries": 1,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "Specific AnyCountChange only on the root of a depth-64 hierarchy, producing one event per mutation."
+    },
+    {
+      "id": "silent/d1",
+      "depth": 1,
+      "callback_entries": 0,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "No local or global listeners; unchanged early-return guard."
+    },
+    {
+      "id": "global-only/d1",
+      "depth": 1,
+      "callback_entries": 0,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "One global AnyCountChange listener; cheapest notification guard."
+    },
+    {
+      "id": "global-only/d4",
+      "depth": 4,
+      "callback_entries": 0,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "One global AnyCountChange listener; empty table across multiple ancestors."
+    },
+    {
+      "id": "one-hit/d1",
+      "depth": 1,
+      "callback_entries": 1,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "One matching specific AnyCountChange listener."
+    },
+    {
+      "id": "one-miss/d4",
+      "depth": 4,
+      "callback_entries": 1,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "One unrelated callback with an ID beyond the mutated leaf."
+    },
+    {
+      "id": "huge-gaps/d4",
+      "depth": 4,
+      "callback_entries": 8192,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "Four groups of 2048 off-path callback tags: between successive ancestors and after the leaf; no local hit."
+    },
+    {
+      "id": "huge-midpoint/d1",
+      "depth": 1,
+      "callback_entries": 8192,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "Depth-one callback keys; mutate sorted callback index 4095, the original first binary midpoint."
+    },
+    {
+      "id": "huge-late-miss/d1",
+      "depth": 1,
+      "callback_entries": 8192,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "Depth-one tag beyond every registered callback key; no match."
+    },
+    {
+      "id": "clear-cycle/d4",
+      "depth": 4,
+      "callback_entries": 4,
+      "operation": "AddTag/Clear pair",
+      "fixture": "Specific AnyCountChange on every ancestor; Clear retains its original search/body. This measures the full refill/Clear cycle, not isolated Clear."
+    },
+    {
+      "id": "bulk-reset/8xd4",
+      "depth": 4,
+      "callback_entries": 32,
+      "operation": "AddTags/RemoveTags pair",
+      "fixture": "Eight disjoint depth-four leaves in descending runtime-ID order; listeners on all 32 closure tags; same prepared source reused."
+    }
+  ],
+  "SDKVersion": "8.0.425",
+  "CLRVersion": "8.0.31",
+  "ExpectedCIMonoVersion": "6.8.0.105",
+  "DeadlineSeconds": 600,
+  "PublicEvidence": "Explicit JSON allowlist only; source hashes are repo-relative; raw command/environment/build logs remain private.",
+  "Scope": [
+    "Exactly four cold shapes and four alternating paired rounds: 32 measured fresh processes per backend.",
+    "The existing twelve-row callback fixture preflight remains unchanged.",
+    "No pilot or warm-timing entry point; no recalibration, replacement samples or extra rounds.",
+    "The measured boundary is exactly the first no-inline AddTag bridge on a fresh empty counted target after registry and subscriptions setup.",
+    "Before/after state, capacity, pending references, expected event checksum, latency, allocation and GC are preserved.",
+    "Each cold-preflight process uses the same setup and first AddTag without reading timing/allocation/GC counters."
+  ],
+  "DeadlineStart": "driver main entry, including archive materialization and toolchain setup",
+  "ColdRows": [
+    "silent/d1",
+    "one-miss/d4",
+    "one-hit/d1",
+    "dense-path/d64"
+  ],
+  "ColdRoundOrder": [
+    [
+      "before",
+      "after"
+    ],
+    [
+      "after",
+      "before"
+    ],
+    [
+      "before",
+      "after"
+    ],
+    [
+      "after",
+      "before"
+    ]
+  ],
+  "ColdProcesses": 32,
+  "CorrectnessAssertions": 7601762,
+  "RuntimeSettings": {
+    "ReadyToRunRequested": 1,
+    "TieredCompilationRequested": 0,
+    "ServerGCRequested": 0,
+    "MonoTieringAndReadyToRunApplicable": false
+  },
+  "ColdExpectations": [
+    {
+      "Id": "silent/d1",
+      "Depth": 1,
+      "Callbacks": 0,
+      "ExpectedEvents": 0,
+      "ExpectedChecksum": 0,
+      "Events": 0,
+      "Checksum": 0,
+      "OperationThrew": 0,
+      "HierarchyCountsCorrect": 1,
+      "SemanticOk": 1,
+      "BeforeTagCount": 0,
+      "BeforeExplicitCount": 0,
+      "BeforeEntryCapacity": 0,
+      "BeforeExplicitCapacity": 0,
+      "BeforeBucketCapacity": 0,
+      "BeforeCallbackCount": 0,
+      "BeforeCallbackCapacity": 0,
+      "BeforeEventCapacity": 0,
+      "BeforeEventCount": 0,
+      "BeforeNextEvent": 0,
+      "BeforeDispatching": 0,
+      "BeforePendingReferences": 0,
+      "AfterTagCount": 1,
+      "AfterExplicitCount": 1,
+      "AfterEntryCapacity": 8,
+      "AfterExplicitCapacity": 8,
+      "AfterBucketCapacity": 0,
+      "AfterCallbackCount": 0,
+      "AfterCallbackCapacity": 0,
+      "AfterEventCapacity": 0,
+      "AfterEventCount": 0,
+      "AfterNextEvent": 0,
+      "AfterDispatching": 0,
+      "AfterPendingReferences": 0
+    },
+    {
+      "Id": "one-miss/d4",
+      "Depth": 4,
+      "Callbacks": 1,
+      "ExpectedEvents": 0,
+      "ExpectedChecksum": 0,
+      "Events": 0,
+      "Checksum": 0,
+      "OperationThrew": 0,
+      "HierarchyCountsCorrect": 1,
+      "SemanticOk": 1,
+      "BeforeTagCount": 0,
+      "BeforeExplicitCount": 0,
+      "BeforeEntryCapacity": 0,
+      "BeforeExplicitCapacity": 0,
+      "BeforeBucketCapacity": 0,
+      "BeforeCallbackCount": 1,
+      "BeforeCallbackCapacity": 4,
+      "BeforeEventCapacity": 0,
+      "BeforeEventCount": 0,
+      "BeforeNextEvent": 0,
+      "BeforeDispatching": 0,
+      "BeforePendingReferences": 0,
+      "AfterTagCount": 4,
+      "AfterExplicitCount": 1,
+      "AfterEntryCapacity": 8,
+      "AfterExplicitCapacity": 8,
+      "AfterBucketCapacity": 0,
+      "AfterCallbackCount": 1,
+      "AfterCallbackCapacity": 4,
+      "AfterEventCapacity": 0,
+      "AfterEventCount": 0,
+      "AfterNextEvent": 0,
+      "AfterDispatching": 0,
+      "AfterPendingReferences": 0
+    },
+    {
+      "Id": "one-hit/d1",
+      "Depth": 1,
+      "Callbacks": 1,
+      "ExpectedEvents": 1,
+      "ExpectedChecksum": 511160,
+      "Events": 1,
+      "Checksum": 511160,
+      "OperationThrew": 0,
+      "HierarchyCountsCorrect": 1,
+      "SemanticOk": 1,
+      "BeforeTagCount": 0,
+      "BeforeExplicitCount": 0,
+      "BeforeEntryCapacity": 0,
+      "BeforeExplicitCapacity": 0,
+      "BeforeBucketCapacity": 0,
+      "BeforeCallbackCount": 1,
+      "BeforeCallbackCapacity": 4,
+      "BeforeEventCapacity": 0,
+      "BeforeEventCount": 0,
+      "BeforeNextEvent": 0,
+      "BeforeDispatching": 0,
+      "BeforePendingReferences": 0,
+      "AfterTagCount": 1,
+      "AfterExplicitCount": 1,
+      "AfterEntryCapacity": 8,
+      "AfterExplicitCapacity": 8,
+      "AfterBucketCapacity": 0,
+      "AfterCallbackCount": 1,
+      "AfterCallbackCapacity": 4,
+      "AfterEventCapacity": 8,
+      "AfterEventCount": 0,
+      "AfterNextEvent": 0,
+      "AfterDispatching": 0,
+      "AfterPendingReferences": 0
+    },
+    {
+      "Id": "dense-path/d64",
+      "Depth": 64,
+      "Callbacks": 64,
+      "ExpectedEvents": 64,
+      "ExpectedChecksum": 128032,
+      "Events": 64,
+      "Checksum": 128032,
+      "OperationThrew": 0,
+      "HierarchyCountsCorrect": 1,
+      "SemanticOk": 1,
+      "BeforeTagCount": 0,
+      "BeforeExplicitCount": 0,
+      "BeforeEntryCapacity": 0,
+      "BeforeExplicitCapacity": 0,
+      "BeforeBucketCapacity": 0,
+      "BeforeCallbackCount": 64,
+      "BeforeCallbackCapacity": 64,
+      "BeforeEventCapacity": 0,
+      "BeforeEventCount": 0,
+      "BeforeNextEvent": 0,
+      "BeforeDispatching": 0,
+      "BeforePendingReferences": 0,
+      "AfterTagCount": 64,
+      "AfterExplicitCount": 1,
+      "AfterEntryCapacity": 64,
+      "AfterExplicitCapacity": 8,
+      "AfterBucketCapacity": 128,
+      "AfterCallbackCount": 64,
+      "AfterCallbackCapacity": 64,
+      "AfterEventCapacity": 64,
+      "AfterEventCount": 0,
+      "AfterNextEvent": 0,
+      "AfterDispatching": 0,
+      "AfterPendingReferences": 0
+    }
+  ]
+}

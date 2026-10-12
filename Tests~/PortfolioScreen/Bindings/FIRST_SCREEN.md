@@ -33,3 +33,16 @@ The other two .NET cold fixtures are mixed. All three save exactly 64 bytes per 
 Do not promote directly to full qualification. Prepare one predeclared bounded clarification using the same physical baseline binary for A/A and original/candidate binaries for A/B. Isolate both unchanged controls in fresh processes without preceding allocating rows, retain the existing fixed counts, and include all three original cold scenarios. Preserve every original adverse sample. An inconclusive clarification does not establish universal non-regression or qualify a version; no repeated sampling until favorable is authorized by this decision.
 
 The runtime patch remains unchanged. Real Unity Editor/Player and IL2CPP have not been measured.
+
+## Completed bounded clarification: hold
+
+[Run 38213539126](https://github.com/acced/ZFramework.GameplayTags/actions/runs/38213539126), exact commit `4eb0cda81a0915562f22c49977746ae5073fe746`, completed all 80 declared fresh processes on each backend. Independent review verified the unchanged runtime patch, same-physical-before-binary A/A identity, paired semantics and zero measured GC.
+
+- .NET artifact `11730173567`, 29,260 bytes, SHA-256 `2c0beabcda7520b8e9dbb2d75e64db1945d8fad492da71c17a010558cbcf2a93`.
+- Mono artifact `11729644701`, 22,760 bytes, SHA-256 `7e6f30ca7d06d9142d3fdece768f3616e9a8b0affa157d2e1ee536b9e2abe351`.
+
+The isolated .NET direct-dispatch A/B ratios are 1.003425, 1.024261, 0.999203 and 1.001799; A/A ratios are 0.998668, 0.952215, 0.927328 and 1.009694. The earlier large shift does not repeat in this different process context, but no cause for the original result is established. Subscription is mixed. Mono controls are mixed and remain short under the fixed original counts.
+
+.NET first-empty Bind is again slower in all four A/B pairs: 1.024657, 1.013390, 1.001858 and 1.016373, corresponding to 3.2–41.5 microseconds. A/A is mixed at 1.023703, 0.973158, 1.030355 and 0.996828. This overlaps the observed scale, so it does not establish causality and is not subtracted from A/B. The repeated adverse direction follows the original three adverse pairs. Other .NET cold cases and Mono mostly improve; exact 64/128-byte savings persist.
+
+**Decision: hold this exact candidate unqualified and close the bounded clarification.** Preserve its real warm/allocation gains together with the unresolved repeated first-call cost. No further sampling or expensive full qualification is queued for this shape. Fully qualified count remains **0/10**.

@@ -1,0 +1,13 @@
+--- a/Runtime/GameplayTagCountContainer.cs
++++ b/Runtime/GameplayTagCountContainer.cs
+@@ -368,7 +368,9 @@
+             }
+             finally
+             {
+-                Array.Clear(m_Events, m_NextEvent, m_EventCount - m_NextEvent);
++                int remaining = m_EventCount - m_NextEvent;
++                if (remaining > 0)
++                    Array.Clear(m_Events, m_NextEvent, remaining);
+                 m_EventCount = 0;
+                 m_NextEvent = 0;
+                 m_Dispatching = false;

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <Harness Condition="'$(Harness)' == ''">Screen</Harness>
+  </PropertyGroup>
+  <Target Name="RequirePinnedRuntime" BeforeTargets="BeforeBuild">
+    <Error Condition="'$(RuntimeRoot)' == ''" Text="Pass RuntimeRoot for the materialized, pinned baseline or candidate Runtime directory." />
+    <Error Condition="'$(Harness)' != 'Screen' and '$(Harness)' != 'Correctness'" Text="Harness must be Screen or Correctness." />
+  </Target>
+  <ItemGroup>
+    <Compile Include="$(RuntimeRoot)/**/*.cs" Exclude="$(RuntimeRoot)/GameObjectGameplayTagContainer.cs" />
+    <Compile Include="Harness/$(Harness).cs" />
+  </ItemGroup>
+</Project>
