@@ -1,0 +1,29 @@
+--- a/Runtime/GameplayTagContainerBinds.cs
++++ b/Runtime/GameplayTagContainerBinds.cs
+@@ -7,7 +7,7 @@
+     {
+         private struct BindData
+         {
+-            internal GameplayTag Tag;
++            internal int TagId;
+             internal OnTagCountChangedDelegate Callback;
+         }
+ 
+@@ -36,7 +36,7 @@
+ 
+             void OnChanged(GameplayTag _, int count) => onTagAddedOrRemoved(count != 0);
+ 
+-            state.Items[state.Count++] = new BindData { Tag = tag, Callback = OnChanged };
++            state.Items[state.Count++] = new BindData { TagId = tag.RuntimeIndex, Callback = OnChanged };
+             state.Container.RegisterTagEventCallback(tag, GameplayTagEventType.NewOrRemoved, OnChanged);
+             onTagAddedOrRemoved(state.Container.GetTagCount(tag) != 0);
+         }
+@@ -50,7 +50,7 @@
+             for (int i = 0; i < state.Count; i++)
+             {
+                 BindData binding = state.Items[i];
+-                state.Container.RemoveTagEventCallback(binding.Tag, GameplayTagEventType.NewOrRemoved,
++                state.Container.RemoveTagEventCallback(new GameplayTag(null, binding.TagId), GameplayTagEventType.NewOrRemoved,
+                     binding.Callback);
+                 state.Items[i] = default;
+             }

@@ -1,0 +1,94 @@
+{
+  "Formula": "max(original_iterations, ceil(original_iterations * 250 * frequency / (1000 * minimum_original_tick_count)))",
+  "SourceOriginalObservationSHA256": "3d9518351ce9a1410baf83f67a7a4f0ff7a2a5cc913fc94a73d2fc368f842934",
+  "SourceOriginalMapSHA256": "e224694d67783403573285a08e5de44491e9505cbb4359cd8b5b356ded9bdc94",
+  "TargetBaselineMs": 250,
+  "Rows": [
+    {
+      "Id": "fresh-single",
+      "Iterations": 1710404,
+      "OriginalIterations": 600102,
+      "OriginalFourTicks": [
+        89000072,
+        87713507,
+        90047917,
+        95444795
+      ],
+      "StopwatchFrequency": 1000000000
+    },
+    {
+      "Id": "retained-absent",
+      "Iterations": 3466725,
+      "OriginalIterations": 2639010,
+      "OriginalFourTicks": [
+        201495652,
+        218028954,
+        190310047,
+        217496941
+      ],
+      "StopwatchFrequency": 1000000000
+    },
+    {
+      "Id": "retained-present",
+      "Iterations": 3506477,
+      "OriginalIterations": 2510606,
+      "OriginalFourTicks": [
+        184382822,
+        193347198,
+        190194309,
+        178997772
+      ],
+      "StopwatchFrequency": 1000000000
+    },
+    {
+      "Id": "distinct-eight",
+      "Iterations": 403525,
+      "OriginalIterations": 289951,
+      "OriginalFourTicks": [
+        201901220,
+        179636695,
+        210357129,
+        198433290
+      ],
+      "StopwatchFrequency": 1000000000
+    },
+    {
+      "Id": "external-multicast",
+      "Iterations": 1481094,
+      "OriginalIterations": 1214117,
+      "OriginalFourTicks": [
+        230466929,
+        233476606,
+        233474313,
+        204935845
+      ],
+      "StopwatchFrequency": 1000000000
+    },
+    {
+      "Id": "direct-subscription",
+      "Iterations": 7639630,
+      "OriginalIterations": 5207875,
+      "OriginalFourTicks": [
+        192680958,
+        183162183,
+        189745426,
+        170423020
+      ],
+      "StopwatchFrequency": 1000000000
+    },
+    {
+      "Id": "direct-dispatch",
+      "Iterations": 3212116,
+      "OriginalIterations": 2255182,
+      "OriginalFourTicks": [
+        213510092,
+        196859996,
+        195272663,
+        175521536
+      ],
+      "StopwatchFrequency": 1000000000
+    }
+  ],
+  "CandidateDataUsed": false,
+  "SharedAcrossBackends": true
+}

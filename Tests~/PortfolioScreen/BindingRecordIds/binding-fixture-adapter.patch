@@ -1,0 +1,11 @@
+--- Bindings/Harness/Correctness.cs
++++ BindingCorrectness.cs
+@@ -26,7 +26,7 @@
+         foreach (object item in (Array)Field(state, "Items")) Check(Field(item, "Callback") == null, "slot callback cleared");
+         Check((int)Field(container, "m_CallbackCount") == 0, "container callbacks cleared");
+     }
+-    static int Main() { Init(); Test(); return 0; }
++    internal static void Run() { A = GameplayTagManager.RequestTag("A.B.C"); B = GameplayTagManager.RequestTag("A.B.D"); Test(); }
+     static void Test()
+     {
+         var c = new GameplayTagCountContainer(); var binds = new GameplayTagContainerBinds(c); var copy = binds;

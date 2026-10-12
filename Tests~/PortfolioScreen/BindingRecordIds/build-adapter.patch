@@ -1,0 +1,13 @@
+--- Hierarchical/build_support.py
++++ BindingRecordIds/build_support.py
+@@ -58,8 +58,8 @@
+     refs, packages = references(backend, dotnet, nuget)
+     for package in packages:
+         shutil.copy2(package, out / package.name)
+-    files = sorted(p for p in (source / 'Runtime').rglob('*.cs') if p.name != 'GameObjectGameplayTagContainer.cs') + [program]
+-    flags = ['-nologo', '-optimize+', '-langversion:9.0', '-nullable:disable', '-deterministic+', '-target:exe', '-out:"' + str(assembly) + '"']
++    files = sorted(p for p in (source / 'Runtime').rglob('*.cs') if p.name != 'GameObjectGameplayTagContainer.cs') + sorted(program.parent.glob('*.cs'))
++    flags = ['-main:PortableBindingEntry', '-nologo', '-optimize+', '-langversion:9.0', '-nullable:disable', '-deterministic+', '-target:exe', '-out:"' + str(assembly) + '"']
+     flags += ['-r:"' + str(p) + '"' for p in refs] + ['"' + str(p) + '"' for p in files]
+     response = out / 'compile.rsp'
+     response.write_text('\n'.join(flags))

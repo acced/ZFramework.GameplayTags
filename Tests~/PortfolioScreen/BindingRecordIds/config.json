@@ -1,0 +1,109 @@
+{
+  "Rows": [
+    {
+      "Id": "fresh-single",
+      "Index": 0,
+      "Seed": 8192,
+      "Binds": 1,
+      "Tags": 1,
+      "ExternalListeners": 0,
+      "Present": false,
+      "Operation": "new container + new bindings + Bind + UnbindAll"
+    },
+    {
+      "Id": "retained-absent",
+      "Index": 1,
+      "Seed": 16384,
+      "Binds": 1,
+      "Tags": 1,
+      "ExternalListeners": 0,
+      "Present": false,
+      "Operation": "retained Bind + UnbindAll (tag absent)"
+    },
+    {
+      "Id": "retained-present",
+      "Index": 2,
+      "Seed": 16384,
+      "Binds": 1,
+      "Tags": 1,
+      "ExternalListeners": 0,
+      "Present": true,
+      "Operation": "retained Bind + UnbindAll (tag present)"
+    },
+    {
+      "Id": "distinct-eight",
+      "Index": 4,
+      "Seed": 4096,
+      "Binds": 8,
+      "Tags": 8,
+      "ExternalListeners": 0,
+      "Present": false,
+      "Operation": "8 distinct-tag Bind + UnbindAll"
+    },
+    {
+      "Id": "external-multicast",
+      "Index": 6,
+      "Seed": 8192,
+      "Binds": 1,
+      "Tags": 1,
+      "ExternalListeners": 2,
+      "Present": false,
+      "Operation": "Bind + UnbindAll with 2 existing external listeners"
+    },
+    {
+      "Id": "direct-subscription",
+      "Index": 7,
+      "Seed": 32768,
+      "Binds": 0,
+      "Tags": 1,
+      "ExternalListeners": 0,
+      "Present": false,
+      "Operation": "direct RegisterTagEventCallback + RemoveTagEventCallback"
+    },
+    {
+      "Id": "direct-dispatch",
+      "Index": 8,
+      "Seed": 32768,
+      "Binds": 0,
+      "Tags": 1,
+      "ExternalListeners": 2,
+      "Present": false,
+      "Operation": "AddTag + RemoveTag with 2 direct external listeners"
+    }
+  ],
+  "PairOrders": [
+    [
+      "original",
+      "candidate"
+    ],
+    [
+      "candidate",
+      "original"
+    ],
+    [
+      "candidate",
+      "original"
+    ],
+    [
+      "original",
+      "candidate"
+    ]
+  ],
+  "ColdShapes": [
+    "absent",
+    "present",
+    "external",
+    "growth-five"
+  ],
+  "DeadlineSeconds": 300,
+  "MaxBuilds": 2,
+  "SemanticProcesses": 2,
+  "ColdProcesses": 32,
+  "WarmProcesses": 56,
+  "PilotProcesses": 0,
+  "SDKVersion": "8.0.425",
+  "CLRVersion": "8.0.31",
+  "MonoVersion": "6.8.0.105",
+  "TargetBaselineMs": 250,
+  "AcceptanceEvidence": false
+}

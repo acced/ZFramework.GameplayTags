@@ -1,0 +1,32 @@
+{
+  "Schema": "binding-record-ids-public-v1",
+  "PreparationOnly": true,
+  "BaseRevision": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "Files": {
+    "Harness/BindingCorrectness.cs": "8f28eae54c3b483b277554f6af35076f975bb9a138e8647a766820d558283cef",
+    "Harness/ColdScreen.cs": "67bc3028965843db545aa3c29430f62fa4b5a3dd9a6400ced281c855d91e86cf",
+    "Harness/CoreFixtureRegistration.cs": "1f1402685f03030bf39057fe44d6c817118325dce35b527f3828378c78dfa60a",
+    "Harness/CoreProgram.cs": "90c8b9e9766984bd185b49067e68d42da2653a0863f90473f3cfc380532af287",
+    "Harness/Entry.cs": "d9127a0a91ed30851ec97b42e159138f86447d4b92b53c94b2f33ff4792c47c0",
+    "Harness/MetadataGate.cs": "a7767a51b42e42758c213cbe9fa6f24c7bf10dd70ccea0071c55f325480279f1",
+    "Harness/SemanticChecks.cs": "7dd9610f935e474dece4796412afeb2fbb10332e8e66734d135057df58d66bec",
+    "Harness/WarmLauncher.cs": "e1e2a1636f909be06f47a8c8957b42dfbe6b4cb23642499c9d47529186dc1e6a",
+    "Harness/WarmScreen.cs": "b1cc16c0f2ce5264f36b9c001236cdbc1c6cfb41d24f44433a25b3b7d5f70cee",
+    "LOCAL_EVIDENCE.md": "9b3d4f7256d1be41d8ed2a10521fbecd744ba1dc482975039ac7baa2b042e74e",
+    "README.md": "82dfad921fd492824d89e5902807606efb89663d2dcc0ce07a4fbf005c0a596f",
+    "References.csproj": "0af6ae5d8e08055944974cd88d1affd6c155f417fc064dcddebdf6ce01c65821",
+    "binding-fixture-adapter.patch": "5e204edb2d26cfa333dd8b1461acd70babd01d68467df3f3f7ae3cceeb67be7a",
+    "build-adapter.patch": "b9de233ebe80ec677d4c4a9290df8780a680d8964e9c1051c73902836a28dfe3",
+    "build_support.py": "c89505c038eed5c2d2f144eed49bebcaf4edc74a5dac5c4cfb3cfc214e565e71",
+    "candidate/GameplayTagContainerBinds.cs": "354c9a75a026ecfb933f3b8dc9a7b1b7874ddd76ddd3f07c6b04c042ad1d2caf",
+    "candidate.patch": "694b77eb672a1073665f52baf3716e63074e56b934760d720d7cffe717e6d431",
+    "config.json": "b8ec15efae3a58fe338b97896cfcb630ea3243d85f8d2d539634476d42f3ca23",
+    "count-map.json": "bc03af680b1b7dc7583054ef51bd26cdb0f61b15b430eab9b00722cb5de0f4f9",
+    "entry-adapters.patch": "fb01195df06f543f947ef00c92fed0a246ccda7122f0eed32241ae74e6b3099e",
+    "mechanism_compare.py": "3c7ba3d446466b4793a8ee94d94c2715106869244dc6d87c9434b86b00c37461",
+    "metadata_compare.py": "115afd77594e3ce2576905a96670cfba7cce66fd0407bfe438825cdb19fc1cd6",
+    "run.py": "b6d0a65b45fb497182404e16e917fd28776b3421eb2cab2ba2abc87aae908ff2",
+    "source-pins.json": "f1a2b1f30709623786225bfd84545e2fc8c23c731fca32f492aac576f0eed44f",
+    "upload-allowlist.txt": "2ceba95b1e22946cc10962122ff9f8aa636adfa537afb953b175b9f7885de003"
+  }
+}

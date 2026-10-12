@@ -1,0 +1,33 @@
+--- before/CoreProgram.cs
++++ Harness/CoreProgram.cs
+@@ -5,7 +5,7 @@
+ using System.Runtime.Serialization;
+ using GameplayTags;
+ 
+-internal static class Program
++internal static class CoreProgram
+ {
+     private static readonly Dictionary<string, GameplayTag> Tags = new Dictionary<string, GameplayTag>(StringComparer.Ordinal);
+     private static string[] Names;
+--- before/SemanticChecks.cs
++++ Harness/SemanticChecks.cs
+@@ -132,17 +132,16 @@
+         using (Writer = new BinaryWriter(new FileStream(args[0], FileMode.CreateNew)))
+         {
+             NoneBeforeRegistry();
+-            int result = (int)typeof(Program).GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
++            int result = (int)typeof(CoreProgram).GetMethod("Main", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
+             if (result != 0) return result;
+             Probe.Run(); NamesGrowthAndHiddenMethods(); QueuedUnbind();
+         }
+         Type record = typeof(GameplayTagContainerBinds).GetNestedType("BindData", BindingFlags.NonPublic);
+         using (var writer = new StreamWriter(new FileStream(args[1], FileMode.CreateNew)))
+             writer.WriteLine("{\"PointerSize\":" + IntPtr.Size + ",\"GameplayTagSize\":" + ManagedSize(typeof(GameplayTag)) + ",\"BindDataSize\":" + ManagedSize(record) + "}");
+-        foreach (string name in new[] { "Bind", "UnbindAll" }) RuntimeHelpers.PrepareMethod(typeof(GameplayTagContainerBinds).GetMethod(name).MethodHandle);
+         MetadataGate.Write(args[2]);
+         Console.WriteLine("PASS binding-record supplemental frames: " + Frames);
+-        Console.WriteLine("PASS core and binding suites, record layout, complete metadata and native capture requested; no performance measurement");
++        Console.WriteLine("PASS core and binding suites, record layout, complete portable metadata capture; no performance measurement");
+         return 0;
+     }
+ }
