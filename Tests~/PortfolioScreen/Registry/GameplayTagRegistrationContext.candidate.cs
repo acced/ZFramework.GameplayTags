@@ -30,49 +30,51 @@ namespace GameplayTags
         {
             Node parent = m_Root;
             int firstDot = name.IndexOf('.');
-            int lastDot = -1;
-            string finalParentName = null;
-            if (firstDot >= 0)
+            if (firstDot < 0)
             {
-                lastDot = name.LastIndexOf('.');
-                finalParentName = name.Substring(0, lastDot);
-                if (m_ByName.TryGetValue(finalParentName, out Node existingParent))
+                if (!m_ByName.TryGetValue(name, out parent))
                 {
-                    if (!m_ByName.TryGetValue(name, out Node leaf))
+                    parent = new Node(name, name.Substring(0, name.Length), m_Root);
+                    m_ByName.Add(name, parent);
+                    m_Root.Children.Add(parent);
+                }
+                goto MergeDeclaration;
+            }
+
+            int lastDot = name.LastIndexOf('.');
+            string finalParentName = name.Substring(0, lastDot);
+            if (!m_ByName.TryGetValue(finalParentName, out Node existingParent))
+            {
+                int start = 0;
+                int dot = firstDot;
+                while (dot < lastDot)
+                {
+                    string prefix = name.Substring(0, dot);
+                    if (!m_ByName.TryGetValue(prefix, out Node node))
                     {
-                        leaf = new Node(name, name.Substring(lastDot + 1), existingParent);
-                        m_ByName.Add(name, leaf);
-                        existingParent.Children.Add(leaf);
+                        node = new Node(prefix, name.Substring(start, dot - start), parent);
+                        m_ByName.Add(prefix, node);
+                        parent.Children.Add(node);
                     }
-                    parent = leaf;
-                    goto MergeDeclaration;
+                    parent = node;
+                    start = dot + 1;
+                    dot = name.IndexOf('.', start);
                 }
+
+                // The final parent was absent before the shorter prefixes were visited.
+                existingParent = new Node(finalParentName,
+                    name.Substring(start, lastDot - start), parent);
+                m_ByName.Add(finalParentName, existingParent);
+                parent.Children.Add(existingParent);
             }
 
-            int start = 0;
-            int dot = firstDot;
-            while (true)
+            if (!m_ByName.TryGetValue(name, out Node leaf))
             {
-                int end = dot < 0 ? name.Length : dot;
-                string prefix = dot < 0 ? name : dot == lastDot ? finalParentName : name.Substring(0, end);
-                Node node;
-                if (dot >= 0 && dot == lastDot)
-                    node = null; // This exact parent prefix was already absent.
-                else
-                    m_ByName.TryGetValue(prefix, out node);
-                if (node == null)
-                {
-                    node = new Node(prefix, name.Substring(start, end - start), parent);
-                    m_ByName.Add(prefix, node);
-                    parent.Children.Add(node);
-                }
-
-                parent = node;
-                if (dot < 0)
-                    break;
-                start = dot + 1;
-                dot = name.IndexOf('.', start);
+                leaf = new Node(name, name.Substring(lastDot + 1), existingParent);
+                m_ByName.Add(name, leaf);
+                existingParent.Children.Add(leaf);
             }
+            parent = leaf;
 
         MergeDeclaration:
             // Declarations are trusted input. ValidateName is an explicit authoring-time

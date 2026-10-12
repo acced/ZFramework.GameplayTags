@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        candidate: [Registry, Hierarchical]
+        candidate: [Registry]
         backend: [net, mono]
     steps:
       - uses: actions/checkout@v4
