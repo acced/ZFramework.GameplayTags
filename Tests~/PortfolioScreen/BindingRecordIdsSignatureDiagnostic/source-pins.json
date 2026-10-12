@@ -1,0 +1,17 @@
+{
+  "OriginalPackageSeal": "0f2c191c3d35d8e22afdad3e3a69962d26272c748bf0d4d00a10f9fdb252ec95",
+  "FirstDiagnosticSeal": "8a9712ba8591dee40a3f8482d67cc38b8086e2501c3a72b0db468fe68df3418f",
+  "OriginalMetadataCollectorSHA256": "a7767a51b42e42758c213cbe9fa6f24c7bf10dd70ccea0071c55f325480279f1",
+  "MetadataCollectorSHA256": "502cfdfe2a68c10d01f855ef2645e622e7bc5296b6648f2a76bf9660f96abfe2",
+  "UnchangedHarnessFiles": {
+    "Harness/BindingCorrectness.cs": "8f28eae54c3b483b277554f6af35076f975bb9a138e8647a766820d558283cef",
+    "Harness/ColdScreen.cs": "67bc3028965843db545aa3c29430f62fa4b5a3dd9a6400ced281c855d91e86cf",
+    "Harness/CoreFixtureRegistration.cs": "1f1402685f03030bf39057fe44d6c817118325dce35b527f3828378c78dfa60a",
+    "Harness/CoreProgram.cs": "90c8b9e9766984bd185b49067e68d42da2653a0863f90473f3cfc380532af287",
+    "Harness/Entry.cs": "d9127a0a91ed30851ec97b42e159138f86447d4b92b53c94b2f33ff4792c47c0",
+    "Harness/SemanticChecks.cs": "7dd9610f935e474dece4796412afeb2fbb10332e8e66734d135057df58d66bec",
+    "Harness/WarmLauncher.cs": "e1e2a1636f909be06f47a8c8957b42dfbe6b4cb23642499c9d47529186dc1e6a",
+    "Harness/WarmScreen.cs": "b1cc16c0f2ce5264f36b9c001236cdbc1c6cfb41d24f44433a25b3b7d5f70cee"
+  },
+  "NoRuntimeChanges": true
+}

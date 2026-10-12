@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        candidate: [BindingRecordIdsDiagnostic]
+        candidate: [BindingRecordIdsSignatureDiagnostic]
         backend: [mono]
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
           set -euo pipefail
           args=(--backend mono --package "$GITHUB_WORKSPACE/Tests~/PortfolioScreen/BindingRecordIds" --dotnet "$(readlink -f "$(command -v dotnet)")" --nuget "$RUNNER_TEMP/portfolio-nuget" --git-root "$GITHUB_WORKSPACE" --out "$GITHUB_WORKSPACE/.artifacts/portfolio-screen" --work "$RUNNER_TEMP/portfolio-work")
           if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
-          python3 'Tests~/PortfolioScreen/${{ matrix.candidate }}/run.py' "${args[@]}" --expected-seal 8a9712ba8591dee40a3f8482d67cc38b8086e2501c3a72b0db468fe68df3418f
+          python3 'Tests~/PortfolioScreen/${{ matrix.candidate }}/run.py' "${args[@]}" --expected-seal 558d800ed180b8af68ff8c876a25007652f39adcc87dc19f41f61476f21df904
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -1,0 +1,25 @@
+{
+  "Schema": "binding-record-ids-signature-diagnostic-v1",
+  "PreparationOnly": true,
+  "OriginalPackageSeal": "0f2c191c3d35d8e22afdad3e3a69962d26272c748bf0d4d00a10f9fdb252ec95",
+  "FirstDiagnosticSeal": "8a9712ba8591dee40a3f8482d67cc38b8086e2501c3a72b0db468fe68df3418f",
+  "PythonProjectionTestsPassed": true,
+  "CompilerOrTargetExecutionPerformed": false,
+  "BuildBudget": 2,
+  "OriginalSemanticBudget": 1,
+  "CandidateSemanticBudget": 0,
+  "ColdWarmPilotBudget": 0,
+  "DeadlineSeconds": 120,
+  "RawSignatureBytesPublic": false,
+  "Files": {
+    "MetadataGate.cs": "502cfdfe2a68c10d01f855ef2645e622e7bc5296b6648f2a76bf9660f96abfe2",
+    "README.md": "0f6e89a54daaf2d97ec4a75ebd8ab2dcac2dbbf5b8c1775734712c38c95cc115",
+    "coordinator-adapter.patch": "8f26d1f5bcbe2e2bc5e902ec27848af5813a8244735c9a5e64cc5ca51c365273",
+    "metadata-diagnostic.patch": "72dd516e0d65ec8e60464e0aeaf81a721e6ea853d51315d349ca5f10b57b63ca",
+    "projection.py": "99a4ce3a87ccc8f5c1f938f370da0891ce1188f7c794c0eba03c7dc7cf33af3a",
+    "run.py": "adcfc9b7ba4c03554e34da2aef59850fe4ae2b7a7b51e6e453e6464cddeef9f2",
+    "source-pins.json": "860bec746444d7eedc5e108ecc88e6a16d6e8162592729ecb100b4411242b0eb",
+    "test_projection.py": "a9781ed83c60942e344a7fb7a6f2b88548e0ccfe628e33bcb87287f1dbbd5a5f",
+    "upload-allowlist.txt": "be21db0061965ec19d67307130af298da4bd2e92e45c8ca79ae0c53d13b6fafc"
+  }
+}

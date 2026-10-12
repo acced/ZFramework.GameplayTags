@@ -1,0 +1,121 @@
+--- original/MetadataGate.cs
++++ diagnostic/MetadataGate.cs
+@@ -6,6 +6,7 @@
+ using System.Linq;
+ using System.Reflection;
+ using System.Reflection.Emit;
++using System.Security.Cryptography;
+ using System.Text;
+ using GameplayTags;
+ 
+@@ -156,8 +157,24 @@
+         byte[] bytes = body.GetILAsByteArray();
+         Type[] typeArgs = method.DeclaringType.GetGenericArguments();
+         Type[] methodArgs = method.IsGenericMethod ? method.GetGenericArguments() : null;
+-        string localSignature = body.LocalSignatureMetadataToken == 0 ? null :
+-            new SignatureDecoder(method.Module, method.Module.ResolveSignature(body.LocalSignatureMetadataToken), typeArgs, methodArgs).Read();
++        string localSignature = null;
++        if (body.LocalSignatureMetadataToken != 0)
++        {
++            byte[] signature = null; SignatureDecoder decoder = null;
++            try
++            {
++                signature = method.Module.ResolveSignature(body.LocalSignatureMetadataToken);
++                decoder = new SignatureDecoder(method.Module, signature, typeArgs, methodArgs);
++                localSignature = decoder.Read();
++            }
++            catch (Exception error)
++            {
++                // Diagnostic failure must never replace the original collector exception.
++                try { SignatureFailure(method, body.LocalSignatureMetadataToken, signature, decoder, typeArgs, methodArgs, error); }
++                catch { }
++                throw;
++            }
++        }
+         return Obj("max_stack", body.MaxStackSize, "init_locals", body.InitLocals,
+             "local_signature_token", Token(body.LocalSignatureMetadataToken),
+             "local_signature_raw", body.LocalSignatureMetadataToken == 0 ? null : Hex(method.Module.ResolveSignature(body.LocalSignatureMetadataToken)),
+@@ -168,6 +185,27 @@
+                 "handler_length", c.HandlerLength, "filter_offset", c.Flags == ExceptionHandlingClauseOptions.Filter ? (object)c.FilterOffset : null,
+                 "catch_type", c.Flags == ExceptionHandlingClauseOptions.Clause ? QType(c.CatchType) : null)).ToArray(),
+             "il_length", bytes.Length, "il_raw", Hex(bytes), "instructions", DecodeIL(method, bytes));
++    }
++
++    private static void SignatureFailure(MethodBase method, int token, byte[] signature, SignatureDecoder decoder, Type[] ta, Type[] ma, Exception error)
++    {
++        int code = error is ArgumentOutOfRangeException ? 1 : error is IndexOutOfRangeException ? 2 :
++            error is BadImageFormatException ? 3 : error is InvalidDataException ? 4 : error is TypeLoadException ? 5 :
++            error is NotSupportedException ? 6 : error is NotImplementedException ? 7 : error is ArgumentException ? 8 :
++            error is InvalidOperationException ? 9 : error is MissingMethodException ? 10 : error is MissingFieldException ? 11 :
++            error is OutOfMemoryException ? 12 : 0;
++        string hash = null;
++        if (signature != null) using (var algorithm = SHA256.Create()) hash = Hex(algorithm.ComputeHash(signature));
++        Console.Error.Write("SIGNATURE_DIAGNOSTIC ");
++        Json(Console.Error, Obj("MethodToken", method.MetadataToken, "LocalSignatureToken", token,
++            "SignatureLength", signature == null ? null : (object)signature.Length, "SignatureSHA256", hash,
++            "DecoderOffset", decoder == null ? null : (object)decoder.Offset, "DecoderStage", decoder == null ? 1 : decoder.Stage,
++            "LastElementKind", decoder == null ? null : (object)decoder.LastElementKind,
++            "LastEncodedType", decoder == null ? null : (object)decoder.LastEncodedType,
++            "LastResolvedToken", decoder == null ? null : (object)decoder.LastResolvedToken,
++            "TypeArgumentCount", ta == null ? null : (object)ta.Length, "MethodArgumentCount", ma == null ? null : (object)ma.Length,
++            "ExceptionCode", code));
++        Console.Error.WriteLine();
+     }
+ 
+     // Extends the counted-self-index Inspection.cs opcode decoder: every operand category,
+@@ -313,11 +351,16 @@
+     private sealed class SignatureDecoder
+     {
+         private readonly Module module; private readonly byte[] bytes; private readonly Type[] ta, ma; private int p;
++        internal int Stage = 2;
++        internal int? LastElementKind, LastResolvedToken;
++        internal uint? LastEncodedType;
++        internal int Offset => p;
+         internal SignatureDecoder(Module module, byte[] bytes, Type[] typeArgs, Type[] methodArgs)
+         { this.module = module; this.bytes = bytes; ta = typeArgs; ma = methodArgs; }
+         private byte Byte() { if (p >= bytes.Length) throw new InvalidDataException("Truncated signature."); return bytes[p++]; }
+         private uint Compressed()
+         {
++            Stage = 5;
+             byte b = Byte();
+             if ((b & 0x80) == 0) return b;
+             if ((b & 0xc0) == 0x80) return (uint)(((b & 0x3f) << 8) | Byte());
+@@ -333,12 +376,16 @@
+         }
+         internal string Read()
+         {
++            Stage = 3;
+             string result = Signature();
++            Stage = 10;
+             if (p != bytes.Length) throw new InvalidDataException("Unconsumed signature bytes.");
++            Stage = 11;
+             return result;
+         }
+         private string Signature()
+         {
++            Stage = 4;
+             byte convention = Byte();
+             if ((convention & 15) == 7)
+             {
+@@ -357,13 +404,19 @@
+         }
+         private string TypeToken()
+         {
+-            uint encoded = Compressed(); int table;
++            Stage = 7; LastEncodedType = null; LastResolvedToken = null;
++            uint encoded = Compressed(); LastEncodedType = encoded; Stage = 7; int table;
+             switch (encoded & 3) { case 0: table = 0x02000000; break; case 1: table = 0x01000000; break; case 2: table = 0x1b000000; break; default: throw new InvalidDataException("Invalid TypeDefOrRef."); }
+-            return QType(module.ResolveType(table | checked((int)(encoded >> 2)), ta, ma));
++            int token = table | checked((int)(encoded >> 2)); LastResolvedToken = token; Stage = 8;
++            System.Type resolved = module.ResolveType(token, ta, ma);
++            Stage = 9;
++            return QType(resolved);
+         }
+         private string Type()
+         {
++            Stage = 6; LastElementKind = null;
+             byte kind = Byte();
++            LastElementKind = kind;
+             switch (kind)
+             {
+                 case 0x01: return "void"; case 0x02: return "bool"; case 0x03: return "char";
