@@ -2,6 +2,8 @@
 
 Qualified versions remain **0/10**. This is a bounded rejection/portability screen, not final qualification. Root Runtime was unchanged by the test-package commit.
 
+Sections below are chronological evidence. Earlier pending-stage language records the plan at that stage; the final section records the current closed/held decision, with no additional binding run queued.
+
 - Exact test commit: `9a39654f5899592fdae7b35c3653420021de8bef`.
 - [Completed run 38279828100](https://github.com/acced/ZFramework.GameplayTags/actions/runs/38279828100). .NET completed two semantic targets, 32 cold calls and 56 warm calls. Mono completed two builds and stopped at the original semantic stage after one attempted target, before candidate semantics or any cold/warm calls.
 - .NET artifact `11760731516`, ZIP SHA-256 `258d22acad1500bc8df541bf20a0afff96c06242cb76ea296b8e80fc99f89d6b`.
@@ -86,3 +88,30 @@ Both ZIP identities and every allowlisted member were independently verified. Ea
 The Mono collector portability gap is closed for these fixtures without skipping the metadata gate. Earlier incomplete/failing packages remain evidence. The original .NET performance hold remains unchanged.
 
 One fixed Mono-only completion is now prepared for the previously unexecuted 32 cold/56 warm plan, with the original seven-row count map, AB/BA/BA/AB order, fixtures and allocation/semantic fail-stop. The exact r2 collector is overlaid; no Runtime or measurement body changes. It retains the original 300-second hard bound and two semantic prerequisites, with zero pilots or recalibration. This fills missing Mono evidence and cannot clear the existing .NET adverse control/cold observations. No further .NET timing or full qualification is queued; **0/10** remains.
+
+## Fixed Mono completion and final hold
+
+[Run 38288432209](https://github.com/acced/ZFramework.GameplayTags/actions/runs/38288432209), exact commit `17ae4dc193d5143266228457f95de7707c7f6913`, completed the previously unexecuted Mono plan: two builds/two semantic targets, 32 cold calls, 56 warm calls and zero pilots. Artifact `11764372199` has ZIP SHA-256 `c97d154898301fb034d68919d45cef7b799f3050423453047d9c503c6c0af6cb`. Independent review verified every member, the fixed AB/BA/BA/AB order and the count map's byte identity with the original .NET screen.
+
+Full semantic/metadata gates pass. Mono 6.8.0.105 x64 records are 24→16 B. Each single-bind cold pair saves 32 allocated bytes and 32 retained record-array payload bytes; growth-five saves 96 allocated bytes and 64 final payload bytes. All cold GC counters are zero. Fresh warm cycles are 720→688 B; retained rows have equal per-cycle allocation. All 56 warm batches exceed 250 ms (minimum 722.55 ms); 40 have Gen0 collections, none Gen1/2. No GC or control costs are subtracted.
+
+All ratios below are candidate/original; above 1 is adverse. Four pairs remain descriptive, not proof of global noninferiority.
+
+| Mono cold shape | Pair 0 | Pair 1 | Pair 2 | Pair 3 |
+|---|---:|---:|---:|---:|
+| absent | 1.021358 | 0.982706 | 0.990290 | 0.991352 |
+| present | 1.002861 | 0.991758 | 0.940533 | 1.016794 |
+| external | 0.995868 | 0.980459 | 1.002689 | 1.022657 |
+| growth-five | 0.991496 | 1.004366 | 0.982367 | 1.004020 |
+
+| Mono warm shape | Pair 0 | Pair 1 | Pair 2 | Pair 3 |
+|---|---:|---:|---:|---:|
+| fresh-single | 0.982293 | 1.049067 | 1.009399 | 1.007163 |
+| retained-absent | 0.776946 | 0.966810 | 1.006812 | 1.004133 |
+| retained-present | 1.069727 | 0.986583 | 0.941700 | 1.154063 |
+| distinct-eight | 0.974252 | 1.034604 | 1.020786 | 0.991890 |
+| external-multicast | 0.974319 | 1.017770 | 0.993175 | 0.987828 |
+| direct-subscription | 0.980045 | 0.992302 | 0.990831 | 0.997095 |
+| direct-dispatch | 0.996974 | 0.986330 | 0.992922 | 1.007728 |
+
+**CLOSE / HOLD, unqualified.** Mono fresh-single is slower in three of four pairs at minimum 824.42 ms; retained-present is mixed and retains the 1.154063 adverse ratio. The unchanged subscription control improves in four pairs, so these results do not establish a common gain or permit control adjustment. Together with the unresolved original .NET subscription-control and external-cold observations, this closes the bounded candidate series without another timing run, layout variant or full qualification. Cross-runtime record/payload/allocation reductions are established within the measured scope; they do not establish comprehensive progress. Root Runtime remains unchanged and fully qualified count remains **0/10**. All prior failed harness versions and adverse/local short measurements remain available.
