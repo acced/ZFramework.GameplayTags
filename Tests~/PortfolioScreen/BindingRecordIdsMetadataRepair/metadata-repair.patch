@@ -1,0 +1,15 @@
+--- original/MetadataGate.cs
++++ semantic-repair/MetadataGate.cs
+@@ -314,7 +314,11 @@
+     {
+         private readonly Module module; private readonly byte[] bytes; private readonly Type[] ta, ma; private int p;
+         internal SignatureDecoder(Module module, byte[] bytes, Type[] typeArgs, Type[] methodArgs)
+-        { this.module = module; this.bytes = bytes; ta = typeArgs; ma = methodArgs; }
++        {
++            this.module = module; this.bytes = bytes;
++            ta = typeArgs != null && typeArgs.Length == 0 ? null : typeArgs;
++            ma = methodArgs != null && methodArgs.Length == 0 ? null : methodArgs;
++        }
+         private byte Byte() { if (p >= bytes.Length) throw new InvalidDataException("Truncated signature."); return bytes[p++]; }
+         private uint Compressed()
+         {

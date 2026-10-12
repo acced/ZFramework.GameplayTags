@@ -1,0 +1,47 @@
+--- original/run.py
++++ semantic-repair/run.py
+@@ -30,7 +30,7 @@
+ class GateStop(Exception): pass
+ 
+ def main():
+-    started = time.monotonic()
++    started = REPAIR_STARTED
+     ap = argparse.ArgumentParser(description=__doc__)
+     ap.add_argument('--backend', choices=('net','mono'), required=True)
+     ap.add_argument('--dotnet', default='dotnet'); ap.add_argument('--mono', default='mono')
+@@ -62,6 +62,7 @@
+         child_env[prefix+'ReadyToRun']='1'; child_env[prefix+'TieredCompilation']='0'; child_env[prefix+'gcServer']='0'
+     def artifact_tree(): return {v:tree(private/('build-'+v)) for v in built}
+     def verify():
++        REPAIR_VERIFY()
+         if time.monotonic() >= deadline: raise TimeoutError('Fixed deadline')
+         if (HERE/'frozen.json').read_bytes() != frozen_bytes: raise RuntimeError('Frozen identity changed')
+         if {str(p.relative_to(HERE)) for p in HERE.rglob('*') if p.is_file()} != set(frozen['Files']) | {'frozen.json'}: raise RuntimeError('Prepared inventory changed')
+@@ -111,6 +112,7 @@
+                     try: os.killpg(active_proc.pid,signal.SIGKILL)
+                     except ProcessLookupError: pass
+                     active_proc.wait()
++                    record['ExitCode']=active_proc.returncode; save(private/'commands.json',commands)
+                 active_proc=None; child_scope=False
+             if canceled: raise TimeoutError('Canceled during cleanup')
+         record['ExitCode']=code; save(private/'commands.json',commands); return code
+@@ -161,7 +163,7 @@
+         save(private/'tool-hashes.json',tool_hashes); provenance['ToolchainManifestSHA256']=digest(tool_hashes)
+         status['Stage']='build'; executables={}
+         for variant in ORDER:
+-            executables[variant]=support.build(private/variant,HERE/'Harness/Entry.cs',private/('build-'+variant),args.backend,dotnet,mono,nuget,run)
++            executables[variant]=support.build(private/variant,REPAIR_HARNESS/'Entry.cs',private/('build-'+variant),args.backend,dotnet,mono,nuget,run)
+             status['Builds']+=1; verify(); built.append(variant); artifacts=artifact_tree(); verify()
+         provenance['BuildArtifactHashes']=artifacts
+         status['Stage']='semantic'
+@@ -176,6 +178,10 @@
+         layout={variant:{key:report['managed_layout'][variant][key] for key in ('PointerSize','GameplayTagSize','BindDataSize')} for variant in ORDER}
+         correctness.update(CoreAndBindingPass=True,EqualSnapshotSHA256=sha(private/'original.snapshot.bin'),ManagedLayout=layout,MetadataGatePass=report['status']=='PASS',RuntimeTypes=report['types_compared'],RuntimeMethods=report['methods_compared'],UnchangedMetadataDifferences=len(report['metadata_differences']),UnrelatedRawILFailures=len(report['unrelated_raw_il_failures']),MechanismReportSHA256=sha(private/'mechanism-report.json'))
+         if report['status']!='PASS': raise RuntimeError('Metadata/IL/layout gate failed')
++        verify()
++        if (status['Builds'],status['SemanticTargets'],status['ColdTargets'],status['WarmTargets'],status['PilotTargets'])!=(2,2,0,0,0): raise RuntimeError('Semantic-only budget')
++        status['State']='complete'; status['Stage']='completed-semantic-only'; status['SemanticOnly']=True
++        raise GateStop()
+         status['Stage']='cold'
+         for shape in config['ColdShapes']:
+             for pair,order in enumerate(config['PairOrders']):
