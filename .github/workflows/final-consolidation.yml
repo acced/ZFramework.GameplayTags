@@ -1,0 +1,28 @@
+name: Final consolidation
+on:
+  push:
+    branches: [perf/final-runtime-7037e76-7d1c]
+    paths: ['.github/workflows/final-consolidation.yml']
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Export exact baseline and source history
+        run: |
+          mkdir -p .artifacts/final-consolidation
+          git archive 7037e76a43127939ab9545b2e1056441202961e6 | gzip > .artifacts/final-consolidation/source.tar.gz
+          git bundle create .artifacts/final-consolidation/history.bundle --all
+          sha256sum .artifacts/final-consolidation/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-source-7037e76
+          path: .artifacts/final-consolidation/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
