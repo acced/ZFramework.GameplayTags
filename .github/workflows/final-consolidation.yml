@@ -1,0 +1,27 @@
+name: Final consolidation validation
+on:
+  push:
+    branches: [perf/final-consolidation-20261012]
+    paths: ['.github/workflows/final-consolidation.yml']
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Export exact baseline sources and public history
+        run: |
+          mkdir -p evidence
+          git archive 4eb0cda81a0915562f22c49977746ae5073fe746 | gzip > evidence/baseline.tar.gz
+          git bundle create evidence/history.bundle --all
+          sha256sum evidence/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: final-consolidation-baseline
+          path: evidence/
+          if-no-files-found: error
+          retention-days: 7
