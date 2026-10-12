@@ -1,0 +1,113 @@
+name: Publish frozen final-consolidation candidate
+on:
+  push:
+    branches: [perf/final-runtime-7037e76-7d1c]
+    paths: ['.github/workflows/final-publish.yml']
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.publish.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore exact locally tested sources with digest verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = 'perf/final-runtime-7037e76-7d1c'
+          git diff --exit-code 7037e76a43127939ab9545b2e1056441202961e6 -- Runtime
+          python3 - <<'PY'
+          import base64, hashlib, json, subprocess, zlib
+          from pathlib import Path, PurePosixPath
+          parts=[Path('Tests~/FinalConsolidation/.publish%d.b64'%i).read_text().strip() for i in range(4)]
+          # Repair only explicitly identified transport transcription errors, then
+          # require the original compressed digest and every Runtime source hash.
+          parts[1]=parts[1].replace('esOZcXpr0','esOZcXr0').replace('JeXDIQZ1bOW','JeXDIQZ2bOW')
+          repairs={'wmD3e3wW':'wmD3e2wW','UlB5tnBq':'UlB7tnBq','3hnB+Hind7j3Bue':'3hnB+H7j3Bue','abVxfMF9':'abV8MF9','3n+kM+f0tZph':'3n+kM0tZph','WYYMWY5cG':'WYYMW5cG'}
+          for old,new in repairs.items(): parts[2]=parts[2].replace(old,new)
+          raw=base64.b64decode(''.join(parts),validate=True)
+          assert hashlib.sha256(raw).hexdigest()=='9d29ac6fb25f8789ca5398defeea40cee08f462c9128e05d21cf66a80c5bbec3'
+          data=json.loads(zlib.decompress(raw))
+          assert data['baseline']=='7037e76a43127939ab9545b2e1056441202961e6'
+          patch=Path('/tmp/final-consolidation.patch');patch.write_text(data['patch'])
+          subprocess.run(['git','apply','--check',str(patch)],check=True)
+          subprocess.run(['git','apply',str(patch)],check=True)
+          for path,text in data['files'].items():
+              p=PurePosixPath(path)
+              assert not p.is_absolute() and '..' not in p.parts
+              assert path.startswith(('Tests~/FinalConsolidation/','Documentation~/'))
+              target=Path(path);target.parent.mkdir(parents=True,exist_ok=True);target.write_text(text)
+          for name,digest in data['runtime_hashes'].items():
+              assert hashlib.sha256((Path('Runtime')/name).read_bytes()).hexdigest()==digest,name
+          print('All frozen Runtime hashes match. Known first-use regressions remain in the report.')
+          PY
+          git diff --check
+      - name: Validate exact publication before pushing
+        run: |
+          dotnet build GameplayTags.Runtime.csproj -c Release
+          dotnet run --project Tests~/GameplayTags.Tests.csproj -c Release
+          dotnet run --project Tests~/Bulk/GameplayTags.Bulk.Tests.csproj -c Release
+          dotnet run --project Tests~/Intersection/GameplayTags.Intersection.Tests.csproj -c Release
+          dotnet run --project Tests~/FinalConsolidation/FinalConsolidation.csproj -c Release -- test
+          python3 Tests~/run.py all --unity-check --output-dir .artifacts/final-compile
+          python3 Tests~/validate_package.py
+      - name: Fast-forward isolated branch with readable source files only
+        id: publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm Tests~/FinalConsolidation/.publish0.b64 Tests~/FinalConsolidation/.publish1.b64 Tests~/FinalConsolidation/.publish2.b64 Tests~/FinalConsolidation/.publish3.b64 .github/workflows/final-publish.yml
+          git add Runtime Tests~/FinalConsolidation Documentation~/FINAL_CONSOLIDATION.md Documentation~/results/final-consolidation
+          git -c user.name=ChatGPT -c user.email=noreply@openai.com commit -m 'perf: consolidate active-index invalidation, single-path construction and intersection selection' -m 'Baseline 7037e76. Preserve final local warm and first-use evidence, including cold regressions. Review candidate, not a claim of universal performance improvement.'
+          git push origin HEAD:refs/heads/perf/final-runtime-7037e76-7d1c
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+  evidence:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [net, mono]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Install standalone Mono, not Unity
+        if: matrix.backend == 'mono'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mono-devel > /tmp/mono-install.log 2>&1
+          mono --version
+      - name: Freeze original Runtime
+        run: |
+          mkdir -p .artifacts/final-baseline
+          git archive 7037e76a43127939ab9545b2e1056441202961e6 Runtime | tar -x -C .artifacts/final-baseline
+      - name: Paired evidence and first-use costs on the published source
+        run: python3 Tests~/FinalConsolidation/run.py --baseline .artifacts/final-baseline --backend ${{ matrix.backend }} --samples 14 --target-ms 50 --cold-rounds 4 --output .artifacts/final-evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: final-published-${{ matrix.backend }}-${{ needs.prepare.outputs.sha }}
+          path: |
+            .artifacts/final-evidence/*.json
+            .artifacts/final-evidence/*.log
+            .artifacts/final-evidence/*.tsv
+            .artifacts/final-evidence/raw/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90

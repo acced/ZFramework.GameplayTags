@@ -1,28 +1,49 @@
-name: Final consolidation
+name: Final consolidation evidence
 on:
-  push:
-    branches: [perf/final-runtime-7037e76-7d1c]
-    paths: ['.github/workflows/final-consolidation.yml']
+  pull_request:
+    paths:
+      - 'Runtime/**'
+      - 'Tests~/FinalConsolidation/**'
+      - '.github/workflows/final-consolidation.yml'
 permissions:
   contents: read
 jobs:
-  snapshot:
+  paired:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: [net, mono]
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Export exact baseline and source history
-        run: |
-          mkdir -p .artifacts/final-consolidation
-          git archive 7037e76a43127939ab9545b2e1056441202961e6 | gzip > .artifacts/final-consolidation/source.tar.gz
-          git bundle create .artifacts/final-consolidation/history.bundle --all
-          sha256sum .artifacts/final-consolidation/*
-      - uses: actions/upload-artifact@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          name: final-source-7037e76
-          path: .artifacts/final-consolidation/
+          dotnet-version: 8.0.x
+      - name: Install standalone Mono, not Unity
+        if: matrix.backend == 'mono'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mono-devel > /tmp/mono-install.log 2>&1
+          mono --version
+      - name: Extract exact task-start baseline
+        run: |
+          mkdir -p .artifacts/final-baseline
+          git archive 7037e76a43127939ab9545b2e1056441202961e6 Runtime | tar -x -C .artifacts/final-baseline
+      - name: Correctness, 56 paired workloads and first-use diagnostics
+        run: python3 Tests~/FinalConsolidation/run.py --baseline .artifacts/final-baseline --backend ${{ matrix.backend }} --samples 14 --target-ms 50 --cold-rounds 4 --output .artifacts/final-evidence
+      - name: Preserve evidence including unfavorable and uncertain rows
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: final-consolidation-${{ matrix.backend }}-${{ github.sha }}
+          path: |
+            .artifacts/final-evidence/*.json
+            .artifacts/final-evidence/*.log
+            .artifacts/final-evidence/*.tsv
+            .artifacts/final-evidence/raw/
           include-hidden-files: true
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 90
