@@ -30,8 +30,6 @@ jobs:
           import base64, hashlib, json, subprocess, zlib
           from pathlib import Path, PurePosixPath
           parts=[Path('Tests~/FinalConsolidation/.publish%d.b64'%i).read_text().strip() for i in range(4)]
-          # Repair only explicitly identified transport transcription errors, then
-          # require the original compressed digest and every Runtime source hash.
           parts[1]=parts[1].replace('esOZcXpr0','esOZcXr0').replace('JeXDIQZ1bOW','JeXDIQZ2bOW')
           repairs={'wmD3e3wW':'wmD3e2wW','UlB5tnBq':'UlB7tnBq','3hnB+Hind7j3Bue':'3hnB+H7j3Bue','abVxfMF9':'abV8MF9','3n+kM+f0tZph':'3n+kM0tZph','WYYMWY5cG':'WYYMW5cG'}
           for old,new in repairs.items(): parts[2]=parts[2].replace(old,new)
@@ -58,8 +56,11 @@ jobs:
           dotnet run --project Tests~/GameplayTags.Tests.csproj -c Release
           dotnet run --project Tests~/Bulk/GameplayTags.Bulk.Tests.csproj -c Release
           dotnet run --project Tests~/Intersection/GameplayTags.Intersection.Tests.csproj -c Release
+          dotnet run --project Tests~/Registry/GameplayTags.Registry.Tests.csproj -c Release
+          dotnet run --project Tests~/DeepHierarchy/GameplayTags.DeepHierarchy.Tests.csproj -c Release
           dotnet run --project Tests~/FinalConsolidation/FinalConsolidation.csproj -c Release -- test
-          python3 Tests~/run.py all --unity-check --output-dir .artifacts/final-compile
+          python3 Tests~/run.py build --unity-check --output-dir .artifacts/final-compile
+          dotnet run --project SourceGenerator~/Tests/GameplayTags.SourceGenerator.Tests.csproj -c Release
           python3 Tests~/validate_package.py
       - name: Fast-forward isolated branch with readable source files only
         id: publish
