@@ -1,0 +1,120 @@
+--- a/Runtime/GameplayTagHierarchicalContanier.cs
++++ b/Runtime/GameplayTagHierarchicalContanier.cs
+@@ -128,7 +128,14 @@
+         /// <summary>Adds one occurrence of every distinct explicit tag in the source.</summary>
+         public void AddTags<T>(in T other) where T : IGameplayTagContainer
+         {
+-            int count = SnapshotExplicitTags(other.Indices.Storage);
++            TagStorage source = other.Indices.Storage;
++            if (CanReadExplicitTagsDirectly(source))
++            {
++                AddTagsDirectly(source);
++                return;
++            }
++
++            int count = SnapshotExplicitTags(source);
+             if (!HasListenersInChain())
+             {
+                 for (int i = 0; i < count; i++)
+@@ -188,7 +195,14 @@
+         /// <summary>Removes one occurrence of every distinct explicit tag in the source.</summary>
+         public void RemoveTags<T>(in T other) where T : IGameplayTagContainer
+         {
+-            int count = SnapshotExplicitTags(other.Indices.Storage);
++            TagStorage source = other.Indices.Storage;
++            if (CanReadExplicitTagsDirectly(source))
++            {
++                RemoveTagsDirectly(source);
++                return;
++            }
++
++            int count = SnapshotExplicitTags(source);
+             if (!HasListenersInChain())
+             {
+                 for (int i = 0; i < count; i++)
+@@ -232,6 +246,85 @@
+                 committed = true;
+             }
+             finally
++            {
++                EndBatchWithoutDispatch();
++                if (!committed)
++                    DiscardPendingEvents();
++            }
++
++            FlushEvents();
++        }
++
++        // Only the local storage can change before callbacks when there is no parent.
++        // Validate every index first: legacy overflow/copy states can contain an
++        // out-of-array explicit index, and snapshots throw before any mutation.
++        private bool CanReadExplicitTagsDirectly(TagStorage source)
++        {
++            if (source == null || m_ParentContainer != null ||
++                ReferenceEquals(source, m_UnderlyingContainer.Indices.Storage))
++                return false;
++
++            int count = source.ExplicitCount;
++            if ((uint)count > (uint)source.ExplicitIndices.Length)
++                return false;
++            int entryCapacity = source.Entries.Length;
++            for (int i = 0; i < count; i++)
++                if ((uint)source.ExplicitIndices[i] >= (uint)entryCapacity)
++                    return false;
++            return true;
++        }
++
++        private void AddTagsDirectly(TagStorage source)
++        {
++            int count = source.ExplicitCount;
++            TagStorage.Entry[] entries = source.Entries;
++            int[] explicitIndices = source.ExplicitIndices;
++            if (!HasListenersInChain())
++            {
++                for (int i = 0; i < count; i++)
++                    AddTagInternal(entries[explicitIndices[i]].Id, 1);
++                return;
++            }
++
++            BeginBatch();
++            bool committed = false;
++            try
++            {
++                for (int i = 0; i < count; i++)
++                    AddTagInternal(entries[explicitIndices[i]].Id, 1);
++                committed = true;
++            }
++            finally
++            {
++                EndBatchWithoutDispatch();
++                if (!committed)
++                    DiscardPendingEvents();
++            }
++
++            FlushEvents();
++        }
++
++        private void RemoveTagsDirectly(TagStorage source)
++        {
++            int count = source.ExplicitCount;
++            TagStorage.Entry[] entries = source.Entries;
++            int[] explicitIndices = source.ExplicitIndices;
++            if (!HasListenersInChain())
++            {
++                for (int i = 0; i < count; i++)
++                    RemoveTagInternal(entries[explicitIndices[i]].Id, 1);
++                return;
++            }
++
++            BeginBatch();
++            bool committed = false;
++            try
++            {
++                for (int i = 0; i < count; i++)
++                    RemoveTagInternal(entries[explicitIndices[i]].Id, 1);
++                committed = true;
++            }
++            finally
+             {
+                 EndBatchWithoutDispatch();
+                 if (!committed)

@@ -1,0 +1,987 @@
+{
+  "Rule": "ceil(original iterations * 200 / minimum of four saved baseline-only BatchMs); never reduce counts",
+  "BaselineCommit": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "PriorScreen": "hierarchical-direct-source-screen-v2",
+  "Rows": [
+    {
+      "Backend": "net",
+      "Id": "add-remove/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        107.872502,
+        54.884775,
+        63.159367,
+        58.425815
+      ],
+      "FastestBaselineBatchMs": 54.884775,
+      "TargetBatchMs": 200,
+      "FixedIterations": 3643998
+    },
+    {
+      "Backend": "net",
+      "Id": "add-remove/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        13.967871,
+        11.049458,
+        14.366578,
+        16.085997
+      ],
+      "FastestBaselineBatchMs": 11.049458,
+      "TargetBatchMs": 200,
+      "FixedIterations": 1810044
+    },
+    {
+      "Backend": "net",
+      "Id": "add-remove/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        18.298446,
+        14.66269,
+        17.303294,
+        23.693623
+      ],
+      "FastestBaselineBatchMs": 14.66269,
+      "TargetBatchMs": 200,
+      "FixedIterations": 272802
+    },
+    {
+      "Backend": "net",
+      "Id": "add-remove/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        29.868001,
+        10.921393,
+        13.592305,
+        12.371153
+      ],
+      "FastestBaselineBatchMs": 10.921393,
+      "TargetBatchMs": 200,
+      "FixedIterations": 45782
+    },
+    {
+      "Backend": "net",
+      "Id": "add-remove/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        23.256194,
+        11.75638,
+        15.446336,
+        18.48666
+      ],
+      "FastestBaselineBatchMs": 11.75638,
+      "TargetBatchMs": 200,
+      "FixedIterations": 2722
+    },
+    {
+      "Backend": "net",
+      "Id": "remove-add/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        62.186623,
+        58.175385,
+        57.541673,
+        69.17852
+      ],
+      "FastestBaselineBatchMs": 57.541673,
+      "TargetBatchMs": 200,
+      "FixedIterations": 3475742
+    },
+    {
+      "Backend": "net",
+      "Id": "remove-add/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        13.135395,
+        13.572518,
+        15.092505,
+        11.460795
+      ],
+      "FastestBaselineBatchMs": 11.460795,
+      "TargetBatchMs": 200,
+      "FixedIterations": 1745080
+    },
+    {
+      "Backend": "net",
+      "Id": "remove-add/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        13.262597,
+        9.956409,
+        14.125626,
+        10.995233
+      ],
+      "FastestBaselineBatchMs": 9.956409,
+      "TargetBatchMs": 200,
+      "FixedIterations": 401752
+    },
+    {
+      "Backend": "net",
+      "Id": "remove-add/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        15.305584,
+        11.119788,
+        14.486109,
+        13.479518
+      ],
+      "FastestBaselineBatchMs": 11.119788,
+      "TargetBatchMs": 200,
+      "FixedIterations": 44965
+    },
+    {
+      "Backend": "net",
+      "Id": "remove-add/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        24.169507,
+        10.723533,
+        24.905656,
+        15.412632
+      ],
+      "FastestBaselineBatchMs": 10.723533,
+      "TargetBatchMs": 200,
+      "FixedIterations": 2985
+    },
+    {
+      "Backend": "net",
+      "Id": "listener/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        115.641151,
+        102.258743,
+        127.878755,
+        104.987933
+      ],
+      "FastestBaselineBatchMs": 102.258743,
+      "TargetBatchMs": 200,
+      "FixedIterations": 1955823
+    },
+    {
+      "Backend": "net",
+      "Id": "listener/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        39.342432,
+        28.763566,
+        39.27924,
+        30.359136
+      ],
+      "FastestBaselineBatchMs": 28.763566,
+      "TargetBatchMs": 200,
+      "FixedIterations": 695325
+    },
+    {
+      "Backend": "net",
+      "Id": "listener/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        44.034236,
+        28.023539,
+        40.701394,
+        30.692122
+      ],
+      "FastestBaselineBatchMs": 28.023539,
+      "TargetBatchMs": 200,
+      "FixedIterations": 142738
+    },
+    {
+      "Backend": "net",
+      "Id": "listener/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        33.679064,
+        27.811134,
+        44.102064,
+        39.484269
+      ],
+      "FastestBaselineBatchMs": 27.811134,
+      "TargetBatchMs": 200,
+      "FixedIterations": 17979
+    },
+    {
+      "Backend": "net",
+      "Id": "listener/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        39.074326,
+        28.382066,
+        37.362193,
+        26.404335
+      ],
+      "FastestBaselineBatchMs": 26.404335,
+      "TargetBatchMs": 200,
+      "FixedIterations": 1212
+    },
+    {
+      "Backend": "net",
+      "Id": "self/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        70.217658,
+        57.947064,
+        69.42526,
+        60.727001
+      ],
+      "FastestBaselineBatchMs": 57.947064,
+      "TargetBatchMs": 200,
+      "FixedIterations": 3451426
+    },
+    {
+      "Backend": "net",
+      "Id": "self/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        14.704914,
+        11.922432,
+        26.899241,
+        11.550587
+      ],
+      "FastestBaselineBatchMs": 11.550587,
+      "TargetBatchMs": 200,
+      "FixedIterations": 1731514
+    },
+    {
+      "Backend": "net",
+      "Id": "self/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        14.505485,
+        12.757538,
+        12.655942,
+        11.120441
+      ],
+      "FastestBaselineBatchMs": 11.120441,
+      "TargetBatchMs": 200,
+      "FixedIterations": 359698
+    },
+    {
+      "Backend": "net",
+      "Id": "self/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        13.497254,
+        11.579425,
+        19.211106,
+        11.111313
+      ],
+      "FastestBaselineBatchMs": 11.111313,
+      "TargetBatchMs": 200,
+      "FixedIterations": 45000
+    },
+    {
+      "Backend": "net",
+      "Id": "self/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        12.33158,
+        10.627433,
+        18.660127,
+        11.540532
+      ],
+      "FastestBaselineBatchMs": 10.627433,
+      "TargetBatchMs": 200,
+      "FixedIterations": 3012
+    },
+    {
+      "Backend": "net",
+      "Id": "proxy-alias/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        75.836767,
+        53.026836,
+        122.806111,
+        63.898829
+      ],
+      "FastestBaselineBatchMs": 53.026836,
+      "TargetBatchMs": 200,
+      "FixedIterations": 3771676
+    },
+    {
+      "Backend": "net",
+      "Id": "proxy-alias/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        16.739497,
+        11.231982,
+        11.719886,
+        15.120129
+      ],
+      "FastestBaselineBatchMs": 11.231982,
+      "TargetBatchMs": 200,
+      "FixedIterations": 1780630
+    },
+    {
+      "Backend": "net",
+      "Id": "proxy-alias/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        11.683104,
+        10.535754,
+        13.561465,
+        17.686591
+      ],
+      "FastestBaselineBatchMs": 10.535754,
+      "TargetBatchMs": 200,
+      "FixedIterations": 379660
+    },
+    {
+      "Backend": "net",
+      "Id": "proxy-alias/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        15.107045,
+        15.311977,
+        12.474091,
+        16.208203
+      ],
+      "FastestBaselineBatchMs": 12.474091,
+      "TargetBatchMs": 200,
+      "FixedIterations": 40084
+    },
+    {
+      "Backend": "net",
+      "Id": "proxy-alias/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        14.161189,
+        13.913227,
+        12.027789,
+        11.581519
+      ],
+      "FastestBaselineBatchMs": 11.581519,
+      "TargetBatchMs": 200,
+      "FixedIterations": 2764
+    },
+    {
+      "Backend": "net",
+      "Id": "parent/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        43.910205,
+        40.158021,
+        58.410131,
+        41.357861
+      ],
+      "FastestBaselineBatchMs": 40.158021,
+      "TargetBatchMs": 200,
+      "FixedIterations": 4980326
+    },
+    {
+      "Backend": "net",
+      "Id": "parent/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        19.15437,
+        14.617424,
+        19.682338,
+        17.829596
+      ],
+      "FastestBaselineBatchMs": 14.617424,
+      "TargetBatchMs": 200,
+      "FixedIterations": 1368231
+    },
+    {
+      "Backend": "net",
+      "Id": "parent/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        18.948032,
+        22.835268,
+        34.293007,
+        16.391409
+      ],
+      "FastestBaselineBatchMs": 16.391409,
+      "TargetBatchMs": 200,
+      "FixedIterations": 244031
+    },
+    {
+      "Backend": "net",
+      "Id": "parent/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        21.981949,
+        20.648317,
+        32.56249,
+        17.701173
+      ],
+      "FastestBaselineBatchMs": 17.701173,
+      "TargetBatchMs": 200,
+      "FixedIterations": 28247
+    },
+    {
+      "Backend": "net",
+      "Id": "parent/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        27.86008,
+        16.947294,
+        29.408748,
+        23.424685
+      ],
+      "FastestBaselineBatchMs": 16.947294,
+      "TargetBatchMs": 200,
+      "FixedIterations": 1889
+    },
+    {
+      "Backend": "net",
+      "Id": "manual/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        8.618259,
+        5.988735,
+        10.31314,
+        9.16461
+      ],
+      "FastestBaselineBatchMs": 5.988735,
+      "TargetBatchMs": 200,
+      "FixedIterations": 33396035
+    },
+    {
+      "Backend": "net",
+      "Id": "manual/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        12.538899,
+        9.945353,
+        15.65461,
+        15.336399
+      ],
+      "FastestBaselineBatchMs": 9.945353,
+      "TargetBatchMs": 200,
+      "FixedIterations": 2010990
+    },
+    {
+      "Backend": "net",
+      "Id": "manual/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        19.732263,
+        17.038453,
+        20.612352,
+        21.554272
+      ],
+      "FastestBaselineBatchMs": 17.038453,
+      "TargetBatchMs": 200,
+      "FixedIterations": 234764
+    },
+    {
+      "Backend": "net",
+      "Id": "manual/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        17.028943,
+        15.424463,
+        23.152243,
+        17.668725
+      ],
+      "FastestBaselineBatchMs": 15.424463,
+      "TargetBatchMs": 200,
+      "FixedIterations": 32417
+    },
+    {
+      "Backend": "net",
+      "Id": "manual/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        24.526748,
+        17.216137,
+        21.402281,
+        15.827718
+      ],
+      "FastestBaselineBatchMs": 15.827718,
+      "TargetBatchMs": 200,
+      "FixedIterations": 2022
+    },
+    {
+      "Backend": "mono",
+      "Id": "add-remove/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        142.2014,
+        63.9593,
+        88.3156,
+        58.7738
+      ],
+      "FastestBaselineBatchMs": 58.7738,
+      "TargetBatchMs": 200,
+      "FixedIterations": 3402877
+    },
+    {
+      "Backend": "mono",
+      "Id": "add-remove/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        37.7139,
+        25.6684,
+        26.5908,
+        23.394
+      ],
+      "FastestBaselineBatchMs": 23.394,
+      "TargetBatchMs": 200,
+      "FixedIterations": 854921
+    },
+    {
+      "Backend": "mono",
+      "Id": "add-remove/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        66.8005,
+        40.218,
+        47.6598,
+        36.3165
+      ],
+      "FastestBaselineBatchMs": 36.3165,
+      "TargetBatchMs": 200,
+      "FixedIterations": 110143
+    },
+    {
+      "Backend": "mono",
+      "Id": "add-remove/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        105.3548,
+        37.2661,
+        43.2697,
+        36.0688
+      ],
+      "FastestBaselineBatchMs": 36.0688,
+      "TargetBatchMs": 200,
+      "FixedIterations": 13863
+    },
+    {
+      "Backend": "mono",
+      "Id": "add-remove/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        73.6588,
+        36.2809,
+        36.5109,
+        34.1933
+      ],
+      "FastestBaselineBatchMs": 34.1933,
+      "TargetBatchMs": 200,
+      "FixedIterations": 936
+    },
+    {
+      "Backend": "mono",
+      "Id": "remove-add/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        129.343,
+        73.1023,
+        63.3347,
+        67.9909
+      ],
+      "FastestBaselineBatchMs": 63.3347,
+      "TargetBatchMs": 200,
+      "FixedIterations": 3157827
+    },
+    {
+      "Backend": "mono",
+      "Id": "remove-add/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        43.9198,
+        20.5349,
+        26.5683,
+        25.7642
+      ],
+      "FastestBaselineBatchMs": 20.5349,
+      "TargetBatchMs": 200,
+      "FixedIterations": 973952
+    },
+    {
+      "Backend": "mono",
+      "Id": "remove-add/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        70.9468,
+        32.079,
+        33.1785,
+        36.3187
+      ],
+      "FastestBaselineBatchMs": 32.079,
+      "TargetBatchMs": 200,
+      "FixedIterations": 124693
+    },
+    {
+      "Backend": "mono",
+      "Id": "remove-add/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        50.2849,
+        31.7201,
+        30.745,
+        39.5768
+      ],
+      "FastestBaselineBatchMs": 30.745,
+      "TargetBatchMs": 200,
+      "FixedIterations": 16263
+    },
+    {
+      "Backend": "mono",
+      "Id": "remove-add/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        53.1257,
+        61.0967,
+        41.5627,
+        34.3549
+      ],
+      "FastestBaselineBatchMs": 34.3549,
+      "TargetBatchMs": 200,
+      "FixedIterations": 932
+    },
+    {
+      "Backend": "mono",
+      "Id": "listener/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        246.9852,
+        215.25,
+        158.8721,
+        148.0136
+      ],
+      "FastestBaselineBatchMs": 148.0136,
+      "TargetBatchMs": 200,
+      "FixedIterations": 1351228
+    },
+    {
+      "Backend": "mono",
+      "Id": "listener/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        100.0717,
+        70.1986,
+        55.4038,
+        59.4404
+      ],
+      "FastestBaselineBatchMs": 55.4038,
+      "TargetBatchMs": 200,
+      "FixedIterations": 360987
+    },
+    {
+      "Backend": "mono",
+      "Id": "listener/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        139.2933,
+        70.8761,
+        125.8008,
+        75.5637
+      ],
+      "FastestBaselineBatchMs": 70.8761,
+      "TargetBatchMs": 200,
+      "FixedIterations": 56437
+    },
+    {
+      "Backend": "mono",
+      "Id": "listener/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        190.3656,
+        67.369,
+        116.8846,
+        63.6586
+      ],
+      "FastestBaselineBatchMs": 63.6586,
+      "TargetBatchMs": 200,
+      "FixedIterations": 7855
+    },
+    {
+      "Backend": "mono",
+      "Id": "listener/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        215.2368,
+        74.3627,
+        104.6177,
+        73.7219
+      ],
+      "FastestBaselineBatchMs": 73.7219,
+      "TargetBatchMs": 200,
+      "FixedIterations": 435
+    },
+    {
+      "Backend": "mono",
+      "Id": "self/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        163.3569,
+        74.4684,
+        93.6522,
+        64.2837
+      ],
+      "FastestBaselineBatchMs": 64.2837,
+      "TargetBatchMs": 200,
+      "FixedIterations": 3111209
+    },
+    {
+      "Backend": "mono",
+      "Id": "self/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        38.7904,
+        21.3984,
+        36.3951,
+        24.0092
+      ],
+      "FastestBaselineBatchMs": 21.3984,
+      "TargetBatchMs": 200,
+      "FixedIterations": 934650
+    },
+    {
+      "Backend": "mono",
+      "Id": "self/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        54.6212,
+        32.6223,
+        38.755,
+        41.0503
+      ],
+      "FastestBaselineBatchMs": 32.6223,
+      "TargetBatchMs": 200,
+      "FixedIterations": 122616
+    },
+    {
+      "Backend": "mono",
+      "Id": "self/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        55.4256,
+        32.7289,
+        45.5071,
+        31.8844
+      ],
+      "FastestBaselineBatchMs": 31.8844,
+      "TargetBatchMs": 200,
+      "FixedIterations": 15682
+    },
+    {
+      "Backend": "mono",
+      "Id": "self/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        55.758,
+        37.5782,
+        32.3724,
+        30.992
+      ],
+      "FastestBaselineBatchMs": 30.992,
+      "TargetBatchMs": 200,
+      "FixedIterations": 1033
+    },
+    {
+      "Backend": "mono",
+      "Id": "proxy-alias/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        115.2297,
+        95.9048,
+        88.0512,
+        85.9721
+      ],
+      "FastestBaselineBatchMs": 85.9721,
+      "TargetBatchMs": 200,
+      "FixedIterations": 2326337
+    },
+    {
+      "Backend": "mono",
+      "Id": "proxy-alias/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        39.6268,
+        28.846,
+        27.7844,
+        49.8426
+      ],
+      "FastestBaselineBatchMs": 27.7844,
+      "TargetBatchMs": 200,
+      "FixedIterations": 719829
+    },
+    {
+      "Backend": "mono",
+      "Id": "proxy-alias/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        63.1385,
+        33.0935,
+        36.1981,
+        192.2058
+      ],
+      "FastestBaselineBatchMs": 33.0935,
+      "TargetBatchMs": 200,
+      "FixedIterations": 120870
+    },
+    {
+      "Backend": "mono",
+      "Id": "proxy-alias/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        56.9283,
+        41.5621,
+        38.8167,
+        55.8367
+      ],
+      "FastestBaselineBatchMs": 38.8167,
+      "TargetBatchMs": 200,
+      "FixedIterations": 12882
+    },
+    {
+      "Backend": "mono",
+      "Id": "proxy-alias/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        60.353,
+        34.3752,
+        32.2388,
+        185.2188
+      ],
+      "FastestBaselineBatchMs": 32.2388,
+      "TargetBatchMs": 200,
+      "FixedIterations": 993
+    },
+    {
+      "Backend": "mono",
+      "Id": "parent/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        161.9944,
+        91.5503,
+        74.7861,
+        71.6836
+      ],
+      "FastestBaselineBatchMs": 71.6836,
+      "TargetBatchMs": 200,
+      "FixedIterations": 2790039
+    },
+    {
+      "Backend": "mono",
+      "Id": "parent/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        108.025,
+        42.8206,
+        34.2007,
+        33.3241
+      ],
+      "FastestBaselineBatchMs": 33.3241,
+      "TargetBatchMs": 200,
+      "FixedIterations": 600167
+    },
+    {
+      "Backend": "mono",
+      "Id": "parent/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        202.4938,
+        64.7298,
+        71.0638,
+        60.516
+      ],
+      "FastestBaselineBatchMs": 60.516,
+      "TargetBatchMs": 200,
+      "FixedIterations": 66099
+    },
+    {
+      "Backend": "mono",
+      "Id": "parent/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        194.9563,
+        64.2671,
+        68.3983,
+        73.0693
+      ],
+      "FastestBaselineBatchMs": 64.2671,
+      "TargetBatchMs": 200,
+      "FixedIterations": 7781
+    },
+    {
+      "Backend": "mono",
+      "Id": "parent/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        81.1301,
+        61.3152,
+        66.1745,
+        103.2091
+      ],
+      "FastestBaselineBatchMs": 61.3152,
+      "TargetBatchMs": 200,
+      "FixedIterations": 522
+    },
+    {
+      "Backend": "mono",
+      "Id": "manual/n0",
+      "OriginalIterations": 1000000,
+      "BaselineBatchMs": [
+        84.2671,
+        56.8082,
+        64.9417,
+        48.6612
+      ],
+      "FastestBaselineBatchMs": 48.6612,
+      "TargetBatchMs": 200,
+      "FixedIterations": 4110051
+    },
+    {
+      "Backend": "mono",
+      "Id": "manual/n1",
+      "OriginalIterations": 100000,
+      "BaselineBatchMs": [
+        36.2059,
+        33.2053,
+        25.3161,
+        73.9878
+      ],
+      "FastestBaselineBatchMs": 25.3161,
+      "TargetBatchMs": 200,
+      "FixedIterations": 790012
+    },
+    {
+      "Backend": "mono",
+      "Id": "manual/n8",
+      "OriginalIterations": 20000,
+      "BaselineBatchMs": [
+        87.4719,
+        46.2449,
+        43.3717,
+        74.3094
+      ],
+      "FastestBaselineBatchMs": 43.3717,
+      "TargetBatchMs": 200,
+      "FixedIterations": 92227
+    },
+    {
+      "Backend": "mono",
+      "Id": "manual/n64",
+      "OriginalIterations": 2500,
+      "BaselineBatchMs": [
+        134.0331,
+        45.1637,
+        38.0164,
+        54.5517
+      ],
+      "FastestBaselineBatchMs": 38.0164,
+      "TargetBatchMs": 200,
+      "FixedIterations": 13153
+    },
+    {
+      "Backend": "mono",
+      "Id": "manual/n1024",
+      "OriginalIterations": 160,
+      "BaselineBatchMs": [
+        66.6752,
+        43.4492,
+        50.6248,
+        59.2201
+      ],
+      "FastestBaselineBatchMs": 43.4492,
+      "TargetBatchMs": 200,
+      "FixedIterations": 737
+    }
+  ]
+}

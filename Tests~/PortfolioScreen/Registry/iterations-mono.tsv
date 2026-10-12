@@ -1,0 +1,12 @@
+registry/unique-roots4096-name8	64
+registry/unique-roots4096-name256	64
+registry/unique-depth2-disjoint4096	64
+registry/fresh-chain128	269
+registry/prefixes128-ascending	128
+registry/prefixes128-descending	128
+registry/known-trunk64-new-leaves256	64
+registry/implicit-parent-promotion	19377
+registry/shallow-forest4096	64
+registry/trunk-depth128-leaves256	64
+registry/chain-depth3000	8
+registry/duplicates-depth8-leaves1024-x8	128

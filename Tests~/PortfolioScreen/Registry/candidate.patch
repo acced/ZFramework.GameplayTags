@@ -1,0 +1,57 @@
+--- a/Runtime/GameplayTagRegistrationContext.cs
++++ b/Runtime/GameplayTagRegistrationContext.cs
+@@ -29,13 +29,38 @@
+             GameplayTagFlags flags = GameplayTagFlags.None)
+         {
+             Node parent = m_Root;
++            int firstDot = name.IndexOf('.');
++            int lastDot = -1;
++            string finalParentName = null;
++            if (firstDot >= 0)
++            {
++                lastDot = name.LastIndexOf('.');
++                finalParentName = name.Substring(0, lastDot);
++                if (m_ByName.TryGetValue(finalParentName, out Node existingParent))
++                {
++                    if (!m_ByName.TryGetValue(name, out Node leaf))
++                    {
++                        leaf = new Node(name, name.Substring(lastDot + 1), existingParent);
++                        m_ByName.Add(name, leaf);
++                        existingParent.Children.Add(leaf);
++                    }
++                    parent = leaf;
++                    goto MergeDeclaration;
++                }
++            }
++
+             int start = 0;
++            int dot = firstDot;
+             while (true)
+             {
+-                int dot = name.IndexOf('.', start);
+                 int end = dot < 0 ? name.Length : dot;
+-                string prefix = dot < 0 ? name : name.Substring(0, end);
+-                if (!m_ByName.TryGetValue(prefix, out Node node))
++                string prefix = dot < 0 ? name : dot == lastDot ? finalParentName : name.Substring(0, end);
++                Node node;
++                if (dot >= 0 && dot == lastDot)
++                    node = null; // This exact parent prefix was already absent.
++                else
++                    m_ByName.TryGetValue(prefix, out node);
++                if (node == null)
+                 {
+                     node = new Node(prefix, name.Substring(start, end - start), parent);
+                     m_ByName.Add(prefix, node);
+@@ -46,8 +71,10 @@
+                 if (dot < 0)
+                     break;
+                 start = dot + 1;
+-            }
+-
++                dot = name.IndexOf('.', start);
++            }
++
++        MergeDeclaration:
+             // Declarations are trusted input. ValidateName is an explicit authoring-time
+             // operation, not repeated here or in lookups. Duplicate declarations merge
+             // flags and select an ordinal description so assembly/input order is irrelevant.

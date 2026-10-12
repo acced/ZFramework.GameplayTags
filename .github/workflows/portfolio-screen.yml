@@ -1,0 +1,55 @@
+name: Independent optimization rejection screens
+on:
+  push:
+    branches: [perf/compact-runtime-rewrite]
+    paths:
+      - 'Tests~/PortfolioScreen/**'
+      - '.github/workflows/portfolio-screen.yml'
+permissions:
+  contents: read
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        candidate: [Registry, Hierarchical]
+        backend: [net, mono]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.425
+      - name: Restore standalone Mono references
+        if: matrix.backend == 'mono'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y mono-devel
+          dotnet restore Tests~/PortfolioScreen/References.csproj --packages "$RUNNER_TEMP/portfolio-nuget" --verbosity quiet
+      - name: Run fixed rejection screen
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--backend '${{ matrix.backend }}' --dotnet "$(readlink -f "$(command -v dotnet)")" --nuget "$RUNNER_TEMP/portfolio-nuget" --git-root "$GITHUB_WORKSPACE" --out "$GITHUB_WORKSPACE/.artifacts/portfolio-screen" --work "$RUNNER_TEMP/portfolio-work")
+          if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
+          python3 'Tests~/PortfolioScreen/${{ matrix.candidate }}/run.py' "${args[@]}"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: portfolio-${{ matrix.candidate }}-${{ matrix.backend }}-${{ github.sha }}
+          path: |
+            .artifacts/portfolio-screen/status.json
+            .artifacts/portfolio-screen/provenance.json
+            .artifacts/portfolio-screen/config.json
+            .artifacts/portfolio-screen/correctness.json
+            .artifacts/portfolio-screen/summary.json
+            .artifacts/portfolio-screen/allocation.json
+            .artifacts/portfolio-screen/raw/*.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 90

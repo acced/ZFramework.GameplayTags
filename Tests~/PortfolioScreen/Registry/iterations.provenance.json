@@ -1,0 +1,294 @@
+{
+  "Purpose": "Fixed rejection-only screen; no acceptance inference",
+  "Formula": "max(original count, ceil(200000000 / minimum before Ns across all four original samples))",
+  "BaselineOnly": true,
+  "OriginalProgramSHA256": "3380cab218441709918305cc58729db5ad52fa9425a709e181825070b8fea9c8",
+  "Maps": {
+    "net": {
+      "SHA256": "e66d1c1b977b8ee67ac1fceb353a51cf027d94e04d0cd4ecaede5dce9808073b",
+      "BaselineRawSHA256": [
+        "9626d71766c92fdb3322453c6d85c9c2e032ad8977654aea0415fb8f8c0e637d",
+        "5471d29df86ff29da89e35f1f9594501fed6024911817edafe944f3819004005",
+        "99fad1c3f9240e8426f8a7779927f3efb7f3d11694ba650d91740ff66f5f53a3",
+        "2fc6f61db51b289562d5464d75775e6d09a52e2194626ba85989e61f509c609a"
+      ],
+      "Rows": [
+        {
+          "Id": "registry/unique-roots4096-name8",
+          "OriginalCount": 64,
+          "BaselineNs": [
+            9584972.578125,
+            3003868.15625,
+            5984601.328125,
+            4558333.15625
+          ],
+          "SharedCount": 67
+        },
+        {
+          "Id": "registry/unique-roots4096-name256",
+          "OriginalCount": 64,
+          "BaselineNs": [
+            13757084.453125,
+            5784475.125,
+            7537571.890625,
+            5536079.34375
+          ],
+          "SharedCount": 64
+        },
+        {
+          "Id": "registry/unique-depth2-disjoint4096",
+          "OriginalCount": 64,
+          "BaselineNs": [
+            17105700.6875,
+            13889948.890625,
+            17810111.40625,
+            14091960.4375
+          ],
+          "SharedCount": 64
+        },
+        {
+          "Id": "registry/fresh-chain128",
+          "OriginalCount": 128,
+          "BaselineNs": [
+            212763.15625,
+            317755.40625,
+            456216.71875,
+            375492.8984375
+          ],
+          "SharedCount": 941
+        },
+        {
+          "Id": "registry/prefixes128-ascending",
+          "OriginalCount": 128,
+          "BaselineNs": [
+            4398331.1328125,
+            3815218.109375,
+            5664802.3515625,
+            6072009.3046875
+          ],
+          "SharedCount": 128
+        },
+        {
+          "Id": "registry/prefixes128-descending",
+          "OriginalCount": 128,
+          "BaselineNs": [
+            6219867.453125,
+            4359669.7578125,
+            5567083.84375,
+            10798949.5859375
+          ],
+          "SharedCount": 128
+        },
+        {
+          "Id": "registry/known-trunk64-new-leaves256",
+          "OriginalCount": 64,
+          "BaselineNs": [
+            11194059.921875,
+            7866139,
+            11210745.5625,
+            6770439.140625
+          ],
+          "SharedCount": 64
+        },
+        {
+          "Id": "registry/implicit-parent-promotion",
+          "OriginalCount": 4096,
+          "BaselineNs": [
+            7412.880859375,
+            4824.721435546875,
+            7082.11083984375,
+            4693.817138671875
+          ],
+          "SharedCount": 42610
+        },
+        {
+          "Id": "registry/shallow-forest4096",
+          "OriginalCount": 64,
+          "BaselineNs": [
+            11831223.328125,
+            11439430.109375,
+            10244066.953125,
+            7133062.125
+          ],
+          "SharedCount": 64
+        },
+        {
+          "Id": "registry/trunk-depth128-leaves256",
+          "OriginalCount": 64,
+          "BaselineNs": [
+            34823351.453125,
+            44322823.5,
+            37140593.9375,
+            25252474.375
+          ],
+          "SharedCount": 64
+        },
+        {
+          "Id": "registry/chain-depth3000",
+          "OriginalCount": 8,
+          "BaselineNs": [
+            73049706.125,
+            96424141.25,
+            81354537.875,
+            57469175.5
+          ],
+          "SharedCount": 8
+        },
+        {
+          "Id": "registry/duplicates-depth8-leaves1024-x8",
+          "OriginalCount": 128,
+          "BaselineNs": [
+            12115849.171875,
+            6608136.9375,
+            9739549.4453125,
+            7441364.7578125
+          ],
+          "SharedCount": 128
+        }
+      ]
+    },
+    "mono": {
+      "SHA256": "244de6af40041d38648c8953e6ee015f5150e3637062a82af9feacb83a5f207e",
+      "BaselineRawSHA256": [
+        "3d7cdc304555301288802b3b879d6297163eeec942c77cf72db92de57422f908",
+        "8fff493f0cd3d37a2e98ef3d949da432c1a76d86ce1eb2e4802d55db45d0aae5",
+        "18fbf215b6da693bf41cd8c3565a705d449dd5a5e8fff1b43b5135fc29a3f53a",
+        "15ed1e4a22a9c54291b88e9394d064b2d67462bd891d1771bd69520dd73c7453"
+      ],
+      "Rows": [
+        {
+          "Id": "registry/unique-roots4096-name8",
+          "OriginalCount": 64,
+          "BaselineNs": [
+            6605301.5625,
+            7753393.75,
+            10016446.875,
+            10724039.0625
+          ],
+          "SharedCount": 64
+        },
+        {
+          "Id": "registry/unique-roots4096-name256",
+          "OriginalCount": 64,
+          "BaselineNs": [
+            21726468.75,
+            20929396.875,
+            19940804.6875,
+            18973576.5625
+          ],
+          "SharedCount": 64
+        },
+        {
+          "Id": "registry/unique-depth2-disjoint4096",
+          "OriginalCount": 64,
+          "BaselineNs": [
+            23126662.5,
+            25758256.25,
+            17463381.25,
+            16355953.125
+          ],
+          "SharedCount": 64
+        },
+        {
+          "Id": "registry/fresh-chain128",
+          "OriginalCount": 128,
+          "BaselineNs": [
+            1070136.71875,
+            745171.875,
+            812556.25,
+            1118807.8125
+          ],
+          "SharedCount": 269
+        },
+        {
+          "Id": "registry/prefixes128-ascending",
+          "OriginalCount": 128,
+          "BaselineNs": [
+            22050392.96875,
+            18519739.84375,
+            18596378.90625,
+            21701102.34375
+          ],
+          "SharedCount": 128
+        },
+        {
+          "Id": "registry/prefixes128-descending",
+          "OriginalCount": 128,
+          "BaselineNs": [
+            17999050.78125,
+            18490042.1875,
+            32805003.90625,
+            17322452.34375
+          ],
+          "SharedCount": 128
+        },
+        {
+          "Id": "registry/known-trunk64-new-leaves256",
+          "OriginalCount": 64,
+          "BaselineNs": [
+            30116857.8125,
+            26513975,
+            39424971.875,
+            47268815.625
+          ],
+          "SharedCount": 64
+        },
+        {
+          "Id": "registry/implicit-parent-promotion",
+          "OriginalCount": 4096,
+          "BaselineNs": [
+            13813.7451171875,
+            29552.001953125,
+            10321.7041015625,
+            13128.7109375
+          ],
+          "SharedCount": 19377
+        },
+        {
+          "Id": "registry/shallow-forest4096",
+          "OriginalCount": 64,
+          "BaselineNs": [
+            12374910.9375,
+            10815104.6875,
+            18255484.375,
+            7958557.8125
+          ],
+          "SharedCount": 64
+        },
+        {
+          "Id": "registry/trunk-depth128-leaves256",
+          "OriginalCount": 64,
+          "BaselineNs": [
+            143805278.125,
+            154294343.75,
+            146431334.375,
+            106300260.9375
+          ],
+          "SharedCount": 64
+        },
+        {
+          "Id": "registry/chain-depth3000",
+          "OriginalCount": 8,
+          "BaselineNs": [
+            201245762.5,
+            125221887.5,
+            152350400,
+            150488387.5
+          ],
+          "SharedCount": 8
+        },
+        {
+          "Id": "registry/duplicates-depth8-leaves1024-x8",
+          "OriginalCount": 128,
+          "BaselineNs": [
+            22853126.5625,
+            22050078.90625,
+            18976603.90625,
+            20164228.125
+          ],
+          "SharedCount": 128
+        }
+      ]
+    }
+  }
+}
