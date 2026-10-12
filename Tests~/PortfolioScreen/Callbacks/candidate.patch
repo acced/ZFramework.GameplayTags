@@ -1,0 +1,94 @@
+--- a/Runtime/GameplayTagCountContainer.cs
++++ b/Runtime/GameplayTagCountContainer.cs
+@@ -226,11 +226,13 @@
+                 return;
+             }
+ 
++            int callbackCursor = 0;
+             for (int i = 0; i < hierarchy.Length; i++)
+             {
+                 int current = hierarchy[i];
+                 int newCount = Storage.AddTotal(current, amount);
+-                QueueChange(current, newCount, newCount == amount);
++                QueueChange(current, newCount, newCount == amount,
++                    FindCallback(current, ref callbackCursor));
+             }
+         }
+ 
+@@ -295,11 +297,13 @@
+                 return true;
+             }
+ 
++            int callbackCursor = 0;
+             for (int i = 0; i < hierarchy.Length; i++)
+             {
+                 int current = hierarchy[i];
+                 int newCount = Storage.RemoveTotal(current, amount);
+-                QueueChange(current, newCount, newCount == 0);
++                QueueChange(current, newCount, newCount == 0,
++                    FindCallback(current, ref callbackCursor));
+             }
+ 
+             return true;
+@@ -389,5 +393,61 @@
+         public GameplayTagEnumerator GetEnumerator() => GetTags();
+         IEnumerator<GameplayTag> IEnumerable<GameplayTag>.GetEnumerator() => GetEnumerator();
+         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
++
++        // Hierarchy IDs increase from root to leaf. The cursor belongs to one
++        // mutation and never survives callback dispatch or another hierarchy.
++        private int FindCallback(int id, ref int cursor)
++        {
++            int low = cursor;
++            int high = m_CallbackCount - 1;
++            if (low > high)
++                return ~low;
++
++            int candidate = m_Callbacks[low].Id;
++            if (candidate == id)
++            {
++                cursor = low + 1;
++                return low;
++            }
++            if (candidate > id)
++                return ~low;
++
++            // Keep this endpoint so the first binary interval matches the
++            // original search, including its midpoint for even-sized tables.
++            while (low <= high)
++            {
++                int middle = (low + high) >> 1;
++                candidate = m_Callbacks[middle].Id;
++                if (candidate == id)
++                {
++                    cursor = middle + 1;
++                    return middle;
++                }
++                if (candidate < id)
++                    low = middle + 1;
++                else
++                    high = middle - 1;
++            }
++
++            cursor = low;
++            return ~low;
++        }
++
++        private void QueueChange(int id, int count, bool transition, int index)
++        {
++            GameplayTagDelegateInfo callbacks = index < 0 ? default : m_Callbacks[index].Callbacks;
++            if (transition)
++            {
++                if (callbacks.OnNewOrRemove != null)
++                    Enqueue(id, count, callbacks.OnNewOrRemove);
++                if (OnAnyTagNewOrRemove != null)
++                    Enqueue(id, count, OnAnyTagNewOrRemove);
++            }
++
++            if (callbacks.OnAnyChange != null)
++                Enqueue(id, count, callbacks.OnAnyChange);
++            if (OnAnyTagCountChange != null)
++                Enqueue(id, count, OnAnyTagCountChange);
++        }
+     }
+ }

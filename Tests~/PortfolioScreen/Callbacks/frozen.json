@@ -1,0 +1,15 @@
+{
+  "Files": {
+    "Harness/Correctness.cs": "45e1014d87d01b33701eed14b5f0769f1d862b898e405817aa3b7239f425f323",
+    "Harness/Screen.cs": "8b89c346b4962470b552b4b17fc6fae3a107f7efe2529bbc54a73655ff02a424",
+    "README.md": "b1fa9353ea05b7cd42962ae7d74e97090190d128dbc88fcadad25d687eb6d1da",
+    "Screen.csproj": "b8efbcb2b4ede17eca8818f6b02088274122d1f41f72b153242d951849692cfd",
+    "candidate/GameplayTagCountContainer.cs": "fd2174fe99f1e333c5af36150c21e39e976888281c9f9f50d093adb29df28c42",
+    "candidate.patch": "9643939618c65d2577c2fec1c21d17c7caf56b437ee737fec0690ad152fdfbf6",
+    "config.json": "f94fef196891260444ea4609c67b1650d9d27b3bed55a98cb634914f6ff02a2f",
+    "run.py": "360c236a3f4dcdad91c9a3175e6733853715a1cb8a80fcda6c2fd7320a4042f6",
+    "source-pins.json": "089f05bfb07c9af6fe34e5009d19b4dc5b4601d41cc4b27026ebe229fb6393f7",
+    "upload-allowlist.txt": "f79749da2de0f46f3fb471abe3b6c5ef4efbd72de24d89a8e261a31c8d8574bb"
+  },
+  "BuildSupportSHA256": "18aa47288e2780a942bf70f91d333d8d6c9e2d03a6bdf4cade6816d251db6e33"
+}

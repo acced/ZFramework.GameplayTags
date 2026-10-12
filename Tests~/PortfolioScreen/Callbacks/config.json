@@ -1,0 +1,138 @@
+{
+  "BaselineCommit": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "Purpose": "CI rejection only; no qualification",
+  "Rows": [
+    {
+      "id": "dense-path/d64",
+      "depth": 64,
+      "callback_entries": 64,
+      "pilot_iterations": 4096,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "Specific AnyCountChange on every ancestor; adjacent-hit intended gain."
+    },
+    {
+      "id": "exhausted-path/d64",
+      "depth": 64,
+      "callback_entries": 1,
+      "pilot_iterations": 4096,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "Specific AnyCountChange only on root; exhausted-table intended gain."
+    },
+    {
+      "id": "silent/d1",
+      "depth": 1,
+      "callback_entries": 0,
+      "pilot_iterations": 65536,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "No local or global listeners; unchanged early-return guard."
+    },
+    {
+      "id": "global-only/d1",
+      "depth": 1,
+      "callback_entries": 0,
+      "pilot_iterations": 65536,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "One global AnyCountChange listener; cheapest notification guard."
+    },
+    {
+      "id": "global-only/d4",
+      "depth": 4,
+      "callback_entries": 0,
+      "pilot_iterations": 16384,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "One global AnyCountChange listener; empty table across multiple ancestors."
+    },
+    {
+      "id": "one-hit/d1",
+      "depth": 1,
+      "callback_entries": 1,
+      "pilot_iterations": 65536,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "One matching specific AnyCountChange listener."
+    },
+    {
+      "id": "one-miss/d4",
+      "depth": 4,
+      "callback_entries": 1,
+      "pilot_iterations": 16384,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "One unrelated callback with an ID beyond the mutated leaf."
+    },
+    {
+      "id": "huge-gaps/d4",
+      "depth": 4,
+      "callback_entries": 8192,
+      "pilot_iterations": 16384,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "Four groups of 2048 off-path callback tags: between successive ancestors and after the leaf; no local hit."
+    },
+    {
+      "id": "huge-midpoint/d1",
+      "depth": 1,
+      "callback_entries": 8192,
+      "pilot_iterations": 65536,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "Depth-one callback keys; mutate sorted callback index 4095, the original first binary midpoint."
+    },
+    {
+      "id": "huge-late-miss/d1",
+      "depth": 1,
+      "callback_entries": 8192,
+      "pilot_iterations": 16384,
+      "operation": "AddTag/RemoveTag pair",
+      "fixture": "Depth-one tag beyond every registered callback key; no match."
+    },
+    {
+      "id": "clear-cycle/d4",
+      "depth": 4,
+      "callback_entries": 4,
+      "pilot_iterations": 16384,
+      "operation": "AddTag/Clear pair",
+      "fixture": "Specific AnyCountChange on every ancestor; Clear retains its original search/body. This measures the full refill/Clear cycle, not isolated Clear."
+    },
+    {
+      "id": "bulk-reset/8xd4",
+      "depth": 4,
+      "callback_entries": 32,
+      "pilot_iterations": 4096,
+      "operation": "AddTags/RemoveTags pair",
+      "fixture": "Eight disjoint depth-four leaves in descending runtime-ID order; listeners on all 32 closure tags; same prepared source reused."
+    }
+  ],
+  "PilotWarmupPairs": 1024,
+  "PilotSamplesPerRow": 1,
+  "TargetBatchMs": 200,
+  "IterationRule": "max(pilot_iterations, ceil(pilot_iterations * 200 / pilot_batch_ms))",
+  "ComparisonRounds": 4,
+  "RoundOrder": [
+    [
+      "before",
+      "after"
+    ],
+    [
+      "after",
+      "before"
+    ],
+    [
+      "before",
+      "after"
+    ],
+    [
+      "after",
+      "before"
+    ]
+  ],
+  "SDKVersion": "8.0.425",
+  "CLRVersion": "8.0.31",
+  "ExpectedCIMonoVersion": "6.8.0.105",
+  "DeadlineSeconds": 600,
+  "PublicEvidence": "Explicit JSON allowlist only; source hashes are repo-relative; raw command/environment/build logs remain private.",
+  "Scope": [
+    "Exactly twelve rows; one registry and shared immutable tag fixture preparation per process.",
+    "One before-only pilot process contains all twelve per-row pilots; no candidate calibration.",
+    "Raw pilot and per-backend shared count map are persisted before comparison processes.",
+    "Short batches, failures and timeouts are retained without retries or resampling.",
+    "Clear row is the full AddTag/Clear cycle, not isolated Clear."
+  ],
+  "DeadlineStart": "driver main entry, including archive materialization and toolchain setup"
+}
