@@ -1,0 +1,48 @@
+# Compact binding records: first CI screen held
+
+Qualified versions remain **0/10**. This is a bounded rejection/portability screen, not final qualification. Root Runtime was unchanged by the test-package commit.
+
+- Exact test commit: `9a39654f5899592fdae7b35c3653420021de8bef`.
+- [Completed run 38279828100](https://github.com/acced/ZFramework.GameplayTags/actions/runs/38279828100). .NET completed two semantic targets, 32 cold calls and 56 warm calls. Mono completed two builds and stopped at the original semantic stage after one attempted target, before candidate semantics or any cold/warm calls.
+- .NET artifact `11760731516`, ZIP SHA-256 `258d22acad1500bc8df541bf20a0afff96c06242cb76ea296b8e80fc99f89d6b`.
+- Mono artifact `11760766701`, ZIP SHA-256 `1feb5f83422848e9eab4c00a17482f897355df24113fb2c8a39d7862b4c80389`.
+- Both ZIP identities and all eight allowlisted files per backend were independently reviewed. .NET actual CLR 8.0.31, x64; SDK configured as 8.0.425. Mono runtime/layout was not validated before its stop. Installing a runtime is not evidence that the semantic target passed.
+
+## .NET memory and behavior
+
+Functional snapshots match SHA-256 `730eaa6d941f0fd91f88ec5478741cfd4284754cf1c48c4fd2a8cfe296b87ea0`; the metadata gate allows only the intended private field and two method-body changes. Actual managed record size is 24→16 bytes. The removal of unused mutable-name retention is intentional: arbitrary name WeakReference lifetime/private graphs can differ. Both original delegate constructions remain.
+
+Each of the twelve single-bind cold pairs saves exactly 32 allocated bytes and 32 bytes of final record-array payload. All four five-Bind growth pairs save 96 allocated bytes across growth and 64 bytes of final payload (192→128). Payload excludes array headers, other objects and whole-heap retention. Cold samples have zero GC.
+
+Fresh warm cycles save exactly 32 bytes (576→544 B/cycle). Retained group cycles have equal allocation. All 56 warm batches exceed 250 ms (minimum 286.83 ms); 40 have Gen0 collections and none have Gen1/2. These GC costs are included, not subtracted. Direct controls have zero bytes/GC.
+
+## All paired timing ratios
+
+Numbers below are candidate/original, in the frozen AB/BA/BA/AB pair order. Values above 1 are adverse. No sample is discarded, and four pairs establish neither statistical noninferiority nor universal causal effects.
+
+| Cold shape | Pair 0 | Pair 1 | Pair 2 | Pair 3 |
+|---|---:|---:|---:|---:|
+| absent | 0.992282 | 0.982082 | 0.979739 | 1.000452 |
+| present | 1.011839 | 0.979942 | 0.971911 | 0.964273 |
+| external | 1.005160 | 1.028671 | 1.014568 | 0.987656 |
+| growth-five | 1.018970 | 0.971149 | 0.822683 | 1.006602 |
+
+| Warm cycle/control | Pair 0 | Pair 1 | Pair 2 | Pair 3 |
+|---|---:|---:|---:|---:|
+| fresh-single | 0.986519 | 0.916405 | 0.982880 | 0.968504 |
+| retained-absent | 0.950248 | 0.940684 | 0.939831 | 0.945457 |
+| retained-present | 0.958601 | 0.962765 | 0.986583 | 0.975803 |
+| distinct-eight | 0.931320 | 0.926591 | 0.994485 | 0.925274 |
+| external-multicast | 0.954447 | 0.979544 | 0.985829 | 0.962596 |
+| direct-subscription | 1.026465 | 1.008687 | 1.021525 | 1.014709 |
+| direct-dispatch | 1.006034 | 1.000595 | 0.984853 | 0.958735 |
+
+The five changed warm rows improve in every pair, but the unchanged direct-subscription control is slower in every pair by 0.9–2.6% (geometric ratio about 1.0178, at least 296.68 ms, zero bytes/GC). External-listener first-use is slower in three of four pairs. Those adverse observations remain unresolved and are not offset by memory savings. Local mixed times, 39/56 short warm batches, allocation and GC observations remain in [the frozen local evidence](BindingRecordIds/LOCAL_EVIDENCE.md).
+
+## Decision and Mono failure
+
+**HOLD.** No new .NET timing, source-layout variant or full qualification follows this screen. The first Mono original semantic attempt did not produce a validated semantic/runtime/layout result. Existing public artifacts and job logs do not identify its cause: child diagnostics were private, while public status only records the stage and counts. No Runtime defect, compiler defect, GC cause or environment cause is inferred.
+
+A separately reviewed original-only Mono semantic diagnostic may report fixed phase/error codes while preserving exact Runtime and harness bytes. It must run no candidate semantic target, cold call, warm call or pilot; a successful diagnostic would be non-reproduction, not an explanation of the original failure. The failed run remains evidence. No actual Unity, IL2CPP, 32-bit or comprehensive acceptance claim is made.
+
+The same-group API is the direct comparator. A fixed manual subscription can avoid group ownership costs and is a narrower public alternative; unchanged direct controls are not semantically equivalent replacements for dynamic shared ownership. No result claims superiority over every manual subscription route.

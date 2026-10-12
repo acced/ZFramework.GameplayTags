@@ -1,0 +1,20 @@
+{
+  "Schema": "binding-record-ids-mono-diagnostic-v1",
+  "PreparationOnly": true,
+  "OriginalPackageSeal": "0f2c191c3d35d8e22afdad3e3a69962d26272c748bf0d4d00a10f9fdb252ec95",
+  "PythonProjectionTestsPassed": true,
+  "CompilerOrTargetExecutionPerformed": false,
+  "BuildBudget": 2,
+  "OriginalSemanticBudget": 1,
+  "CandidateSemanticBudget": 0,
+  "ColdWarmPilotBudget": 0,
+  "DeadlineSeconds": 120,
+  "Files": {
+    "README.md": "422ea87d007653c342cda7ce820d6f70986d8678871e15a127d1635c83f83e8d",
+    "coordinator-adapter.patch": "3a8a29f140afda8bdbaca5b085332b39a072ca16c2286dae2c7665eaf8ed89a5",
+    "projection.py": "055e617eb0a39ad1d719759d0d150a502538faff149f8810b0656cc15443e9df",
+    "run.py": "3063a1b7e7a0a371adb0ce6c4012d3b298b5eb46d3ff0d73fd6629be64810563",
+    "test_projection.py": "2b6b13b2319a5bd436a9ddcc293c3c9ebdc365fc121bd8c773b569c8e0c38f85",
+    "upload-allowlist.txt": "be21db0061965ec19d67307130af298da4bd2e92e45c8ca79ae0c53d13b6fafc"
+  }
+}

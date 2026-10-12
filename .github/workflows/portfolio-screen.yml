@@ -14,8 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        candidate: [BindingRecordIds]
-        backend: [net, mono]
+        candidate: [BindingRecordIdsDiagnostic]
+        backend: [mono]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,22 +35,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          args=(--backend '${{ matrix.backend }}' --dotnet "$(readlink -f "$(command -v dotnet)")" --nuget "$RUNNER_TEMP/portfolio-nuget" --git-root "$GITHUB_WORKSPACE" --out "$GITHUB_WORKSPACE/.artifacts/portfolio-screen" --work "$RUNNER_TEMP/portfolio-work")
+          args=(--backend mono --package "$GITHUB_WORKSPACE/Tests~/PortfolioScreen/BindingRecordIds" --dotnet "$(readlink -f "$(command -v dotnet)")" --nuget "$RUNNER_TEMP/portfolio-nuget" --git-root "$GITHUB_WORKSPACE" --out "$GITHUB_WORKSPACE/.artifacts/portfolio-screen" --work "$RUNNER_TEMP/portfolio-work")
           if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
-          python3 'Tests~/PortfolioScreen/${{ matrix.candidate }}/run.py' "${args[@]}" --expected-seal 0f2c191c3d35d8e22afdad3e3a69962d26272c748bf0d4d00a10f9fdb252ec95
+          python3 'Tests~/PortfolioScreen/${{ matrix.candidate }}/run.py' "${args[@]}" --expected-seal 8a9712ba8591dee40a3f8482d67cc38b8086e2501c3a72b0db468fe68df3418f
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: portfolio-${{ matrix.candidate }}-${{ matrix.backend }}-${{ github.sha }}
-          path: |
-            .artifacts/portfolio-screen/status.json
-            .artifacts/portfolio-screen/provenance.json
-            .artifacts/portfolio-screen/config.json
-            .artifacts/portfolio-screen/correctness.json
-            .artifacts/portfolio-screen/summary.json
-            .artifacts/portfolio-screen/count-map.json
-            .artifacts/portfolio-screen/raw/cold.json
-            .artifacts/portfolio-screen/raw/warm.json
+          path: .artifacts/portfolio-screen/diagnostic.json
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 90
