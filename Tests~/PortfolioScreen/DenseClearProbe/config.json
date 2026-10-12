@@ -1,0 +1,187 @@
+{
+  "BaselineCommit": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "Purpose": "Bounded rejection only; no acceptance or full qualification",
+  "Rows": [
+    {
+      "id": "empty-retained",
+      "keep": 0,
+      "reserve": 8192,
+      "grow": 1024,
+      "active_mask": 16383,
+      "entries_capacity": 8192,
+      "explicit_capacity": 8192,
+      "bucket_capacity": 16384,
+      "candidate_bulk_policy": false,
+      "operation": "Only sequential public Clear calls over a fixed128-container cohort are inside each timed interval"
+    },
+    {
+      "id": "tiny8-linear",
+      "keep": 8,
+      "reserve": 0,
+      "grow": 8,
+      "active_mask": 0,
+      "entries_capacity": 8,
+      "explicit_capacity": 8,
+      "bucket_capacity": 0,
+      "candidate_bulk_policy": false,
+      "operation": "Only sequential public Clear calls over a fixed128-container cohort are inside each timed interval"
+    },
+    {
+      "id": "fresh9-hashed",
+      "keep": 9,
+      "reserve": 0,
+      "grow": 9,
+      "active_mask": 31,
+      "entries_capacity": 16,
+      "explicit_capacity": 16,
+      "bucket_capacity": 32,
+      "candidate_bulk_policy": false,
+      "operation": "Only sequential public Clear calls over a fixed128-container cohort are inside each timed interval"
+    },
+    {
+      "id": "fresh63",
+      "keep": 63,
+      "reserve": 0,
+      "grow": 63,
+      "active_mask": 127,
+      "entries_capacity": 64,
+      "explicit_capacity": 64,
+      "bucket_capacity": 128,
+      "candidate_bulk_policy": false,
+      "operation": "Only sequential public Clear calls over a fixed128-container cohort are inside each timed interval"
+    },
+    {
+      "id": "fresh64",
+      "keep": 64,
+      "reserve": 0,
+      "grow": 64,
+      "active_mask": 127,
+      "entries_capacity": 64,
+      "explicit_capacity": 64,
+      "bucket_capacity": 128,
+      "candidate_bulk_policy": true,
+      "operation": "Only sequential public Clear calls over a fixed128-container cohort are inside each timed interval"
+    },
+    {
+      "id": "fresh1024",
+      "keep": 1024,
+      "reserve": 0,
+      "grow": 1024,
+      "active_mask": 2047,
+      "entries_capacity": 1024,
+      "explicit_capacity": 1024,
+      "bucket_capacity": 2048,
+      "candidate_bulk_policy": true,
+      "operation": "Only sequential public Clear calls over a fixed128-container cohort are inside each timed interval"
+    },
+    {
+      "id": "retained-sparse16",
+      "keep": 16,
+      "reserve": 8192,
+      "grow": 1024,
+      "active_mask": 16383,
+      "entries_capacity": 8192,
+      "explicit_capacity": 8192,
+      "bucket_capacity": 16384,
+      "candidate_bulk_policy": false,
+      "operation": "Only sequential public Clear calls over a fixed128-container cohort are inside each timed interval"
+    },
+    {
+      "id": "density127",
+      "keep": 127,
+      "reserve": 512,
+      "grow": 512,
+      "active_mask": 1023,
+      "entries_capacity": 512,
+      "explicit_capacity": 512,
+      "bucket_capacity": 1024,
+      "candidate_bulk_policy": false,
+      "operation": "Only sequential public Clear calls over a fixed128-container cohort are inside each timed interval"
+    },
+    {
+      "id": "density128",
+      "keep": 128,
+      "reserve": 512,
+      "grow": 512,
+      "active_mask": 1023,
+      "entries_capacity": 512,
+      "explicit_capacity": 512,
+      "bucket_capacity": 1024,
+      "candidate_bulk_policy": true,
+      "operation": "Only sequential public Clear calls over a fixed128-container cohort are inside each timed interval"
+    }
+  ],
+  "ColdRows": [
+    "empty-retained",
+    "tiny8-linear",
+    "fresh9-hashed",
+    "fresh64",
+    "fresh1024",
+    "retained-sparse16",
+    "density127",
+    "density128"
+  ],
+  "PreflightColdRoute": "fresh9-hashed",
+  "CohortSize": 128,
+  "WarmupIntervals": 4,
+  "PilotIntervals": 8,
+  "TargetClearMs": 200,
+  "EstimatedWallBudgetMs": 1000,
+  "MaximumIntervals": 4096,
+  "PilotResolutionMultiple": 2,
+  "TimerDominanceMultiple": 10,
+  "IterationRule": "max(1,min(4096,ceil(8*200/pilot_ClearMs),floor(8*1000/pilot_WallMs)))",
+  "PilotResolutionGate": "Positive ClearMs/WallMs, every interval exceeds timestamp-pair median, summed ticks >=2*8*max(1,timestamp-pair median). Invalid pilots are retained; no repeat and no candidate warm timing.",
+  "ComparisonRounds": 4,
+  "RoundOrder": [
+    [
+      "before",
+      "after"
+    ],
+    [
+      "after",
+      "before"
+    ],
+    [
+      "before",
+      "after"
+    ],
+    [
+      "after",
+      "before"
+    ]
+  ],
+  "ColdSamplesPerFixturePerSource": 3,
+  "ColdRoundOrder": [
+    [
+      "before",
+      "after"
+    ],
+    [
+      "after",
+      "before"
+    ],
+    [
+      "before",
+      "after"
+    ]
+  ],
+  "SDKVersion": "8.0.425",
+  "CLRVersion": "8.0.31",
+  "ExpectedCIMonoVersion": "6.8.0.105",
+  "DeadlineSeconds": 600,
+  "NoAllocationExpected": true,
+  "AllocationHandling": "Preserve all nonnegative observed byte counts; report candidate-positive allocation differences as adverse and equal nonzero runtime overhead separately.",
+  "CacheScope": "Methods warmed; sequential fixed128-container cohort, all refilled then cleared in order. No cache flushing; neither universal cache-cold nor repeatedly clearing one hot container.",
+  "ColdScope": "First public Clear after identical normal registry/container setup in a fresh process. Observer/reflection/hash work excluded. Caller JIT can precede timestamp; process launch, native JIT allocation and universal runtime-cold behavior are not measured.",
+  "Scope": [
+    "Runtime candidate and exact original baseline are unchanged from the wrapper screen.",
+    "One original-only pilot with both Clear-only and full-block wall durations; all count components persisted before candidate warm timing.",
+    "The1000ms estimated row budget is only a forecast; the fixed600s process-group deadline is authoritative.",
+    "Nine rows in four balanced process pairs. Eight cold fixtures each get three fresh-process samples per source/backend; cold order has two AB and one BA pair.",
+    "Short/capped/timer-dominated/GC-confounded data remain visible and cannot establish acceptance. Timestamp overhead is never subtracted.",
+    "Expected poststate hashes encode the Clear transformation; before and after are not expected to match. Owned arrays and capacities are verified outside timing.",
+    "Owned-array equality does not measure added helper native/JIT footprint. First-call samples are descriptive and can expose repeatable large adverse behavior; three samples cannot establish reliable cold-latency wins."
+  ],
+  "PublicEvidence": "Only the explicit JSON allowlist. No actual paths, commands, environment dumps, compiler response files, target assemblies or private prior evidence."
+}

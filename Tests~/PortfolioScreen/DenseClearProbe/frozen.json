@@ -1,0 +1,14 @@
+{
+  "Files": {
+    "Harness/Probe.cs": "d1adf764ff54a22e8e6a5b367aabdb623d00b6fd4cbf68b49c6e89a1db24e1d3",
+    "Probe.csproj": "939ec31e880c25ef452b94432d76ce21e02d1e6671f33483eedd325903dcf245",
+    "README.md": "bc212b6e714fd00b724de0400fe189996ad4d227441d1ec1dfb587426e9ff4e5",
+    "candidate/TagStorage.cs": "7f198fcb262eba7e012f4554f7099a0eacdf7e4ac9051126221f0fcf0905ac92",
+    "candidate.patch": "23eddbeb558d27f5f977a9e2ea73997ea1dd5af550776ce68050c4452fe71ef0",
+    "config.json": "1a25d1bc7f4d0f39ef5f737b9e1f96a4108b32dd8a3dc0bd6298e35ae386a02c",
+    "run.py": "0247314bf24000c8753143f06ca02240e77ebf6a10a923d621b58662080e9b52",
+    "source-pins.json": "14526147c141ecf2f5b791237bea4f291e758992e9c41a17e9fa02f96567f9e6",
+    "upload-allowlist.txt": "0bdd20cae053f1d633338cfe807f5e4fb50086c9f26c962cd09ad2abd249a2ee"
+  },
+  "BuildSupportSHA256": "18aa47288e2780a942bf70f91d333d8d6c9e2d03a6bdf4cade6816d251db6e33"
+}
