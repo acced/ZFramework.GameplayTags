@@ -31,6 +31,8 @@ namespace GameplayTags
         {
             if (holder == null || query == null)
                 return false;
+            if (ReferenceEquals(holder, query))
+                return query.ExplicitCount != 0;
             // Probe with the smaller relevant set; one explicit condition must not
             // require scanning its entire (possibly very deep) ancestor closure.
             int holderCount = exact ? holder.ExplicitCount : holder.Count;
@@ -73,6 +75,8 @@ namespace GameplayTags
                 return true;
             if (holder == null || query.ExplicitCount > (exact ? holder.ExplicitCount : holder.Count))
                 return false;
+            if (ReferenceEquals(holder, query))
+                return true;
             if (query.ExplicitCount == 1)
             {
                 int id = query.Entries[query.ExplicitIndices[0]].Id;

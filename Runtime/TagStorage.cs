@@ -27,6 +27,9 @@ namespace GameplayTags
         // The active index may occupy a prefix of a larger reserved array. This
         // lets copies transfer the source index even when capacities differ.
         private int m_BucketMask;
+        // A deferred rebuild hint, not another index allocation. Clear retains
+        // the preceding live size so a refill avoids repeated index growth.
+        private int m_ClearedCount;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int Hash(int id)
@@ -66,8 +69,26 @@ namespace GameplayTags
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal bool ContainsExplicit(int id)
         {
-            int index = Find(id);
-            return index >= 0 && Entries[index].ExplicitCount != 0;
+            int mask = m_BucketMask;
+            Entry[] entries = Entries;
+            if (mask == 0)
+            {
+                for (int i = 0; i < Count; i++)
+                    if (entries[i].Id == id)
+                        return entries[i].ExplicitCount != 0;
+                return false;
+            }
+            int[] buckets = m_Buckets;
+            int slot = Hash(id) & mask;
+            int encoded;
+            while ((encoded = buckets[slot]) != 0)
+            {
+                int index = encoded - 1;
+                if (entries[index].Id == id)
+                    return entries[index].ExplicitCount != 0;
+                slot = (slot + 1) & mask;
+            }
+            return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -105,6 +126,40 @@ namespace GameplayTags
             Entries[index].ExplicitCount = 1;
             AddExplicitIndex(index);
             return true;
+        }
+
+        // Normal set insertion contributes to the explicit leaf immediately;
+        // the caller only needs to visit strict ancestors afterwards.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal bool TryAddSetTag(int id)
+        {
+            int index = Find(id);
+            if (index < 0)
+                index = Insert(id);
+            else if (Entries[index].ExplicitCount != 0)
+                return false;
+            Entries[index].ExplicitCount = 1;
+            Entries[index].Count++;
+            AddExplicitIndex(index);
+            return true;
+        }
+
+        // The first explicit tag establishes a whole path, not h independent
+        // set insertions. Keep the original leaf-first dense order and allocate
+        // the final entry/index capacities once. No sorting or scratch buffer.
+        internal void CompleteSingleTag(int id)
+        {
+            ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
+            int count = path.Length;
+            EnsureOverwriteCapacity(count, 1);
+            Entries[0] = new Entry { Id = id, Count = 1, ExplicitCount = 1 };
+            for (int i = 0; i < count - 1; i++)
+                Entries[i + 1] = new Entry { Id = path[i], Count = 1 };
+            ExplicitIndices[0] = 0;
+            Count = count;
+            ExplicitCount = 1;
+            ResetIndex(BucketCapacityFor(Math.Max(count, m_ClearedCount)));
+            BuildIndex();
         }
 
         private void AddExplicitIndex(int index)
@@ -234,30 +289,21 @@ namespace GameplayTags
             if (capacity <= LinearCapacity || m_BucketMask >= capacity * 2 - 1)
                 return;
 
-            ResetIndex(BucketCapacityFor(capacity));
+            ResetIndex(BucketCapacityFor(Math.Max(capacity, m_ClearedCount)));
             BuildIndex();
         }
 
+        // Clearing invalidates the active index instead of walking its buckets.
+        // Entries are integer-only; retained tails do not keep user objects alive.
+        // Inserts up to LinearCapacity use the live dense prefix. Crossing that
+        // threshold calls ResetIndex before any retained bucket is consulted.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void Clear()
         {
-            // Only occupied buckets need clearing; a large, mostly empty retained
-            // buffer must not turn Clear into an operation over its capacity.
-            int[] buckets = m_Buckets;
-            int mask = m_BucketMask;
-            if (mask != 0)
-            {
-                // Match the encoded dense index, deliberately scanning past holes
-                // made earlier in this loop (ordinary Find would stop too soon).
-                for (int i = 0; i < Count; i++)
-                {
-                    int slot = Hash(Entries[i].Id) & mask;
-                    while (buckets[slot] != i + 1)
-                        slot = (slot + 1) & mask;
-                    buckets[slot] = 0;
-                }
-            }
+            m_ClearedCount = Count;
             Count = 0;
             ExplicitCount = 0;
+            m_BucketMask = 0;
         }
 
         internal void CopyFrom(TagStorage other)
@@ -292,6 +338,7 @@ namespace GameplayTags
             Array.Copy(other.ExplicitIndices, ExplicitIndices, other.ExplicitCount);
             Count = count;
             ExplicitCount = other.ExplicitCount;
+            m_ClearedCount = 0;
             if (!copyBuckets)
                 BuildIndex();
         }
@@ -585,6 +632,7 @@ namespace GameplayTags
         // clear the new prefix before rebuilding; those retained slots may be stale.
         private void ResetIndex(int bucketCount)
         {
+            m_ClearedCount = 0;
             if (bucketCount == 0)
             {
                 m_BucketMask = 0;

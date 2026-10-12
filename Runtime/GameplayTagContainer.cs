@@ -115,10 +115,15 @@ namespace GameplayTags
         public bool TryAddTag(GameplayTag tag)
         {
             TagStorage storage = m_Indices.Storage;
-            if (!storage.TryAddExplicit(tag.RuntimeIndex))
+            if (!storage.TryAddSetTag(tag.RuntimeIndex))
                 return false;
+            if (storage.Count == 1)
+            {
+                storage.CompleteSingleTag(tag.RuntimeIndex);
+                return true;
+            }
             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(tag.RuntimeIndex);
-            for (int i = 0; i < hierarchy.Length; i++)
+            for (int i = 0; i < hierarchy.Length - 1; i++)
                 storage.AddTotal(hierarchy[i]);
             return true;
         }
@@ -241,19 +246,112 @@ namespace GameplayTags
                 return;
             }
 
-            // Reused, non-aliased outputs gather IDs during the first lookup pass.
-            // Fresh outputs count first to allocate only the exact selected capacity.
-            // Without a workspace an alias must defer overwriting its explicit index
-            // until the full-hit/copy-minus-missing fast paths have been ruled out.
+            if (a.ExplicitCount <= 8)
+            {
+                SetSmallIntersection(output, a, b, aIsSet);
+                m_SerializedExplicitTags?.Clear();
+                return;
+            }
+            // Prove a complete ordinary-set hit without writing scratch or
+            // testing sort order. Partial results reuse this already-proven prefix.
+            int prefix = 0;
+            if (aIsSet)
+            {
+                while (prefix < a.ExplicitCount &&
+                    b.ContainsExplicit(a.Entries[a.ExplicitIndices[prefix]].Id))
+                    prefix++;
+                if (prefix == a.ExplicitCount)
+                {
+                    output.CopyFrom(a);
+                    m_SerializedExplicitTags?.Clear();
+                    return;
+                }
+            }
+            SetPartialIntersection(output, a, b, aIsSet, workspace, prefix);
+            m_SerializedExplicitTags?.Clear();
+        }
+
+        private void SetSmallIntersection(TagStorage output, TagStorage a, TagStorage b, bool aIsSet)
+        {
+            Span<int> selected = stackalloc int[8];
+            Span<int> missing = stackalloc int[8];
+            int matches = 0, absent = 0, previous = 0;
+            long missingWork = 0;
+            bool ordered = true;
+            for (int i = 0; i < a.ExplicitCount; i++)
+            {
+                int id = a.Entries[a.ExplicitIndices[i]].Id;
+                if (b.ContainsExplicit(id))
+                {
+                    selected[matches++] = id;
+                    ordered &= id > previous;
+                    previous = id;
+                }
+                else
+                {
+                    missing[absent++] = id;
+                    missingWork += GameplayTagManager.GetHierarchyIndices(id).Length;
+                }
+            }
+            if (matches == 0)
+            {
+                output.Clear();
+                return;
+            }
+            if (aIsSet && (absent == 0 || missingWork <= a.Count / 2))
+            {
+                output.CopyFrom(a);
+                for (int i = 0; i < absent; i++)
+                    RemoveTag(GameplayTagManager.GetTagFromRuntimeIndex(missing[i]));
+                return;
+            }
+            output.EnsureExplicitCapacity(matches);
+            for (int i = 0; i < matches; i++)
+                output.ExplicitIndices[i] = selected[i];
+            output.BuildFromExplicitIds(matches, ordered);
+        }
+
+        private void SetPartialIntersection(TagStorage output, TagStorage a, TagStorage b,
+            bool aIsSet, GameplayTagIntersectionWorkspace workspace, int prefix)
+        {
             bool capture = workspace != null ||
                 (output.ExplicitIndices.Length != 0 && !ReferenceEquals(output, a) && !ReferenceEquals(output, b));
             int[] selectedIds = workspace == null ? output.ExplicitIndices : workspace.SelectedIds;
-            int matches = 0, previousId = 0;
+            int matches = prefix, previousId = 0;
             bool ordered = true;
+            if (capture && prefix != 0)
+            {
+                if (selectedIds.Length < prefix)
+                {
+                    if (workspace == null)
+                    {
+                        output.EnsureExplicitCapacity(prefix);
+                        selectedIds = output.ExplicitIndices;
+                    }
+                    else
+                    {
+                        workspace.EnsureSelectedCapacity(prefix);
+                        selectedIds = workspace.SelectedIds;
+                    }
+                }
+                for (int i = 0; i < prefix; i++)
+                {
+                    int id = a.Entries[a.ExplicitIndices[i]].Id;
+                    selectedIds[i] = id;
+                    ordered &= id > previousId;
+                    previousId = id;
+                }
+            }
             Span<int> missingIds = stackalloc int[8];
-            int missing = 0;
+            int missing = 0, start = prefix;
             long missingPathWork = 0;
-            for (int i = 0; i < a.ExplicitCount; i++)
+            if (aIsSet)
+            {
+                int id = a.Entries[a.ExplicitIndices[start++]].Id;
+                missingIds[missing++] = id;
+                missingPathWork = GameplayTagManager.GetHierarchyIndices(id).Length;
+            }
+            for (int i = start; i < a.ExplicitCount; i++)
             {
                 int id = a.Entries[a.ExplicitIndices[i]].Id;
                 if (b.ContainsExplicit(id))
@@ -287,19 +385,17 @@ namespace GameplayTags
             }
             if (matches == 0)
             {
-                Clear();
+                output.Clear();
                 return;
             }
             if (aIsSet && a.ExplicitCount - matches <= missingIds.Length &&
-                (missing == 0 || missingPathWork <= a.Count / 2))
+                missingPathWork <= a.Count / 2)
             {
                 output.CopyFrom(a);
                 for (int i = 0; i < missing; i++)
                     RemoveTag(GameplayTagManager.GetTagFromRuntimeIndex(missingIds[i]));
-                m_SerializedExplicitTags?.Clear();
                 return;
             }
-
             if (!capture)
             {
                 output.EnsureExplicitCapacity(matches);
@@ -307,10 +403,8 @@ namespace GameplayTags
                 for (int i = 0; i < a.ExplicitCount; i++)
                 {
                     int id = a.Entries[a.ExplicitIndices[i]].Id;
-                    if (b.ContainsExplicit(id))
+                    if (i < prefix || b.ContainsExplicit(id))
                     {
-                        // Forward compaction is safe for an aliased input: selected
-                        // never exceeds i; lookups use Entries/buckets, not this index.
                         output.ExplicitIndices[selected++] = id;
                         ordered &= id > previousId;
                         previousId = id;
@@ -321,7 +415,6 @@ namespace GameplayTags
                 output.BuildFromExplicitIds(matches, ordered);
             else
                 output.BuildFromUnsortedExplicitIds(matches, workspace);
-            m_SerializedExplicitTags?.Clear();
         }
 
         public void IntersectWith<T>(in T other) where T : IGameplayTagContainer
