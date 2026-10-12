@@ -1,0 +1,9 @@
+{
+  "Files": {
+    "Launcher.cs": "c623ccb818cecf497c9d8158cc3e2a2ff146464ed76587bf2b04aab309c7316c",
+    "README.md": "f094042945247c5272633d492ca1796ef1af1845269b4ee883d9f634a564aacc",
+    "config.json": "f8c9219b9030564ba24f4dcb9b21509060921edae2caeab4c3c39e0566b9636d",
+    "run.py": "fdee9ae7aa1fca64ac470c2c2281ed85f6da282b4acb08c38a618b4292ab45dc",
+    "upload-allowlist.txt": "5adc4592a8724e50364d7ac225f6baa3aa40103765a256e8bd7340d9360574f1"
+  }
+}

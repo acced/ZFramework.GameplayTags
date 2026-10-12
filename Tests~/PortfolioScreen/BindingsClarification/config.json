@@ -1,0 +1,124 @@
+{
+  "Purpose": "One bounded diagnostic clarification, not qualification or replacement evidence",
+  "OriginalScreenCommit": "4cc968fe868d18f8f17540182b69d22d302950ed",
+  "OriginalFrozenSHA256": "fbe01b704006df497f1f829219d37eaa970ab7a8d2ecf92d2c40e1c6e7f83438",
+  "BaselineCommit": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "WarmRows": [
+    {
+      "Id": "direct-subscription",
+      "Index": 7
+    },
+    {
+      "Id": "direct-dispatch",
+      "Index": 8
+    }
+  ],
+  "ColdRows": [
+    "first-empty",
+    "first-present",
+    "first-external-multicast"
+  ],
+  "PairOrders": [
+    [
+      "left",
+      "right"
+    ],
+    [
+      "right",
+      "left"
+    ],
+    [
+      "left",
+      "right"
+    ],
+    [
+      "right",
+      "left"
+    ]
+  ],
+  "ModeOrders": [
+    [
+      "AA",
+      "AB"
+    ],
+    [
+      "AB",
+      "AA"
+    ],
+    [
+      "AA",
+      "AB"
+    ],
+    [
+      "AB",
+      "AA"
+    ]
+  ],
+  "SlotSources": {
+    "AA": {
+      "left": "before",
+      "right": "before"
+    },
+    "AB": {
+      "left": "before",
+      "right": "after"
+    }
+  },
+  "PlannedMeasuredProcessesPerBackend": 80,
+  "DeadlineSeconds": 600,
+  "AcceptanceEvidence": false,
+  "BackendCounts": {
+    "net": {
+      "direct-subscription": 7979098,
+      "direct-dispatch": 3812423
+    },
+    "mono": {
+      "direct-subscription": 1485640,
+      "direct-dispatch": 718093
+    }
+  },
+  "OriginalIterationEvidence": {
+    "net": {
+      "IterationsJSONSHA256": "d9ff335ccbfbf9d4e44c0c0dcba4fca6c30a51c9f1a526122c2af536554f405e",
+      "OriginalMapSHA256": "10422a310d77aff82924e8e117e44d3843140662df7931abefb745d1e9296182"
+    },
+    "mono": {
+      "IterationsJSONSHA256": "7d43f73caeb65406f5fa32332904ae9f571241c34ccda687382a52002ac44b07",
+      "OriginalMapSHA256": "44f97e683ec79c744fad253e1099edbbfb8874a64a6f4d3701526d4cbe5cee5b"
+    }
+  },
+  "OriginalIterationMaps": {
+    "net": {
+      "Backend": "net",
+      "Iterations": {
+        "fresh-single": 623872,
+        "retained-absent": 1786357,
+        "retained-present": 1774061,
+        "same-tag-eight": 86300,
+        "distinct-eight": 211706,
+        "distinct-128": 10816,
+        "external-multicast": 726320,
+        "direct-subscription": 7979098,
+        "direct-dispatch": 3812423
+      },
+      "MapSHA256": "10422a310d77aff82924e8e117e44d3843140662df7931abefb745d1e9296182",
+      "FrozenBeforeCandidateTiming": true
+    },
+    "mono": {
+      "Backend": "mono",
+      "Iterations": {
+        "fresh-single": 395015,
+        "retained-absent": 653374,
+        "retained-present": 675964,
+        "same-tag-eight": 52002,
+        "distinct-eight": 97519,
+        "distinct-128": 4715,
+        "external-multicast": 372153,
+        "direct-subscription": 1485640,
+        "direct-dispatch": 718093
+      },
+      "MapSHA256": "44f97e683ec79c744fad253e1099edbbfb8874a64a6f4d3701526d4cbe5cee5b",
+      "FrozenBeforeCandidateTiming": true
+    }
+  }
+}

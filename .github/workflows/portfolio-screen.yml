@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        candidate: [Bindings]
+        candidate: [BindingsClarification]
         backend: [net, mono]
     steps:
       - uses: actions/checkout@v4
@@ -46,10 +46,9 @@ jobs:
             .artifacts/portfolio-screen/status.json
             .artifacts/portfolio-screen/provenance.json
             .artifacts/portfolio-screen/config.json
-            .artifacts/portfolio-screen/correctness.json
+            .artifacts/portfolio-screen/preflight.json
             .artifacts/portfolio-screen/summary.json
-            .artifacts/portfolio-screen/iterations.json
-            .artifacts/portfolio-screen/raw/*.json
+            .artifacts/portfolio-screen/raw/samples.json
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 90
