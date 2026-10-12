@@ -1,0 +1,201 @@
+{
+  "BaselineCommit": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "Purpose": "Rejection only; no qualification",
+  "Rows": [
+    {
+      "id": "empty-linear/empty-clear",
+      "keep": 0,
+      "reserve": 0,
+      "grow": 0,
+      "active_mask": 0,
+      "entries_capacity": 0,
+      "explicit_capacity": 0,
+      "bucket_capacity": 0,
+      "candidate_bulk_policy": false,
+      "pilot_iterations": 1048576,
+      "operation": "Clear plus cardinality observation"
+    },
+    {
+      "id": "empty-retained/empty-clear",
+      "keep": 0,
+      "reserve": 8192,
+      "grow": 1024,
+      "active_mask": 16383,
+      "entries_capacity": 8192,
+      "explicit_capacity": 8192,
+      "bucket_capacity": 16384,
+      "candidate_bulk_policy": false,
+      "pilot_iterations": 1048576,
+      "operation": "Clear plus cardinality observation"
+    },
+    {
+      "id": "tiny8-linear/refill-clear-cycle",
+      "keep": 8,
+      "reserve": 0,
+      "grow": 8,
+      "active_mask": 0,
+      "entries_capacity": 8,
+      "explicit_capacity": 8,
+      "bucket_capacity": 0,
+      "candidate_bulk_policy": false,
+      "pilot_iterations": 131072,
+      "operation": "AddTag refill, cardinality observation, Clear"
+    },
+    {
+      "id": "fresh9-hashed/refill-clear-cycle",
+      "keep": 9,
+      "reserve": 0,
+      "grow": 9,
+      "active_mask": 31,
+      "entries_capacity": 16,
+      "explicit_capacity": 16,
+      "bucket_capacity": 32,
+      "candidate_bulk_policy": false,
+      "pilot_iterations": 65536,
+      "operation": "AddTag refill, cardinality observation, Clear"
+    },
+    {
+      "id": "fresh63/refill-clear-cycle",
+      "keep": 63,
+      "reserve": 0,
+      "grow": 63,
+      "active_mask": 127,
+      "entries_capacity": 64,
+      "explicit_capacity": 64,
+      "bucket_capacity": 128,
+      "candidate_bulk_policy": false,
+      "pilot_iterations": 8192,
+      "operation": "AddTag refill, cardinality observation, Clear"
+    },
+    {
+      "id": "fresh64/refill-clear-cycle",
+      "keep": 64,
+      "reserve": 0,
+      "grow": 64,
+      "active_mask": 127,
+      "entries_capacity": 64,
+      "explicit_capacity": 64,
+      "bucket_capacity": 128,
+      "candidate_bulk_policy": true,
+      "pilot_iterations": 8192,
+      "operation": "AddTag refill, cardinality observation, Clear"
+    },
+    {
+      "id": "fresh65/refill-clear-cycle",
+      "keep": 65,
+      "reserve": 0,
+      "grow": 65,
+      "active_mask": 255,
+      "entries_capacity": 128,
+      "explicit_capacity": 128,
+      "bucket_capacity": 256,
+      "candidate_bulk_policy": true,
+      "pilot_iterations": 8192,
+      "operation": "AddTag refill, cardinality observation, Clear"
+    },
+    {
+      "id": "fresh1024/refill-clear-cycle",
+      "keep": 1024,
+      "reserve": 0,
+      "grow": 1024,
+      "active_mask": 2047,
+      "entries_capacity": 1024,
+      "explicit_capacity": 1024,
+      "bucket_capacity": 2048,
+      "candidate_bulk_policy": true,
+      "pilot_iterations": 1024,
+      "operation": "AddTag refill, cardinality observation, Clear"
+    },
+    {
+      "id": "density127/refill-clear-cycle",
+      "keep": 127,
+      "reserve": 512,
+      "grow": 512,
+      "active_mask": 1023,
+      "entries_capacity": 512,
+      "explicit_capacity": 512,
+      "bucket_capacity": 1024,
+      "candidate_bulk_policy": false,
+      "pilot_iterations": 4096,
+      "operation": "AddTag refill, cardinality observation, Clear"
+    },
+    {
+      "id": "density128/refill-clear-cycle",
+      "keep": 128,
+      "reserve": 512,
+      "grow": 512,
+      "active_mask": 1023,
+      "entries_capacity": 512,
+      "explicit_capacity": 512,
+      "bucket_capacity": 1024,
+      "candidate_bulk_policy": true,
+      "pilot_iterations": 4096,
+      "operation": "AddTag refill, cardinality observation, Clear"
+    },
+    {
+      "id": "density129/refill-clear-cycle",
+      "keep": 129,
+      "reserve": 512,
+      "grow": 512,
+      "active_mask": 1023,
+      "entries_capacity": 512,
+      "explicit_capacity": 512,
+      "bucket_capacity": 1024,
+      "candidate_bulk_policy": true,
+      "pilot_iterations": 4096,
+      "operation": "AddTag refill, cardinality observation, Clear"
+    },
+    {
+      "id": "retained-sparse16/refill-clear-cycle",
+      "keep": 16,
+      "reserve": 8192,
+      "grow": 1024,
+      "active_mask": 16383,
+      "entries_capacity": 8192,
+      "explicit_capacity": 8192,
+      "bucket_capacity": 16384,
+      "candidate_bulk_policy": false,
+      "pilot_iterations": 32768,
+      "operation": "AddTag refill, cardinality observation, Clear"
+    }
+  ],
+  "WarmupCycles": 1024,
+  "PilotSamplesPerRow": 1,
+  "TargetBatchMs": 200,
+  "IterationRule": "max(pilot_iterations, ceil(pilot_iterations * 200 / pilot_batch_ms))",
+  "ComparisonRounds": 4,
+  "RoundOrder": [
+    [
+      "before",
+      "after"
+    ],
+    [
+      "after",
+      "before"
+    ],
+    [
+      "before",
+      "after"
+    ],
+    [
+      "after",
+      "before"
+    ]
+  ],
+  "SDKVersion": "8.0.425",
+  "CLRVersion": "8.0.31",
+  "ExpectedCIMonoVersion": "6.8.0.105",
+  "DeadlineSeconds": 600,
+  "ThresholdCorrectnessCases": 25,
+  "PublicEvidence": "Explicit JSON allowlist only; source hashes are repository-relative. Commands, paths, environment dumps, compiler inputs and failure traces remain private.",
+  "Scope": [
+    "Twelve fixed rows, one root-only registry and immutable tags prepared per process.",
+    "Nonempty rows measure AddTag refill plus public Clear cycles, never isolated Clear. Empty rows measure public Clear plus cardinality observation.",
+    "Sparse and density timing fixtures retain their grown active masks, without Copy. Reflection and owned-array checks run outside timing.",
+    "One baseline-only pilot process measures every row once and freezes shared per-backend iteration counts before candidate timing.",
+    "Four fixed pairs per backend in AB, BA, AB, BA order. No resampling, repeated pilots or dropped adverse rows.",
+    "A completed screen is not acceptance evidence. Pure Clear and full semantic/backend gates remain required before qualification."
+  ],
+  "DeadlineStart": "driver main entry, including source materialization and toolchain setup",
+  "DensityArithmetic": "mask + 1 <= (long)count * 8; only the density product is widened"
+}

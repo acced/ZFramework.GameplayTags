@@ -1,0 +1,39 @@
+--- a/Runtime/TagStorage.cs
++++ b/Runtime/TagStorage.cs
+@@ -240,20 +240,26 @@
+ 
+         internal void Clear()
+         {
+-            // Only occupied buckets need clearing; a large, mostly empty retained
+-            // buffer must not turn Clear into an operation over its capacity.
++            // Small or sparse active indexes clear only their occupied slots.
+             int[] buckets = m_Buckets;
+             int mask = m_BucketMask;
+             if (mask != 0)
+             {
+-                // Match the encoded dense index, deliberately scanning past holes
+-                // made earlier in this loop (ordinary Find would stop too soon).
+-                for (int i = 0; i < Count; i++)
+-                {
+-                    int slot = Hash(Entries[i].Id) & mask;
+-                    while (buckets[slot] != i + 1)
+-                        slot = (slot + 1) & mask;
+-                    buckets[slot] = 0;
++                int count = Count;
++                Entry[] entries = Entries;
++                if (count >= 64 && mask + 1 <= (long)count * 8)
++                    Array.Clear(buckets, 0, mask + 1);
++                else
++                {
++                    // Match the encoded dense index, deliberately scanning past holes
++                    // made earlier in this loop (ordinary Find would stop too soon).
++                    for (int i = 0; i < count; i++)
++                    {
++                        int slot = Hash(entries[i].Id) & mask;
++                        while (buckets[slot] != i + 1)
++                            slot = (slot + 1) & mask;
++                        buckets[slot] = 0;
++                    }
+                 }
+             }
+             Count = 0;
