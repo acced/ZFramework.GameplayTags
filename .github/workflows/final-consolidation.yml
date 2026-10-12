@@ -2,6 +2,7 @@ name: Final consolidation validation
 on:
   pull_request:
     branches: [perf/compact-runtime-rewrite]
+    paths: ['Runtime/**', 'Tests~/FinalConsolidation/**', '.github/workflows/final-consolidation.yml']
   push:
     branches: [perf/final-consolidation-20261012]
     paths:
@@ -41,8 +42,8 @@ jobs:
           mono --version
       - name: Freeze exact latest-branch baseline
         run: |
-          mkdir -p evidence/before
-          git archive 4eb0cda81a0915562f22c49977746ae5073fe746 Runtime | tar -x -C evidence/before
+          mkdir -p .artifacts/consolidation/before
+          git archive 4eb0cda81a0915562f22c49977746ae5073fe746 Runtime | tar -x -C .artifacts/consolidation/before
           git rev-parse HEAD
           git diff --exit-code
       - name: Full .NET reference regressions and Unity compile contract
@@ -53,26 +54,26 @@ jobs:
           dotnet run --project Tests~/Registry/GameplayTags.Registry.Tests.csproj -c Release
           dotnet run --project Tests~/DeepHierarchy/GameplayTags.DeepHierarchy.Tests.csproj -c Release
           dotnet run --project Tests~/Intersection/GameplayTags.Intersection.Tests.csproj -c Release
-          python3 Tests~/run.py build --unity-check --output-dir evidence/unity-compile
+          python3 Tests~/run.py build --unity-check --output-dir .artifacts/consolidation/unity-compile
           python3 Tests~/validate_package.py
           dotnet run --project SourceGenerator~/Tests/GameplayTags.SourceGenerator.Tests.csproj -c Release
       - name: Core and intersection reference regressions on standalone Mono
         if: matrix.backend == 'mono'
         run: |
-          dotnet build Tests~/FinalConsolidation/GameplayTags.FinalConsolidation.csproj -c Release -p:MonoTarget=true -p:CoreTests=true -p:BaseIntermediateOutputPath="$PWD/evidence/mono-core-obj/" -o evidence/mono-core
-          mono evidence/mono-core/GameplayTags.FinalConsolidation.exe
-          dotnet build Tests~/Intersection/GameplayTags.Intersection.Tests.csproj -c Release -p:MonoTarget=true -o evidence/mono-intersection
-          mono evidence/mono-intersection/GameplayTags.Intersection.Tests.exe
+          dotnet build Tests~/FinalConsolidation/GameplayTags.FinalConsolidation.csproj -c Release -p:MonoTarget=true -p:CoreTests=true -p:BaseIntermediateOutputPath="$PWD/.artifacts/consolidation/mono-core-obj/" -o .artifacts/consolidation/mono-core
+          mono .artifacts/consolidation/mono-core/GameplayTags.FinalConsolidation.exe
+          dotnet build Tests~/Intersection/GameplayTags.Intersection.Tests.csproj -c Release -p:MonoTarget=true -o .artifacts/consolidation/mono-intersection
+          mono .artifacts/consolidation/mono-intersection/GameplayTags.Intersection.Tests.exe
       - name: Preserve complete existing Evolution matrix, 14 paired processes
         shell: bash
         run: |
-          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --before evidence/before --before-revision 4eb0cda81a0915562f22c49977746ae5073fe746 --after "$PWD" --after-revision "$(git rev-parse HEAD)" --samples 14 --batch-ms 100 --out evidence/evolution)
+          args=(--dotnet "$(readlink -f "$(command -v dotnet)")" --before .artifacts/consolidation/before --before-revision 4eb0cda81a0915562f22c49977746ae5073fe746 --after "$PWD" --after-revision "$(git rev-parse HEAD)" --samples 14 --batch-ms 100 --out .artifacts/consolidation/evolution)
           if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
           python3 Tests~/Evolution/run.py "${args[@]}"
       - name: Full public-operation supplement including Copy plus AddTags and cold calls
         shell: bash
         run: |
-          args=(--dotnet "$(command -v dotnet)" --before evidence/before --after "$PWD" --samples 14 --target-ms 150 --out evidence/supplement)
+          args=(--dotnet "$(command -v dotnet)" --before .artifacts/consolidation/before --after "$PWD" --samples 14 --target-ms 150 --out .artifacts/consolidation/supplement)
           if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
           python3 Tests~/FinalConsolidation/run.py "${args[@]}"
       - name: Preserve owned-object structure audits
@@ -80,8 +81,8 @@ jobs:
         run: |
           args=(--dotnet "$(readlink -f "$(command -v dotnet)")")
           if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)" --nuget "$HOME/.nuget/packages"); fi
-          python3 Tests~/Evolution/RetentionLayout/run.py "${args[@]}" --source evidence/before --revision 4eb0cda81a0915562f22c49977746ae5073fe746 --variant before --out evidence/layout/before.json
-          python3 Tests~/Evolution/RetentionLayout/run.py "${args[@]}" --source "$PWD" --revision "$(git rev-parse HEAD)" --variant after --out evidence/layout/after.json
+          python3 Tests~/Evolution/RetentionLayout/run.py "${args[@]}" --source .artifacts/consolidation/before --revision 4eb0cda81a0915562f22c49977746ae5073fe746 --variant before --out .artifacts/consolidation/layout/before.json
+          python3 Tests~/Evolution/RetentionLayout/run.py "${args[@]}" --source "$PWD" --revision "$(git rev-parse HEAD)" --variant after --out .artifacts/consolidation/layout/after.json
       - name: Print every result; green execution is not blanket performance acceptance
         if: always()
         run: |
@@ -89,7 +90,7 @@ jobs:
           import json
           from pathlib import Path
           for name in ['evolution','supplement']:
-              p=Path('evidence')/name/'comparison.json'
+              p=Path('.artifacts/consolidation')/name/'comparison.json'
               print('RESULTS',name)
               if p.exists():
                   for row in json.loads(p.read_text()): print(json.dumps(row,sort_keys=True))
@@ -100,15 +101,15 @@ jobs:
         with:
           name: final-consolidation-${{ matrix.backend }}-${{ github.sha }}
           path: |
-            evidence/evolution/*.json
-            evidence/evolution/*.tsv
-            evidence/evolution/*-tests.txt
-            evidence/evolution/raw/
-            evidence/supplement/*.json
-            evidence/supplement/*.tsv
-            evidence/supplement/*-tests.txt
-            evidence/supplement/raw/
-            evidence/layout/
+            .artifacts/consolidation/evolution/*.json
+            .artifacts/consolidation/evolution/*.tsv
+            .artifacts/consolidation/evolution/*-tests.txt
+            .artifacts/consolidation/evolution/raw/
+            .artifacts/consolidation/supplement/*.json
+            .artifacts/consolidation/supplement/*.tsv
+            .artifacts/consolidation/supplement/*-tests.txt
+            .artifacts/consolidation/supplement/raw/
+            .artifacts/consolidation/layout/
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 90
