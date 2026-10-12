@@ -1,0 +1,27 @@
+{
+  "Schema": "binding-record-mono-completion-v1",
+  "ValidatedMetadataRepairSeal": "bb7acc191c191c4f202cb9b5691ec0b8fd3370a5bdd0117e81ae94336fea973d",
+  "OriginalPackageSeal": "0f2c191c3d35d8e22afdad3e3a69962d26272c748bf0d4d00a10f9fdb252ec95",
+  "Backend": "mono",
+  "MaxSeconds": 300,
+  "MaxBuilds": 2,
+  "MaxSemanticTargets": 2,
+  "MaxColdTargets": 32,
+  "MaxWarmTargets": 56,
+  "PilotTargets": 0,
+  "SourceOnlyAdapterTestPassed": true,
+  "SyntheticProjectionTestsPassed": 11,
+  "CompilerOrRuntimeTargetsExecutedDuringPreparation": 0,
+  "Files": {
+    "MetadataGate.cs": "12b31470a0a952923d7986ad7b3e3e0ea5c4009b9d0a47ae3ea1e29af477fc1c",
+    "README.md": "a51eb7110196f6f9a17d09ad6864ee5007fd8ecdf3b2d80fbb00ecc603d88556",
+    "coordinator-adapter.patch": "7e39dedade2edcae2e37c4e6764daa8c6d7876c1758814bcaf8ef6d074792a3c",
+    "diagnostics.py": "868d683c5912beb1f7edecc6fd7f06c05056293ddd5f5e676883bcd7f9a1be8a",
+    "metadata-repair.patch": "27b99deb2df9bedc4158b075962e924b30da6afbb6322140386d97fc2775c116",
+    "run.py": "c3778adcd89747848400f88fd143f6f7e7bf05e4550a2cae477a062edc18935d",
+    "source-pins.json": "bbe2ace365e88a5023cd0ee3ce8fef955aa060b3df476038cb2501ec862fa672",
+    "test_adapter.py": "edd80151d0a3e3f957afdb590b66719d551d432cc6a43dbcd832b522d0b5c4bd",
+    "test_diagnostics.py": "a409a7431f29d4b77585d2a6f9f34efe836b4345def3973ccfef98ee1f0e799d",
+    "upload-allowlist.txt": "2ceba95b1e22946cc10962122ff9f8aa636adfa537afb953b175b9f7885de003"
+  }
+}

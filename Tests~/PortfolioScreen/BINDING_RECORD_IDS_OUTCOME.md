@@ -73,3 +73,16 @@ A separately frozen semantic-only collector repair normalizes only empty generic
 Official Mono 6.8 source represents absent event “other methods” as null, and `GetOtherMethods(true)` returns that field directly. Passing it to the collector's LINQ `Select` can produce the observed exception. All six Runtime events in the saved .NET metadata have empty other-method lists. This is a source-backed explanation, while the bounded report alone does not identify the precise throwing expression.
 
 The next one-expression collector repair normalizes that null collection to empty while retaining every nonempty method identity, add/remove/raise accessor, attribute and comparison. It retains the empty-context repair and the same semantic-only dual-runtime bounds. Earlier frozen packages and failures remain evidence. The Runtime candidate is unchanged; the original .NET control/cold costs, lack of Mono candidate/performance evidence and **0/10** hold remain.
+
+## Collector portability validation completed
+
+[Run 38287415763](https://github.com/acced/ZFramework.GameplayTags/actions/runs/38287415763), exact commit `311a8f3ec895167edcd539332dc16d18962f9405`, passes the complete bounded semantic/metadata gates on both backends after the two narrowly reviewed collector compatibility repairs.
+
+- .NET artifact `11763961950`, ZIP SHA-256 `c62a01b1910e2137c97b1bf6cb0dfa697f98fa2d3fc7c76e83786d20e8a36f57`.
+- Mono artifact `11764256781`, ZIP SHA-256 `df45b6c55ef182453bfd3bd8fcd26f2e9f0863899793012dfb11dbe2edbd8d3a`.
+
+Both ZIP identities and every allowlisted member were independently verified. Each backend completed two builds/two zero-exit semantic targets, all five expected markers, byte-equal original/candidate stdout and the same 1,824-byte functional snapshot. Complete comparisons cover 38 Runtime types and 367 methods with zero unrelated metadata/raw-IL differences. Actual CLR 8.0.31 and Mono 6.8.0.105 x64 both measure record size 24→16 B. No cold/warm/pilot row ran. The private name-retention difference remains intentional; this is not identical complete object-graph lifetime.
+
+The Mono collector portability gap is closed for these fixtures without skipping the metadata gate. Earlier incomplete/failing packages remain evidence. The original .NET performance hold remains unchanged.
+
+One fixed Mono-only completion is now prepared for the previously unexecuted 32 cold/56 warm plan, with the original seven-row count map, AB/BA/BA/AB order, fixtures and allocation/semantic fail-stop. The exact r2 collector is overlaid; no Runtime or measurement body changes. It retains the original 300-second hard bound and two semantic prerequisites, with zero pilots or recalibration. This fills missing Mono evidence and cannot clear the existing .NET adverse control/cold observations. No further .NET timing or full qualification is queued; **0/10** remains.
