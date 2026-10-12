@@ -1,5 +1,7 @@
 {
   "Baseline": "f7c99546dbf029d70896c0f05e5119b19ffd6d26",
+  "Status": "unaccepted conservative gated registration refinement",
+  "PatchSHA256": "bbec60f90945682c06ac1f1a7d2994d2df18896bfa3161e306415c2126eeef73",
   "Files": {
     "before": {
       "Runtime/GameObjectGameplayTagContainer.cs": "2826ab87baf0cd558d53a730f3bfb48bd94a8345b79b6dbbb1c98eb7abe79a74",
@@ -80,7 +82,7 @@
       "Runtime/GameplayTagIntersectionWorkspace.cs.meta": "78a179d2c98f24a14e06a6f169ffc0b544bb85cb966ef70f12fa42f34a51e7d9",
       "Runtime/GameplayTagManager.cs": "4d931365b965aee5d59a0782314c7cddfbde97a73b09bb743d2c883752ddc341",
       "Runtime/GameplayTagManager.cs.meta": "a5714a82be5a8ef08af622e555146e5267ff6a1673358311be1928a9f3306f0b",
-      "Runtime/GameplayTagRegistrationContext.cs": "7c403e1e916ec1172447035583697e55092a9992eb3d44b1a89f71805587b559",
+      "Runtime/GameplayTagRegistrationContext.cs": "9f954194bdbb0925dcaaf3d8ab30114544d195a7d87be00dc611954b351194cf",
       "Runtime/GameplayTagRegistrationContext.cs.meta": "a41718797e97069079f8cf0864fc20f2cc876850ca701ed4f5ee40672a499923",
       "Runtime/GameplayTagRequirements.cs": "25982793636c07582d12acd77c63b02c8c38d4cdc4e6a1f9233c6417e7ccf4f9",
       "Runtime/GameplayTagRequirements.cs.meta": "2e2ad102d60653bb60c15a89070eddbbe9e8a7d092325997b7dce76a90a83d26",
@@ -93,7 +95,5 @@
       "Runtime/ZFramework.GameplayTags.asmdef": "5d5ae26d82a69e140b8fda1ed4fd26b9f91ad6746cec9ba84fc1427a346f7fba",
       "Runtime/ZFramework.GameplayTags.asmdef.meta": "c5554b79724f2425f9d911c59fe6993633db60f43964151f3f5239b0420ad6fd"
     }
-  },
-  "Status": "unaccepted split-root/missing-parent refinement",
-  "PatchSHA256": "9930f696b4232dab4602c8d3acaddde46caab6f1b3f69917e9a1d2d76e87aeeb"
+  }
 }
