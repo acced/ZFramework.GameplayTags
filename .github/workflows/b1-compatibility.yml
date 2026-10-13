@@ -1,0 +1,19 @@
+name: B1 compatibility
+on:
+  push:
+    branches: [refactor/roadmap-b1-20261013]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  portable-correctness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.425'
+      - name: Differential behavior and compatibility compile
+        run: bash Tests~/Roadmap/run.sh

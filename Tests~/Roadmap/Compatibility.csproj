@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Library</OutputType><TargetFramework>netstandard2.1</TargetFramework><EnableDefaultCompileItems>false</EnableDefaultCompileItems><GenerateAssemblyInfo>false</GenerateAssemblyInfo><LangVersion>9.0</LangVersion><RuntimePath Condition="'$(RuntimePath)' == ''">../../Runtime</RuntimePath></PropertyGroup>
+ <ItemGroup><Compile Include="$(RuntimePath)/*.cs"/><Compile Include="UnityStubs.cs"/></ItemGroup>
+</Project>

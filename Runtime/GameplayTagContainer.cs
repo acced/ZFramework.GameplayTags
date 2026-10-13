@@ -16,6 +16,8 @@ namespace GameplayTags
     {
         [SerializeField] private List<GameplayTag> m_GameplayTags = new List<GameplayTag>();
 
+        internal List<GameplayTag> Tags => m_GameplayTags;
+
         public int Count => m_GameplayTags.Count;
         public bool IsEmpty => m_GameplayTags.Count == 0;
         public GameplayTag this[int index] => m_GameplayTags[index];
@@ -50,6 +52,11 @@ namespace GameplayTags
                 return false;
             }
 
+            if (m_GameplayTags.Count == 0 || string.CompareOrdinal(m_GameplayTags[m_GameplayTags.Count - 1].Name, tag.Name) < 0)
+            {
+                m_GameplayTags.Add(tag);
+                return true;
+            }
             int index = IndexOf(tag.Name);
             if (index >= 0)
                 return false;
@@ -83,29 +90,41 @@ namespace GameplayTags
                 return hadTags;
             }
 
-            bool changed = false;
-            for (int i = 0; i < other.Count; i++)
-                changed |= RemoveTag(other[i]);
-            return changed;
+            int oldCount = Count;
+            GameplayTagContainerAlgorithms.ExceptSorted(this, other, this);
+            return Count != oldCount;
         }
 
         public void AppendTags(GameplayTagContainer other)
         {
             if (other == null || ReferenceEquals(this, other))
                 return;
-
-            for (int i = 0; i < other.Count; i++)
-                AddTag(other[i]);
+            GameplayTagContainerAlgorithms.AppendSorted(this, other);
         }
 
         public void CopyFrom(GameplayTagContainer other)
         {
             if (ReferenceEquals(this, other))
                 return;
-
-            Clear();
-            AppendTags(other);
+            GameplayTagContainerAlgorithms.CopyValidated(other, this);
         }
+
+        public void EnsureCapacity(int capacity)
+        {
+            if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
+            if (m_GameplayTags.Capacity < capacity) m_GameplayTags.Capacity = capacity;
+        }
+
+        public void SetUnion(GameplayTagContainer lhs, GameplayTagContainer rhs) =>
+            GameplayTagContainerAlgorithms.UnionSorted(lhs, rhs, this);
+
+        public void SetIntersectionExact(GameplayTagContainer lhs, GameplayTagContainer rhs) =>
+            GameplayTagContainerAlgorithms.IntersectionExactSorted(lhs, rhs, this);
+
+        public void IntersectWithExact(GameplayTagContainer other) => SetIntersectionExact(this, other);
+
+        public void ExceptWithExact(GameplayTagContainer other) =>
+            GameplayTagContainerAlgorithms.ExceptSorted(this, other, this);
 
         public void Clear() => m_GameplayTags.Clear();
 
@@ -168,7 +187,7 @@ namespace GameplayTags
         /// <summary>本容器中层级上命中 <paramref name="other"/> 任一标签的那些标签。</summary>
         public GameplayTagContainer Filter(GameplayTagContainer other) => Filter(other, false);
 
-        public GameplayTagContainer FilterExact(GameplayTagContainer other) => Filter(other, true);
+        public GameplayTagContainer FilterExact(GameplayTagContainer other) => IntersectionExact(this, other);
 
         public Enumerator GetEnumerator() => new Enumerator(this);
 
@@ -218,22 +237,14 @@ namespace GameplayTags
         public static GameplayTagContainer Union(GameplayTagContainer lhs, GameplayTagContainer rhs)
         {
             var result = new GameplayTagContainer((lhs?.Count ?? 0) + (rhs?.Count ?? 0));
-            result.AppendTags(lhs);
-            result.AppendTags(rhs);
+            result.SetUnion(lhs, rhs);
             return result;
         }
 
         public static GameplayTagContainer IntersectionExact(GameplayTagContainer lhs, GameplayTagContainer rhs)
         {
-            var result = new GameplayTagContainer();
-            if (lhs == null || rhs == null)
-                return result;
-
-            for (int i = 0; i < lhs.Count; i++)
-            {
-                if (rhs.HasTagExact(lhs[i]))
-                    result.m_GameplayTags.Add(lhs[i]);
-            }
+            var result = new GameplayTagContainer(Math.Min(lhs?.Count ?? 0, rhs?.Count ?? 0));
+            result.SetIntersectionExact(lhs, rhs);
             return result;
         }
 

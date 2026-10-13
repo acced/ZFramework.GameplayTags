@@ -308,3 +308,8 @@ Run **Tools → ZFramework → Gameplay Tags → Validate** and fix the reported
 ## License
 
 [MIT](./LICENSE.md).
+
+
+## B1 roadmap compatibility candidate
+
+Merge-based bulk operations and alias-safe reusable target APIs are described in [the Phase 1 notes](Documentation~/B1_ROADMAP.md). Name-sorted storage is retained. [Portable tests](Tests~/Roadmap/README.md) do not replace Unity validation.
