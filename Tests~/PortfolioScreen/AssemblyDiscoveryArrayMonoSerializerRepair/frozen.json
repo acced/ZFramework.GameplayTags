@@ -1,0 +1,21 @@
+{
+  "Schema": "assembly-discovery-array-mono-serializer-repair-v1",
+  "PreparationOnly": true,
+  "SourcePackageFrozenSHA256": "470305cba602b6378c495959aaa24faf6d98986cd4a9c1c778dcdef4405f1840",
+  "Files": {
+    "Harness/ColdScreen.cs": "ec4c1d4b019692557d3825733308ef79b03c364f6349b7766cd3117b5a322005",
+    "Harness/Entry.cs": "a3db35b6807a83b5abf7f4def72d465dd108ac239fb6c93ff10ff27a1fb4ebde",
+    "Harness/MetadataGate.cs": "12b31470a0a952923d7986ad7b3e3e0ea5c4009b9d0a47ae3ea1e29af477fc1c",
+    "Harness/SemanticChecks.cs": "19938e91bf54028226630eafe3978078f03d0491c47394db4a1c5583769f2751",
+    "Harness-ColdScreen-cs.repair.patch": "c3baef495e46419fcd8a97e4fca775c5bc02dd8db7d9c914e84a846a7e1d23db",
+    "Harness-SemanticChecks-cs.repair.patch": "9c7bb1780626483fcb9852e596fefd923abe7902f994699cb8c42a6f8e8884af",
+    "README.md": "2ca1ae3a9556d9bf709c1e9f39f9a2a90a0e69ed328bd6cf35040a653d47c3aa",
+    "config.json": "02f39187c24093f5da77f8e82c0f0515c75d16cb1a53e106efa18485f11e2a86",
+    "in-memory-coordinator.patch": "cef867f90611dabf32c9e8b80b846651cb3b0916498bd1bfe04b318d2dde3162",
+    "preparation-checks.json": "385a6a3e4bba6f566856432a84d4e22b6db40265f38ff4b04cc7bb397dde6140",
+    "run-py.adapter.patch": "fbaa2523bcfe32ea0c42f7ee0d3559518e2a13e9832fa92924bdebe43939f20e",
+    "run.py": "dbaaf919155e9e64b668068f02651a448edd2a69a9efb753ba7fb70656e6c4a9",
+    "source-pins.json": "c24097b061c0d6f0f5f59c641065653fa689d068bf428703ef7e159c8261fd03",
+    "upload-allowlist.txt": "aa5dd48c9d954cae685ab2f825b52f01b8393ec6cd6d0506c9b3e74962cd1022"
+  }
+}

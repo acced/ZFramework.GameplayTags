@@ -1,0 +1,28 @@
+{
+  "Schema": "assembly-discovery-array-mono-serializer-repair-config-v1",
+  "Backend": "mono",
+  "RepairBudget": {
+    "MaxBuilds": 4,
+    "SemanticProcesses": 4,
+    "ColdProcesses": 0,
+    "WarmProcesses": 0,
+    "PilotProcesses": 0,
+    "DeadlineSeconds": 120,
+    "CSharpMeasurementSamples": 0,
+    "NativeCapture": false,
+    "AcceptanceEvidence": false,
+    "AutomaticContinuation": false
+  },
+  "SourcePackage": "Tests~/PortfolioScreen/AssemblyDiscoveryArray",
+  "SourcePackageFrozenSHA256": "470305cba602b6378c495959aaa24faf6d98986cd4a9c1c778dcdef4405f1840",
+  "Purpose": "Collector-only semantic validation; no timing continuation",
+  "OriginalNETAllocationDecision": "CLOSE_RETAINED",
+  "UnknownDictionaryFields": "FAIL",
+  "MetadataNormalization": "Expected-template core-library qualifier only; observed metadata unchanged",
+  "ColdDiagnosticSlots": 24,
+  "ColdSlotsAreUnattemptedPlaceholders": true,
+  "SourceFixtureChanged": false,
+  "RuntimeChanged": false,
+  "EntryHeaderChanged": false,
+  "CounterChanged": false
+}

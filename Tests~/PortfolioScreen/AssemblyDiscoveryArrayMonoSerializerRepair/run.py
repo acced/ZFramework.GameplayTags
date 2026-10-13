@@ -1,0 +1,270 @@
+#!/usr/bin/env python3
+"""Sealed Mono dictionary-serializer repair: four semantic targets, no cold run."""
+import argparse
+import hashlib
+import json
+from pathlib import Path, PurePosixPath
+import re
+import stat
+import sys
+import time
+
+SOURCE_PACKAGE_SEAL = '470305cba602b6378c495959aaa24faf6d98986cd4a9c1c778dcdef4405f1840'
+PUBLIC = ('status.json', 'provenance.json', 'config.json', 'correctness.json', 'raw/cold.json', 'summary.json')
+REPAIR_PROTOCOL = 'MONO_DICTIONARY_SERIALIZER_REPAIR_SEMANTIC_ONLY'
+REPAIR_BUDGET = {'MaxBuilds': 4, 'SemanticProcesses': 4, 'ColdProcesses': 0,
+    'WarmProcesses': 0, 'PilotProcesses': 0, 'DeadlineSeconds': 120,
+    'CSharpMeasurementSamples': 0, 'NativeCapture': False, 'AcceptanceEvidence': False,
+    'AutomaticContinuation': False}
+HARNESS_FILES = ('Harness/ColdScreen.cs', 'Harness/Entry.cs', 'Harness/MetadataGate.cs', 'Harness/SemanticChecks.cs')
+UNCHANGED_HARNESS = ('Harness/Entry.cs', 'Harness/MetadataGate.cs')
+
+START = '    started = time.monotonic()\n'
+BACKEND = "ap.add_argument('--backend', choices=('net', 'mono'), required=True)"
+DEADLINE = "ap.add_argument('--deadline-seconds', type=int, choices=(300,), default=300)"
+VERIFY = '    def verify(check_deadline=True):\n'
+HARNESS_ENTRY = "support.build(private / variant, HERE / 'Harness/Entry.cs',"
+INITIALIZE = '    commands, artifact_hashes, raw_hashes = [], {}, {}\n'
+MARKER = "        status['Stage'] = 'cold'\n"
+GATE_REASON = "        if status['Reason'] == 'none':\n"
+SEQUENCE = """        status['FixedSequenceValidated'] = bool(successful_protocol and sequence == (4, 4, 4, 24)
+            and len(correctness['SemanticDiagnostics']) == 4 and len(cold) == 24)
+"""
+CONFIG_PAYLOAD = "            'config.json': dict(EXPECTED_CONFIG, Backend=args.backend, RequestedDeadlineSeconds=args.deadline_seconds),\n"
+FINAL_PRINT = "    print('Assembly discovery portability screen: ' + status['State'] + '. Explicit public numeric/hash reports only; AcceptanceEvidence=false.')\n"
+
+REPAIR_INITIALIZE = """    repair_stop_complete = False
+    status.update(RepairProtocol=REPAIR_PROTOCOL, RepairFrozenSHA256=REPAIR_FROZEN_SHA256,
+        SourcePackageFrozenSHA256=SOURCE_PACKAGE_SEAL, RepairBudget=dict(REPAIR_BUDGET),
+        SemanticRepairOnly=True, RepairStopReached=False)
+    provenance.update(RepairProtocol=REPAIR_PROTOCOL, RepairFrozenSHA256=REPAIR_FROZEN_SHA256,
+        SourcePackageFrozenSHA256=SOURCE_PACKAGE_SEAL, RepairHarnessFiles=dict(REPAIR_HARNESS_HASHES),
+        RepairHarnessManifestSHA256=digest(REPAIR_HARNESS_HASHES),
+        SourceCoordinatorSHA256=SOURCE_COORDINATOR_SHA256, AdaptedCoordinatorSHA256=ADAPTED_COORDINATOR_SHA256,
+        RuntimeChanged=False, CounterChanged=False, OriginalNETDecision='CLOSE_RETAINED')
+""" + INITIALIZE
+REPAIR_VERIFY = VERIFY + """        try:
+            PREFLIGHT_VERIFY()
+        except TimeoutError:
+            raise
+        except Exception:
+            raise IntegrityStop('Repair or source package changed') from None
+"""
+STOP = """        verify()
+        if args.backend != 'mono' or (status['BuildAttempts'], status['Builds'], status['SemanticTargets'], status['ColdTargets'], status['WarmTargets'], status['PilotTargets']) != (4, 4, 4, 0, 0, 0):
+            raise IntegrityStop('Repair process budget')
+        if not correctness['SemanticGatePass'] or not correctness['MetadataGatePass'] or not all(command_for(name)['Completed'] and command_for(name)['ExitCode'] == 0 for name in compile_plan + tuple(row[2] for row in semantic_plan)):
+            raise IntegrityStop('Repair semantic completion')
+        successful_protocol = True
+        repair_stop_complete = True
+        status.update(State='complete', Stage='complete', RepairStopReached=True)
+        summary['Decision'] = 'MONO_SERIALIZER_REPAIR_SEMANTIC_ONLY_NO_COLD_EXECUTION'
+        raise GateStop()
+"""
+REPAIR_SEQUENCE = """        status['FixedSequenceValidated'] = bool(successful_protocol and repair_stop_complete
+            and status.get('RepairStopReached') is True and args.backend == 'mono'
+            and sequence == (4, 4, 4, 0) and correctness['SemanticGatePass'] and correctness['MetadataGatePass']
+            and status['SemanticCompleted'] == 4 and status['ColdCompleted'] == 0 and status['ColdRows'] == 0
+            and status['WarmTargets'] == 0 and status['PilotTargets'] == 0
+            and all(command_for(name)['Completed'] and command_for(name)['ExitCode'] == 0 for name in compile_plan + tuple(row[2] for row in semantic_plan))
+            and len(correctness['SemanticDiagnostics']) == 4 and len(cold) == 24
+            and all(row.get('Attempted') is False and row.get('Completed') is False and row.get('ExitCode') is None and row.get('Measurement') is None for row in cold))
+        status['RepairReceipt'] = {'Backend': args.backend, 'CompilerAttempts': status['BuildAttempts'],
+            'SuccessfulBuilds': status['Builds'], 'SemanticTargets': status['SemanticTargets'],
+            'SemanticCompleted': status['SemanticCompleted'], 'ColdTargets': status['ColdTargets'],
+            'ColdCompleted': status['ColdCompleted'], 'ColdRows': status['ColdRows'],
+            'WarmTargets': status['WarmTargets'], 'PilotTargets': status['PilotTargets'],
+            'ColdPlanSlots': len(cold), 'ColdPlanSlotsAttempted': sum(row.get('Attempted') is True for row in cold),
+            'CSharpMeasurementSamples': sum(row.get('Measurement') is not None for row in cold),
+            'NativeCaptures': 0, 'DeadlineSeconds': 120, 'AcceptanceEvidence': False, 'AutomaticContinuation': False}
+"""
+REPAIR_CONFIG_PAYLOAD = """            'config.json': dict(EXPECTED_CONFIG, Backend=args.backend, RequestedDeadlineSeconds=args.deadline_seconds,
+                RepairProtocol=REPAIR_PROTOCOL, RepairBudget=dict(REPAIR_BUDGET), RepairFrozenSHA256=REPAIR_FROZEN_SHA256,
+                SourcePackageFrozenSHA256=SOURCE_PACKAGE_SEAL),
+"""
+ADAPTERS = (
+    (START, '    started = PREFLIGHT_STARTED\n'),
+    (BACKEND, "ap.add_argument('--backend', choices=('mono',), required=True)"),
+    (DEADLINE, "ap.add_argument('--deadline-seconds', type=int, choices=(120,), default=120)"),
+    (VERIFY, REPAIR_VERIFY),
+    (HARNESS_ENTRY, 'support.build(private / variant, REPAIR_HARNESS_ENTRY,'),
+    (INITIALIZE, REPAIR_INITIALIZE),
+    (MARKER, STOP),
+    (GATE_REASON, "        if status['Reason'] == 'none' and not repair_stop_complete:\n"),
+    (SEQUENCE, REPAIR_SEQUENCE),
+    (CONFIG_PAYLOAD, REPAIR_CONFIG_PAYLOAD),
+    (FINAL_PRINT, "    print('Assembly discovery Mono serializer repair: ' + status['State'] + '. Semantic-only; zero cold execution; AcceptanceEvidence=false.')\n"),
+)
+
+
+class ArgumentParser(argparse.ArgumentParser):
+    def error(self, unused_message):
+        self.exit(2, 'Assembly discovery Mono serializer repair arguments invalid.\n')
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def strict_json(data):
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('Duplicate JSON key')
+            result[key] = value
+        return result
+
+    def bad_constant(unused):
+        raise ValueError('Nonfinite JSON value')
+
+    return json.loads(data, object_pairs_hook=unique, parse_constant=bad_constant)
+
+
+def plain_path(path):
+    path = path.absolute()
+    if any(item.is_symlink() for item in (path,) + tuple(path.parents)):
+        raise ValueError('Symlinked input path')
+    return path.resolve(strict=True)
+
+
+def inventory(folder):
+    folder = plain_path(folder)
+    rows = {}
+    if not folder.is_dir():
+        raise ValueError('Input package is not a directory')
+    for path in sorted(folder.rglob('*')):
+        mode = path.lstat().st_mode
+        if stat.S_ISREG(mode):
+            rows[path.relative_to(folder).as_posix()] = sha(path)
+        elif not stat.S_ISDIR(mode):
+            raise ValueError('Symlinked or special input member')
+    return rows
+
+
+def manifest(value):
+    if type(value) is not dict or not value or 'frozen.json' in value:
+        raise ValueError('Input manifest schema')
+    for name, checksum in value.items():
+        if type(name) is not str or type(checksum) is not str:
+            raise ValueError('Input manifest type')
+        path = PurePosixPath(name)
+        if not name or path.is_absolute() or path.as_posix() != name or '..' in path.parts or '\\' in name or re.fullmatch('[0-9a-f]{64}', checksum) is None:
+            raise ValueError('Input manifest member')
+    return dict(value)
+
+
+def read_verified(folder, name, expected):
+    path = plain_path(folder / name)
+    data = path.read_bytes()
+    if hashlib.sha256(data).hexdigest() != expected:
+        raise ValueError('Input bytes changed')
+    return data
+
+
+def adapt(source):
+    if type(source) is not str:
+        raise ValueError('Coordinator source type')
+    if any(source.count(anchor) != 1 for anchor, replacement in ADAPTERS):
+        raise ValueError('Exact repair adapter anchor missing or ambiguous')
+    for anchor, replacement in ADAPTERS:
+        source = source.replace(anchor, replacement, 1)
+    return source
+
+
+def main(argv=None):
+    started = time.monotonic()
+    ap = ArgumentParser(prog='assembly-discovery-array-mono-serializer-repair', description=__doc__)
+    ap.add_argument('--backend', choices=('mono',), required=True)
+    ap.add_argument('--dotnet', default='dotnet')
+    ap.add_argument('--mono', default='mono')
+    for name in ('nuget', 'git-root', 'out', 'work'):
+        ap.add_argument('--' + name, type=Path, required=True)
+    ap.add_argument('--expected-seal', required=True)
+    ap.add_argument('--source-package', type=Path)
+    ap.add_argument('--deadline-seconds', type=int, choices=(120,), default=120)
+    args = ap.parse_args(argv)
+    here = plain_path(Path(__file__)).parent
+    package = plain_path(args.source_package if args.source_package is not None else here.parent / 'AssemblyDiscoveryArray')
+    outputs = (args.out.resolve(), args.work.resolve())
+    if any(root == folder or root in folder.parents for root in (here, package) for folder in outputs):
+        ap.error('Outputs inside a sealed input package')
+    repair_bytes = (here / 'frozen.json').read_bytes()
+    repair_seal = hashlib.sha256(repair_bytes).hexdigest()
+    if repair_seal != args.expected_seal:
+        ap.error('Repair package seal mismatch')
+    repair = strict_json(repair_bytes)
+    if repair.get('SourcePackageFrozenSHA256') != SOURCE_PACKAGE_SEAL:
+        ap.error('Repair source identity mismatch')
+    repair_files = manifest(repair['Files'])
+    source_bytes = (package / 'frozen.json').read_bytes()
+    if hashlib.sha256(source_bytes).hexdigest() != SOURCE_PACKAGE_SEAL:
+        ap.error('Source package seal mismatch')
+    original = strict_json(source_bytes)
+    original_files = manifest(original['Files'])
+
+    def verify_inputs():
+        if time.monotonic() - started >= 120:
+            raise TimeoutError('Repair entry deadline')
+        if inventory(here) != dict(repair_files, **{'frozen.json': repair_seal}):
+            raise ValueError('Repair package inventory or input changed')
+        if inventory(package) != dict(original_files, **{'frozen.json': SOURCE_PACKAGE_SEAL}):
+            raise ValueError('Source package inventory or input changed')
+        if time.monotonic() - started >= 120:
+            raise TimeoutError('Repair entry deadline')
+
+    verify_inputs()
+    pins = strict_json(read_verified(here, 'source-pins.json', repair_files['source-pins.json']))
+    config = strict_json(read_verified(here, 'config.json', repair_files['config.json']))
+    if pins['SourcePackageFrozenSHA256'] != SOURCE_PACKAGE_SEAL or pins['SourcePackageFiles'] != original_files:
+        raise ValueError('Repair source pins differ')
+    if type(config.get('RepairBudget')) is not dict or strict_json(json.dumps(config['RepairBudget'])) != REPAIR_BUDGET:
+        raise ValueError('Repair budget differs')
+    if json.dumps(config['RepairBudget'], sort_keys=True) != json.dumps(REPAIR_BUDGET, sort_keys=True):
+        raise ValueError('Repair budget type differs')
+    harness = pins['HarnessFiles']
+    if set(harness) != set(HARNESS_FILES) or {name for name in repair_files if name.startswith('Harness/')} != set(HARNESS_FILES):
+        raise ValueError('Repair Harness inventory differs')
+    repair_harness = {name: repair_files[name] for name in HARNESS_FILES}
+    for name in HARNESS_FILES:
+        expected_changed = name not in UNCHANGED_HARNESS
+        if harness[name] != {'OriginalSHA256': original_files[name], 'ReplacementSHA256': repair_harness[name], 'Changed': expected_changed}:
+            raise ValueError('Repair Harness pin differs')
+        if (repair_harness[name] != original_files[name]) is not expected_changed:
+            raise ValueError('Repair Harness change scope differs')
+    allowlist = read_verified(here, 'upload-allowlist.txt', repair_files['upload-allowlist.txt'])
+    if tuple(allowlist.decode('utf-8').splitlines()) != PUBLIC:
+        raise ValueError('Repair public allowlist differs')
+    coordinator_bytes = read_verified(package, 'run.py', original_files['run.py'])
+    source = adapt(coordinator_bytes.decode('utf-8'))
+    verify_inputs()
+    sys.dont_write_bytecode = True
+    namespace = {'__file__': str(package / 'run.py'), '__name__': 'sealed_mono_serializer_repair',
+        'PREFLIGHT_STARTED': started, 'PREFLIGHT_VERIFY': verify_inputs,
+        'REPAIR_HARNESS_ENTRY': here / 'Harness/Entry.cs', 'REPAIR_HARNESS_HASHES': repair_harness,
+        'REPAIR_PROTOCOL': REPAIR_PROTOCOL, 'REPAIR_BUDGET': dict(REPAIR_BUDGET),
+        'REPAIR_FROZEN_SHA256': repair_seal, 'SOURCE_PACKAGE_SEAL': SOURCE_PACKAGE_SEAL,
+        'SOURCE_COORDINATOR_SHA256': hashlib.sha256(coordinator_bytes).hexdigest(),
+        'ADAPTED_COORDINATOR_SHA256': hashlib.sha256(source.encode('utf-8')).hexdigest()}
+    exec(compile(source, '<sealed-mono-serializer-repair-coordinator>', 'exec'), namespace)
+    verify_inputs()
+    prior_argv = sys.argv
+    sys.argv = ['assembly-discovery-array-mono-serializer-repair', '--backend', 'mono',
+        '--dotnet', args.dotnet, '--mono', args.mono, '--nuget', str(args.nuget),
+        '--git-root', str(args.git_root), '--out', str(args.out), '--work', str(args.work),
+        '--expected-seal', SOURCE_PACKAGE_SEAL, '--deadline-seconds', '120']
+    try:
+        return namespace['main']()
+    finally:
+        sys.argv = prior_argv
+
+
+if __name__ == '__main__':
+    try:
+        exit_code = main()
+    except SystemExit:
+        raise
+    except BaseException:
+        print('Assembly discovery Mono serializer repair stopped before report completion.', file=sys.stderr)
+        exit_code = 1
+    raise SystemExit(exit_code)

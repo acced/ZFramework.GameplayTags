@@ -14,8 +14,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        candidate: [AssemblyDiscoveryArray]
-        backend: [net, mono]
+        candidate: [AssemblyDiscoveryArrayMonoSerializerRepair]
+        backend: [mono]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,7 +37,7 @@ jobs:
           set -euo pipefail
           args=(--backend "${{ matrix.backend }}" --dotnet "$(readlink -f "$(command -v dotnet)")" --nuget "$RUNNER_TEMP/portfolio-nuget" --git-root "$GITHUB_WORKSPACE" --out "$GITHUB_WORKSPACE/.artifacts/portfolio-screen" --work "$RUNNER_TEMP/portfolio-work")
           if [[ '${{ matrix.backend }}' == mono ]]; then args+=(--mono "$(command -v mono)"); fi
-          python3 'Tests~/PortfolioScreen/${{ matrix.candidate }}/run.py' "${args[@]}" --expected-seal 470305cba602b6378c495959aaa24faf6d98986cd4a9c1c778dcdef4405f1840
+          python3 'Tests~/PortfolioScreen/${{ matrix.candidate }}/run.py' "${args[@]}" --expected-seal d080c9b7925472c1c0a211edf66f85261c0aa36a670aded20f2410c500ec40a1
       - uses: actions/upload-artifact@v4
         if: always()
         with:

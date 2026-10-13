@@ -1,0 +1,20 @@
+--- a/Harness/ColdScreen.cs
++++ b/Harness/ColdScreen.cs
+@@ -116,7 +116,7 @@
+     private static void CheckDictionaryFields(FieldInfo[] fields)
+     {
+ #if PORTABLE_MONO
+-        string expected = "_syncRoot,buckets,comparer,count,entries,freeCount,freeList,keys,values,version";
++        string expected = "_buckets,_comparer,_count,_entries,_freeCount,_freeList,_keys,_syncRoot,_values,_version";
+ #else
+         string expected = "_buckets,_comparer,_count,_entries,_fastModMultiplier,_freeCount,_freeList,_keys,_values,_version";
+ #endif
+@@ -125,7 +125,7 @@
+     private static bool DictionaryReferenceField(string name)
+     {
+ #if PORTABLE_MONO
+-        return name == "comparer" || name == "keys" || name == "values" || name == "_syncRoot";
++        return name == "_comparer" || name == "_keys" || name == "_values" || name == "_syncRoot";
+ #else
+         return name == "_comparer" || name == "_keys" || name == "_values";
+ #endif

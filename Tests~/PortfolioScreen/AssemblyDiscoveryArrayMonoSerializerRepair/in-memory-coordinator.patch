@@ -1,0 +1,133 @@
+--- a/Tests~/PortfolioScreen/AssemblyDiscoveryArray/run.py
++++ b/Tests~/PortfolioScreen/AssemblyDiscoveryArrayMonoSerializerRepair/in-memory-coordinator.py
+@@ -212,9 +212,9 @@
+ 
+ 
+ def main():
+-    started = time.monotonic()
++    started = PREFLIGHT_STARTED
+     ap = argparse.ArgumentParser(description=__doc__)
+-    ap.add_argument('--backend', choices=('net', 'mono'), required=True)
++    ap.add_argument('--backend', choices=('mono',), required=True)
+     ap.add_argument('--dotnet', default='dotnet')
+     ap.add_argument('--mono', default='mono')
+     ap.add_argument('--nuget', type=Path, required=True)
+@@ -222,7 +222,7 @@
+     ap.add_argument('--out', type=Path, required=True)
+     ap.add_argument('--work', type=Path, required=True)
+     ap.add_argument('--expected-seal', required=True)
+-    ap.add_argument('--deadline-seconds', type=int, choices=(300,), default=300)
++    ap.add_argument('--deadline-seconds', type=int, choices=(120,), default=120)
+     args = ap.parse_args()
+     try:
+         frozen_bytes = (HERE / 'frozen.json').read_bytes()
+@@ -263,6 +263,15 @@
+         'CandidateSlowerPairCounts': {shape: 0 for shape in SHAPES}, 'AcceptanceEvidence': False,
+         'LatencyPassEstablished': False, 'AutomaticContinuation': False, 'ColdLatencyUnresolved': True,
+         'Decision': 'INCOMPLETE_NO_CONTINUATION'}
++    repair_stop_complete = False
++    status.update(RepairProtocol=REPAIR_PROTOCOL, RepairFrozenSHA256=REPAIR_FROZEN_SHA256,
++        SourcePackageFrozenSHA256=SOURCE_PACKAGE_SEAL, RepairBudget=dict(REPAIR_BUDGET),
++        SemanticRepairOnly=True, RepairStopReached=False)
++    provenance.update(RepairProtocol=REPAIR_PROTOCOL, RepairFrozenSHA256=REPAIR_FROZEN_SHA256,
++        SourcePackageFrozenSHA256=SOURCE_PACKAGE_SEAL, RepairHarnessFiles=dict(REPAIR_HARNESS_HASHES),
++        RepairHarnessManifestSHA256=digest(REPAIR_HARNESS_HASHES),
++        SourceCoordinatorSHA256=SOURCE_COORDINATOR_SHA256, AdaptedCoordinatorSHA256=ADAPTED_COORDINATOR_SHA256,
++        RuntimeChanged=False, CounterChanged=False, OriginalNETDecision='CLOSE_RETAINED')
+     commands, artifact_hashes, raw_hashes = [], {}, {}
+     pending_artifacts, pending_raw = set(), set()
+     tool_files, tool_hashes = {}, {}
+@@ -311,6 +320,12 @@
+             raise TimeoutError('Fixed deadline or termination')
+ 
+     def verify(check_deadline=True):
++        try:
++            PREFLIGHT_VERIFY()
++        except TimeoutError:
++            raise
++        except Exception:
++            raise IntegrityStop('Repair or source package changed') from None
+         if check_deadline:
+             check_time()
+         if (HERE / 'frozen.json').read_bytes() != frozen_bytes:
+@@ -529,7 +544,7 @@
+                 names.add(prefix + 'Test.runtimeconfig.json')
+                 required.add(prefix + 'Test.runtimeconfig.json')
+             begin_artifacts(names)
+-            executables[variant], code = support.build(private / variant, HERE / 'Harness/Entry.cs', private / ('build-' + variant), args.backend, dotnet, mono, nuget, run)
++            executables[variant], code = support.build(private / variant, REPAIR_HARNESS_ENTRY, private / ('build-' + variant), args.backend, dotnet, mono, nuget, run)
+             if code == 0:
+                 required.add(prefix + 'Test' + extension)
+                 status['Builds'] += 1
+@@ -606,7 +621,16 @@
+             status.update(State='blocked', Stage='semantic', Reason='semantics' if gate is False else 'metadata')
+             summary['Decision'] = 'STOP_SEMANTIC_OR_METADATA_FAILURE'
+             raise GateStop()
+-        status['Stage'] = 'cold'
++        verify()
++        if args.backend != 'mono' or (status['BuildAttempts'], status['Builds'], status['SemanticTargets'], status['ColdTargets'], status['WarmTargets'], status['PilotTargets']) != (4, 4, 4, 0, 0, 0):
++            raise IntegrityStop('Repair process budget')
++        if not correctness['SemanticGatePass'] or not correctness['MetadataGatePass'] or not all(command_for(name)['Completed'] and command_for(name)['ExitCode'] == 0 for name in compile_plan + tuple(row[2] for row in semantic_plan)):
++            raise IntegrityStop('Repair semantic completion')
++        successful_protocol = True
++        repair_stop_complete = True
++        status.update(State='complete', Stage='complete', RepairStopReached=True)
++        summary['Decision'] = 'MONO_SERIALIZER_REPAIR_SEMANTIC_ONLY_NO_COLD_EXECUTION'
++        raise GateStop()
+         for shape, pair, variant, name in cold_plan:
+             main_path = private / ('build-' + variant) / ('Test' + extension)
+             fixture_args = ['-', '-'] if shape == 'n0' else [fixtures[shape], artifact_hashes['build-fixtures/' + fixtures[shape].name]]
+@@ -672,7 +696,7 @@
+             status.update(State='rejected', Stage='analysis', Reason='semantics')
+             summary['Decision'] = 'CLOSE_COLD_SEMANTIC_OR_ALLOCATION_FAILURE'
+     except GateStop:
+-        if status['Reason'] == 'none':
++        if status['Reason'] == 'none' and not repair_stop_complete:
+             status['Reason'] = 'source-integrity' if status['Stage'] == 'source' else 'internal'
+     except IntegrityStop:
+         status.update(State='incomplete', IntegrityFailure=True, Reason='source-integrity' if status['Stage'] == 'source' else 'artifact-integrity')
+@@ -740,8 +764,22 @@
+         status['ColdCompleted'] = sum(command_for(name)['Completed'] for _, _, _, name in cold_plan)
+         status['ColdRows'] = sum(bool(row.get('MeasurementParseValid')) for row in cold)
+         sequence = (status['BuildAttempts'], status['Builds'], status['SemanticTargets'], status['ColdTargets'])
+-        status['FixedSequenceValidated'] = bool(successful_protocol and sequence == (4, 4, 4, 24)
+-            and len(correctness['SemanticDiagnostics']) == 4 and len(cold) == 24)
++        status['FixedSequenceValidated'] = bool(successful_protocol and repair_stop_complete
++            and status.get('RepairStopReached') is True and args.backend == 'mono'
++            and sequence == (4, 4, 4, 0) and correctness['SemanticGatePass'] and correctness['MetadataGatePass']
++            and status['SemanticCompleted'] == 4 and status['ColdCompleted'] == 0 and status['ColdRows'] == 0
++            and status['WarmTargets'] == 0 and status['PilotTargets'] == 0
++            and all(command_for(name)['Completed'] and command_for(name)['ExitCode'] == 0 for name in compile_plan + tuple(row[2] for row in semantic_plan))
++            and len(correctness['SemanticDiagnostics']) == 4 and len(cold) == 24
++            and all(row.get('Attempted') is False and row.get('Completed') is False and row.get('ExitCode') is None and row.get('Measurement') is None for row in cold))
++        status['RepairReceipt'] = {'Backend': args.backend, 'CompilerAttempts': status['BuildAttempts'],
++            'SuccessfulBuilds': status['Builds'], 'SemanticTargets': status['SemanticTargets'],
++            'SemanticCompleted': status['SemanticCompleted'], 'ColdTargets': status['ColdTargets'],
++            'ColdCompleted': status['ColdCompleted'], 'ColdRows': status['ColdRows'],
++            'WarmTargets': status['WarmTargets'], 'PilotTargets': status['PilotTargets'],
++            'ColdPlanSlots': len(cold), 'ColdPlanSlotsAttempted': sum(row.get('Attempted') is True for row in cold),
++            'CSharpMeasurementSamples': sum(row.get('Measurement') is not None for row in cold),
++            'NativeCaptures': 0, 'DeadlineSeconds': 120, 'AcceptanceEvidence': False, 'AutomaticContinuation': False}
+         if status['State'] in ('complete', 'rejected') and not status['FixedSequenceValidated']:
+             status.update(State='incomplete', Stage='finalization', FinalizationFailure=True, Reason='internal')
+         if not summary['Pairs']:
+@@ -759,7 +797,9 @@
+             status.update(State='incomplete', Stage='finalization', IntegrityFailure=True, Reason='artifact-integrity')
+             summary['Decision'] = 'INCOMPLETE_NO_CONTINUATION'
+         payloads = {'status.json': status, 'provenance.json': provenance,
+-            'config.json': dict(EXPECTED_CONFIG, Backend=args.backend, RequestedDeadlineSeconds=args.deadline_seconds),
++            'config.json': dict(EXPECTED_CONFIG, Backend=args.backend, RequestedDeadlineSeconds=args.deadline_seconds,
++                RepairProtocol=REPAIR_PROTOCOL, RepairBudget=dict(REPAIR_BUDGET), RepairFrozenSHA256=REPAIR_FROZEN_SHA256,
++                SourcePackageFrozenSHA256=SOURCE_PACKAGE_SEAL),
+             'correctness.json': correctness, 'raw/cold.json': cold, 'summary.json': summary}
+         try:
+             # Serialize every public payload under the still-active fixed deadline.
+@@ -786,7 +826,7 @@
+             save(public / 'summary.json', summary)
+             save(public / 'status.json', status)
+         finalizing = False
+-    print('Assembly discovery portability screen: ' + status['State'] + '. Explicit public numeric/hash reports only; AcceptanceEvidence=false.')
++    print('Assembly discovery Mono serializer repair: ' + status['State'] + '. Semantic-only; zero cold execution; AcceptanceEvidence=false.')
+     return 0 if status['State'] == 'complete' else 1
+ 
+ 
