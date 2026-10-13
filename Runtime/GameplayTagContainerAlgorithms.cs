@@ -6,13 +6,6 @@ namespace GameplayTags
     /// <summary>Ordinal merge kernels. Validation belongs only to insertion/copy routes.</summary>
     internal static class GameplayTagContainerAlgorithms
     {
-        private static bool Valid(GameplayTag tag)
-        {
-            if (GameplayTagManager.IsRegistered(tag)) return true;
-            GameplayTagManager.WarnUnregistered(tag.Name);
-            return false;
-        }
-
         private static bool AllRegistered(GameplayTagContainer source)
         {
             if (source == null || source.Count == 0) return true;
@@ -28,11 +21,13 @@ namespace GameplayTags
             result.Clear();
             if (source == null) return;
             result.EnsureCapacity(source.Count);
-            for (int i = 0; i < source.Count; i++)
+            if (fast)
             {
-                if (fast) result.Tags.Add(source[i]);
-                else result.AddTag(source[i]);
+                result.Tags.AddRange(source.Tags);
+                return;
             }
+            // Keep live traversal and sorted partial state through warning callbacks.
+            for (int i = 0; i < source.Count; i++) result.AddTag(source[i]);
         }
 
         internal static void AppendSorted(GameplayTagContainer destination, GameplayTagContainer source)
@@ -43,34 +38,83 @@ namespace GameplayTags
                 for (int i = 0; i < source.Count; i++) destination.AddTag(source[i]);
                 return;
             }
-            // Reuse the target's spare capacity. Existing unknown members are retained.
+            AppendAlreadyValidated(destination, source);
+        }
+
+        // The API boundary excludes source/destination aliases. Validation is already
+        // complete, so this path cannot invoke registration or warning callbacks.
+        private static void AppendAlreadyValidated(GameplayTagContainer destination, GameplayTagContainer source,
+            bool preferSourceOnEqual = false)
+        {
+            if (source == null || source.Count == 0) return;
+            var output = destination.Tags;
+            var right = source.Tags;
             int oldCount = destination.Count;
-            destination.EnsureCapacity(oldCount + source.Count);
-            for (int i = 0; i < source.Count; i++)
-                if (Valid(source[i])) destination.Tags.Add(source[i]);
-            int incoming = destination.Count - oldCount;
-            if (incoming == 0) return;
-            // The appended input is sorted. Backward merging cannot overwrite unread input
-            // after moving the incoming run into a temporary buffer (alias-safe API boundary).
-            var right = new GameplayTag[incoming];
-            destination.Tags.CopyTo(oldCount, right, 0, incoming);
-            int a = oldCount - 1, b = incoming - 1, write = destination.Count - 1;
+            if (oldCount == 0 || string.CompareOrdinal(output[oldCount - 1].Name, right[0].Name) < 0)
+            {
+                destination.EnsureCapacity(oldCount + right.Count);
+                output.AddRange(right);
+                return;
+            }
+            // A contained input needs neither a larger buffer nor a merge. These
+            // count/range bounds are exact; a late missing member can cost an extra
+            // scan before the merge below, but no workload-specific cutoff is used.
+            if (right.Count <= oldCount &&
+                string.CompareOrdinal(output[0].Name, right[0].Name) <= 0 &&
+                string.CompareOrdinal(right[right.Count - 1].Name, output[oldCount - 1].Name) <= 0 &&
+                TryApplyContainedSource(output, right, preferSourceOnEqual))
+                return;
+
+            // Grow the logical Count before indexed writes. Read the distinct source
+            // directly; backward writes stay beyond unread destination members.
+            // Existing destination members, including unknown names, are retained.
+            destination.EnsureCapacity(oldCount + right.Count);
+            output.AddRange(right);
+            int a = oldCount - 1, b = right.Count - 1, write = output.Count - 1;
             while (a >= 0 && b >= 0)
             {
-                int order = string.CompareOrdinal(destination.Tags[a].Name, right[b].Name);
-                if (order > 0) destination.Tags[write--] = destination.Tags[a--];
-                else if (order < 0) destination.Tags[write--] = right[b--];
-                else { destination.Tags[write--] = destination.Tags[a--]; b--; }
+                int order = string.CompareOrdinal(output[a].Name, right[b].Name);
+                if (order > 0) output[write--] = output[a--];
+                else if (order < 0) output[write--] = right[b--];
+                else
+                {
+                    // Ordinary append keeps destination identity; a union whose
+                    // target is rhs must instead keep the incoming lhs identity.
+                    output[write--] = preferSourceOnEqual ? right[b] : output[a];
+                    a--; b--;
+                }
             }
-            while (b >= 0) destination.Tags[write--] = right[b--];
-            while (a >= 0) destination.Tags[write--] = destination.Tags[a--];
-            if (write >= 0) destination.Tags.RemoveRange(0, write + 1);
+            while (b >= 0) output[write--] = right[b--];
+            while (a >= 0) output[write--] = output[a--];
+            if (write >= 0) output.RemoveRange(0, write + 1);
+        }
+
+        private static bool TryApplyContainedSource(List<GameplayTag> destination, List<GameplayTag> source,
+            bool preferSourceOnEqual)
+        {
+            int a = 0, b = 0;
+            while (a < destination.Count && b < source.Count)
+            {
+                int order = string.CompareOrdinal(destination[a].Name, source[b].Name);
+                if (order > 0) return false;
+                if (order == 0)
+                {
+                    // These replacements also agree with the final merge if a later
+                    // source member is missing. Names and source contents never change.
+                    // If later capacity growth fails, completed representative-only
+                    // replacements remain; this path is not transactional on exhaustion.
+                    if (preferSourceOnEqual) destination[a] = source[b];
+                    b++;
+                }
+                a++;
+            }
+            return b == source.Count;
         }
 
         internal static void UnionSorted(GameplayTagContainer lhs, GameplayTagContainer rhs, GameplayTagContainer result)
         {
             if (result == null) throw new ArgumentNullException(nameof(result));
-            bool fast = AllRegistered(lhs) && AllRegistered(rhs);
+            bool fast = AllRegistered(lhs) && (ReferenceEquals(lhs, rhs) || AllRegistered(rhs));
             if (!fast)
             {
                 // Legacy factory calls retain live source traversal through warning callbacks.
@@ -83,17 +127,42 @@ namespace GameplayTags
                 if (r != null) for (int i = 0; i < r.Count; i++) result.AddTag(r[i]);
                 return;
             }
+            // Even an all-self union reaches this point only after validation, since
+            // union revalidates unknown names unlike the public self-append operation.
+            if (ReferenceEquals(lhs, rhs))
+            {
+                if (!ReferenceEquals(lhs, result))
+                {
+                    result.Clear();
+                    if (lhs != null)
+                    {
+                        result.EnsureCapacity(lhs.Count);
+                        result.Tags.AddRange(lhs.Tags);
+                    }
+                }
+                return;
+            }
+            if (ReferenceEquals(lhs, result))
+            {
+                AppendAlreadyValidated(result, rhs);
+                return;
+            }
+            if (ReferenceEquals(rhs, result))
+            {
+                AppendAlreadyValidated(result, lhs, true);
+                return;
+            }
             List<GameplayTag> left = lhs?.Tags, right = rhs?.Tags;
-            if (ReferenceEquals(lhs, result)) left = new List<GameplayTag>(left);
-            if (ReferenceEquals(rhs, result)) right = ReferenceEquals(lhs, rhs) ? left : new List<GameplayTag>(right);
             result.Clear();
             result.EnsureCapacity((left?.Count ?? 0) + (right?.Count ?? 0));
+            if (left == null) { if (right != null) result.Tags.AddRange(right); return; }
+            if (right == null) { result.Tags.AddRange(left); return; }
             int a = 0, b = 0;
-            while (a < (left?.Count ?? 0) || b < (right?.Count ?? 0))
+            while (a < left.Count || b < right.Count)
             {
                 GameplayTag tag;
-                if (a == (left?.Count ?? 0)) tag = right[b++];
-                else if (b == (right?.Count ?? 0)) tag = left[a++];
+                if (a == left.Count) tag = right[b++];
+                else if (b == right.Count) tag = left[a++];
                 else
                 {
                     int order = string.CompareOrdinal(left[a].Name, right[b].Name);
@@ -101,7 +170,7 @@ namespace GameplayTags
                     else if (order > 0) tag = right[b++];
                     else { tag = left[a++]; b++; }
                 }
-                if (GameplayTagManager.IsRegistered(tag)) result.Tags.Add(tag);
+                result.Tags.Add(tag);
             }
         }
 

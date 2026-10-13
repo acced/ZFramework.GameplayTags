@@ -14,7 +14,7 @@ namespace GameplayTags
     [Serializable]
     public sealed class GameplayTagContainer : ISerializationCallbackReceiver, IEquatable<GameplayTagContainer>
     {
-        [SerializeField] private List<GameplayTag> m_GameplayTags = new List<GameplayTag>();
+        [SerializeField] private List<GameplayTag> m_GameplayTags;
 
         internal List<GameplayTag> Tags => m_GameplayTags;
 
@@ -22,7 +22,7 @@ namespace GameplayTags
         public bool IsEmpty => m_GameplayTags.Count == 0;
         public GameplayTag this[int index] => m_GameplayTags[index];
 
-        public GameplayTagContainer()
+        public GameplayTagContainer() : this(0)
         {
         }
 
@@ -31,12 +31,12 @@ namespace GameplayTags
             m_GameplayTags = new List<GameplayTag>(capacity);
         }
 
-        public GameplayTagContainer(GameplayTag tag)
+        public GameplayTagContainer(GameplayTag tag) : this()
         {
             AddTag(tag);
         }
 
-        public GameplayTagContainer(GameplayTagContainer other)
+        public GameplayTagContainer(GameplayTagContainer other) : this()
         {
             AppendTags(other);
         }

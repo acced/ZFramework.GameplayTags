@@ -313,3 +313,8 @@ Sample.State.Debuff.Control.Stunned,Prevents actions,Default,false,true
 ## B1 roadmap compatibility candidate
 
 Merge-based bulk operations and alias-safe reusable target APIs are described in [the Phase 1 notes](Documentation~/B1_ROADMAP.md). Name-sorted storage is retained. [Portable tests](Tests~/Roadmap/README.md) do not replace Unity validation.
+
+
+### B1.1 refinements
+
+B1.1 retains per-call validation reuse, bulk copy, direct-source append, alias-aware union and single-list construction. Intersection/difference keep B1 policies after the separately measured sparse/skew experiment showed regressions. See [changes](Documentation~/B11_CHANGES.md) and [final core results](Documentation~/B11_FINAL_RESULTS.md), including losing rows and preserved experimental datasets. P1 remains separate and is not included in this production update.

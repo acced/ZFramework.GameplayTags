@@ -7,7 +7,7 @@ using System.Text;
 using GameplayTags;
 using UnityEngine;
 
-// Shared by B0 and current runtime. Reflection is limited to serialized fields,
+// Shared by B0, exact B1, and current runtime. Reflection is limited to serialized fields,
 // whose names/types are the Editor/asset contract, not runtime implementation.
 internal static class Program {
  static int assertions;
@@ -30,18 +30,33 @@ internal static class Program {
   var reverse=Serialized(e.Reverse().ToArray()); Check(c.Equals(reverse)&&c.Equals((object)reverse),why+" equality"); Check(!c.Equals((GameplayTagContainer)null),why+" null equality");
   transcript.Append(why).Append(':').AppendJoin('|',actual).AppendLine();
  }
+ static GameplayTagContainer Snapshot(GameplayTagContainer c) {
+  var copy=new GameplayTagContainer();var values=new List<GameplayTag>();foreach(var tag in c)values.Add(tag);
+  Field(typeof(GameplayTagContainer),"m_GameplayTags").SetValue(copy,values);return copy;
+ }
+ static GameplayTagContainer Fresh(IEnumerable<string> names) => Serialized(names.Select(n=>new string(n.ToCharArray())).ToArray());
+ static Dictionary<string,string> Representatives(GameplayTagContainer first,GameplayTagContainer second=null) {
+  var result=new Dictionary<string,string>(StringComparer.Ordinal);foreach(var c in new[]{first,second})if(c!=null)foreach(var tag in c)if(!result.ContainsKey(tag.Name))result.Add(tag.Name,tag.Name);return result;
+ }
+ static void SameRepresentatives(GameplayTagContainer result,Dictionary<string,string> expected,string why) {
+  foreach(var tag in result)Check(ReferenceEquals(tag.Name,expected[tag.Name]),why+" lhs/destination name object "+tag.Name);
+ }
  static void SetUnion(GameplayTagContainer d,GameplayTagContainer a,GameplayTagContainer b) {
 #if PHASE_APIS
   d.SetUnion(a,b);
 #else
-  var r=GameplayTagContainer.Union(a,b); d.Clear(); Field(typeof(GameplayTagContainer),"m_GameplayTags").SetValue(d,Names(r).Select(Raw).ToList());
+  // B0 has no target-writing API. Emulate B1's added API, including alias snapshots
+  // and observable clear/add callback order; old-native factory tests remain separate.
+  var left=ReferenceEquals(d,a)?Snapshot(a):a;
+  var right=ReferenceEquals(d,b)?(ReferenceEquals(a,b)?left:Snapshot(b)):b;
+  d.Clear();d.AppendTags(left);d.AppendTags(right);
 #endif
  }
  static void SetIntersection(GameplayTagContainer d,GameplayTagContainer a,GameplayTagContainer b) {
 #if PHASE_APIS
   d.SetIntersectionExact(a,b);
 #else
-  var r=GameplayTagContainer.IntersectionExact(a,b); Field(typeof(GameplayTagContainer),"m_GameplayTags").SetValue(d,Names(r).Select(Raw).ToList());
+  var r=GameplayTagContainer.IntersectionExact(a,b); Field(typeof(GameplayTagContainer),"m_GameplayTags").SetValue(d,Field(typeof(GameplayTagContainer),"m_GameplayTags").GetValue(r));
 #endif
  }
  static void Intersect(GameplayTagContainer d,GameplayTagContainer b) {
@@ -56,6 +71,15 @@ internal static class Program {
   d.ExceptWithExact(b);
 #else
   d.RemoveTags(b);
+#endif
+ }
+ static void SetDifference(GameplayTagContainer d,GameplayTagContainer source,GameplayTagContainer remove) {
+#if PHASE_APIS
+  // Kernel alias contract, including result==remove, has no corresponding B0 target API.
+  GameplayTagContainerAlgorithms.ExceptSorted(source,remove,d);
+#else
+  var result=source==null?new GameplayTagContainer():Snapshot(source);result.RemoveTags(remove);
+  Field(typeof(GameplayTagContainer),"m_GameplayTags").SetValue(d,Field(typeof(GameplayTagContainer),"m_GameplayTags").GetValue(result));
 #endif
  }
  static bool Hierarchy(string child,string parent) => parent.Length>0 && (child==parent || child.StartsWith(parent+".",StringComparison.Ordinal));
@@ -211,5 +235,148 @@ internal static class Program {
    State(GameplayTagContainer.Union(cs[i],cs[j]),Registered(oracle[i].Concat(oracle[j])),"random union");State(GameplayTagContainer.IntersectionExact(cs[i],cs[j]),oracle[i].Intersect(oracle[j]),"random intersection");
   }
  }
- static int Main() {try { Serialization();IdentityAndRebuild();Aliases();SerializationRoundTrip();UninitializedAndExceptions();ObservableCallbacks();MutatingCallbacks();LiveEnumeration();Queries();NamesAndRegistry();LargeAndSkewed();Randomized();Console.WriteLine("PASS assertions="+assertions);Console.WriteLine("TRANSCRIPT "+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(transcript.ToString()))));return 0;}catch(Exception ex){Console.Error.WriteLine("FAIL after "+assertions+" assertions: "+ex);return 1;} }
+
+ static void BatchMergeBoundaries() {
+  var names=Enumerable.Range(0,1536).Select(i=>"Merge.T"+i.ToString("D4")).ToArray();Init(names);
+  var empty=Array.Empty<string>();
+  var pairs=new[]{
+   ("both empty",empty,empty),("empty target",empty,names.Take(17).ToArray()),("empty source",names.Take(17).ToArray(),empty),
+   ("ordered disjoint",names.Take(33).ToArray(),names.Skip(33).Take(47).ToArray()),
+   ("reverse disjoint",names.Skip(33).Take(47).ToArray(),names.Take(33).ToArray()),
+   ("interleaved",names.Take(129).Where((n,i)=>i%2==0).ToArray(),names.Take(129).Where((n,i)=>i%2!=0).ToArray()),
+   ("overlap",names.Take(257).ToArray(),names.Skip(128).Take(257).ToArray()),
+   ("contained prefix then miss",names.Take(129).Where((n,i)=>i%2==0).ToArray(),new[]{names[0],names[2],names[3],names[128]}),
+   ("source subset",names.Take(257).ToArray(),names.Skip(17).Take(7).ToArray()),
+   ("target subset",names.Skip(17).Take(7).ToArray(),names.Take(257).ToArray()),
+   ("equal contents",names.Take(257).ToArray(),names.Take(257).ToArray()),
+   ("large overlap",names.Take(1024).ToArray(),names.Skip(512).Take(1024).ToArray())
+  };
+  foreach(var pair in pairs) {
+   var target=Fresh(pair.Item2);var source=Fresh(pair.Item3);var representatives=Representatives(target,source);var sourceRefs=Representatives(source);
+   target.AppendTags(source);State(target,pair.Item2.Union(pair.Item3),"batch append "+pair.Item1);SameRepresentatives(target,representatives,"batch append "+pair.Item1);State(source,pair.Item3,"batch append source "+pair.Item1);SameRepresentatives(source,sourceRefs,"batch append source unchanged");
+   for(int mode=0;mode<5;mode++) {
+    var left=Fresh(pair.Item2);var right=mode>=3?left:Fresh(pair.Item3);var expected=Names(left).Union(Names(right)).ToArray();representatives=Representatives(left,right);var leftRefs=Representatives(left);var rightRefs=Representatives(right);
+    var output=mode==0||mode==3?Serialized("Old.Unknown"):mode==2?right:left;
+    SetUnion(output,left,right);State(output,expected,"batch union "+pair.Item1+" alias "+mode);SameRepresentatives(output,representatives,"batch union "+pair.Item1+" alias "+mode);
+    if(!ReferenceEquals(output,left)){Equal(left.Count,leftRefs.Count,"union nonalias lhs count unchanged");SameRepresentatives(left,leftRefs,"union nonalias lhs unchanged");}
+    if(!ReferenceEquals(output,right)){Equal(right.Count,rightRefs.Count,"union nonalias rhs count unchanged");SameRepresentatives(right,rightRefs,"union nonalias rhs unchanged");}
+   }
+  }
+  var self=Fresh(names.Take(1024).Concat(new[]{"Unknown.Keep"}));var before=Names(self);var refs=Representatives(self);int warnings=0;
+  Debug.WarningHook=_=>warnings++;try{self.AppendTags(self);}finally{Debug.WarningHook=null;}
+  Equal(warnings,0,"large self append never validates");State(self,before,"large self append including unknown");SameRepresentatives(self,refs,"large self append");
+  var unknownTarget=Fresh(new[]{"Unknown.Keep"}.Concat(names.Take(17)));var incoming=Fresh(names.Skip(8).Take(33));refs=Representatives(unknownTarget,incoming);
+  unknownTarget.AppendTags(incoming);State(unknownTarget,new[]{"Unknown.Keep"}.Concat(names.Take(41)),"fast append retains target unknown");SameRepresentatives(unknownTarget,refs,"fast append unknown target");
+ }
+
+ static void ContainedMergeCapacity() {
+#if B11_OPTIMIZATIONS
+  // Current-only allocation policy; shared merge cases independently check semantics.
+  var names=Enumerable.Range(0,257).Select(i=>"Contained.T"+i.ToString("D4")).ToArray();Init(names);
+  var subsets=new[]{new[]{names[0]},new[]{names[256]},names.Skip(17).Take(7).ToArray(),new[]{names[0],names[16],names[128],names[256]},names};
+  for(int shape=0;shape<subsets.Length;shape++)for(int operation=0;operation<3;operation++) {
+   var target=Fresh(names);var source=Fresh(subsets[shape]);var sourceRefs=Representatives(source);
+   var expected=operation==2?Representatives(source,target):Representatives(target,source);
+   var list=(List<GameplayTag>)Field(typeof(GameplayTagContainer),"m_GameplayTags").GetValue(target);int capacity=list.Capacity;
+   Equal(capacity,target.Count,"contained capacity fixture is exact-fit");
+   for(int repeat=0;repeat<3;repeat++) {
+    if(operation==0)target.AppendTags(source);else if(operation==1)SetUnion(target,target,source);else SetUnion(target,source,target);
+    Equal(list.Capacity,capacity,"contained merge retains exact-fit capacity "+shape+" operation "+operation);
+    Equal(string.Join("|",Names(target)),string.Join("|",names),"contained merge membership unchanged");
+    SameRepresentatives(target,expected,"contained merge representatives");
+    Equal(source.Count,subsets[shape].Length,"contained source count unchanged");SameRepresentatives(source,sourceRefs,"contained source representatives unchanged");
+   }
+  }
+  Console.WriteLine("PASS B1.1 containment probes: exact-fit append and both union target aliases retain capacity and source identities");
+#endif
+ }
+ static void UnionAliasCallbacks() {
+  for(int mode=0;mode<3;mode++) {
+   Init(new[]{"A","B","V","Y","Z","ZZ"});var left=Serialized("A","U","Z");var right=mode==2?left:Serialized("B",mode==0?"Z":"Y");var target=mode==1?right:left;int warnings=0;
+   Debug.WarningHook=message=>{if(message.ToString().Contains(": U")){
+    warnings++;State(target,new[]{"A"},"union callback observes cleared partial target "+mode);target.AddTag("ZZ");
+    if(mode==0){right.RemoveTag(Raw("B"));right.AddTag("Y");}
+    if(mode==1){left.RemoveTag(Raw("U"));left.AddTag("V");}
+   }};
+   try{SetUnion(target,left,right);}finally{Debug.WarningHook=null;}
+   Equal(warnings,1,"union alias unknown warns once "+mode);
+   State(target,mode==0?new[]{"A","Y","Z","ZZ"}:mode==1?new[]{"A","B","Y","Z","ZZ"}:new[]{"A","Z","ZZ"},"union alias warning mutation "+mode);
+   if(mode==0)State(right,new[]{"Y","Z"},"union alias left traverses live rhs");
+   if(mode==1)State(left,new[]{"A","V","Z"},"union alias right traverses live lhs");
+   Init(new[]{"A","B","Z"});left=Serialized("A","U","Z");right=mode==2?left:Serialized("B");target=mode==1?right:left;warnings=0;
+   Debug.WarningHook=message=>{if(message.ToString().Contains(": U")){warnings++;State(target,new[]{"A"},"union throwing callback partial target "+mode);throw new WarningFailure();}};
+   try{Throws<WarningFailure>(()=>SetUnion(target,left,right),"union alias callback propagates "+mode);}finally{Debug.WarningHook=null;}
+   Equal(warnings,1,"union alias throwing warning once "+mode);State(target,new[]{"A"},"union alias throw retains preceding insertion "+mode);
+  }
+ }
+ static void ConstructorEdges() {
+  GameplayTagManager.ResetForTests();Resources.LoadCalls=0;
+  Throws<ArgumentOutOfRangeException>(()=>new GameplayTagContainer(-1),"negative capacity constructor");
+  State(new GameplayTagContainer(0),Array.Empty<string>(),"zero capacity constructor");
+  State(new GameplayTagContainer((GameplayTagContainer)null),Array.Empty<string>(),"null copy constructor");
+  State(new GameplayTagContainer(new GameplayTagContainer()),Array.Empty<string>(),"empty copy constructor");
+#if PHASE_APIS
+  var target=Serialized("Unknown.Keep");Throws<ArgumentOutOfRangeException>(()=>target.EnsureCapacity(-1),"negative EnsureCapacity");
+  Equal(target.Count,1,"negative EnsureCapacity retains count");Equal(target[0].Name,"Unknown.Keep","negative EnsureCapacity retains name");
+#endif
+  Check(!GameplayTagManager.IsInitialized&&Resources.LoadCalls==0,"empty/null/invalid-capacity constructors never initialize registry");
+ }
+ static void SparseAndSkewIdentity() {
+  var names=Enumerable.Range(0,4096).Select(i=>"Sparse.T"+i.ToString("D4")).ToArray();Init(names);
+  for(int sparse=0;sparse<3;sparse++) {
+   var leftNames=names.Take(2048).Where((n,i)=>i%2==0).ToArray();
+   var rightNames=sparse==0?names.Skip(2048).Take(1024).ToArray():names.Take(2048).Where((n,i)=>i%2!=0).ToArray();
+   if(sparse==2)rightNames[512]=leftNames[512];
+   var left=Fresh(leftNames);var right=Fresh(rightNames);var expected=leftNames.Intersect(rightNames).ToArray();var refs=Representatives(left);var target=new GameplayTagContainer(4);
+   var factory=GameplayTagContainer.IntersectionExact(left,right);State(factory,expected,"sparse factory "+sparse);SameRepresentatives(factory,refs,"sparse factory");
+   var filter=left.FilterExact(right);State(filter,expected,"sparse filter "+sparse);SameRepresentatives(filter,refs,"sparse filter");
+   SetIntersection(target,left,right);State(target,expected,"sparse reused target "+sparse);SameRepresentatives(target,refs,"sparse target");
+#if B11_OPTIMIZATIONS
+   // Allocation-policy regression, deliberately excluded from the shared public transcript.
+   foreach(var result in new[]{factory,filter,target})Equal(((List<GameplayTag>)Field(typeof(GameplayTagContainer),"m_GameplayTags").GetValue(result)).Capacity,Math.Min(left.Count,right.Count),"B1.1 core retains exact B1 factory/filter/reused-target min-count policy "+sparse);
+#endif
+  }
+  var large=names.Take(1024).Concat(new[]{"Unknown.Common","Unknown.Left"}).ToArray();var small=new[]{names[0],names[500],names[1500],"Unknown.Common","Unknown.Right"};
+  for(int swapped=0;swapped<2;swapped++)for(int mode=0;mode<4;mode++) {
+   var left=Fresh(swapped==0?large:small);var right=mode==3?left:Fresh(swapped==0?small:large);var expected=Names(left).Intersect(Names(right)).ToArray();var refs=Representatives(left);
+   if(mode!=3)foreach(var tag in right)if(refs.ContainsKey(tag.Name))Check(!ReferenceEquals(tag.Name,refs[tag.Name]),"identity fixture has distinct equal-content strings");
+   var output=mode==0?Serialized("Old.Unknown"):mode==2?right:left;
+   SetIntersection(output,left,right);State(output,expected,"skew lhs identity "+swapped+" alias "+mode);SameRepresentatives(output,refs,"skew intersection lhs "+swapped+" alias "+mode);
+  }
+  GameplayTagManager.ResetForTests();Resources.LoadCalls=0;var a=Fresh(large);var b=Fresh(small);var uninitialized=GameplayTagContainer.IntersectionExact(a,b);
+  State(uninitialized,large.Intersect(small),"skew intersection remains noninitializing");SameRepresentatives(uninitialized,Representatives(a),"uninitialized skew lhs identity");
+  Check(!GameplayTagManager.IsInitialized&&Resources.LoadCalls==0,"skew intersection unknown matching never initializes registry");
+#if B11_OPTIMIZATIONS
+  Console.WriteLine("PASS B1.1 core capacity probes: factory/filter/reused sparse targets retain exact B1 min-count policy");
+#endif
+ }
+
+ static void DifferenceDispatchAliases() {
+  GameplayTagManager.ResetForTests();Resources.LoadCalls=0;
+  var names=Enumerable.Range(0,1536).Select(i=>"Difference.T"+i.ToString("D4")).ToArray();var empty=Array.Empty<string>();
+  var large=names.Take(1024).Concat(new[]{"Unknown.Common","Unknown.Source"}).ToArray();
+  var small=new[]{names[0],names[500],names[1023],names[1500],"Unknown.Common","Unknown.Remove"};
+  var cases=new[]{
+   ("empty",empty,empty),("empty source",empty,small),("empty remove",large,empty),
+   ("ordered disjoint",names.Take(17).ToArray(),names.Skip(100).Take(33).ToArray()),
+   ("reverse disjoint",names.Skip(100).Take(33).ToArray(),names.Take(17).ToArray()),
+   ("singleton first",large,new[]{names[0]}),("singleton middle",large,new[]{names[500]}),
+   ("singleton last",large,new[]{"Unknown.Source"}),("singleton missing",large,new[]{names[1500]}),
+   ("small source",small,large),("small remove",large,small),
+   ("balanced",names.Take(257).ToArray(),names.Take(257).Where((n,i)=>i%2==0).ToArray()),
+   ("equal contents",large,large)
+  };
+  foreach(var item in cases)for(int mode=0;mode<5;mode++) {
+   var source=Fresh(item.Item2);var remove=mode>=3?source:Fresh(item.Item3);var sourceRefs=Representatives(source);var removeRefs=Representatives(remove);
+   var expected=Names(source).Except(Names(remove),StringComparer.Ordinal).ToArray();var result=mode==0||mode==4?Serialized("Old.Unknown"):mode==2?remove:source;
+   SetDifference(result,source,remove);State(result,expected,"difference dispatch "+item.Item1+" alias "+mode);SameRepresentatives(result,sourceRefs,"difference keeps source representative");
+   if(!ReferenceEquals(result,source)){Equal(source.Count,sourceRefs.Count,"difference nonalias source count");SameRepresentatives(source,sourceRefs,"difference nonalias source untouched");}
+   if(!ReferenceEquals(result,remove)){Equal(remove.Count,removeRefs.Count,"difference nonalias remove count");SameRepresentatives(remove,removeRefs,"difference nonalias remove untouched");}
+  }
+  var target=Fresh(small);SetDifference(target,null,target);State(target,empty,"difference null source target aliases remove");
+  var input=Fresh(small);var refs=Representatives(input);target=Serialized("Old.Unknown");SetDifference(target,input,null);State(target,small,"difference null remove distinct target");SameRepresentatives(target,refs,"difference null remove lhs identity");
+  SetDifference(input,input,null);State(input,small,"difference null remove source alias");SameRepresentatives(input,refs,"difference null remove alias identity");
+  Check(!GameplayTagManager.IsInitialized&&Resources.LoadCalls==0,"difference dispatch unknowns never initialize registry");
+ }
+ static int Main() {try { Serialization();IdentityAndRebuild();Aliases();SerializationRoundTrip();UninitializedAndExceptions();ObservableCallbacks();MutatingCallbacks();LiveEnumeration();Queries();NamesAndRegistry();LargeAndSkewed();ConstructorEdges();BatchMergeBoundaries();ContainedMergeCapacity();UnionAliasCallbacks();SparseAndSkewIdentity();DifferenceDispatchAliases();Randomized();Console.WriteLine("PASS assertions="+assertions);Console.WriteLine("TRANSCRIPT "+Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(transcript.ToString()))));return 0;}catch(Exception ex){Console.Error.WriteLine("FAIL after "+assertions+" assertions: "+ex);return 1;} }
 }

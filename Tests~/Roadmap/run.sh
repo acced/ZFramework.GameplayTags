@@ -7,13 +7,14 @@ if [[ -z "$dotnet" || ! -x "$dotnet" ]]; then echo "Set DOTNET to an installed .
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 export DOTNET_CLI_HOME="${DOTNET_CLI_HOME:-$here/obj/dotnet-home}" NUGET_PACKAGES="${NUGET_PACKAGES:-$here/obj/packages}"
 mkdir -p "$here/results"
-versions=("${@:-B0 current}")
+versions=("${@:-B0 B1 current}")
 # Allow either explicit positional versions or a single space-separated list.
 for version in ${versions[*]}; do
- runtime="$here/Baselines/$version/Runtime"; phase=true
+ runtime="$here/Baselines/$version/Runtime"; phase=true; optimization_probes=false
+ [[ "$version" == current ]] && optimization_probes=true
  [[ "$version" == current ]] && runtime="$repo/Runtime"
  [[ "$version" == B0 ]] && phase=false
- "$dotnet" build "$here/Roadmap.csproj" -c Release -v quiet -p:RuntimePath="$runtime" -p:PhaseApis="$phase" -p:BaseIntermediateOutputPath="$here/obj/$version/" -p:OutputPath="$here/bin/$version/" > "$here/results/$version.build.log" 2>&1 || { cat "$here/results/$version.build.log"; exit 1; }
+ "$dotnet" build "$here/Roadmap.csproj" -c Release -v quiet -p:RuntimePath="$runtime" -p:PhaseApis="$phase" -p:OptimizationProbes="$optimization_probes" -p:BaseIntermediateOutputPath="$here/obj/$version/" -p:OutputPath="$here/bin/$version/" > "$here/results/$version.build.log" 2>&1 || { cat "$here/results/$version.build.log"; exit 1; }
  "$dotnet" "$here/bin/$version/Roadmap.dll" | tee "$here/results/$version.log"
 done
 reference=""
