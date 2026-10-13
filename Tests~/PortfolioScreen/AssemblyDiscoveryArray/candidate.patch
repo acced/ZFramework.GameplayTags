@@ -1,0 +1,11 @@
+--- a/Runtime/GameplayTagManager.cs
++++ b/Runtime/GameplayTagManager.cs
+@@ -103,7 +103,7 @@
+                 Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                 Array.Sort(assemblies, (a, b) => string.CompareOrdinal(a.FullName, b.FullName));
+                 for (int i = 0; i < assemblies.Length; ++i)
+-                    foreach (GameplayTagAttribute declaration in assemblies[i].GetCustomAttributes<GameplayTagAttribute>())
++                    foreach (GameplayTagAttribute declaration in (GameplayTagAttribute[])Attribute.GetCustomAttributes(assemblies[i], typeof(GameplayTagAttribute)))
+                         context.RegisterTag(declaration.TagName, declaration.Description, declaration.Flags);
+                 Publish(context);
+             }

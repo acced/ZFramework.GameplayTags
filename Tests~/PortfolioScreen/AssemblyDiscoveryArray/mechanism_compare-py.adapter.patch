@@ -1,0 +1,145 @@
+--- a/mechanism_compare.py
++++ b/mechanism_compare.py
+@@ -1,48 +1,18 @@
+-"""Compare final persisted discovery evidence only; never build or execute targets."""
++"""Strict portable Runtime metadata/Init IL gate. No target or native execution.
++
++Only the preserved expected-body framework qualifier is adapted for Mono.
++All observed metadata is compared within its backend without name normalization.
++Reports contain private metadata and must never be uploaded.
++"""
+ from collections import Counter
+-import copy, difflib, json, re
++import copy, json
+ from pathlib import Path
+ import metadata_compare as reused
+ OWNER = 'GameplayTags.GameplayTagManager'
+ CHANGED = OWNER + '::InitializeIfNeeded():System.Void'
+-RUNTIME = ('InitializeIfNeeded', 'get_TagCount', 'GetAllTags', 'RequestTag')
+-CALLERS = ('NativeInitialize', 'NativeCount', 'NativeAll', 'NativeRequest', 'NativeTryRequest')
+-REQUIRED = ('InitializeIfNeeded',) + CALLERS
+-CORE = '[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]'
++NET_CORE = '[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]'
++MONO_CORE = '[mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]'
+ TEST = '[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]'
+-
+-
+-def native(path):
+-    if not path.is_file(): return {}, ['Native artifact missing']
+-    found = {}; gaps = []
+-    for chunk in path.read_text().split('; Assembly listing for method ')[1:]:
+-        header = chunk.splitlines()[0]
+-        matches = [name for name in RUNTIME if header.startswith(OWNER + ':' + name + '(')]
+-        matches += [name for name in CALLERS if header.startswith('DiscoveryArrayCheck:' + name + '(')]
+-        if len(matches) != 1: gaps.append('Unexpected native context: ' + header); continue
+-        name = matches[0]
+-        if header in found: gaps.append('Duplicate native context: ' + header); continue
+-        sizes = re.findall(r'; Total bytes of code (\d+)', chunk)
+-        instructions = []
+-        for line in chunk.splitlines():
+-            line = line.split(';', 1)[0].strip()
+-            if not line or line == header: continue
+-            # Diffable output is already requested; preserve every numeric operand.
+-            line = re.sub(r'G_M[0-9a-fA-F]+_IG', 'G_M_IG', line)
+-            instructions.append(' '.join(line.split()))
+-        tails = [line for index,line in enumerate(instructions)
+-            if line.startswith('tail.jmp [' + OWNER + ':') and line.endswith(']')
+-            and (index + 1 == len(instructions) or instructions[index + 1].endswith(':'))]
+-        row = {'name':name, 'header':header, 'text':chunk, 'normalized':'\n'.join(instructions)+'\n',
+-            'code_bytes':int(sizes[0]) if len(sizes) == 1 else None,
+-            'fullopts':'; FullOpts code' in chunk, 'x64':'X64' in chunk.upper(),
+-            'has_return':'ret' in instructions, 'resolved_tail_exits':tails,
+-            'calls':[line for line in instructions if line.startswith(('call ', 'tail.jmp '))],
+-            'stack_mentions':[line for line in instructions if '[rsp' in line or '[rbp' in line]}
+-        found[header] = row
+-        if row['code_bytes'] is None or not row['fullopts'] or not row['x64'] or not (row['has_return'] or tails):
+-            gaps.append('Incomplete FullOpts x64 native context: ' + header)
+-    return found, gaps
+ 
+ 
+ def calls(body):
+@@ -50,8 +20,18 @@
+             if i['opcode'] in ('call','callvirt','calli','newobj')]
+ 
+ 
+-def changed_body_gate(bodies, failures):
+-    expected = json.loads((Path(__file__).parent/'f7-initialize-body.json').read_text())
++def _expected_qualifier(value, backend):
++    if backend not in ('net', 'mono'): raise ValueError('Unsupported backend')
++    if isinstance(value, dict): return {k:_expected_qualifier(v,backend) for k,v in value.items()}
++    if isinstance(value, list): return [_expected_qualifier(v,backend) for v in value]
++    if type(value) is str and backend == 'mono': return value.replace(NET_CORE,MONO_CORE)
++    return value
++
++
++def changed_body_gate(bodies, failures, backend):
++    CORE = NET_CORE if backend == 'net' else MONO_CORE
++    if backend not in ('net','mono'): raise ValueError('Unsupported backend')
++    expected = _expected_qualifier(json.loads((Path(__file__).parent/'f7-initialize-body.json').read_text()), backend)
+     if reused._normal(bodies['original']) != reused._normal(expected): failures.append('Original InitializeIfNeeded differs from preserved exact-f7 normalized body')
+     old = calls(bodies['original']); new = calls(bodies['candidate'])
+     removed_owners = {
+@@ -101,17 +81,19 @@
+     if sum(i['opcode']=='ldlen' for i in instr)!=2 or sum(i['opcode']=='ldelem.ref' for i in instr)!=2: failures.append('Expected assembly and declaration array loops')
+ 
+ 
+-def compare(folder):
+-    folder = Path(folder); failures=[]; reports={}; all_natives={}
++def compare(folder, backend):
++    if backend not in ('net','mono'): raise ValueError('Unsupported backend')
++    folder = Path(folder); failures=[]; reports={}; metadata_differences=[]; raw_failures=[]; token_changes=[]
++    type_count=method_count=None
+     for mode in ('empty','retry'):
+         snapshots = {v:reused._load(folder/(mode+'-'+v+'.metadata.json'))[0] for v in ('original','candidate')}
+-        methods = {v:{m['id']:m for t in s['types'] for m in t['methods']} for v,s in snapshots.items()}
++        methods = {v:{m['id']:m for t in snap['types'] for m in t['methods']} for v,snap in snapshots.items()}
+         for v in snapshots:
+             for m in methods[v].values(): reused._validate_raw_body(m['body'],m['id'])
+         if set(methods['original']) != set(methods['candidate']): failures.append(mode+': Runtime method inventory changed')
+         a,b = copy.deepcopy(snapshots['original']),copy.deepcopy(snapshots['candidate'])
+-        for s in (a,b):
+-            for t in s['types']:
++        for snap in (a,b):
++            for t in snap['types']:
+                 for m in t['methods']:
+                     if m['id'] == CHANGED: m['body'] = None
+         differences = reused._differences(reused._normal(a),reused._normal(b))
+@@ -125,27 +107,18 @@
+         tokens = reused._token_changes(a,b)
+         if any('.body.' not in x['path'] and x['path'].endswith('.metadata_token') for x in tokens): failures.append(mode+': existing Runtime definition token moved')
+         bodies={v:methods[v][CHANGED]['body'] for v in snapshots}; local_failures=[]
+-        changed_body_gate(bodies,local_failures); failures += [mode+': '+x for x in local_failures]
+-        natives={}; gaps={}; equal={}
+-        for v in snapshots:
+-            natives[v],gaps[v]=native(folder/(mode+'-'+v+'.native.txt'))
+-            for name in REQUIRED:
+-                if sum(r['name']==name for r in natives[v].values()) != 1: gaps[v].append('Missing/ambiguous complete natural context: '+name+'; absence does not prove inlining')
+-            if gaps[v]: failures.append(mode+': required completed natural capture gap: '+v)
+-        for header in sorted(set(natives['original']) | set(natives['candidate'])):
+-            old=natives['original'].get(header); new=natives['candidate'].get(header)
+-            tag=re.sub(r'[^A-Za-z0-9_.-]+','_',header)
+-            oldtext=old['text'] if old else ''; newtext=new['text'] if new else ''
+-            (folder/(mode+'-'+tag+'.native.diff')).write_text(''.join(difflib.unified_diff(oldtext.splitlines(True),newtext.splitlines(True),fromfile='original',tofile='candidate')))
+-            equal[header]=old['normalized']==new['normalized'] if old and new else False
+-        all_natives[mode]=natives
+-        reports[mode]={'metadata_differences':differences,'unrelated_raw_il_failures':raw,'token_changes':tokens,'changed_bodies':bodies,'native_gaps':gaps,'normalized_native_equal':equal,'native_descriptive':{v:{n:{k:x for k,x in row.items() if k not in ('text','normalized')} for n,row in ns.items()} for v,ns in natives.items()}}
++        changed_body_gate(bodies,local_failures,backend); failures += [mode+': '+x for x in local_failures]
++        reports[mode]={'metadata_differences':differences,'unrelated_raw_il_failures':raw,'token_changes':tokens,'changed_bodies':bodies,'changed_body_failures':local_failures}
++        metadata_differences.extend(differences); raw_failures.extend(raw); token_changes.extend(tokens)
++        counts=(len(a['types']),len(methods['original']))
++        if type_count is not None and counts != (type_count,method_count): failures.append('Runtime inventory varies between modes')
++        type_count,method_count=counts
+     for v in ('original','candidate'):
+         if (folder/('empty-'+v+'.metadata.json')).read_bytes() != (folder/('retry-'+v+'.metadata.json')).read_bytes(): failures.append('Runtime metadata varies between modes: '+v)
+-    report={'schema':'assembly-discovery-array-mechanism-v1','status':'FAIL' if failures else 'PASS','decision':'STOP' if failures else 'UNTIMED_GATE_PASS_INDEPENDENT_NATIVE_REVIEW_REQUIRED','failures':failures,'modes':reports,
+-      'preparation_provenance':{'forced_preparation_used':False,'capture_read_after_successful_target_exit':True},
+-      'native_stopping_condition':'Review actual InitializeIfNeeded body for surviving/eliminated generic enumeration allocation, GetEnumerator/MoveNext/Current/Dispose, cast and index loop, retained two volatile checks, sorting, Monitor.Enter/Exit and publication. Inspect all five natural public/direct caller contexts for fast-path calls, inlining, frames, stack/register costs. No allocation reduction is established merely by source/IL lowering. Missing/partial captures stop without retries.',
+-      'limitations':['Only dynamic named fixture assemblies plus empty persisted Test assembly; no persisted nonempty fixture-assembly or performance evidence.','No whole-heap/resource-failure equivalence: nonempty enumerator allocation/retention and its no-op Dispose lifetime may disappear; empty cached enumerators do not imply per-assembly allocation savings.','Full registry arrays/dictionary physical data and logical public state compare; lock object identity is tested within each process, not serialized across processes.','No private registry reset, forced method preparation, inline controls in Runtime, timing or allocation samples.','Only .NET8.0.31 x64 FullOpts execution if separately authorized; Mono source reasoning is not Mono/Unity/IL2CPP target evidence.','Metadata collector R2 scope excludes global compiler PrivateImplementationDetails, PE RVAs/MVID and absent conditionals; generated Runtime names and bodies remain strict.','Explicit Initialize bypasses discovery and is a narrower alternative, never the equivalent performance comparator.'],
+-      'performance_authorized':False,'performance_claim':None}
++    report={'schema':'assembly-discovery-array-portable-metadata-v1','status':'FAIL' if failures else 'PASS',
++        'decision':'STOP' if failures else 'REVIEW_ONLY','backend':backend,'failures':failures,
++        'types_compared':type_count,'methods_compared':method_count,'metadata_differences':metadata_differences,
++        'unrelated_raw_il_failures':raw_failures,'token_changes':token_changes,'modes':reports,
++        'native_capture':False,'expected_template_qualifier_only':True,'generated_name_normalization':False}
+     with (folder/'mechanism-report.json').open('x') as f: json.dump(report,f,indent=2);f.write('\n')
+     return report

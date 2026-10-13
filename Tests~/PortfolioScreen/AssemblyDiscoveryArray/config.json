@@ -1,0 +1,66 @@
+{
+  "ColdShapes": [
+    "n0",
+    "n1",
+    "n32"
+  ],
+  "DeclarationCounts": {
+    "n0": 0,
+    "n1": 1,
+    "n32": 32
+  },
+  "AttributedAssemblyCounts": {
+    "n0": 0,
+    "n1": 1,
+    "n32": 1
+  },
+  "PairOrders": [
+    [
+      "original",
+      "candidate"
+    ],
+    [
+      "candidate",
+      "original"
+    ],
+    [
+      "candidate",
+      "original"
+    ],
+    [
+      "original",
+      "candidate"
+    ]
+  ],
+  "SemanticModes": [
+    "empty",
+    "retry"
+  ],
+  "MaxBuilds": 4,
+  "SemanticProcesses": 4,
+  "ColdProcesses": 24,
+  "WarmProcesses": 0,
+  "PilotProcesses": 0,
+  "DeadlineSeconds": 300,
+  "SDKVersion": "8.0.425",
+  "CLRVersion": "8.0.31",
+  "MonoVersion": "6.8.0.105",
+  "PointerSize": 8,
+  "NativeCapture": false,
+  "AcceptanceEvidence": false,
+  "ForcedGC": false,
+  "WarmTiming": false,
+  "ReplacementSamples": false,
+  "AutomaticContinuation": false,
+  "FirstBridgeJitIncluded": true,
+  "PreBoundaryInventoryPrimed": true,
+  "WholeHeapRetainedBytesMeasured": false,
+  "ProcessContext": "Combined semantic/cold harness and runtime header; portable replication, distinct from local native/cold stages.",
+  "InventoryBoundary": "After is post-counter validation-entry, after raw output and validator first JIT.",
+  "Comparator": "Exact f7 automatic discovery; explicit Initialize bypasses required discovery semantics.",
+  "RejectionRule": "Any incomplete or failed gate stops qualification. Report every valid pair and adverse latency ratio without filtering; no automatic acceptance or replacement.",
+  "Variants": [
+    "original",
+    "candidate"
+  ]
+}

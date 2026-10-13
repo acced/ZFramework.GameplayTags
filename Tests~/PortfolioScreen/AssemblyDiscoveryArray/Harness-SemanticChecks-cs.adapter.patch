@@ -1,0 +1,81 @@
+--- a/Harness/SemanticChecks.cs
++++ b/Harness/SemanticChecks.cs
+@@ -20,15 +20,15 @@
+     public DiscoveryTraceAttribute(string key, string name, string description, int flags)
+         : base(name, description, (GameplayTagFlags)flags)
+     {
+-        DiscoveryArrayCheck.Trace.Add(key);
+-        if (key == "throw" && DiscoveryArrayCheck.Phase == 0)
+-            throw DiscoveryArrayCheck.ConstructorFailure;
+-        if (key == "malformed" && DiscoveryArrayCheck.Phase == 1)
++        DiscoverySemanticCheck.Trace.Add(key);
++        if (key == "throw" && DiscoverySemanticCheck.Phase == 0)
++            throw DiscoverySemanticCheck.ConstructorFailure;
++        if (key == "malformed" && DiscoverySemanticCheck.Phase == 1)
+             TagName = null;
+     }
+ }
+ 
+-internal static class DiscoveryArrayCheck
++internal static class DiscoverySemanticCheck
+ {
+     internal static int Phase;
+     internal static readonly List<string> Trace = new List<string>();
+@@ -48,6 +48,24 @@
+         for (int i = 0; i < fields.Length; i++)
+             Check(fields[i].FieldType.IsValueType ? Equals(before[i], fields[i].GetValue(null)) : ReferenceEquals(before[i], fields[i].GetValue(null)), label + " field/reference unchanged: " + fields[i].Name);
+     }
++    // Backend field names are explicit; unknown fields stop rather than disappearing.
++    private static void CheckDictionaryFields(FieldInfo[] fields)
++    {
++#if PORTABLE_MONO
++        string expected = "_syncRoot,buckets,comparer,count,entries,freeCount,freeList,keys,values,version";
++#else
++        string expected = "_buckets,_comparer,_count,_entries,_fastModMultiplier,_freeCount,_freeList,_keys,_values,_version";
++#endif
++        Check(string.Join(",", fields.Select(f => f.Name)) == expected, "Exact backend Dictionary physical fields");
++    }
++    private static bool DictionaryReferenceField(string name)
++    {
++#if PORTABLE_MONO
++        return name == "comparer" || name == "keys" || name == "values" || name == "_syncRoot";
++#else
++        return name == "_comparer" || name == "_keys" || name == "_values";
++#endif
++    }
+     private static void Value(BinaryWriter writer, object value)
+     {
+         writer.Write(value != null); if (value == null) return;
+@@ -67,12 +85,12 @@
+         {
+             // Full physical table and all scalar fields are recorded, including spare entries.
+             // Comparer and lazy Keys/Values are represented by null/type identity, not global object graphs.
+-            var fields = type.GetFields(InstanceFields).OrderBy(f => f.Name, StringComparer.Ordinal).ToArray();
++            var fields = type.GetFields(InstanceFields).OrderBy(f => f.Name, StringComparer.Ordinal).ToArray(); CheckDictionaryFields(fields);
+             writer.Write(fields.Length);
+             foreach (FieldInfo field in fields)
+             {
+                 writer.Write(field.Name); object item = field.GetValue(value);
+-                if (field.Name == "_comparer" || field.Name == "_keys" || field.Name == "_values")
++                if (DictionaryReferenceField(field.Name))
+                 { writer.Write(item != null); if (item != null) writer.Write(item.GetType().FullName); }
+                 else Value(writer, item);
+             }
+@@ -155,7 +173,7 @@
+         Check(NativeCount() == 0 && GameplayTagManager.IsInitialized, "Cold public Count publishes empty automatic discovery");
+         Check(GameplayTagManager.GetAllTags().Length == 0 && ((Dictionary<string, int>)Field("s_IndicesByName")).Count == 0, "No accidental declarations");
+         Snapshot("empty-published"); FastPaths(0, "Missing", 0);
+-        TypedArray(empty, 0, 0); TypedArray(typeof(DiscoveryArrayCheck).Assembly, 0, 0);
++        TypedArray(empty, 0, 0); TypedArray(typeof(DiscoverySemanticCheck).Assembly, 0, 0);
+         ExpectTrace("empty-no-constructors");
+     }
+     private static AssemblyBuilder[] Fixtures()
+@@ -223,7 +241,7 @@
+         }
+         MetadataGate.Write(args[2]);
+         Console.WriteLine("PASS " + args[0] + ": automatic discovery, exact registry snapshot, API typed arrays and public initialized fast paths");
+-        Console.WriteLine("PASS natural native callers; no forced preparation, reset, timing or allocation sample");
++        Console.WriteLine("PASS public caller contexts; no native capture, forced preparation, reset, timing or allocation sample");
+         return 0;
+     }
+ }

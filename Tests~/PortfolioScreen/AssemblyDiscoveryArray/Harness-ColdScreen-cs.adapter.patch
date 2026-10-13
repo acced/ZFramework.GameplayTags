@@ -1,0 +1,176 @@
+--- a/Harness/ColdScreen.cs
++++ b/Harness/ColdScreen.cs
+@@ -6,7 +6,9 @@
+ using System.Linq;
+ using System.Reflection;
+ using System.Runtime.CompilerServices;
++#if !PORTABLE_MONO
+ using System.Runtime.Loader;
++#endif
+ using System.Security.Cryptography;
+ using GameplayTags;
+ 
+@@ -14,6 +16,13 @@
+ // reflection, or custom-attribute retrieval occurs before the one measured NativeAll.
+ internal static class DiscoveryArrayCheck
+ {
++#if PORTABLE_MONO
++    // Resolution and first invocation are outside the measured operation.
++    private static readonly Func<long> Allocated = (Func<long>)Delegate.CreateDelegate(typeof(Func<long>), typeof(GC).GetMethod("GetAllocatedBytesForCurrentThread", BindingFlags.Public | BindingFlags.Static));
++    private const string BindingModel = "mono-current-domain";
++#else
++    private const string BindingModel = "net-default-alc";
++#endif
+     private const string MainIdentity = "Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null";
+     private const BindingFlags StaticFields = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+     private const BindingFlags InstanceFields = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+@@ -33,7 +42,11 @@
+         int mains = 0, fixtures = 0;
+         foreach (Assembly assembly in assemblies)
+         {
++#if PORTABLE_MONO
++            Check(!assembly.IsDynamic, "Only persisted current-AppDomain assemblies are admitted");
++#else
+             Check(!assembly.IsDynamic && ReferenceEquals(AssemblyLoadContext.GetLoadContext(assembly), AssemblyLoadContext.Default), "Only persisted Default-context assemblies are admitted");
++#endif
+             string name = assembly.GetName().Name;
+             if (name == "Test")
+             {
+@@ -52,27 +65,42 @@
+         Check(n >= 0 && IntPtr.Size == 8, "Fixed shape and x64 required");
+         var row = new Row { Shape = args[0], N = n, MainPath = Path.GetFullPath(args[3]), MainHash = args[4], Entry = Assembly.GetEntryAssembly() };
+         Check(row.Entry != null && row.Entry.FullName == MainIdentity && Path.GetFullPath(row.Entry.Location) == row.MainPath, "Exact entry identity and variant path");
++#if !PORTABLE_MONO
+         Check(ReferenceEquals(AssemblyLoadContext.GetLoadContext(row.Entry), AssemblyLoadContext.Default), "Entry is in Default context");
++#endif
+         Check(Hash(File.ReadAllBytes(row.MainPath)) == row.MainHash, "Entry bytes match coordinator pin");
+         if (n == 0) Check(args[5] == "-" && args[6] == "-", "Empty control has no fixture");
+         else
+         {
+             row.FixturePath = Path.GetFullPath(args[5]); row.FixtureHash = args[6];
+             Check(Path.GetFileName(row.FixturePath) == "DiscoveryDeclarations" + n + ".dll", "Exact selected fixture path");
+-            Check(!File.Exists(Path.Combine(Path.GetDirectoryName(row.FixturePath), "Test.dll")), "No Test.dll beside shared fixtures");
++            Check(!File.Exists(Path.Combine(Path.GetDirectoryName(row.FixturePath), "Test.dll")) && !File.Exists(Path.Combine(Path.GetDirectoryName(row.FixturePath), "Test.exe")), "No Test.dll or Test.exe beside shared fixtures");
+             Check(Hash(File.ReadAllBytes(row.FixturePath)) == row.FixtureHash, "Shared fixture bytes match coordinator pin");
++#if PORTABLE_MONO
++            row.Fixture = Assembly.LoadFrom(row.FixturePath);
++#else
+             row.Fixture = AssemblyLoadContext.Default.LoadFromAssemblyPath(row.FixturePath);
+             Check(ReferenceEquals(AssemblyLoadContext.GetLoadContext(row.Fixture), AssemblyLoadContext.Default), "Fixture is in Default context");
++#endif
+             Check(row.Fixture.FullName == "DiscoveryDeclarations" + n + ", Version=0.0.0.0, Culture=neutral, PublicKeyToken=null", "Exact persisted fixture identity");
+             AssemblyName reference = null;
+             foreach (AssemblyName name in row.Fixture.GetReferencedAssemblies())
+                 if (name.Name == "Test") { Check(reference == null, "One Test AssemblyRef"); reference = name; }
+             Check(reference != null && reference.FullName == MainIdentity, "Fixture references exact common Test identity");
++#if PORTABLE_MONO
++            Check(ReferenceEquals(Assembly.Load(reference), row.Entry), "Fixture Test reference resolves to executing variant");
++#else
+             Check(ReferenceEquals(AssemblyLoadContext.Default.LoadFromAssemblyName(reference), row.Entry), "Fixture Test reference resolves to executing variant");
++#endif
+         }
+         // Prime only measurement/output infrastructure, then retain the loaded assembly set.
+         // This intentionally primes framework GetAssemblies machinery equally in both variants.
+-        _ = Stopwatch.Frequency; _ = Stopwatch.GetTimestamp(); _ = GC.GetAllocatedBytesForCurrentThread();
++        _ = Stopwatch.Frequency; _ = Stopwatch.GetTimestamp();
++#if PORTABLE_MONO
++        _ = Allocated();
++#else
++        _ = GC.GetAllocatedBytesForCurrentThread();
++#endif
+         _ = GC.CollectionCount(0); _ = GC.CollectionCount(1); _ = GC.CollectionCount(2); Console.Out.Flush();
+         row.Before = AppDomain.CurrentDomain.GetAssemblies(); CheckLoadedAssemblies(row, row.Before);
+         return row;
+@@ -84,6 +112,24 @@
+     // stay behind this post-measurement noinline boundary. No Runtime annotations change.
+     private static FieldInfo[] RegistryFields() => typeof(GameplayTagManager).GetFields(StaticFields).OrderBy(f => f.Name, StringComparer.Ordinal).ToArray();
+     private static object Field(string name) => typeof(GameplayTagManager).GetField(name, StaticFields).GetValue(null);
++    // Backend field names are explicit; unknown fields stop rather than disappearing.
++    private static void CheckDictionaryFields(FieldInfo[] fields)
++    {
++#if PORTABLE_MONO
++        string expected = "_syncRoot,buckets,comparer,count,entries,freeCount,freeList,keys,values,version";
++#else
++        string expected = "_buckets,_comparer,_count,_entries,_fastModMultiplier,_freeCount,_freeList,_keys,_values,_version";
++#endif
++        Check(string.Join(",", fields.Select(f => f.Name)) == expected, "Exact backend Dictionary physical fields");
++    }
++    private static bool DictionaryReferenceField(string name)
++    {
++#if PORTABLE_MONO
++        return name == "comparer" || name == "keys" || name == "values" || name == "_syncRoot";
++#else
++        return name == "_comparer" || name == "_keys" || name == "_values";
++#endif
++    }
+     private static void Value(BinaryWriter writer, object value)
+     {
+         writer.Write(value != null); if (value == null) return;
+@@ -101,11 +147,11 @@
+         }
+         if (value is Dictionary<string, int> dictionary)
+         {
+-            var fields = type.GetFields(InstanceFields).OrderBy(f => f.Name, StringComparer.Ordinal).ToArray(); writer.Write(fields.Length);
++            var fields = type.GetFields(InstanceFields).OrderBy(f => f.Name, StringComparer.Ordinal).ToArray(); CheckDictionaryFields(fields); writer.Write(fields.Length);
+             foreach (FieldInfo field in fields)
+             {
+                 writer.Write(field.Name); object item = field.GetValue(value);
+-                if (field.Name == "_comparer" || field.Name == "_keys" || field.Name == "_values")
++                if (DictionaryReferenceField(field.Name))
+                 { writer.Write(item != null); if (item != null) writer.Write(item.GetType().FullName); }
+                 else Value(writer, item);
+             }
+@@ -136,7 +182,13 @@
+         var rows = new List<string>();
+         foreach (Assembly assembly in assemblies.OrderBy(a => a.FullName, StringComparer.Ordinal))
+             rows.Add("{\"FullName\":" + Quote(assembly.FullName) + ",\"Location\":" + Quote(assembly.Location) + ",\"Mvid\":" + Quote(assembly.ManifestModule.ModuleVersionId.ToString("D")) +
+-                ",\"IsDynamic\":" + Bool(assembly.IsDynamic) + ",\"IsDefaultContext\":" + Bool(ReferenceEquals(AssemblyLoadContext.GetLoadContext(assembly), AssemblyLoadContext.Default)) + ",\"IsEntry\":" + Bool(ReferenceEquals(assembly, entry)) + "}");
++                ",\"IsDynamic\":" + Bool(assembly.IsDynamic) + ",\"IsDefaultContext\":" +
++#if PORTABLE_MONO
++                "null" +
++#else
++                Bool(ReferenceEquals(AssemblyLoadContext.GetLoadContext(assembly), AssemblyLoadContext.Default)) +
++#endif
++                ",\"IsCurrentDomain\":true,\"IsEntry\":" + Bool(ReferenceEquals(assembly, entry)) + "}");
+         return "[" + string.Join(",", rows) + "]";
+     }
+     [MethodImpl(MethodImplOptions.NoInlining)]
+@@ -146,13 +198,13 @@
+         snapshotHash = inventoryHash = ""; bindingPass = registryPass = attributeTypePass = inventoryPass = false;
+         Assembly[] after = AppDomain.CurrentDomain.GetAssemblies();
+         using (var writer = new StreamWriter(new FileStream(inventoryPath, FileMode.CreateNew)))
+-            writer.WriteLine("{\"Before\":" + Inventory(row.Before, row.Entry) + ",\"After\":" + Inventory(after, row.Entry) + "}");
++            writer.WriteLine("{\"BindingModel\":" + Quote(BindingModel) + ",\"Before\":" + Inventory(row.Before, row.Entry) + ",\"After\":" + Inventory(after, row.Entry) + "}");
+         inventoryHash = Hash(File.ReadAllBytes(inventoryPath));
+         // Preserve complete physical registry state even if the measured operation failed.
+         WriteSnapshot(row, observed, snapshotPath); snapshotHash = Hash(File.ReadAllBytes(snapshotPath));
+         CheckLoadedAssemblies(row, row.Before); CheckLoadedAssemblies(row, after); inventoryPass = true;
+         Check(Hash(File.ReadAllBytes(row.MainPath)) == row.MainHash && ReferenceEquals(typeof(GameplayTagManager).Assembly, row.Entry), "Executing Runtime identity after operation");
+-        if (row.N != 0) Check(Hash(File.ReadAllBytes(row.FixturePath)) == row.FixtureHash && !File.Exists(Path.Combine(Path.GetDirectoryName(row.FixturePath), "Test.dll")), "Shared fixture pin after operation");
++        if (row.N != 0) Check(Hash(File.ReadAllBytes(row.FixturePath)) == row.FixtureHash && !File.Exists(Path.Combine(Path.GetDirectoryName(row.FixturePath), "Test.dll")) && !File.Exists(Path.Combine(Path.GetDirectoryName(row.FixturePath), "Test.exe")), "Shared fixture pin after operation");
+         bindingPass = true;
+         // Attribute types/constructor metadata are first resolved here, after counters/raw row.
+         Type expectedAttributeType = typeof(GameplayTagAttribute); int total = 0, nonempty = 0;
+@@ -192,10 +244,20 @@
+         CultureInfo.CurrentCulture = CultureInfo.InvariantCulture; CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+         Row row = Prepare(args); long frequency = Stopwatch.Frequency;
+         Exception operationError = null; int observed = -1;
+-        long before = GC.GetAllocatedBytesForCurrentThread(); int gc0 = GC.CollectionCount(0), gc1 = GC.CollectionCount(1), gc2 = GC.CollectionCount(2);
++#if PORTABLE_MONO
++        long before = Allocated();
++#else
++        long before = GC.GetAllocatedBytesForCurrentThread();
++#endif
++        int gc0 = GC.CollectionCount(0), gc1 = GC.CollectionCount(1), gc2 = GC.CollectionCount(2);
+         long start = Stopwatch.GetTimestamp();
+         try { observed = NativeAll(); } catch (Exception error) { operationError = error; }
+-        long ticks = Stopwatch.GetTimestamp() - start, bytes = GC.GetAllocatedBytesForCurrentThread() - before;
++        long ticks = Stopwatch.GetTimestamp() - start;
++#if PORTABLE_MONO
++        long bytes = Allocated() - before;
++#else
++        long bytes = GC.GetAllocatedBytesForCurrentThread() - before;
++#endif
+         int delta0 = GC.CollectionCount(0) - gc0, delta1 = GC.CollectionCount(1) - gc1, delta2 = GC.CollectionCount(2) - gc2;
+         Console.WriteLine("{\"RecordType\":\"measurement\",\"Shape\":" + Quote(row.Shape) + ",\"DeclarationCount\":" + row.N + ",\"AttributedAssemblyCount\":" + (row.N == 0 ? 0 : 1) + ",\"ObservedCount\":" + observed +
+             ",\"Ticks\":" + ticks + ",\"Frequency\":" + frequency + ",\"AllocatedBytes\":" + bytes + ",\"GC0\":" + delta0 + ",\"GC1\":" + delta1 + ",\"GC2\":" + delta2 + ",\"PointerSize\":" + IntPtr.Size +

@@ -1,0 +1,1263 @@
+{
+  "exception_regions": [
+    {
+      "catch_type": null,
+      "filter_offset": null,
+      "flags": 2,
+      "handler_length": 12,
+      "handler_offset": 164,
+      "try_length": 49,
+      "try_offset": 115
+    },
+    {
+      "catch_type": null,
+      "filter_offset": null,
+      "flags": 2,
+      "handler_length": 10,
+      "handler_offset": 197,
+      "try_length": 179,
+      "try_offset": 18
+    }
+  ],
+  "il_length": 208,
+  "il_raw": "fe137e430000042c012a7e420000040a160b061201287101000afe137e430000042c05dda700000073870100060c287601000a6f7701000a0d097edf000004252d17267ede000004fe0647020006737801000a2580df000004286b00002b1613042b530911049a286c00002b6f7b01000a13052b2411056f7c01000a13060811066f7600000611066f7800000611066f7a0000066f8401000611056f0a00000a2dd3de0c11052c0711056f0900000adc1104175813041104098e6932a6082876010006de0a072c0606287201000adc2a",
+  "init_locals": true,
+  "instructions": [
+    {
+      "metadata_token": null,
+      "offset": 0,
+      "opcode": "volatile.",
+      "opcode_value": 65043,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 2,
+      "operand_raw": "",
+      "size": 2
+    },
+    {
+      "metadata_token": "0x04000043",
+      "offset": 2,
+      "opcode": "ldsfld",
+      "opcode_value": 126,
+      "operand": {
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagManager",
+        "field_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Boolean",
+        "kind": "field",
+        "name": "s_IsInitialized",
+        "optional_modifiers": [],
+        "required_modifiers": [
+          "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Runtime.CompilerServices.IsVolatile"
+        ]
+      },
+      "operand_kind": "InlineField",
+      "operand_offset": 3,
+      "operand_raw": "43000004",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 7,
+      "opcode": "brfalse.s",
+      "opcode_value": 44,
+      "operand": 10,
+      "operand_kind": "ShortInlineBrTarget",
+      "operand_offset": 8,
+      "operand_raw": "01",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 9,
+      "opcode": "ret",
+      "opcode_value": 42,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 10,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": "0x04000042",
+      "offset": 10,
+      "opcode": "ldsfld",
+      "opcode_value": 126,
+      "operand": {
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagManager",
+        "field_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Object",
+        "kind": "field",
+        "name": "s_InitializationLock",
+        "optional_modifiers": [],
+        "required_modifiers": []
+      },
+      "operand_kind": "InlineField",
+      "operand_offset": 11,
+      "operand_raw": "42000004",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 15,
+      "opcode": "stloc.0",
+      "opcode_value": 10,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 16,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 16,
+      "opcode": "ldc.i4.0",
+      "opcode_value": 22,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 17,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 17,
+      "opcode": "stloc.1",
+      "opcode_value": 11,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 18,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 18,
+      "opcode": "ldloc.0",
+      "opcode_value": 6,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 19,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 19,
+      "opcode": "ldloca.s",
+      "opcode_value": 18,
+      "operand": 1,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 20,
+      "operand_raw": "01",
+      "size": 2
+    },
+    {
+      "metadata_token": "0x0A000171",
+      "offset": 21,
+      "opcode": "call",
+      "opcode_value": 40,
+      "operand": {
+        "calling_convention": 1,
+        "declaring_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Threading.Monitor",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "Enter",
+        "parameters": [
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Object"
+          },
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Boolean&"
+          }
+        ],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Void",
+        "static": true
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 22,
+      "operand_raw": "7101000a",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 26,
+      "opcode": "volatile.",
+      "opcode_value": 65043,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 28,
+      "operand_raw": "",
+      "size": 2
+    },
+    {
+      "metadata_token": "0x04000043",
+      "offset": 28,
+      "opcode": "ldsfld",
+      "opcode_value": 126,
+      "operand": {
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagManager",
+        "field_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Boolean",
+        "kind": "field",
+        "name": "s_IsInitialized",
+        "optional_modifiers": [],
+        "required_modifiers": [
+          "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Runtime.CompilerServices.IsVolatile"
+        ]
+      },
+      "operand_kind": "InlineField",
+      "operand_offset": 29,
+      "operand_raw": "43000004",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 33,
+      "opcode": "brfalse.s",
+      "opcode_value": 44,
+      "operand": 40,
+      "operand_kind": "ShortInlineBrTarget",
+      "operand_offset": 34,
+      "operand_raw": "05",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 35,
+      "opcode": "leave",
+      "opcode_value": 221,
+      "operand": 207,
+      "operand_kind": "InlineBrTarget",
+      "operand_offset": 36,
+      "operand_raw": "a7000000",
+      "size": 5
+    },
+    {
+      "metadata_token": "0x06000187",
+      "offset": 40,
+      "opcode": "newobj",
+      "opcode_value": 115,
+      "operand": {
+        "calling_convention": 33,
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagRegistrationContext",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": ".ctor",
+        "parameters": [],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Void",
+        "static": false
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 41,
+      "operand_raw": "87010006",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 45,
+      "opcode": "stloc.2",
+      "opcode_value": 12,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 46,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": "0x0A000176",
+      "offset": 46,
+      "opcode": "call",
+      "opcode_value": 40,
+      "operand": {
+        "calling_convention": 1,
+        "declaring_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.AppDomain",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "get_CurrentDomain",
+        "parameters": [],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.AppDomain",
+        "static": true
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 47,
+      "operand_raw": "7601000a",
+      "size": 5
+    },
+    {
+      "metadata_token": "0x0A000177",
+      "offset": 51,
+      "opcode": "callvirt",
+      "opcode_value": 111,
+      "operand": {
+        "calling_convention": 33,
+        "declaring_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.AppDomain",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "GetAssemblies",
+        "parameters": [],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.Assembly[]",
+        "static": false
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 52,
+      "operand_raw": "7701000a",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 56,
+      "opcode": "stloc.3",
+      "opcode_value": 13,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 57,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 57,
+      "opcode": "ldloc.3",
+      "opcode_value": 9,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 58,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": "0x040000DF",
+      "offset": 58,
+      "opcode": "ldsfld",
+      "opcode_value": 126,
+      "operand": {
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagManager+<>c",
+        "field_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Comparison`1<[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.Assembly>",
+        "kind": "field",
+        "name": "<>9__17_0",
+        "optional_modifiers": [],
+        "required_modifiers": []
+      },
+      "operand_kind": "InlineField",
+      "operand_offset": 59,
+      "operand_raw": "df000004",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 63,
+      "opcode": "dup",
+      "opcode_value": 37,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 64,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 64,
+      "opcode": "brtrue.s",
+      "opcode_value": 45,
+      "operand": 89,
+      "operand_kind": "ShortInlineBrTarget",
+      "operand_offset": 65,
+      "operand_raw": "17",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 66,
+      "opcode": "pop",
+      "opcode_value": 38,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 67,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": "0x040000DE",
+      "offset": 67,
+      "opcode": "ldsfld",
+      "opcode_value": 126,
+      "operand": {
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagManager+<>c",
+        "field_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagManager+<>c",
+        "kind": "field",
+        "name": "<>9",
+        "optional_modifiers": [],
+        "required_modifiers": []
+      },
+      "operand_kind": "InlineField",
+      "operand_offset": 68,
+      "operand_raw": "de000004",
+      "size": 5
+    },
+    {
+      "metadata_token": "0x06000247",
+      "offset": 72,
+      "opcode": "ldftn",
+      "opcode_value": 65030,
+      "operand": {
+        "calling_convention": 33,
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagManager+<>c",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "<InitializeIfNeeded>b__17_0",
+        "parameters": [
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.Assembly"
+          },
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.Assembly"
+          }
+        ],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Int32",
+        "static": false
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 74,
+      "operand_raw": "47020006",
+      "size": 6
+    },
+    {
+      "metadata_token": "0x0A000178",
+      "offset": 78,
+      "opcode": "newobj",
+      "opcode_value": 115,
+      "operand": {
+        "calling_convention": 33,
+        "declaring_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Comparison`1<[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.Assembly>",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": ".ctor",
+        "parameters": [
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Object"
+          },
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.IntPtr"
+          }
+        ],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Void",
+        "static": false
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 79,
+      "operand_raw": "7801000a",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 83,
+      "opcode": "dup",
+      "opcode_value": 37,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 84,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": "0x040000DF",
+      "offset": 84,
+      "opcode": "stsfld",
+      "opcode_value": 128,
+      "operand": {
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagManager+<>c",
+        "field_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Comparison`1<[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.Assembly>",
+        "kind": "field",
+        "name": "<>9__17_0",
+        "optional_modifiers": [],
+        "required_modifiers": []
+      },
+      "operand_kind": "InlineField",
+      "operand_offset": 85,
+      "operand_raw": "df000004",
+      "size": 5
+    },
+    {
+      "metadata_token": "0x2B00006B",
+      "offset": 89,
+      "opcode": "call",
+      "opcode_value": 40,
+      "operand": {
+        "calling_convention": 1,
+        "declaring_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Array",
+        "generic_arguments": [
+          "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.Assembly"
+        ],
+        "kind": "method",
+        "name": "Sort",
+        "parameters": [
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.Assembly[]"
+          },
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Comparison`1<[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.Assembly>"
+          }
+        ],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Void",
+        "static": true
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 90,
+      "operand_raw": "6b00002b",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 94,
+      "opcode": "ldc.i4.0",
+      "opcode_value": 22,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 95,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 95,
+      "opcode": "stloc.s",
+      "opcode_value": 19,
+      "operand": 4,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 96,
+      "operand_raw": "04",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 97,
+      "opcode": "br.s",
+      "opcode_value": 43,
+      "operand": 182,
+      "operand_kind": "ShortInlineBrTarget",
+      "operand_offset": 98,
+      "operand_raw": "53",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 99,
+      "opcode": "ldloc.3",
+      "opcode_value": 9,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 100,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 100,
+      "opcode": "ldloc.s",
+      "opcode_value": 17,
+      "operand": 4,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 101,
+      "operand_raw": "04",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 102,
+      "opcode": "ldelem.ref",
+      "opcode_value": 154,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 103,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": "0x2B00006C",
+      "offset": 103,
+      "opcode": "call",
+      "opcode_value": 40,
+      "operand": {
+        "calling_convention": 1,
+        "declaring_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.CustomAttributeExtensions",
+        "generic_arguments": [
+          "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute"
+        ],
+        "kind": "method",
+        "name": "GetCustomAttributes",
+        "parameters": [
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.Assembly"
+          }
+        ],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Collections.Generic.IEnumerable`1<[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute>",
+        "static": true
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 104,
+      "operand_raw": "6c00002b",
+      "size": 5
+    },
+    {
+      "metadata_token": "0x0A00017B",
+      "offset": 108,
+      "opcode": "callvirt",
+      "opcode_value": 111,
+      "operand": {
+        "calling_convention": 33,
+        "declaring_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Collections.Generic.IEnumerable`1<[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute>",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "GetEnumerator",
+        "parameters": [],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Collections.Generic.IEnumerator`1<[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute>",
+        "static": false
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 109,
+      "operand_raw": "7b01000a",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 113,
+      "opcode": "stloc.s",
+      "opcode_value": 19,
+      "operand": 5,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 114,
+      "operand_raw": "05",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 115,
+      "opcode": "br.s",
+      "opcode_value": 43,
+      "operand": 153,
+      "operand_kind": "ShortInlineBrTarget",
+      "operand_offset": 116,
+      "operand_raw": "24",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 117,
+      "opcode": "ldloc.s",
+      "opcode_value": 17,
+      "operand": 5,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 118,
+      "operand_raw": "05",
+      "size": 2
+    },
+    {
+      "metadata_token": "0x0A00017C",
+      "offset": 119,
+      "opcode": "callvirt",
+      "opcode_value": 111,
+      "operand": {
+        "calling_convention": 33,
+        "declaring_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Collections.Generic.IEnumerator`1<[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute>",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "get_Current",
+        "parameters": [],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute",
+        "static": false
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 120,
+      "operand_raw": "7c01000a",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 124,
+      "opcode": "stloc.s",
+      "opcode_value": 19,
+      "operand": 6,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 125,
+      "operand_raw": "06",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 126,
+      "opcode": "ldloc.2",
+      "opcode_value": 8,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 127,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 127,
+      "opcode": "ldloc.s",
+      "opcode_value": 17,
+      "operand": 6,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 128,
+      "operand_raw": "06",
+      "size": 2
+    },
+    {
+      "metadata_token": "0x06000076",
+      "offset": 129,
+      "opcode": "callvirt",
+      "opcode_value": 111,
+      "operand": {
+        "calling_convention": 33,
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "get_TagName",
+        "parameters": [],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.String",
+        "static": false
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 130,
+      "operand_raw": "76000006",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 134,
+      "opcode": "ldloc.s",
+      "opcode_value": 17,
+      "operand": 6,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 135,
+      "operand_raw": "06",
+      "size": 2
+    },
+    {
+      "metadata_token": "0x06000078",
+      "offset": 136,
+      "opcode": "callvirt",
+      "opcode_value": 111,
+      "operand": {
+        "calling_convention": 33,
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "get_Description",
+        "parameters": [],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.String",
+        "static": false
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 137,
+      "operand_raw": "78000006",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 141,
+      "opcode": "ldloc.s",
+      "opcode_value": 17,
+      "operand": 6,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 142,
+      "operand_raw": "06",
+      "size": 2
+    },
+    {
+      "metadata_token": "0x0600007A",
+      "offset": 143,
+      "opcode": "callvirt",
+      "opcode_value": 111,
+      "operand": {
+        "calling_convention": 33,
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "get_Flags",
+        "parameters": [],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagFlags",
+        "static": false
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 144,
+      "operand_raw": "7a000006",
+      "size": 5
+    },
+    {
+      "metadata_token": "0x06000184",
+      "offset": 148,
+      "opcode": "callvirt",
+      "opcode_value": 111,
+      "operand": {
+        "calling_convention": 33,
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagRegistrationContext",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "RegisterTag",
+        "parameters": [
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.String"
+          },
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.String"
+          },
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagFlags"
+          }
+        ],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Void",
+        "static": false
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 149,
+      "operand_raw": "84010006",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 153,
+      "opcode": "ldloc.s",
+      "opcode_value": 17,
+      "operand": 5,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 154,
+      "operand_raw": "05",
+      "size": 2
+    },
+    {
+      "metadata_token": "0x0A00000A",
+      "offset": 155,
+      "opcode": "callvirt",
+      "opcode_value": 111,
+      "operand": {
+        "calling_convention": 33,
+        "declaring_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Collections.IEnumerator",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "MoveNext",
+        "parameters": [],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Boolean",
+        "static": false
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 156,
+      "operand_raw": "0a00000a",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 160,
+      "opcode": "brtrue.s",
+      "opcode_value": 45,
+      "operand": 117,
+      "operand_kind": "ShortInlineBrTarget",
+      "operand_offset": 161,
+      "operand_raw": "d3",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 162,
+      "opcode": "leave.s",
+      "opcode_value": 222,
+      "operand": 176,
+      "operand_kind": "ShortInlineBrTarget",
+      "operand_offset": 163,
+      "operand_raw": "0c",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 164,
+      "opcode": "ldloc.s",
+      "opcode_value": 17,
+      "operand": 5,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 165,
+      "operand_raw": "05",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 166,
+      "opcode": "brfalse.s",
+      "opcode_value": 44,
+      "operand": 175,
+      "operand_kind": "ShortInlineBrTarget",
+      "operand_offset": 167,
+      "operand_raw": "07",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 168,
+      "opcode": "ldloc.s",
+      "opcode_value": 17,
+      "operand": 5,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 169,
+      "operand_raw": "05",
+      "size": 2
+    },
+    {
+      "metadata_token": "0x0A000009",
+      "offset": 170,
+      "opcode": "callvirt",
+      "opcode_value": 111,
+      "operand": {
+        "calling_convention": 33,
+        "declaring_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.IDisposable",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "Dispose",
+        "parameters": [],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Void",
+        "static": false
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 171,
+      "operand_raw": "0900000a",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 175,
+      "opcode": "endfinally",
+      "opcode_value": 220,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 176,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 176,
+      "opcode": "ldloc.s",
+      "opcode_value": 17,
+      "operand": 4,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 177,
+      "operand_raw": "04",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 178,
+      "opcode": "ldc.i4.1",
+      "opcode_value": 23,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 179,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 179,
+      "opcode": "add",
+      "opcode_value": 88,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 180,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 180,
+      "opcode": "stloc.s",
+      "opcode_value": 19,
+      "operand": 4,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 181,
+      "operand_raw": "04",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 182,
+      "opcode": "ldloc.s",
+      "opcode_value": 17,
+      "operand": 4,
+      "operand_kind": "ShortInlineVar",
+      "operand_offset": 183,
+      "operand_raw": "04",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 184,
+      "opcode": "ldloc.3",
+      "opcode_value": 9,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 185,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 185,
+      "opcode": "ldlen",
+      "opcode_value": 142,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 186,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 186,
+      "opcode": "conv.i4",
+      "opcode_value": 105,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 187,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 187,
+      "opcode": "blt.s",
+      "opcode_value": 50,
+      "operand": 99,
+      "operand_kind": "ShortInlineBrTarget",
+      "operand_offset": 188,
+      "operand_raw": "a6",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 189,
+      "opcode": "ldloc.2",
+      "opcode_value": 8,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 190,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": "0x06000176",
+      "offset": 190,
+      "opcode": "call",
+      "opcode_value": 40,
+      "operand": {
+        "calling_convention": 1,
+        "declaring_type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagManager",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "Publish",
+        "parameters": [
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagRegistrationContext"
+          }
+        ],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Void",
+        "static": true
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 191,
+      "operand_raw": "76010006",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 195,
+      "opcode": "leave.s",
+      "opcode_value": 222,
+      "operand": 207,
+      "operand_kind": "ShortInlineBrTarget",
+      "operand_offset": 196,
+      "operand_raw": "0a",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 197,
+      "opcode": "ldloc.1",
+      "opcode_value": 7,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 198,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 198,
+      "opcode": "brfalse.s",
+      "opcode_value": 44,
+      "operand": 206,
+      "operand_kind": "ShortInlineBrTarget",
+      "operand_offset": 199,
+      "operand_raw": "06",
+      "size": 2
+    },
+    {
+      "metadata_token": null,
+      "offset": 200,
+      "opcode": "ldloc.0",
+      "opcode_value": 6,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 201,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": "0x0A000172",
+      "offset": 201,
+      "opcode": "call",
+      "opcode_value": 40,
+      "operand": {
+        "calling_convention": 1,
+        "declaring_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Threading.Monitor",
+        "generic_arguments": [],
+        "kind": "method",
+        "name": "Exit",
+        "parameters": [
+          {
+            "optional_modifiers": [],
+            "required_modifiers": [],
+            "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Object"
+          }
+        ],
+        "return_optional_modifiers": [],
+        "return_required_modifiers": [],
+        "return_type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Void",
+        "static": true
+      },
+      "operand_kind": "InlineMethod",
+      "operand_offset": 202,
+      "operand_raw": "7201000a",
+      "size": 5
+    },
+    {
+      "metadata_token": null,
+      "offset": 206,
+      "opcode": "endfinally",
+      "opcode_value": 220,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 207,
+      "operand_raw": "",
+      "size": 1
+    },
+    {
+      "metadata_token": null,
+      "offset": 207,
+      "opcode": "ret",
+      "opcode_value": 42,
+      "operand": null,
+      "operand_kind": "InlineNone",
+      "operand_offset": 208,
+      "operand_raw": "",
+      "size": 1
+    }
+  ],
+  "local_signature": "locals(object,bool,class([Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagRegistrationContext),szarray(class([System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.Assembly)),i4,generic(18;[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Collections.Generic.IEnumerator`1<!0><class([Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute)>),class([Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute))",
+  "local_signature_raw": "07071c0212741d125d0815127101121c121c",
+  "local_signature_token": "0x11000062",
+  "locals": [
+    {
+      "index": 0,
+      "pinned": false,
+      "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Object"
+    },
+    {
+      "index": 1,
+      "pinned": false,
+      "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Boolean"
+    },
+    {
+      "index": 2,
+      "pinned": false,
+      "type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagRegistrationContext"
+    },
+    {
+      "index": 3,
+      "pinned": false,
+      "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Reflection.Assembly[]"
+    },
+    {
+      "index": 4,
+      "pinned": false,
+      "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Int32"
+    },
+    {
+      "index": 5,
+      "pinned": false,
+      "type": "[System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]System.Collections.Generic.IEnumerator`1<[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute>"
+    },
+    {
+      "index": 6,
+      "pinned": false,
+      "type": "[Test, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]GameplayTags.GameplayTagAttribute"
+    }
+  ],
+  "max_stack": 4
+}

@@ -1,0 +1,109 @@
+{
+  "AdapterReplayExact": true,
+  "AllPassed": true,
+  "ErrorCount": 0,
+  "FailureCount": 0,
+  "NoBytecodeResidue": true,
+  "SkippedCount": 0,
+  "SourceSHA256": {
+    "Adapter": "1923c3835c0e58793f8b929e9f0fee9aaec4c97bb873020db24935590d048154",
+    "Diagnostics": "909ebc27bba3abd7489ae648abebec27657d6c273d1cf07987ddfc1b7e63496e",
+    "R2Diagnostics": "868d683c5912beb1f7edecc6fd7f06c05056293ddd5f5e676883bcd7f9a1be8a",
+    "Tests": "782860a2f7a1276d60f91116c4db2ccf1afb71bd40ad4cc4e8f3aa3a97d9a751"
+  },
+  "TestCount": 23,
+  "Tests": [
+    {
+      "Name": "test_absent_empty_incomplete_and_completed_are_distinct",
+      "Passed": true
+    },
+    {
+      "Name": "test_binary_artifacts_only_lengths_hashes_and_fixed_roles",
+      "Passed": true
+    },
+    {
+      "Name": "test_cold_three_shapes_and_independent_records",
+      "Passed": true
+    },
+    {
+      "Name": "test_counter_and_semantic_types_do_not_accept_bools_as_ints",
+      "Passed": true
+    },
+    {
+      "Name": "test_duplicate_and_extra_json_keys_are_rejected",
+      "Passed": true
+    },
+    {
+      "Name": "test_duplicate_records_invalidate_only_their_own_record",
+      "Passed": true
+    },
+    {
+      "Name": "test_error_names_are_exact_finite_codes_or_unknown_flags",
+      "Passed": true
+    },
+    {
+      "Name": "test_exception_code_mapping_and_fixed_frames",
+      "Passed": true
+    },
+    {
+      "Name": "test_fixed_scenario_counts_pointer_and_boundary_flags",
+      "Passed": true
+    },
+    {
+      "Name": "test_hashes_are_lowercase_hex_or_absent_null",
+      "Passed": true
+    },
+    {
+      "Name": "test_input_labels_and_artifact_types_are_guarded",
+      "Passed": true
+    },
+    {
+      "Name": "test_invalid_utf8_is_local_and_never_replacement_decoded",
+      "Passed": true
+    },
+    {
+      "Name": "test_malformed_semantics_preserves_numeric_measurement",
+      "Passed": true
+    },
+    {
+      "Name": "test_metadata_shape_is_strict_and_not_equivalence",
+      "Passed": true
+    },
+    {
+      "Name": "test_missing_or_malformed_measurement_is_never_zero",
+      "Passed": true
+    },
+    {
+      "Name": "test_nonfinite_numbers_and_nonobject_rows_are_rejected",
+      "Passed": true
+    },
+    {
+      "Name": "test_nonzero_exit_preserves_measurement_and_runtime",
+      "Passed": true
+    },
+    {
+      "Name": "test_pass_markers_require_exact_whole_lines",
+      "Passed": true
+    },
+    {
+      "Name": "test_projection_module_has_no_io_imports_or_calls",
+      "Passed": true
+    },
+    {
+      "Name": "test_runtime_header_exact_keys_pins_types_and_bounds",
+      "Passed": true
+    },
+    {
+      "Name": "test_semantic_both_modes_variants_backends",
+      "Passed": true
+    },
+    {
+      "Name": "test_signed_counter_anomalies_remain_visible",
+      "Passed": true
+    },
+    {
+      "Name": "test_unknown_stderr_frames_paths_urls_text_never_escape",
+      "Passed": true
+    }
+  ]
+}
