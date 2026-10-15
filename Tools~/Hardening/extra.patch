@@ -1,0 +1,215 @@
+diff --git a/Runtime/GameplayTag.cs b/Runtime/GameplayTag.cs
+--- a/Runtime/GameplayTag.cs
++++ b/Runtime/GameplayTag.cs
+@@ -18,12 +18,18 @@
+ #endif
+     {
+         public static readonly GameplayTag None = default;
+-        // A cached handle stays integer-only. A name restored without a struct callback
+-        // resolves on demand; cache Resolve() at an application loading boundary.
+-        public readonly int RuntimeIndex => m_RuntimeIndex != 0 ? m_RuntimeIndex :
+-            GameplayTagManager.ResolveIndex(m_SerializedName);
++        // Cached names use one reference-identity guard; a serializer/Inspector may
++        // overwrite the backing name without invoking a struct callback. Such a
++        // change takes the name-resolution path instead of using a stale ID.
++        public readonly int RuntimeIndex => m_RuntimeIndex != 0 &&
++            ReferenceEquals(m_SerializedName, GameplayTagManager.GetTagFromRuntimeIndex(m_RuntimeIndex).m_SerializedName)
++                ? m_RuntimeIndex : GameplayTagManager.ResolveIndex(m_SerializedName);
+         public readonly bool IsValid => RuntimeIndex != 0;
+-        public readonly GameplayTag Resolve() => new GameplayTag(m_SerializedName, RuntimeIndex);
++        public readonly GameplayTag Resolve()
++        {
++            int id = RuntimeIndex;
++            return id == 0 ? new GameplayTag(m_SerializedName, 0) : GameplayTagManager.GetTagFromRuntimeIndex(id);
++        }
+         internal readonly ref readonly GameplayTagDefinition Definition => ref GameplayTagManager.GetDefinitionFromRuntimeIndex(RuntimeIndex);
+ 
+         /// <summary>Strict ancestors in root-to-parent order, excluding this tag.</summary>
+diff --git a/Runtime/TagStorage.cs b/Runtime/TagStorage.cs
+--- a/Runtime/TagStorage.cs
++++ b/Runtime/TagStorage.cs
+@@ -123,6 +123,30 @@
+         }
+ 
+         // Set insertion and its duplicate semantics require just one lookup.
++        // A near-overflow batch needs exact per-root accounting before any writes.
++        // The usual path allocates nothing; the cold saturation path uses a map.
++        internal void ValidateBulkAdd(TagStorage source)
++        {
++            if (source == null) return;
++            int n = source.ExplicitCount;
++            for (int i = 0; i < n; i++)
++            {
++                int id = source.Entries[source.ExplicitIndices[i]].Id;
++                int root = GameplayTagManager.GetHierarchyIndices(id)[0];
++                if (GetCount(root) <= int.MaxValue - n) continue;
++                var additions = new System.Collections.Generic.Dictionary<int, int>();
++                for (int j = 0; j < n; j++)
++                {
++                    id = source.Entries[source.ExplicitIndices[j]].Id;
++                    root = GameplayTagManager.GetHierarchyIndices(id)[0];
++                    additions.TryGetValue(root, out int amount);
++                    additions[root] = amount + 1;
++                }
++                foreach (var pair in additions) ValidateAdd(pair.Key, pair.Value);
++                return;
++            }
++        }
++
+         internal bool TryAddExplicit(int id)
+         {
+             if (id == 0) return false;
+diff --git a/Runtime/GameplayTagCountContainer.cs b/Runtime/GameplayTagCountContainer.cs
+--- a/Runtime/GameplayTagCountContainer.cs
++++ b/Runtime/GameplayTagCountContainer.cs
+@@ -118,6 +118,10 @@
+         public void RegisterTagEventCallback(GameplayTag tag, GameplayTagEventType eventType,
+             OnTagCountChangedDelegate callback)
+         {
++            if (callback == null) throw new ArgumentNullException(nameof(callback));
++            if (tag.RuntimeIndex == 0) throw new ArgumentException("A registered tag is required.", nameof(tag));
++            if (eventType != GameplayTagEventType.NewOrRemoved && eventType != GameplayTagEventType.AnyCountChange)
++                throw new ArgumentOutOfRangeException(nameof(eventType));
+             int index = FindCallback(tag.RuntimeIndex);
+             if (index < 0)
+             {
+@@ -140,6 +144,10 @@
+         public void RemoveTagEventCallback(GameplayTag tag, GameplayTagEventType eventType,
+             OnTagCountChangedDelegate callback)
+         {
++            if (callback == null) throw new ArgumentNullException(nameof(callback));
++            if (tag.RuntimeIndex == 0) throw new ArgumentException("A registered tag is required.", nameof(tag));
++            if (eventType != GameplayTagEventType.NewOrRemoved && eventType != GameplayTagEventType.AnyCountChange)
++                throw new ArgumentOutOfRangeException(nameof(eventType));
+             int index = FindCallback(tag.RuntimeIndex);
+             if (index < 0)
+                 return;
+@@ -201,6 +209,7 @@
+             if (source == null)
+                 return;
+ 
++            Storage.ValidateBulkAdd(source);
+             bool notify = HasListeners;
+             int count = source.ExplicitCount;
+             for (int i = 0; i < count; i++)
+diff --git a/Runtime/GameplayTagHierarchicalContanier.cs b/Runtime/GameplayTagHierarchicalContanier.cs
+--- a/Runtime/GameplayTagHierarchicalContanier.cs
++++ b/Runtime/GameplayTagHierarchicalContanier.cs
+@@ -52,6 +52,8 @@
+                     cursor = node.m_ParentContainer;
+                 }
+ 
++                ValidateParentTransfer(previous, value);
++
+                 if (!m_UnderlyingContainer.HasListeners && !ParentHasListeners(previous) && !ParentHasListeners(value))
+                 {
+                     m_ParentContainer = value;
+@@ -137,7 +139,15 @@
+         /// <summary>Adds one occurrence of every distinct explicit tag in the source.</summary>
+         public void AddTags<T>(in T other) where T : IGameplayTagContainer
+         {
+-            int count = SnapshotExplicitTags(GameplayTagContainer.GetStorage(other));
++            TagStorage source = GameplayTagContainer.GetStorage(other);
++            IGameplayTagCountContainer cursor = this;
++            while (cursor is GameplayTagHierarchicalContainer node)
++            {
++                node.Indices.Storage.ValidateBulkAdd(source);
++                cursor = node.m_ParentContainer;
++            }
++            if (cursor is GameplayTagCountContainer counted) counted.Indices.Storage.ValidateBulkAdd(source);
++            int count = SnapshotExplicitTags(source);
+             if (!HasListenersInChain())
+             {
+                 for (int i = 0; i < count; i++)
+@@ -320,6 +330,32 @@
+             }
+         }
+ 
++        // Shared ancestors lose and regain exactly the same contribution. Validate
++        // only genuinely new built-in ancestors before changing either parent link.
++        private void ValidateParentTransfer(IGameplayTagCountContainer previous, IGameplayTagCountContainer next)
++        {
++            var storage = Indices.Storage;
++            for (var cursor = next; cursor != null;)
++            {
++                bool shared = false;
++                for (var old = previous; old != null;)
++                {
++                    if (ReferenceEquals(old, cursor)) { shared = true; break; }
++                    old = old is GameplayTagHierarchicalContainer oldNode ? oldNode.m_ParentContainer : null;
++                }
++                if (!shared && (cursor is GameplayTagHierarchicalContainer || cursor is GameplayTagCountContainer))
++                {
++                    for (int i = 0; i < storage.Count; i++)
++                    {
++                        var entry = storage.Entries[i];
++                        if (GameplayTagManager.GetParentIndex(entry.Id) == 0)
++                            cursor.Indices.Storage.ValidateAdd(entry.Id, entry.Count);
++                    }
++                }
++                cursor = cursor is GameplayTagHierarchicalContainer node ? node.m_ParentContainer : null;
++            }
++        }
++
+         private void ValidateChainAddition(int id, int amount)
+         {
+             IGameplayTagCountContainer cursor = this;
+diff --git a/Tests~/Hardening/Program.cs b/Tests~/Hardening/Program.cs
+--- a/Tests~/Hardening/Program.cs
++++ b/Tests~/Hardening/Program.cs
+@@ -20,7 +20,7 @@
+     static void Test(string name, Action body)
+     {
+         try { body(); passed++; Console.WriteLine("PASS " + name); }
+-        catch (Exception e) { failures++; Console.WriteLine("FAIL " + name + ": " + e.GetType().Name + " " + e.Message); }
++        catch (Exception e) { failures++; Console.WriteLine("FAIL " + name + ": " + e); }
+     }
+     static GameplayTagContainer Set(params string[] names)
+     {
+@@ -78,6 +78,11 @@
+             var x = T("A.B"); x.m_Name = "A.C";
+             Check(x == T("A.C") && x != T("A.B"), "stale cached ID");
+         });
++        if (!baseline) Test("backing field overwrite cannot retain stale ID", () => {
++            object boxed = T("A.B");
++            typeof(GameplayTag).GetField("m_SerializedName", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(boxed, "A.C");
++            var tag = (GameplayTag)boxed; Check(tag == T("A.C"), "direct serialized field overwrite");
++        });
+         Test("unknown serialized name survives callback", () => {
+             var x = new GameplayTag { m_Name = "Missing.Tag" }; x.OnBeforeSerialize(); x.OnAfterDeserialize();
+             Check(x.Name == "Missing.Tag" && x.RuntimeIndex == 0, "unknown name lost");
+@@ -97,7 +102,7 @@
+             Same(GameplayTagContainer.Union(a, nil), "A.B"); Same(GameplayTagContainer.Union(nil, a), "A.B");
+             Same(GameplayTagContainer.Intersection(a, nil));
+             GameplayTagContainer.Intersection(d, nil, a); Same(d);
+-            d.AddTags(nil); d.RemoveTags(nil); Check(!nil.HasTag(T("A")), "null holder");
++            d.AddTags(nil); d.RemoveTags(nil); Check(!GameplayTagContainerExtensionMethods.HasTag(nil, T("A")), "null holder");
+         });
+         Test("shared Empty cannot be changed", () => {
+             Throws<InvalidOperationException>(() => GameplayTagContainer.Empty.AddTag(T("A.B")));
+@@ -123,6 +128,25 @@
+             var c = new GameplayTagCountContainer(); c.AddTag(T("A.B"), int.MaxValue);
+             Throws<OverflowException>(() => c.AddTag(T("A.C")));
+             Check(c.GetTagCount(T("A")) == int.MaxValue && c.GetExplicitTagCount(T("A.C")) == 0, "overflow mutated");
++        });
++        Test("bulk overflow rejects before counts or notifications change", () => {
++            var c = new GameplayTagCountContainer(); c.AddTag(T("A.B"), int.MaxValue - 1); int notifications = 0;
++            c.OnAnyTagCountChange += (_, __) => notifications++;
++            Throws<OverflowException>(() => c.AddTags(Set("A.B", "A.C")));
++            Check(c.GetTagCount(T("A")) == int.MaxValue - 1 && c.GetExplicitTagCount(T("A.C")) == 0, "bulk partial mutation");
++            c.AddTag(T("Z")); Check(notifications == 1, "stale event queue");
++        });
++        Test("reparent overflow leaves old link and counts intact", () => {
++            var old = new GameplayTagCountContainer(); var next = new GameplayTagCountContainer(); next.AddTag(T("A.B"), int.MaxValue);
++            var child = new GameplayTagHierarchicalContainer { Parent = old }; child.AddTag(T("A.C"));
++            Throws<OverflowException>(() => child.Parent = next);
++            Check(ReferenceEquals(child.Parent, old) && old.GetTagCount(T("A")) == 1 && child.GetTagCount(T("A")) == 1, "reparent partial mutation");
++        });
++        Test("hierarchical bulk overflow leaves child unchanged", () => {
++            var parent = new GameplayTagCountContainer(); parent.AddTag(T("A.B"), int.MaxValue - 1);
++            var child = new GameplayTagHierarchicalContainer { Parent = parent };
++            Throws<OverflowException>(() => child.AddTags(Set("A.B", "A.C")));
++            Check(child.IsEmpty && parent.GetTagCount(T("A")) == int.MaxValue - 1, "bulk chain partial mutation");
+         });
+         Test("self-parent cycle rejected", () => {
+             var c = new GameplayTagHierarchicalContainer(); Throws<ArgumentException>(() => c.Parent = c);

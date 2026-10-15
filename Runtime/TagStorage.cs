@@ -123,6 +123,30 @@ namespace GameplayTags
         }
 
         // Set insertion and its duplicate semantics require just one lookup.
+        // A near-overflow batch needs exact per-root accounting before any writes.
+        // The usual path allocates nothing; the cold saturation path uses a map.
+        internal void ValidateBulkAdd(TagStorage source)
+        {
+            if (source == null) return;
+            int n = source.ExplicitCount;
+            for (int i = 0; i < n; i++)
+            {
+                int id = source.Entries[source.ExplicitIndices[i]].Id;
+                int root = GameplayTagManager.GetHierarchyIndices(id)[0];
+                if (GetCount(root) <= int.MaxValue - n) continue;
+                var additions = new System.Collections.Generic.Dictionary<int, int>();
+                for (int j = 0; j < n; j++)
+                {
+                    id = source.Entries[source.ExplicitIndices[j]].Id;
+                    root = GameplayTagManager.GetHierarchyIndices(id)[0];
+                    additions.TryGetValue(root, out int amount);
+                    additions[root] = amount + 1;
+                }
+                foreach (var pair in additions) ValidateAdd(pair.Key, pair.Value);
+                return;
+            }
+        }
+
         internal bool TryAddExplicit(int id)
         {
             if (id == 0) return false;

@@ -118,6 +118,10 @@ namespace GameplayTags
         public void RegisterTagEventCallback(GameplayTag tag, GameplayTagEventType eventType,
             OnTagCountChangedDelegate callback)
         {
+            if (callback == null) throw new ArgumentNullException(nameof(callback));
+            if (tag.RuntimeIndex == 0) throw new ArgumentException("A registered tag is required.", nameof(tag));
+            if (eventType != GameplayTagEventType.NewOrRemoved && eventType != GameplayTagEventType.AnyCountChange)
+                throw new ArgumentOutOfRangeException(nameof(eventType));
             int index = FindCallback(tag.RuntimeIndex);
             if (index < 0)
             {
@@ -140,6 +144,10 @@ namespace GameplayTags
         public void RemoveTagEventCallback(GameplayTag tag, GameplayTagEventType eventType,
             OnTagCountChangedDelegate callback)
         {
+            if (callback == null) throw new ArgumentNullException(nameof(callback));
+            if (tag.RuntimeIndex == 0) throw new ArgumentException("A registered tag is required.", nameof(tag));
+            if (eventType != GameplayTagEventType.NewOrRemoved && eventType != GameplayTagEventType.AnyCountChange)
+                throw new ArgumentOutOfRangeException(nameof(eventType));
             int index = FindCallback(tag.RuntimeIndex);
             if (index < 0)
                 return;
@@ -201,6 +209,7 @@ namespace GameplayTags
             if (source == null)
                 return;
 
+            Storage.ValidateBulkAdd(source);
             bool notify = HasListeners;
             int count = source.ExplicitCount;
             for (int i = 0; i < count; i++)

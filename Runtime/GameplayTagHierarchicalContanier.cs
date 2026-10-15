@@ -52,6 +52,8 @@ namespace GameplayTags
                     cursor = node.m_ParentContainer;
                 }
 
+                ValidateParentTransfer(previous, value);
+
                 if (!m_UnderlyingContainer.HasListeners && !ParentHasListeners(previous) && !ParentHasListeners(value))
                 {
                     m_ParentContainer = value;
@@ -137,7 +139,15 @@ namespace GameplayTags
         /// <summary>Adds one occurrence of every distinct explicit tag in the source.</summary>
         public void AddTags<T>(in T other) where T : IGameplayTagContainer
         {
-            int count = SnapshotExplicitTags(GameplayTagContainer.GetStorage(other));
+            TagStorage source = GameplayTagContainer.GetStorage(other);
+            IGameplayTagCountContainer cursor = this;
+            while (cursor is GameplayTagHierarchicalContainer node)
+            {
+                node.Indices.Storage.ValidateBulkAdd(source);
+                cursor = node.m_ParentContainer;
+            }
+            if (cursor is GameplayTagCountContainer counted) counted.Indices.Storage.ValidateBulkAdd(source);
+            int count = SnapshotExplicitTags(source);
             if (!HasListenersInChain())
             {
                 for (int i = 0; i < count; i++)
@@ -317,6 +327,32 @@ namespace GameplayTags
                 GameplayTag tag = GameplayTagManager.GetTagFromRuntimeIndex(id);
                 for (int i = 0; i < amount; i++)
                     parent.RemoveTag(tag);
+            }
+        }
+
+        // Shared ancestors lose and regain exactly the same contribution. Validate
+        // only genuinely new built-in ancestors before changing either parent link.
+        private void ValidateParentTransfer(IGameplayTagCountContainer previous, IGameplayTagCountContainer next)
+        {
+            var storage = Indices.Storage;
+            for (var cursor = next; cursor != null;)
+            {
+                bool shared = false;
+                for (var old = previous; old != null;)
+                {
+                    if (ReferenceEquals(old, cursor)) { shared = true; break; }
+                    old = old is GameplayTagHierarchicalContainer oldNode ? oldNode.m_ParentContainer : null;
+                }
+                if (!shared && (cursor is GameplayTagHierarchicalContainer || cursor is GameplayTagCountContainer))
+                {
+                    for (int i = 0; i < storage.Count; i++)
+                    {
+                        var entry = storage.Entries[i];
+                        if (GameplayTagManager.GetParentIndex(entry.Id) == 0)
+                            cursor.Indices.Storage.ValidateAdd(entry.Id, entry.Count);
+                    }
+                }
+                cursor = cursor is GameplayTagHierarchicalContainer node ? node.m_ParentContainer : null;
             }
         }
 

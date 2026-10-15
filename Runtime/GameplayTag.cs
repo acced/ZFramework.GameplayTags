@@ -18,12 +18,18 @@ namespace GameplayTags
 #endif
     {
         public static readonly GameplayTag None = default;
-        // A cached handle stays integer-only. A name restored without a struct callback
-        // resolves on demand; cache Resolve() at an application loading boundary.
-        public readonly int RuntimeIndex => m_RuntimeIndex != 0 ? m_RuntimeIndex :
-            GameplayTagManager.ResolveIndex(m_SerializedName);
+        // Cached names use one reference-identity guard; a serializer/Inspector may
+        // overwrite the backing name without invoking a struct callback. Such a
+        // change takes the name-resolution path instead of using a stale ID.
+        public readonly int RuntimeIndex => m_RuntimeIndex != 0 &&
+            ReferenceEquals(m_Name, GameplayTagManager.GetTagFromRuntimeIndex(m_RuntimeIndex).m_Name)
+                ? m_RuntimeIndex : GameplayTagManager.ResolveIndex(m_Name);
         public readonly bool IsValid => RuntimeIndex != 0;
-        public readonly GameplayTag Resolve() => new GameplayTag(m_SerializedName, RuntimeIndex);
+        public readonly GameplayTag Resolve()
+        {
+            int id = RuntimeIndex;
+            return id == 0 ? new GameplayTag(m_Name, 0) : GameplayTagManager.GetTagFromRuntimeIndex(id);
+        }
         internal readonly ref readonly GameplayTagDefinition Definition => ref GameplayTagManager.GetDefinitionFromRuntimeIndex(RuntimeIndex);
 
         /// <summary>Strict ancestors in root-to-parent order, excluding this tag.</summary>
@@ -44,7 +50,7 @@ namespace GameplayTags
         public readonly int HierarchyLevel => Definition.HierarchyLevel;
         public readonly string Description => Definition.Description;
         public readonly GameplayTagFlags Flags => Definition.Flags;
-        public readonly string Name => m_SerializedName;
+        public readonly string Name => m_Name;
 
         /// <summary>The immediate parent, or None for a root/None tag.</summary>
         public readonly GameplayTag ParentTag => GameplayTagManager.GetTagFromRuntimeIndex(
@@ -53,17 +59,8 @@ namespace GameplayTags
         [DataMember(Name = "m_Name", Order = 0)]
 #if UNITY_5_3_OR_NEWER
         [UnityEngine.SerializeField]
-        [UnityEngine.Serialization.FormerlySerializedAs("m_Name")]
 #endif
-        private string m_SerializedName;
-
-        // Source-compatible assignment invalidates the ID. Unity edits the backing
-        // field directly; reloads reset the nonserialized ID.
-        public string m_Name
-        {
-            readonly get => m_SerializedName;
-            set { m_SerializedName = value; m_RuntimeIndex = 0; }
-        }
+        public string m_Name;
 
         [NonSerialized]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -71,7 +68,7 @@ namespace GameplayTags
 
         internal GameplayTag(string name, int runtimeTagIndex)
         {
-            m_SerializedName = name;
+            m_Name = name;
             m_RuntimeIndex = runtimeTagIndex;
         }
 
@@ -94,7 +91,7 @@ namespace GameplayTags
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly override int GetHashCode() => RuntimeIndex;
 
-        public readonly override string ToString() => RuntimeIndex == 0 ? "<None>" : m_SerializedName;
+        public readonly override string ToString() => RuntimeIndex == 0 ? "<None>" : m_Name;
 
         // Runtime IDs may change when declarations change. Both serializers store names
         // and resolve IDs after deserialization, never restore a stale numeric identity.

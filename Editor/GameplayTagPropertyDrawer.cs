@@ -18,7 +18,7 @@ namespace GameplayTags.Editor
          int oldIndentLevel = EditorGUI.indentLevel;
          EditorGUI.indentLevel = 0;
 
-         SerializedProperty nameProperty = property.FindPropertyRelative("m_SerializedName");
+         SerializedProperty nameProperty = property.FindPropertyRelative("m_Name");
          GameplayTag tag = GameplayTagManager.RequestTag(nameProperty.stringValue);
 
          if (tag != GameplayTag.None)

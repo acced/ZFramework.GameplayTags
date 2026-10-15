@@ -1,3 +1,7 @@
+# Integer hardening candidate — 2.1.0-rc.1
+
+本轮采用上传整数版，新增安全性与序列化修复；并非原 name-based rc.1 的兼容替换。详见 [加固说明与迁移边界](Documentation~/HARDENING.md)。性能收益与检查成本必须同时评估，未执行真实 Unity/IL2CPP 验收。以下为整数路线原有使用说明，性能历史不能解释为本轮实测。
+
 # ZFramework.GameplayTags
 
 面向性能的 C# 层级标签库。运行时使用整数 ID、紧凑数组与开放寻址索引；标签祖先关系在注册时编译为连续区间。支持普通集合、计数集合、父容器传播、条件查询、事件、对象池、Unity 序列化和源码生成。

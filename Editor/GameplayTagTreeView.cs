@@ -15,7 +15,7 @@ namespace GameplayTags.Editor
       : base(treeViewState)
       {
          m_OnSelectionChange = onSelectionChange;
-         m_TagNameProperty = tagProperty.FindPropertyRelative("m_SerializedName");
+         m_TagNameProperty = tagProperty.FindPropertyRelative("m_Name");
          m_TagNameProperty.serializedObject.Update();
 
          GameplayTag tag = GameplayTagManager.RequestTag(m_TagNameProperty.stringValue);

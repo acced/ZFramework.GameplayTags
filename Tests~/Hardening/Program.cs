@@ -20,7 +20,7 @@ internal static class HardeningTests
     static void Test(string name, Action body)
     {
         try { body(); passed++; Console.WriteLine("PASS " + name); }
-        catch (Exception e) { failures++; Console.WriteLine("FAIL " + name + ": " + e.GetType().Name + " " + e.Message); }
+        catch (Exception e) { failures++; Console.WriteLine("FAIL " + name + ": " + e); }
     }
     static GameplayTagContainer Set(params string[] names)
     {
@@ -78,6 +78,11 @@ internal static class HardeningTests
             var x = T("A.B"); x.m_Name = "A.C";
             Check(x == T("A.C") && x != T("A.B"), "stale cached ID");
         });
+        if (!baseline) Test("backing field overwrite cannot retain stale ID", () => {
+            object boxed = T("A.B");
+            typeof(GameplayTag).GetField("m_Name", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance).SetValue(boxed, "A.C");
+            var tag = (GameplayTag)boxed; Check(tag == T("A.C"), "direct serialized field overwrite");
+        });
         Test("unknown serialized name survives callback", () => {
             var x = new GameplayTag { m_Name = "Missing.Tag" }; x.OnBeforeSerialize(); x.OnAfterDeserialize();
             Check(x.Name == "Missing.Tag" && x.RuntimeIndex == 0, "unknown name lost");
@@ -97,7 +102,7 @@ internal static class HardeningTests
             Same(GameplayTagContainer.Union(a, nil), "A.B"); Same(GameplayTagContainer.Union(nil, a), "A.B");
             Same(GameplayTagContainer.Intersection(a, nil));
             GameplayTagContainer.Intersection(d, nil, a); Same(d);
-            d.AddTags(nil); d.RemoveTags(nil); Check(!nil.HasTag(T("A")), "null holder");
+            d.AddTags(nil); d.RemoveTags(nil); Check(!GameplayTagContainerExtensionMethods.HasTag(nil, T("A")), "null holder");
         });
         Test("shared Empty cannot be changed", () => {
             Throws<InvalidOperationException>(() => GameplayTagContainer.Empty.AddTag(T("A.B")));
@@ -123,6 +128,25 @@ internal static class HardeningTests
             var c = new GameplayTagCountContainer(); c.AddTag(T("A.B"), int.MaxValue);
             Throws<OverflowException>(() => c.AddTag(T("A.C")));
             Check(c.GetTagCount(T("A")) == int.MaxValue && c.GetExplicitTagCount(T("A.C")) == 0, "overflow mutated");
+        });
+        Test("bulk overflow rejects before counts or notifications change", () => {
+            var c = new GameplayTagCountContainer(); c.AddTag(T("A.B"), int.MaxValue - 1); int notifications = 0;
+            c.OnAnyTagCountChange += (_, __) => notifications++;
+            Throws<OverflowException>(() => c.AddTags(Set("A.B", "A.C")));
+            Check(c.GetTagCount(T("A")) == int.MaxValue - 1 && c.GetExplicitTagCount(T("A.C")) == 0, "bulk partial mutation");
+            c.AddTag(T("Z")); Check(notifications == 1, "stale event queue");
+        });
+        Test("reparent overflow leaves old link and counts intact", () => {
+            var old = new GameplayTagCountContainer(); var next = new GameplayTagCountContainer(); next.AddTag(T("A.B"), int.MaxValue);
+            var child = new GameplayTagHierarchicalContainer { Parent = old }; child.AddTag(T("A.C"));
+            Throws<OverflowException>(() => child.Parent = next);
+            Check(ReferenceEquals(child.Parent, old) && old.GetTagCount(T("A")) == 1 && child.GetTagCount(T("A")) == 1, "reparent partial mutation");
+        });
+        Test("hierarchical bulk overflow leaves child unchanged", () => {
+            var parent = new GameplayTagCountContainer(); parent.AddTag(T("A.B"), int.MaxValue - 1);
+            var child = new GameplayTagHierarchicalContainer { Parent = parent };
+            Throws<OverflowException>(() => child.AddTags(Set("A.B", "A.C")));
+            Check(child.IsEmpty && parent.GetTagCount(T("A")) == int.MaxValue - 1, "bulk chain partial mutation");
         });
         Test("self-parent cycle rejected", () => {
             var c = new GameplayTagHierarchicalContainer(); Throws<ArgumentException>(() => c.Parent = c);
