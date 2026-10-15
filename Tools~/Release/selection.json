@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "version": "1.1.0-rc.1",
+  "implementation": "B1.1 + C1 + C2",
+  "implementation_commit": "792ce83f1c2a9aeaadc045c192d70081d866d903",
+  "evidence_commit": "04614e0678500af769005102807afcf1b918ff63",
+  "frozen_trees": {
+    "Runtime": "1e42d9659e26e385b267f877a9e3e493ce0eb916",
+    "Editor": "599172bc264d4aaee31b92f651071d571a9b8e4e"
+  },
+  "unity_validation": "not-run",
+  "performance_acceptance": "not-established",
+  "excluded_candidates": ["P1", "C3a", "RMinusC1"]
+}
