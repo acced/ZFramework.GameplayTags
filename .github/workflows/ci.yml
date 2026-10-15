@@ -1,0 +1,24 @@
+name: Integer runtime validation
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  correctness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.425'
+      - run: bash Tools~/Hardening/validate.sh "$RUNNER_TEMP/validation"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integer-validation-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/validation/*.log
+            ${{ runner.temp }}/validation/SUMMARY.txt

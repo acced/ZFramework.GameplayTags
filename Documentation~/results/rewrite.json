@@ -1,0 +1,1690 @@
+{
+  "Variant": "rewrite",
+  "Framework": ".NET 8.0.31",
+  "OS": "Ubuntu 24.04.3 LTS",
+  "Architecture": "X64",
+  "Mode": "full",
+  "RegisteredLeafUniverse": 4096,
+  "QuerySequenceLength": 4096,
+  "Samples": 7,
+  "StopwatchFrequency": 1000000000,
+  "TieredCompilation": false,
+  "ServerGC": false,
+  "Checksum": -1524431612,
+  "Measurements": [
+    {
+      "Operation": "HasTagExact/hit",
+      "Unit": "call",
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.910044,
+      "MinNanoseconds": 2.648128,
+      "MaxNanoseconds": 3.542916,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.910044,
+        2.835248,
+        3.045288,
+        2.648128,
+        2.696796,
+        3.542916,
+        2.929512
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTagExact/miss",
+      "Unit": "call",
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.070692,
+      "MinNanoseconds": 1.923108,
+      "MaxNanoseconds": 2.51308,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.070692,
+        1.944304,
+        2.51308,
+        2.32608,
+        1.923108,
+        2.004388,
+        2.176732
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTagExact/mixed",
+      "Unit": "call",
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.350796,
+      "MinNanoseconds": 2.288504,
+      "MaxNanoseconds": 2.540804,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.540804,
+        2.438288,
+        2.385328,
+        2.288504,
+        2.333568,
+        2.294832,
+        2.350796
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTag/parent-hit",
+      "Unit": "call",
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.047056,
+      "MinNanoseconds": 1.972264,
+      "MaxNanoseconds": 2.45964,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.45964,
+        1.997224,
+        2.03664,
+        1.972264,
+        2.047056,
+        2.316864,
+        2.090764
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTag/parent-miss",
+      "Unit": "call",
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.081188,
+      "MinNanoseconds": 1.833892,
+      "MaxNanoseconds": 2.330684,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.239268,
+        2.063324,
+        1.833892,
+        1.997304,
+        2.081188,
+        2.269672,
+        2.330684
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "IsParentOf/hit",
+      "Unit": "call",
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 20000,
+      "MedianNanoseconds": 1.1748,
+      "MinNanoseconds": 1.17425,
+      "MaxNanoseconds": 3.0166,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        3.0166,
+        1.4692,
+        1.1753,
+        1.1748,
+        1.17425,
+        1.1748,
+        1.1748
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "IsChildOf/hit",
+      "Unit": "call",
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 1.219164,
+      "MinNanoseconds": 1.21824,
+      "MaxNanoseconds": 1.523544,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        1.21872,
+        1.298928,
+        1.21824,
+        1.22982,
+        1.219164,
+        1.523544,
+        1.218804
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "RemoveAdd/existing",
+      "Unit": "pair",
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 25000,
+      "MedianNanoseconds": 57.26184,
+      "MinNanoseconds": 51.5704,
+      "MaxNanoseconds": 75.80384,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        75.80384,
+        51.5704,
+        57.26184,
+        61.71856,
+        52.209,
+        55.21308,
+        66.19652
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "AddRemove/absent",
+      "Unit": "pair",
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 25000,
+      "MedianNanoseconds": 60.54276,
+      "MinNanoseconds": 53.20004,
+      "MaxNanoseconds": 66.70412,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        63.19556,
+        62.12116,
+        66.70412,
+        60.54276,
+        53.2906,
+        53.90032,
+        53.20004
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Count/AddRemove-existing",
+      "Unit": "pair",
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 25000,
+      "MedianNanoseconds": 29.93088,
+      "MinNanoseconds": 29.0912,
+      "MaxNanoseconds": 37.58324,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        30.297,
+        37.58324,
+        29.93088,
+        29.55948,
+        29.4962,
+        32.20112,
+        29.0912
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Enumerate/explicit",
+      "Unit": "traversal",
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 10000,
+      "MedianNanoseconds": 5.5413,
+      "MinNanoseconds": 5.5394,
+      "MaxNanoseconds": 5.5644,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        5.5644,
+        5.5394,
+        5.5404,
+        5.5394,
+        5.5414,
+        5.5434,
+        5.5413
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Construct/fill",
+      "Unit": "container",
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 2048,
+      "MedianNanoseconds": 410.6015625,
+      "MinNanoseconds": 174.01318359375,
+      "MaxNanoseconds": 447.380859375,
+      "AllocatedBytesPerOperation": 720,
+      "NanosecondSamples": [
+        174.01318359375,
+        447.380859375,
+        424.03955078125,
+        410.6015625,
+        402.2001953125,
+        415.70703125,
+        408.17138671875
+      ],
+      "AllocatedByteSamples": [
+        720,
+        720,
+        720,
+        720,
+        720,
+        720,
+        720
+      ]
+    },
+    {
+      "Operation": "HasTagExact/hit",
+      "Unit": "call",
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 3.012156,
+      "MinNanoseconds": 2.944772,
+      "MaxNanoseconds": 3.49156,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.979744,
+        3.049492,
+        3.49156,
+        3.074328,
+        3.009392,
+        2.944772,
+        3.012156
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTagExact/miss",
+      "Unit": "call",
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.101776,
+      "MinNanoseconds": 2.006756,
+      "MaxNanoseconds": 2.259016,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.097496,
+        2.101776,
+        2.084956,
+        2.259016,
+        2.006756,
+        2.156704,
+        2.126936
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTagExact/mixed",
+      "Unit": "call",
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.55234,
+      "MinNanoseconds": 2.457236,
+      "MaxNanoseconds": 3.150964,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        3.150964,
+        2.457236,
+        2.53896,
+        2.505352,
+        2.767464,
+        2.55234,
+        2.673404
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTag/parent-hit",
+      "Unit": "call",
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.117844,
+      "MinNanoseconds": 2.033232,
+      "MaxNanoseconds": 2.323552,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.323552,
+        2.033232,
+        2.099092,
+        2.076904,
+        2.117844,
+        2.289784,
+        2.1692
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTag/parent-miss",
+      "Unit": "call",
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 1.723928,
+      "MinNanoseconds": 1.700132,
+      "MaxNanoseconds": 2.157984,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        1.709868,
+        1.89094,
+        1.723928,
+        2.003832,
+        1.70474,
+        2.157984,
+        1.700132
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "IsParentOf/hit",
+      "Unit": "call",
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 20000,
+      "MedianNanoseconds": 1.17475,
+      "MinNanoseconds": 1.17425,
+      "MaxNanoseconds": 1.1843,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        1.1843,
+        1.1763,
+        1.17475,
+        1.1753,
+        1.17475,
+        1.17425,
+        1.1743
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "IsChildOf/hit",
+      "Unit": "call",
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 1.265392,
+      "MinNanoseconds": 1.218284,
+      "MaxNanoseconds": 1.54874,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        1.2297,
+        1.543736,
+        1.369512,
+        1.218884,
+        1.265392,
+        1.54874,
+        1.218284
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "RemoveAdd/existing",
+      "Unit": "pair",
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 25000,
+      "MedianNanoseconds": 52.79024,
+      "MinNanoseconds": 51.13652,
+      "MaxNanoseconds": 83.68936,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        64.20272,
+        52.79024,
+        51.13652,
+        51.58844,
+        52.12724,
+        83.68936,
+        57.93844
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "AddRemove/absent",
+      "Unit": "pair",
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 25000,
+      "MedianNanoseconds": 51.975,
+      "MinNanoseconds": 49.09628,
+      "MaxNanoseconds": 67.8346,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        55.89412,
+        63.23964,
+        51.975,
+        51.14056,
+        49.75608,
+        49.09628,
+        67.8346
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Count/AddRemove-existing",
+      "Unit": "pair",
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 25000,
+      "MedianNanoseconds": 34.72736,
+      "MinNanoseconds": 31.15192,
+      "MaxNanoseconds": 35.73804,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        35.73804,
+        34.72736,
+        35.27292,
+        33.00832,
+        31.15192,
+        33.78352,
+        35.63588
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Enumerate/explicit",
+      "Unit": "traversal",
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 10000,
+      "MedianNanoseconds": 18.1024,
+      "MinNanoseconds": 18.0523,
+      "MaxNanoseconds": 38.7366,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        18.6382,
+        38.7366,
+        18.1024,
+        18.0523,
+        18.0684,
+        18.0773,
+        21.186
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Construct/fill",
+      "Unit": "container",
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 512,
+      "MedianNanoseconds": 1681.29296875,
+      "MinNanoseconds": 664.560546875,
+      "MaxNanoseconds": 2277.078125,
+      "AllocatedBytesPerOperation": 3208,
+      "NanosecondSamples": [
+        664.560546875,
+        1759.830078125,
+        1626.2890625,
+        1681.29296875,
+        2277.078125,
+        1658.5234375,
+        1716.111328125
+      ],
+      "AllocatedByteSamples": [
+        3208,
+        3208,
+        3208,
+        3208,
+        3208,
+        3208,
+        3208
+      ]
+    },
+    {
+      "Operation": "HasTagExact/hit",
+      "Unit": "call",
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.93636,
+      "MinNanoseconds": 2.757528,
+      "MaxNanoseconds": 3.176404,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.93636,
+        2.781488,
+        2.981708,
+        3.176404,
+        2.86806,
+        3.168752,
+        2.757528
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTagExact/miss",
+      "Unit": "call",
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.183384,
+      "MinNanoseconds": 2.034996,
+      "MaxNanoseconds": 2.584268,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.183384,
+        2.1305,
+        2.034996,
+        2.584268,
+        2.203052,
+        2.359248,
+        2.03572
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTagExact/mixed",
+      "Unit": "call",
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.3405,
+      "MinNanoseconds": 2.276004,
+      "MaxNanoseconds": 2.501064,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.480592,
+        2.476588,
+        2.295672,
+        2.501064,
+        2.276004,
+        2.3405,
+        2.325236
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTag/parent-hit",
+      "Unit": "call",
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 1.985804,
+      "MinNanoseconds": 1.932964,
+      "MaxNanoseconds": 2.185104,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.185104,
+        2.125616,
+        1.939976,
+        1.973744,
+        1.932964,
+        1.985804,
+        2.128176
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTag/parent-miss",
+      "Unit": "call",
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 1.892664,
+      "MinNanoseconds": 1.713432,
+      "MaxNanoseconds": 2.066204,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        1.892664,
+        2.066204,
+        1.854564,
+        1.975828,
+        1.861496,
+        1.713432,
+        1.921228
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "IsParentOf/hit",
+      "Unit": "call",
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 20000,
+      "MedianNanoseconds": 1.1858,
+      "MinNanoseconds": 1.17425,
+      "MaxNanoseconds": 2.6971,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        1.1883,
+        2.6971,
+        1.4061,
+        1.1858,
+        1.1748,
+        1.17475,
+        1.17425
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "IsChildOf/hit",
+      "Unit": "call",
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 1.36214,
+      "MinNanoseconds": 1.21832,
+      "MaxNanoseconds": 1.608472,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        1.363864,
+        1.21852,
+        1.582072,
+        1.608472,
+        1.21832,
+        1.36214,
+        1.355328
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "RemoveAdd/existing",
+      "Unit": "pair",
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 25000,
+      "MedianNanoseconds": 44.40516,
+      "MinNanoseconds": 42.15656,
+      "MaxNanoseconds": 50.95388,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        48.535,
+        44.48768,
+        44.40516,
+        42.78312,
+        50.95388,
+        43.374,
+        42.15656
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "AddRemove/absent",
+      "Unit": "pair",
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 25000,
+      "MedianNanoseconds": 57.30788,
+      "MinNanoseconds": 52.73656,
+      "MaxNanoseconds": 66.85592,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        63.76924,
+        52.73656,
+        66.85592,
+        57.30788,
+        53.26012,
+        59.27564,
+        57.29268
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Count/AddRemove-existing",
+      "Unit": "pair",
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 25000,
+      "MedianNanoseconds": 31.41952,
+      "MinNanoseconds": 31.17152,
+      "MaxNanoseconds": 38.82152,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        31.56732,
+        31.2164,
+        31.41952,
+        31.38228,
+        31.64304,
+        31.17152,
+        38.82152
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Enumerate/explicit",
+      "Unit": "traversal",
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 10000,
+      "MedianNanoseconds": 146.1501,
+      "MinNanoseconds": 138.7729,
+      "MaxNanoseconds": 153.9939,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        149.4,
+        138.7729,
+        152.8472,
+        153.9939,
+        143.488,
+        146.1501,
+        142.5226
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Construct/fill",
+      "Unit": "container",
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 128,
+      "MedianNanoseconds": 8945.796875,
+      "MinNanoseconds": 4484.6796875,
+      "MaxNanoseconds": 10055.9921875,
+      "AllocatedBytesPerOperation": 13488,
+      "NanosecondSamples": [
+        4484.6796875,
+        9205.953125,
+        10055.9921875,
+        8913.5625,
+        8348.5625,
+        8945.796875,
+        9610.0859375
+      ],
+      "AllocatedByteSamples": [
+        13488,
+        13488,
+        13488,
+        13488,
+        13488,
+        13488,
+        13488
+      ]
+    },
+    {
+      "Operation": "HasTagExact/hit",
+      "Unit": "call",
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 3.005548,
+      "MinNanoseconds": 2.969852,
+      "MaxNanoseconds": 3.377268,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        3.098444,
+        3.377268,
+        2.982832,
+        3.005548,
+        3.140828,
+        3.00118,
+        2.969852
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTagExact/miss",
+      "Unit": "call",
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.085712,
+      "MinNanoseconds": 2.002188,
+      "MaxNanoseconds": 2.684824,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.684824,
+        2.085712,
+        2.14356,
+        2.050824,
+        2.061756,
+        2.002188,
+        2.318184
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTagExact/mixed",
+      "Unit": "call",
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.650488,
+      "MinNanoseconds": 2.351036,
+      "MaxNanoseconds": 3.27904,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        3.09412,
+        2.716468,
+        2.3542,
+        3.27904,
+        2.478348,
+        2.351036,
+        2.650488
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTag/parent-hit",
+      "Unit": "call",
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.013488,
+      "MinNanoseconds": 1.937572,
+      "MaxNanoseconds": 2.197684,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.086676,
+        1.937572,
+        2.000664,
+        2.16692,
+        2.197684,
+        1.9441,
+        2.013488
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "HasTag/parent-miss",
+      "Unit": "call",
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 1.718236,
+      "MinNanoseconds": 1.62818,
+      "MaxNanoseconds": 2.444816,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        1.635476,
+        1.62818,
+        1.641724,
+        2.444816,
+        1.762628,
+        1.777932,
+        1.718236
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "IsParentOf/hit",
+      "Unit": "call",
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 20000,
+      "MedianNanoseconds": 1.1748,
+      "MinNanoseconds": 1.17425,
+      "MaxNanoseconds": 1.1838,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        1.1838,
+        1.1783,
+        1.1743,
+        1.17475,
+        1.1753,
+        1.17425,
+        1.1748
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "IsChildOf/hit",
+      "Unit": "call",
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 1.219484,
+      "MinNanoseconds": 1.218204,
+      "MaxNanoseconds": 1.607552,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        1.376084,
+        1.607552,
+        1.219484,
+        1.218204,
+        1.267476,
+        1.21824,
+        1.218204
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "RemoveAdd/existing",
+      "Unit": "pair",
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 25000,
+      "MedianNanoseconds": 47.08964,
+      "MinNanoseconds": 46.61012,
+      "MaxNanoseconds": 52.59276,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        52.59276,
+        46.68944,
+        46.72748,
+        49.0614,
+        46.61012,
+        47.08964,
+        48.97568
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "AddRemove/absent",
+      "Unit": "pair",
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 25000,
+      "MedianNanoseconds": 58.3094,
+      "MinNanoseconds": 53.91156,
+      "MaxNanoseconds": 72.11108,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        69.69944,
+        65.8324,
+        72.11108,
+        58.3094,
+        55.95864,
+        57.83388,
+        53.91156
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Count/AddRemove-existing",
+      "Unit": "pair",
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 25000,
+      "MedianNanoseconds": 35.09428,
+      "MinNanoseconds": 34.89956,
+      "MaxNanoseconds": 38.88844,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        38.88844,
+        34.89956,
+        35.00132,
+        36.79448,
+        36.2248,
+        35.09428,
+        35.0374
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Enumerate/explicit",
+      "Unit": "traversal",
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 10000,
+      "MedianNanoseconds": 1291.9942,
+      "MinNanoseconds": 1274.5828,
+      "MaxNanoseconds": 1374.6311,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        1291.9942,
+        1283.248,
+        1360.6129,
+        1274.5828,
+        1306.6904,
+        1374.6311,
+        1282.5129
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Construct/fill",
+      "Unit": "container",
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "IterationsPerSample": 128,
+      "MedianNanoseconds": 45068.1640625,
+      "MinNanoseconds": 38025.875,
+      "MaxNanoseconds": 58000.859375,
+      "AllocatedBytesPerOperation": 106888,
+      "NanosecondSamples": [
+        58000.859375,
+        45717.9765625,
+        46464.65625,
+        38025.875,
+        45068.1640625,
+        38116.0859375,
+        38793.125
+      ],
+      "AllocatedByteSamples": [
+        106888,
+        106888,
+        106888,
+        106888,
+        106888,
+        106888,
+        106888
+      ]
+    },
+    {
+      "Operation": "Depth/HasTagExact",
+      "Unit": "call",
+      "ExplicitTagCount": 1,
+      "HierarchyDepth": 32,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.5805,
+      "MinNanoseconds": 2.475384,
+      "MaxNanoseconds": 2.668996,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.668996,
+        2.5805,
+        2.475384,
+        2.54052,
+        2.542408,
+        2.667716,
+        2.634824
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Depth/HasAllExact-singleton",
+      "Unit": "call",
+      "ExplicitTagCount": 1,
+      "HierarchyDepth": 32,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 4.510944,
+      "MinNanoseconds": 4.374856,
+      "MaxNanoseconds": 4.710964,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        4.544112,
+        4.710964,
+        4.662092,
+        4.510944,
+        4.4418,
+        4.374856,
+        4.387876
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Depth/Enumerate-explicit",
+      "Unit": "traversal",
+      "ExplicitTagCount": 1,
+      "HierarchyDepth": 32,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 1.8792,
+      "MinNanoseconds": 1.788988,
+      "MaxNanoseconds": 2.100656,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.100656,
+        1.896992,
+        1.974424,
+        1.788988,
+        1.846192,
+        1.807896,
+        1.8792
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Depth/RemoveAdd",
+      "Unit": "pair",
+      "ExplicitTagCount": 1,
+      "HierarchyDepth": 32,
+      "IterationsPerSample": 20000,
+      "MedianNanoseconds": 465.3213,
+      "MinNanoseconds": 454.2135,
+      "MaxNanoseconds": 499.53005,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        465.3213,
+        454.2135,
+        475.6409,
+        455.6777,
+        455.14445,
+        499.53005,
+        478.63945
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Depth/HasTagExact",
+      "Unit": "call",
+      "ExplicitTagCount": 1,
+      "HierarchyDepth": 128,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 2.581024,
+      "MinNanoseconds": 2.475384,
+      "MaxNanoseconds": 3.417808,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.686704,
+        3.417808,
+        2.475384,
+        2.55414,
+        2.998492,
+        2.489764,
+        2.581024
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Depth/HasAllExact-singleton",
+      "Unit": "call",
+      "ExplicitTagCount": 1,
+      "HierarchyDepth": 128,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 4.45734,
+      "MinNanoseconds": 4.381228,
+      "MaxNanoseconds": 4.617424,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        4.61214,
+        4.617424,
+        4.54952,
+        4.381988,
+        4.45734,
+        4.381228,
+        4.450372
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Depth/Enumerate-explicit",
+      "Unit": "traversal",
+      "ExplicitTagCount": 1,
+      "HierarchyDepth": 128,
+      "IterationsPerSample": 250000,
+      "MedianNanoseconds": 1.893144,
+      "MinNanoseconds": 1.802168,
+      "MaxNanoseconds": 2.050584,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2.050584,
+        1.97002,
+        1.914536,
+        1.802168,
+        1.875996,
+        1.82388,
+        1.893144
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "Operation": "Depth/RemoveAdd",
+      "Unit": "pair",
+      "ExplicitTagCount": 1,
+      "HierarchyDepth": 128,
+      "IterationsPerSample": 20000,
+      "MedianNanoseconds": 2116.3406,
+      "MinNanoseconds": 2035.6405,
+      "MaxNanoseconds": 2282.39625,
+      "AllocatedBytesPerOperation": 0,
+      "NanosecondSamples": [
+        2092.2376,
+        2035.6405,
+        2132.71835,
+        2109.7751,
+        2282.39625,
+        2171.53055,
+        2116.3406
+      ],
+      "AllocatedByteSamples": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "RetainedMemory": [
+    {
+      "ExplicitTagCount": 4,
+      "HierarchyDepth": 3,
+      "Cohort": 128,
+      "MedianRetainedBytesPerContainer": 556,
+      "MinRetainedBytesPerContainer": 555.8125,
+      "MaxRetainedBytesPerContainer": 556
+    },
+    {
+      "ExplicitTagCount": 16,
+      "HierarchyDepth": 3,
+      "Cohort": 128,
+      "MedianRetainedBytesPerContainer": 1752,
+      "MinRetainedBytesPerContainer": 1752,
+      "MaxRetainedBytesPerContainer": 1752
+    },
+    {
+      "ExplicitTagCount": 128,
+      "HierarchyDepth": 3,
+      "Cohort": 128,
+      "MedianRetainedBytesPerContainer": 6808,
+      "MinRetainedBytesPerContainer": 6808,
+      "MaxRetainedBytesPerContainer": 6808
+    },
+    {
+      "ExplicitTagCount": 1024,
+      "HierarchyDepth": 3,
+      "Cohort": 128,
+      "MedianRetainedBytesPerContainer": 53400,
+      "MinRetainedBytesPerContainer": 53400,
+      "MaxRetainedBytesPerContainer": 53400
+    },
+    {
+      "ExplicitTagCount": 1,
+      "HierarchyDepth": 32,
+      "Cohort": 128,
+      "MedianRetainedBytesPerContainer": 936.0625,
+      "MinRetainedBytesPerContainer": 935.6875,
+      "MaxRetainedBytesPerContainer": 952
+    },
+    {
+      "ExplicitTagCount": 1,
+      "HierarchyDepth": 128,
+      "Cohort": 128,
+      "MedianRetainedBytesPerContainer": 3256,
+      "MinRetainedBytesPerContainer": 3256,
+      "MaxRetainedBytesPerContainer": 3256.375
+    }
+  ]
+}

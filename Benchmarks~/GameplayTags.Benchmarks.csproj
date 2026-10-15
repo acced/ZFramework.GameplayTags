@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RuntimeSourceRoot Condition="'$(RuntimeSourceRoot)' == ''">$(MSBuildThisFileDirectory)..</RuntimeSourceRoot>
+    <DefineConstants Condition="'$(Baseline)' == 'true'">$(DefineConstants);BASELINE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Runtime.TieredCompilation" Value="false" />
+    <RuntimeHostConfigurationOption Include="System.GC.Server" Value="false" />
+    <Compile Include="$(RuntimeSourceRoot)/Runtime/**/*.cs" Exclude="$(RuntimeSourceRoot)/Runtime/GameObjectGameplayTagContainer.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="../Tests~/FixtureRegistration.cs" />
+    <Compile Include="BaselineDependencies.cs" Condition="'$(Baseline)' == 'true'" />
+  </ItemGroup>
+</Project>

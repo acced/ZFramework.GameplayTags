@@ -1,258 +1,147 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace GameplayTags
 {
     /// <summary>
-    /// 运行期标签注册表：一个名称集合（父级自动补全）加一张重定向表。
-    ///
-    /// 注册表只负责回答「这个名字注册过吗」和「这个旧名字现在叫什么」。
-    /// 层级匹配不经过这里，见 <see cref="GameplayTagName.IsEqualOrChildOf"/>。
+    /// Immutable process/domain registry. Initialize once before creating containers,
+    /// or let the first name lookup discover assembly declarations. Cache returned tags;
+    /// runtime IDs are local to this registry and must never be persisted as asset data.
     /// </summary>
-    public static class GameplayTagManager
+    public class GameplayTagManager
     {
-        private static readonly object SyncRoot = new object();
-        private static readonly HashSet<string> UnregisteredWarnings = new HashSet<string>(StringComparer.Ordinal);
+        private static readonly object s_InitializationLock = new object();
+        private static volatile bool s_IsInitialized;
+        private static Dictionary<string, int> s_IndicesByName;
+        private static GameplayTagDefinition[] s_Definitions = { GameplayTagDefinition.None };
+        private static GameplayTag[] s_Tags = { default };
+        private static int[] s_Parents = { 0 };
+        private static int[] s_SubtreeEnds = { 1 };
+        private static int[] s_HierarchyIndices = Array.Empty<int>();
+        private static GameplayTag[] s_HierarchyTags = Array.Empty<GameplayTag>();
 
-        private static HashSet<string> s_Names;
-        private static GameplayTag[] s_SortedTags;
-        private static Dictionary<string, string> s_Redirects;
-        private static GameplayTagSettings s_Settings;
-        private static bool s_MissingSettingsWarningIssued;
+        public static bool IsInitialized => s_IsInitialized;
 
-        public static event Action RegistryChanged;
-
-        public static bool IsInitialized { get { return s_Names != null; } }
-        public static int TagCount { get { EnsureInitialized(); return s_SortedTags.Length; } }
-        public static GameplayTagSettings Settings { get { EnsureInitialized(); return s_Settings; } }
-
-        public static void Initialize(GameplayTagSettings settings) => Initialize(settings, false);
-
-        public static void Initialize(GameplayTagSettings settings, bool forceRebuild)
+        /// <summary>The number of registered tags, including implicit parents and excluding None.</summary>
+        public static int TagCount
         {
-            lock (SyncRoot)
+            get
             {
-                if (s_Names != null && !forceRebuild)
-                    return;
-
-                Build(settings, out HashSet<string> names, out GameplayTag[] sortedTags, out Dictionary<string, string> redirects);
-                s_Names = names;
-                s_SortedTags = sortedTags;
-                s_Redirects = redirects;
-                s_Settings = settings;
-                UnregisteredWarnings.Clear();
-            }
-
-            RegistryChanged?.Invoke();
-        }
-
-        public static void EnsureInitialized()
-        {
-            if (s_Names != null)
-                return;
-
-            GameplayTagSettings settings = GameplayTagSettings.LoadDefault();
-            if (settings == null && !s_MissingSettingsWarningIssued)
-            {
-                s_MissingSettingsWarningIssued = true;
-                Debug.LogWarning(
-                    "GameplayTagSettings was not found at Resources/" +
-                    GameplayTagSettings.ResourcesPath + ". The registry will be empty.");
-            }
-
-            Initialize(settings, false);
-        }
-
-        public static GameplayTag RequestTag(string name) => RequestTag(name, true);
-
-        public static GameplayTag RequestTag(string name, bool errorIfNotFound)
-        {
-            if (TryRequestTag(name, out GameplayTag tag))
-                return tag;
-
-            if (errorIfNotFound)
-                throw new KeyNotFoundException("Gameplay Tag is not registered: " + (name ?? "<null>"));
-            return GameplayTag.None;
-        }
-
-        /// <summary>解析标签名，必要时跟随重定向。返回的标签一定是注册表里的规范名。</summary>
-        public static bool TryRequestTag(string name, out GameplayTag tag)
-        {
-            tag = GameplayTag.None;
-            if (string.IsNullOrEmpty(name))
-                return false;
-
-            EnsureInitialized();
-            if (!GameplayTagName.TryNormalize(name, out string normalized, out _))
-                return false;
-
-            if (!s_Names.Contains(normalized))
-            {
-                // 重定向表在构建时已压平并确认过目标存在。
-                if (!s_Redirects.TryGetValue(normalized, out string target))
-                    return false;
-                normalized = target;
-            }
-
-            tag = new GameplayTag(normalized);
-            return true;
-        }
-
-        public static bool IsRegistered(GameplayTag tag) => IsRegistered(tag.Name);
-
-        public static bool IsRegistered(string name)
-        {
-            EnsureInitialized();
-            return !string.IsNullOrEmpty(name) && s_Names.Contains(name);
-        }
-
-        /// <summary>按名称序数排序的全部标签，含自动补全的隐式父级。</summary>
-        public static IReadOnlyList<GameplayTag> GetAllTags()
-        {
-            EnsureInitialized();
-            return s_SortedTags;
-        }
-
-        /// <summary>每个未注册名字只提醒一次，避免逐帧刷屏。</summary>
-        internal static void WarnUnregistered(string name)
-        {
-            if (string.IsNullOrEmpty(name))
-                return;
-
-            bool shouldWarn;
-            lock (SyncRoot)
-            {
-                shouldWarn = s_Settings != null &&
-                             s_Settings.WarnOnInvalidSerializedTags &&
-                             UnregisteredWarnings.Add(name);
-            }
-
-            if (shouldWarn)
-                Debug.LogWarning("Gameplay Tag is not registered and will be ignored: " + name);
-        }
-
-        internal static void ReinitializeForEditor(GameplayTagSettings settings) => Initialize(settings, true);
-
-        internal static void ResetForTests()
-        {
-            lock (SyncRoot)
-            {
-                s_Names = null;
-                s_SortedTags = null;
-                s_Redirects = null;
-                s_Settings = null;
-                s_MissingSettingsWarningIssued = false;
-                UnregisteredWarnings.Clear();
-                RegistryChanged = null;
+                InitializeIfNeeded();
+                return s_Tags.Length - 1;
             }
         }
 
         /// <summary>
-        /// 校验交给 <see cref="GameplayTagSettings.Validate"/>：重复、大小写冲突、restricted 层级、
-        /// 重定向自指与成环都在那里判定，这里只负责把通过校验的配置摊成运行期结构。
+        /// Freeze an explicit declaration set without scanning assemblies. Call before any
+        /// tag lookup. Names must be valid; call GameplayTagUtility.ValidateName explicitly
+        /// for untrusted input. Replacing a live registry would invalidate every existing ID
+        /// and is deliberately rejected. Duplicate flags are ORed; descriptions use ordinal
+        /// minimum. Automatically created parents OR their descendants' declared flags.
         /// </summary>
-        private static void Build(
-            GameplayTagSettings settings,
-            out HashSet<string> names,
-            out GameplayTag[] sortedTags,
-            out Dictionary<string, string> redirects)
+        public static void Initialize(params GameplayTagRegistration[] registrations)
         {
-            names = new HashSet<string>(StringComparer.Ordinal);
-            redirects = new Dictionary<string, string>(StringComparer.Ordinal);
-            if (settings == null)
+            lock (s_InitializationLock)
             {
-                sortedTags = Array.Empty<GameplayTag>();
+                if (s_IsInitialized)
+                    throw new InvalidOperationException("The gameplay tag registry is already initialized.");
+
+                var context = new GameplayTagRegistrationContext();
+                for (int i = 0; i < registrations.Length; ++i)
+                {
+                    GameplayTagRegistration registration = registrations[i];
+                    context.RegisterTag(registration.Name, registration.Description, registration.Flags);
+                }
+                Publish(context);
+            }
+        }
+
+        /// <summary>All tags in ordinal sibling order and depth-first preorder; excludes None.</summary>
+        public static ReadOnlySpan<GameplayTag> GetAllTags()
+        {
+            InitializeIfNeeded();
+            return s_Tags.AsSpan(1);
+        }
+
+        /// <summary>Resolve a case-sensitive ordinal name. Unknown, null and empty names return None.</summary>
+        public static GameplayTag RequestTag(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return GameplayTag.None;
+            InitializeIfNeeded();
+            return s_IndicesByName.TryGetValue(name, out int index) ? s_Tags[index] : GameplayTag.None;
+        }
+
+        public static bool RequestTag(string name, out GameplayTag tag)
+        {
+            if (!string.IsNullOrEmpty(name))
+            {
+                InitializeIfNeeded();
+                if (s_IndicesByName.TryGetValue(name, out int index))
+                {
+                    tag = s_Tags[index];
+                    return true;
+                }
+            }
+            tag = GameplayTag.None;
+            return false;
+        }
+
+        /// <summary>Discover assembly-level declarations once. Prefer explicit Initialize for AOT/startup control.</summary>
+        public static void InitializeIfNeeded()
+        {
+            if (s_IsInitialized)
                 return;
-            }
-
-            var errors = new List<string>();
-            if (!settings.Validate(errors))
-                throw new GameplayTagRegistryException(errors);
-
-            IReadOnlyList<GameplayTagDefinition> definitions = settings.Tags;
-            for (int i = 0; i < definitions.Count; i++)
+            lock (s_InitializationLock)
             {
-                if (!GameplayTagName.TryNormalize(definitions[i].Name, out string name, out _))
-                    continue;
+                if (s_IsInitialized)
+                    return;
 
-                // 名字已存在意味着它的祖先链也已建好，可以直接收尾。
-                while (!string.IsNullOrEmpty(name) && names.Add(name))
-                    name = GameplayTagName.GetParent(name);
-            }
-
-            var ordered = new List<string>(names);
-            ordered.Sort(StringComparer.Ordinal);
-            sortedTags = new GameplayTag[ordered.Count];
-            for (int i = 0; i < ordered.Count; i++)
-                sortedTags[i] = new GameplayTag(ordered[i]);
-
-            BuildRedirects(settings.Redirects, names, redirects);
-        }
-
-        private static void BuildRedirects(
-            IReadOnlyList<GameplayTagRedirect> configured,
-            HashSet<string> names,
-            Dictionary<string, string> redirects)
-        {
-            var raw = new Dictionary<string, string>(StringComparer.Ordinal);
-            for (int i = 0; i < configured.Count; i++)
-            {
-                if (GameplayTagName.TryNormalize(configured[i].OldName, out string source, out _) &&
-                    GameplayTagName.TryNormalize(configured[i].NewName, out string target, out _))
-                    raw[source] = target;
-            }
-
-            // 把重定向链一次性压平，运行期查表就不用再跟随了。
-            foreach (KeyValuePair<string, string> pair in raw)
-            {
-                string current = pair.Value;
-                int hops = raw.Count;
-                while (hops-- > 0 && raw.TryGetValue(current, out string next))
-                    current = next;
-
-                if (names.Contains(current))
-                    redirects[pair.Key] = current;
+                var context = new GameplayTagRegistrationContext();
+                Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                Array.Sort(assemblies, (a, b) => string.CompareOrdinal(a.FullName, b.FullName));
+                for (int i = 0; i < assemblies.Length; ++i)
+                    foreach (GameplayTagAttribute declaration in assemblies[i].GetCustomAttributes<GameplayTagAttribute>())
+                        context.RegisterTag(declaration.TagName, declaration.Description, declaration.Flags);
+                Publish(context);
             }
         }
-    }
 
-    /// <summary>注册表构建失败时抛出，聚合本次构建收集到的全部错误。</summary>
-    public sealed class GameplayTagRegistryException : Exception
-    {
-        private readonly string[] m_Errors;
-
-        public IReadOnlyList<string> Errors { get { return m_Errors; } }
-
-        public GameplayTagRegistryException(IList<string> errors)
-            : base(BuildMessage(errors))
+        private static void Publish(GameplayTagRegistrationContext context)
         {
-            m_Errors = new string[errors?.Count ?? 0];
-            for (int i = 0; i < m_Errors.Length; i++)
-                m_Errors[i] = errors[i];
+            context.Build(out s_Definitions, out s_Tags, out s_Parents, out s_SubtreeEnds,
+                out s_HierarchyIndices, out s_HierarchyTags, out s_IndicesByName);
+            // Volatile publication follows all array writes. The arrays are never mutated again.
+            s_IsInitialized = true;
         }
 
-        private static string BuildMessage(IList<string> errors)
-        {
-            if (errors == null || errors.Count == 0)
-                return "Gameplay Tag registry could not be built.";
+        // Internal runtime accessors intentionally contain no initialization/validity guards.
+        // A live tag comes from the frozen registry, so its ID is already a valid array index.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ref readonly GameplayTagDefinition GetDefinitionFromRuntimeIndex(int index) => ref s_Definitions[index];
 
-            var builder = new StringBuilder("Gameplay Tag registry contains errors:");
-            for (int i = 0; i < errors.Count; i++)
-                builder.Append("\n - ").Append(errors[i]);
-            return builder.ToString();
-        }
-    }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static GameplayTag GetTagFromRuntimeIndex(int index) => s_Tags[index];
 
-    internal static class GameplayTagRuntimeBootstrap
-    {
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void Initialize()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int GetParentIndex(int index) => s_Parents[index];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int GetSubtreeEnd(int index) => s_SubtreeEnds[index];
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ReadOnlySpan<int> GetHierarchyIndices(int index)
         {
-            GameplayTagSettings settings = GameplayTagSettings.LoadDefault();
-            if (settings == null || settings.AutoInitialize)
-                GameplayTagManager.Initialize(settings);
+            ref readonly GameplayTagDefinition definition = ref s_Definitions[index];
+            return s_HierarchyIndices.AsSpan(definition.HierarchyOffset, definition.HierarchyLevel);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ReadOnlySpan<GameplayTag> GetTagRange(int start, int length) => s_Tags.AsSpan(start, length);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ReadOnlySpan<GameplayTag> GetHierarchyTags(int start, int length) => s_HierarchyTags.AsSpan(start, length);
     }
 }

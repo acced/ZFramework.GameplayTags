@@ -1,194 +1,102 @@
 using System;
 using System.Diagnostics;
-using UnityEngine;
+using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
 
 namespace GameplayTags
 {
     /// <summary>
-    /// 点分层级标签，例如 <c>"State.Debuff.Burning"</c>。
-    ///
-    /// 只序列化名称本身：层级关系完全由名称的点分结构给出，匹配时不查注册表、不分配内存。
-    /// 注册校验发生在 <see cref="GameplayTagManager.RequestTag(string,bool)"/> 和
-    /// <see cref="GameplayTagContainer.AddTag(GameplayTag)"/> 这些入口处。
+    /// A cached tag handle. Equality and hierarchy operations use the runtime ID only.
+    /// The name remains present for source and Unity asset serialization compatibility.
     /// </summary>
     [Serializable]
-    [DebuggerDisplay("{Name,nq}")]
-    public struct GameplayTag : IEquatable<GameplayTag>, IComparable<GameplayTag>
+    [DebuggerDisplay("{m_Name,nq}")]
+    public struct GameplayTag : IEquatable<GameplayTag>
+#if UNITY_5_3_OR_NEWER
+        , UnityEngine.ISerializationCallbackReceiver
+#endif
     {
-        [SerializeField] private string m_Name;
+        public static readonly GameplayTag None = default;
+        public readonly int RuntimeIndex => m_RuntimeIndex;
+        internal readonly ref readonly GameplayTagDefinition Definition => ref GameplayTagManager.GetDefinitionFromRuntimeIndex(m_RuntimeIndex);
 
-        public static GameplayTag None { get { return default(GameplayTag); } }
+        /// <summary>Strict ancestors in root-to-parent order, excluding this tag.</summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        public readonly ReadOnlySpan<GameplayTag> ParentTags => Definition.ParentTags;
 
-        public string Name { get { return m_Name ?? string.Empty; } }
-        public string LeafName { get { return GameplayTagName.GetLeaf(m_Name); } }
-        public bool IsValid { get { return !string.IsNullOrEmpty(m_Name); } }
+        /// <summary>All strict descendants, in depth-first order; excludes this tag.</summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        public readonly ReadOnlySpan<GameplayTag> ChildTags => Definition.ChildTags;
 
-        internal GameplayTag(string name)
+        /// <summary>The complete root-to-self path, including this tag.</summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        public readonly ReadOnlySpan<GameplayTag> HierarchyTags => Definition.HierarchyTags;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        public readonly string Label => Definition.Label;
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        public readonly int HierarchyLevel => Definition.HierarchyLevel;
+        public readonly string Description => Definition.Description;
+        public readonly GameplayTagFlags Flags => Definition.Flags;
+        public readonly string Name => m_Name;
+
+        /// <summary>The immediate parent, or None for a root/None tag.</summary>
+        public readonly GameplayTag ParentTag => GameplayTagManager.GetTagFromRuntimeIndex(
+            GameplayTagManager.GetParentIndex(m_RuntimeIndex));
+
+        // Retained field name and visibility keep existing Unity assets and property drawers compatible.
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        public string m_Name;
+
+        [NonSerialized]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private int m_RuntimeIndex;
+
+        internal GameplayTag(string name, int runtimeTagIndex)
         {
-            m_Name = string.IsNullOrEmpty(name) ? null : name;
+            m_Name = name;
+            m_RuntimeIndex = runtimeTagIndex;
         }
 
-        /// <summary>本标签是否等于 <paramref name="tagToCheck"/> 或落在它下面。</summary>
-        public bool MatchesTag(GameplayTag tagToCheck) => GameplayTagName.IsEqualOrChildOf(m_Name, tagToCheck.m_Name);
+        /// <summary>True only for a strict descendant. A tag and None are never their own ancestors.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool IsParentOf(in GameplayTag tag) => tag.m_RuntimeIndex > m_RuntimeIndex &&
+            tag.m_RuntimeIndex < GameplayTagManager.GetSubtreeEnd(m_RuntimeIndex);
 
-        public bool MatchesTagExact(GameplayTag tagToCheck) => Equals(tagToCheck);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool IsChildOf(in GameplayTag parentTag) => m_RuntimeIndex > parentTag.m_RuntimeIndex &&
+            m_RuntimeIndex < GameplayTagManager.GetSubtreeEnd(parentTag.m_RuntimeIndex);
 
-        /// <summary>两个标签从根开始有多少层级片段完全一致。</summary>
-        public int MatchesTagDepth(GameplayTag other) => GameplayTagName.GetMatchDepth(m_Name, other.m_Name);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Equals(GameplayTag other) => m_RuntimeIndex == other.m_RuntimeIndex;
 
-        public GameplayTag GetDirectParent() => new GameplayTag(GameplayTagName.GetParent(m_Name));
+        public readonly override bool Equals(object obj) => obj is GameplayTag tag && m_RuntimeIndex == tag.m_RuntimeIndex;
 
-        // CompareOrdinal 在 Mono 上是 icall，比 string.Equals(..., StringComparison.Ordinal) 快近十倍。
-        public bool Equals(GameplayTag other) => string.CompareOrdinal(m_Name, other.m_Name) == 0;
-        public override bool Equals(object obj) => obj is GameplayTag && Equals((GameplayTag)obj);
-        public override int GetHashCode() => m_Name == null ? 0 : m_Name.GetHashCode();
-        public int CompareTo(GameplayTag other) => string.CompareOrdinal(m_Name, other.m_Name);
-        public override string ToString() => Name;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly override int GetHashCode() => m_RuntimeIndex;
 
-        public static bool TryParse(string name, out GameplayTag tag) => GameplayTagManager.TryRequestTag(name, out tag);
-        public static GameplayTag Parse(string name) => GameplayTagManager.RequestTag(name, true);
+        public readonly override string ToString() => m_RuntimeIndex == 0 ? "<None>" : m_Name;
 
-        public static bool operator ==(GameplayTag lhs, GameplayTag rhs) => lhs.Equals(rhs);
-        public static bool operator !=(GameplayTag lhs, GameplayTag rhs) => !lhs.Equals(rhs);
-    }
+        // Runtime IDs may change when declarations change. Both serializers store names
+        // and resolve IDs after deserialization, never restore a stale numeric identity.
+        [OnSerializing]
+        private void OnSerializing(StreamingContext context) => OnBeforeSerialize();
 
-    /// <summary>点分标签名的校验与解析工具。</summary>
-    public static class GameplayTagName
-    {
-        private const string InvalidCharacters = ",;[](){}\"'\\/:";
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext context) => OnAfterDeserialize();
 
-        public static bool TryNormalize(string value, out string normalized, out string error)
-        {
-            normalized = value == null ? string.Empty : value.Trim();
-            if (normalized.Length == 0)
-            {
-                error = "Gameplay Tag cannot be empty.";
-                return false;
-            }
+        public void OnBeforeSerialize() => m_Name = m_RuntimeIndex == 0
+            ? null
+            : GameplayTagManager.GetTagFromRuntimeIndex(m_RuntimeIndex).m_Name;
 
-            if (normalized[0] == '.' || normalized[normalized.Length - 1] == '.')
-            {
-                error = "Gameplay Tag cannot start or end with '.'.";
-                return false;
-            }
+        public void OnAfterDeserialize() => this = GameplayTagManager.RequestTag(m_Name);
 
-            for (int i = 0; i < normalized.Length; i++)
-            {
-                char character = normalized[i];
-                if (character == '.')
-                {
-                    if (normalized[i - 1] == '.')
-                    {
-                        error = "Gameplay Tag cannot contain an empty hierarchy segment.";
-                        return false;
-                    }
-                    continue;
-                }
+        public static implicit operator GameplayTag(string tagName) => GameplayTagManager.RequestTag(tagName);
 
-                if (char.IsWhiteSpace(character))
-                {
-                    error = "Gameplay Tag cannot contain whitespace.";
-                    return false;
-                }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(in GameplayTag lhs, in GameplayTag rhs) => lhs.m_RuntimeIndex == rhs.m_RuntimeIndex;
 
-                if (InvalidCharacters.IndexOf(character) >= 0)
-                {
-                    error = "Gameplay Tag contains the invalid character '" + character + "'.";
-                    return false;
-                }
-            }
-
-            error = null;
-            return true;
-        }
-
-        public static string GetParent(string value)
-        {
-            int separator = string.IsNullOrEmpty(value) ? -1 : value.LastIndexOf('.');
-            return separator <= 0 ? string.Empty : value.Substring(0, separator);
-        }
-
-        public static string GetLeaf(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                return string.Empty;
-
-            int separator = value.LastIndexOf('.');
-            return separator < 0 ? value : value.Substring(separator + 1);
-        }
-
-        public static int GetDepth(string value)
-        {
-            if (string.IsNullOrEmpty(value))
-                return 0;
-
-            int depth = 1;
-            for (int i = 0; i < value.Length; i++)
-            {
-                if (value[i] == '.')
-                    depth++;
-            }
-            return depth;
-        }
-
-        /// <summary>
-        /// <paramref name="value"/> 是否等于 <paramref name="parent"/> 或落在它下面。
-        /// 边界必须压在 <c>'.'</c> 上，所以 <c>"Ability.AttackSpeed"</c> 不属于 <c>"Ability.Attack"</c>。
-        /// </summary>
-        public static bool IsEqualOrChildOf(string value, string parent)
-        {
-            if (string.IsNullOrEmpty(value) || string.IsNullOrEmpty(parent) || value.Length < parent.Length)
-                return false;
-            if (!HasPrefix(value, parent))
-                return false;
-
-            return value.Length == parent.Length || value[parent.Length] == '.';
-        }
-
-        /// <summary>
-        /// 序数前缀判定。Mono 上 <c>string.StartsWith(prefix, StringComparison.Ordinal)</c> 要 ~200ns，
-        /// 手写字符循环只要 ~70ns，而这是标签匹配最热的一条路径。
-        /// </summary>
-        internal static bool HasPrefix(string value, string prefix)
-        {
-            if (value.Length < prefix.Length)
-                return false;
-
-            for (int i = 0; i < prefix.Length; i++)
-            {
-                if (value[i] != prefix[i])
-                    return false;
-            }
-            return true;
-        }
-
-        /// <summary>两个标签名从根开始有多少层级片段完全一致。</summary>
-        public static int GetMatchDepth(string lhs, string rhs)
-        {
-            if (string.IsNullOrEmpty(lhs) || string.IsNullOrEmpty(rhs))
-                return 0;
-
-            int limit = Math.Min(lhs.Length, rhs.Length);
-            int cursor = 0;
-            int segmentStart = 0;
-            int depth = 0;
-            while (cursor < limit && lhs[cursor] == rhs[cursor])
-            {
-                if (lhs[cursor] == '.')
-                {
-                    depth++;
-                    segmentStart = cursor + 1;
-                }
-                cursor++;
-            }
-
-            // 尾段只有在两边都恰好收束于此（字符串结束或遇到分隔符）时才算一层。
-            bool lhsClosed = cursor == lhs.Length || lhs[cursor] == '.';
-            bool rhsClosed = cursor == rhs.Length || rhs[cursor] == '.';
-            if (lhsClosed && rhsClosed && cursor > segmentStart)
-                depth++;
-
-            return depth;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(in GameplayTag lhs, in GameplayTag rhs) => lhs.m_RuntimeIndex != rhs.m_RuntimeIndex;
     }
 }

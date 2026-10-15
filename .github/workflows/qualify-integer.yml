@@ -1,0 +1,38 @@
+name: Integer staging qualification
+on:
+  push:
+    branches: [work/integer-hardening-20261015]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.425'
+      - name: Materialize reviewed upload-relative changes on staging only
+        run: |
+          test "$GITHUB_REF_NAME" = work/integer-hardening-20261015
+          python3 Tools~/Hardening/bootstrap.py
+          git add -A Runtime Editor Tests~ Tools~
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'refactor: materialize audited integer hardening and uploaded baseline'
+            git push origin HEAD:refs/heads/work/integer-hardening-20261015
+          fi
+          git rev-parse HEAD > "$RUNNER_TEMP/tested-commit.txt"
+      - name: Correctness, safety reproductions and compatibility
+        run: bash Tools~/Hardening/validate.sh "$RUNNER_TEMP/validation"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integer-qualification-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/tested-commit.txt
+            ${{ runner.temp }}/validation/*.log
+            ${{ runner.temp }}/validation/SUMMARY.txt
