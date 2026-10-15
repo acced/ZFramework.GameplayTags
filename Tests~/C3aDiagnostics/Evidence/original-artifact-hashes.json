@@ -1,0 +1,10 @@
+{
+  "purpose": "Integrity fingerprints of retained original diagnostic artifacts. Absolute paths, native-address-bearing originals, and host environment receipts are intentionally not published. These hashes are evidence IDs, not an access grant.",
+  "raw_jit_sha256": {
+    "B11": "38e4e19a91dfff7834f7a6a785d631afa75563e3107a3ff1fde72c3dc2e7cb00",
+    "C1": "5d4a98b7851aa8f68ccdb23936899fe01bdde5087ca9917874e5b20bd50913f7",
+    "current792": "119938e59e1fb211fc232398142c6805519248bb3bd5946bba844a16479c8b25"
+  },
+  "original_report_sha256": "8e364d4ffb19c51688aa8b8272ad096db6e4ea9f05387d4c335086b4a7f1a209",
+  "original_reviewed_preparation_manifest_sha256": "ee53102a210ed2186c346e5c27742edd2075ed585406007919fcdc805562f901"
+}

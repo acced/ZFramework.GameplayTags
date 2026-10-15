@@ -1,0 +1,558 @@
+{
+  "normalization": "Only the observed canonical 12-digit 0x7-prefixed native-address forms and generated G_M label IDs; packed UTF-16 constants and all other immediates/offsets remain. This is a capture-specific Linux x64 normalization rule, not a general address classifier. Raw dumps preserved. This is a diagnostic textual comparison, not proof of identical addresses, alignment, runtime helper implementations, or timings.",
+  "methods": {
+    "B11": {
+      "Program+<>c__DisplayClass10_0:<Run>b__10(int):this (FullOpts)": {
+        "code_bytes": 1138,
+        "normalized_sha256": "fcb655dd2b272d13a94100e7b9d35d8ec03f1a2120d9150e66f584f81861bc3a",
+        "calls": [
+          "call     [Program:Build(GameplayTags.GameplayTag[],int):GameplayTags.GameplayTagContainer]",
+          "call     [GameplayTags.GameplayTagContainer:IndexOf(System.String):int:this]",
+          "call     [GameplayTags.GameplayTagContainer:RemoveTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [GameplayTags.GameplayTagContainer:Union(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [GameplayTags.GameplayTagContainer:IntersectionExact(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:CopyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer)]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [Program:Control(GameplayTags.GameplayTag[]):long]",
+          "call     [Program:Build(GameplayTags.GameplayTag[],int):GameplayTags.GameplayTagContainer]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:CopyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer)]",
+          "call     [rax+0x18]System.Action`1[System.__Canon]:Invoke(System.__Canon):this",
+          "call     [Program:Consume(GameplayTags.GameplayTagContainer):long]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     CORINFO_HELP_GETSHARED_NONGCSTATIC_BASE",
+          "call     CORINFO_HELP_GETSHARED_NONGCSTATIC_BASE",
+          "call     CORINFO_HELP_GETSHARED_NONGCSTATIC_BASE",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_GETSHARED_NONGCSTATIC_BASE",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this (FullOpts)": {
+        "code_bytes": 126,
+        "normalized_sha256": "696dc7a7afb9efcf3f5557b0eb004b5fafa670b13f514644a336b7a2be4c1f39",
+        "calls": [
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:set_Capacity(int):this]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "GameplayTags.GameplayTagContainer:Union(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer (FullOpts)": {
+        "code_bytes": 155,
+        "normalized_sha256": "48b0a4fbc320f381cdb0672278ac7574cbf7c951232616f4971cfb493dc6b36f",
+        "calls": [
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:.ctor(int):this]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:UnionSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer)]"
+        ]
+      },
+      "GameplayTags.GameplayTagContainerAlgorithms:UnionSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": {
+        "code_bytes": 1148,
+        "normalized_sha256": "e57507f4fad0de84e6313ab54937f3dd17f36e58093a2deefa56ec7b8b89c348",
+        "calls": [
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:Snapshot(GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:Snapshot(GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AppendAlreadyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,bool)]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AppendAlreadyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,bool)]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]",
+          "call     [System.String:CompareOrdinal(System.String,System.String):int]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this]",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_STRCNS",
+          "call     [System.ArgumentNullException:.ctor(System.String):this]",
+          "call     CORINFO_HELP_THROW",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool (FullOpts)": {
+        "code_bytes": 164,
+        "normalized_sha256": "135fba989415f95b4230b56d752ebddb4c2adc12e73e6a4adc5050509e45a9e4",
+        "calls": [
+          "call     [GameplayTags.GameplayTagManager:IsRegistered(System.String):bool]",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "GameplayTags.GameplayTagContainer:EnsureCapacity(int):this (FullOpts)": {
+        "code_bytes": 103,
+        "normalized_sha256": "7f144b1370117aa1af4704442815b358131c88af2ba4a81810c1332f1ff8523a",
+        "calls": [
+          "tail.jmp [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:set_Capacity(int):this]",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_STRCNS",
+          "call     [System.ArgumentOutOfRangeException:.ctor(System.String):this]",
+          "call     CORINFO_HELP_THROW"
+        ]
+      },
+      "GameplayTags.GameplayTagContainer:IntersectionExact(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer (FullOpts)": {
+        "code_bytes": 156,
+        "normalized_sha256": "c330b4b31a889f828626aba0cbb8957bbb510d9cc45d3112a53d8e47ee267f60",
+        "calls": [
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:.ctor(int):this]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:IntersectionExactSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer)]"
+        ]
+      },
+      "GameplayTags.GameplayTagContainerAlgorithms:IntersectionExactSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": {
+        "code_bytes": 596,
+        "normalized_sha256": "ae65ec710a4fb7035fe75888674b2c69ac696ed74671889b2c46ca5ec7e2b54c",
+        "calls": [
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]",
+          "call     [System.String:CompareOrdinal(System.String,System.String):int]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this]",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:RemoveRange(int,int):this]",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_STRCNS",
+          "call     [System.ArgumentNullException:.ctor(System.String):this]",
+          "call     CORINFO_HELP_THROW",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "GameplayTags.GameplayTagContainerAlgorithms:CopyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": {
+        "code_bytes": 211,
+        "normalized_sha256": "1a1d15e5e661c72b5d221eae67805e55dff61d76ff937b8abd798e4a083b7816",
+        "calls": [
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]",
+          "tail.jmp [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]",
+          "call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this (FullOpts)": {
+        "code_bytes": 436,
+        "normalized_sha256": "b6000486c202729721da4aa2cf168e430f6d6537938d956d764cc4f291324c73",
+        "calls": [
+          "call     [CORINFO_HELP_ISINSTANCEOFINTERFACE]",
+          "call     [r11]System.Collections.Generic.ICollection`1[GameplayTags.GameplayTag]:get_Count():int:this",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:set_Capacity(int):this]",
+          "call     [r11]System.Collections.Generic.ICollection`1[GameplayTags.GameplayTag]:CopyTo(GameplayTags.GameplayTag[],int):this",
+          "call     [r11]System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]:GetEnumerator():System.Collections.Generic.IEnumerator`1[GameplayTags.GameplayTag]:this",
+          "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+          "call     [r11]System.Collections.Generic.IEnumerator`1[GameplayTags.GameplayTag]:get_Current():GameplayTags.GameplayTag:this",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this]",
+          "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+          "call     [r11]System.IDisposable:Dispose():this",
+          "call     CORINFO_HELP_OVERFLOW",
+          "call     [System.ThrowHelper:ThrowArgumentNullException(int)]",
+          "call     [r11]System.IDisposable:Dispose():this"
+        ]
+      },
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:CopyTo(GameplayTags.GameplayTag[],int):this (FullOpts)": {
+        "code_bytes": 24,
+        "normalized_sha256": "6b05d464bb360462d2e2ced66c2b869d027349d19b8e659556be1504113e3d0c",
+        "calls": [
+          "tail.jmp [System.Array:Copy(System.Array,int,System.Array,int,int)]"
+        ]
+      }
+    },
+    "C1": {
+      "Program+<>c__DisplayClass10_0:<Run>b__10(int):this (FullOpts)": {
+        "code_bytes": 1138,
+        "normalized_sha256": "fcb655dd2b272d13a94100e7b9d35d8ec03f1a2120d9150e66f584f81861bc3a",
+        "calls": [
+          "call     [Program:Build(GameplayTags.GameplayTag[],int):GameplayTags.GameplayTagContainer]",
+          "call     [GameplayTags.GameplayTagContainer:IndexOf(System.String):int:this]",
+          "call     [GameplayTags.GameplayTagContainer:RemoveTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [GameplayTags.GameplayTagContainer:Union(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [GameplayTags.GameplayTagContainer:IntersectionExact(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:CopyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer)]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [Program:Control(GameplayTags.GameplayTag[]):long]",
+          "call     [Program:Build(GameplayTags.GameplayTag[],int):GameplayTags.GameplayTagContainer]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:CopyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer)]",
+          "call     [rax+0x18]System.Action`1[System.__Canon]:Invoke(System.__Canon):this",
+          "call     [Program:Consume(GameplayTags.GameplayTagContainer):long]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     CORINFO_HELP_GETSHARED_NONGCSTATIC_BASE",
+          "call     CORINFO_HELP_GETSHARED_NONGCSTATIC_BASE",
+          "call     CORINFO_HELP_GETSHARED_NONGCSTATIC_BASE",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_GETSHARED_NONGCSTATIC_BASE",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this (FullOpts)": {
+        "code_bytes": 126,
+        "normalized_sha256": "696dc7a7afb9efcf3f5557b0eb004b5fafa670b13f514644a336b7a2be4c1f39",
+        "calls": [
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:set_Capacity(int):this]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "GameplayTags.GameplayTagContainer:Union(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer (FullOpts)": {
+        "code_bytes": 155,
+        "normalized_sha256": "48b0a4fbc320f381cdb0672278ac7574cbf7c951232616f4971cfb493dc6b36f",
+        "calls": [
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:.ctor(int):this]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:UnionSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer)]"
+        ]
+      },
+      "GameplayTags.GameplayTagContainerAlgorithms:UnionSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": {
+        "code_bytes": 1148,
+        "normalized_sha256": "e57507f4fad0de84e6313ab54937f3dd17f36e58093a2deefa56ec7b8b89c348",
+        "calls": [
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:Snapshot(GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:Snapshot(GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AppendAlreadyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,bool)]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AppendAlreadyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,bool)]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]",
+          "call     [System.String:CompareOrdinal(System.String,System.String):int]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this]",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_STRCNS",
+          "call     [System.ArgumentNullException:.ctor(System.String):this]",
+          "call     CORINFO_HELP_THROW",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool (FullOpts)": {
+        "code_bytes": 164,
+        "normalized_sha256": "135fba989415f95b4230b56d752ebddb4c2adc12e73e6a4adc5050509e45a9e4",
+        "calls": [
+          "call     [GameplayTags.GameplayTagManager:IsRegistered(System.String):bool]",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "GameplayTags.GameplayTagContainer:EnsureCapacity(int):this (FullOpts)": {
+        "code_bytes": 103,
+        "normalized_sha256": "7f144b1370117aa1af4704442815b358131c88af2ba4a81810c1332f1ff8523a",
+        "calls": [
+          "tail.jmp [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:set_Capacity(int):this]",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_STRCNS",
+          "call     [System.ArgumentOutOfRangeException:.ctor(System.String):this]",
+          "call     CORINFO_HELP_THROW"
+        ]
+      },
+      "GameplayTags.GameplayTagContainer:IntersectionExact(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer (FullOpts)": {
+        "code_bytes": 156,
+        "normalized_sha256": "c330b4b31a889f828626aba0cbb8957bbb510d9cc45d3112a53d8e47ee267f60",
+        "calls": [
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:.ctor(int):this]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:IntersectionExactSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer)]"
+        ]
+      },
+      "GameplayTags.GameplayTagContainerAlgorithms:IntersectionExactSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": {
+        "code_bytes": 596,
+        "normalized_sha256": "ae65ec710a4fb7035fe75888674b2c69ac696ed74671889b2c46ca5ec7e2b54c",
+        "calls": [
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]",
+          "call     [System.String:CompareOrdinal(System.String,System.String):int]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this]",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:RemoveRange(int,int):this]",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_STRCNS",
+          "call     [System.ArgumentNullException:.ctor(System.String):this]",
+          "call     CORINFO_HELP_THROW",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "GameplayTags.GameplayTagContainerAlgorithms:CopyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": {
+        "code_bytes": 362,
+        "normalized_sha256": "29e8b3f4d8b42ca511ae9e102757861bbeff33f0a852f81eef98e2a6e88aa243",
+        "calls": [
+          "tail.jmp [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "tail.jmp [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this]",
+          "tail.jmp [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]",
+          "call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this (FullOpts)": {
+        "code_bytes": 436,
+        "normalized_sha256": "b6000486c202729721da4aa2cf168e430f6d6537938d956d764cc4f291324c73",
+        "calls": [
+          "call     [CORINFO_HELP_ISINSTANCEOFINTERFACE]",
+          "call     [r11]System.Collections.Generic.ICollection`1[GameplayTags.GameplayTag]:get_Count():int:this",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:set_Capacity(int):this]",
+          "call     [r11]System.Collections.Generic.ICollection`1[GameplayTags.GameplayTag]:CopyTo(GameplayTags.GameplayTag[],int):this",
+          "call     [r11]System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]:GetEnumerator():System.Collections.Generic.IEnumerator`1[GameplayTags.GameplayTag]:this",
+          "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+          "call     [r11]System.Collections.Generic.IEnumerator`1[GameplayTags.GameplayTag]:get_Current():GameplayTags.GameplayTag:this",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this]",
+          "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+          "call     [r11]System.IDisposable:Dispose():this",
+          "call     CORINFO_HELP_OVERFLOW",
+          "call     [System.ThrowHelper:ThrowArgumentNullException(int)]",
+          "call     [r11]System.IDisposable:Dispose():this"
+        ]
+      },
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:CopyTo(GameplayTags.GameplayTag[],int):this (FullOpts)": {
+        "code_bytes": 24,
+        "normalized_sha256": "6b05d464bb360462d2e2ced66c2b869d027349d19b8e659556be1504113e3d0c",
+        "calls": [
+          "tail.jmp [System.Array:Copy(System.Array,int,System.Array,int,int)]"
+        ]
+      }
+    },
+    "current792": {
+      "Program+<>c__DisplayClass10_0:<Run>b__10(int):this (FullOpts)": {
+        "code_bytes": 1138,
+        "normalized_sha256": "fcb655dd2b272d13a94100e7b9d35d8ec03f1a2120d9150e66f584f81861bc3a",
+        "calls": [
+          "call     [Program:Build(GameplayTags.GameplayTag[],int):GameplayTags.GameplayTagContainer]",
+          "call     [GameplayTags.GameplayTagContainer:IndexOf(System.String):int:this]",
+          "call     [GameplayTags.GameplayTagContainer:RemoveTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [GameplayTags.GameplayTagContainer:Union(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [GameplayTags.GameplayTagContainer:IntersectionExact(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:CopyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer)]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [Program:Control(GameplayTags.GameplayTag[]):long]",
+          "call     [Program:Build(GameplayTags.GameplayTag[],int):GameplayTags.GameplayTagContainer]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:CopyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer)]",
+          "call     [rax+0x18]System.Action`1[System.__Canon]:Invoke(System.__Canon):this",
+          "call     [Program:Consume(GameplayTags.GameplayTagContainer):long]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     CORINFO_HELP_GETSHARED_NONGCSTATIC_BASE",
+          "call     CORINFO_HELP_GETSHARED_NONGCSTATIC_BASE",
+          "call     CORINFO_HELP_GETSHARED_NONGCSTATIC_BASE",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_GETSHARED_NONGCSTATIC_BASE",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this (FullOpts)": {
+        "code_bytes": 126,
+        "normalized_sha256": "696dc7a7afb9efcf3f5557b0eb004b5fafa670b13f514644a336b7a2be4c1f39",
+        "calls": [
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:set_Capacity(int):this]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "GameplayTags.GameplayTagContainer:Union(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer (FullOpts)": {
+        "code_bytes": 155,
+        "normalized_sha256": "48b0a4fbc320f381cdb0672278ac7574cbf7c951232616f4971cfb493dc6b36f",
+        "calls": [
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:.ctor(int):this]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:UnionSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer)]"
+        ]
+      },
+      "GameplayTags.GameplayTagContainerAlgorithms:UnionSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": {
+        "code_bytes": 1148,
+        "normalized_sha256": "e57507f4fad0de84e6313ab54937f3dd17f36e58093a2deefa56ec7b8b89c348",
+        "calls": [
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:Snapshot(GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:Snapshot(GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AppendAlreadyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,bool)]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AppendAlreadyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,bool)]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]",
+          "call     [System.String:CompareOrdinal(System.String,System.String):int]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this]",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_STRCNS",
+          "call     [System.ArgumentNullException:.ctor(System.String):this]",
+          "call     CORINFO_HELP_THROW",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool (FullOpts)": {
+        "code_bytes": 164,
+        "normalized_sha256": "135fba989415f95b4230b56d752ebddb4c2adc12e73e6a4adc5050509e45a9e4",
+        "calls": [
+          "call     [GameplayTags.GameplayTagManager:IsRegistered(System.String):bool]",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "GameplayTags.GameplayTagContainer:EnsureCapacity(int):this (FullOpts)": {
+        "code_bytes": 103,
+        "normalized_sha256": "7f144b1370117aa1af4704442815b358131c88af2ba4a81810c1332f1ff8523a",
+        "calls": [
+          "tail.jmp [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:set_Capacity(int):this]",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_STRCNS",
+          "call     [System.ArgumentOutOfRangeException:.ctor(System.String):this]",
+          "call     CORINFO_HELP_THROW"
+        ]
+      },
+      "GameplayTags.GameplayTagContainer:IntersectionExact(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer (FullOpts)": {
+        "code_bytes": 156,
+        "normalized_sha256": "c330b4b31a889f828626aba0cbb8957bbb510d9cc45d3112a53d8e47ee267f60",
+        "calls": [
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:.ctor(int):this]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:IntersectionExactSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer)]"
+        ]
+      },
+      "GameplayTags.GameplayTagContainerAlgorithms:IntersectionExactSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": {
+        "code_bytes": 596,
+        "normalized_sha256": "ae65ec710a4fb7035fe75888674b2c69ac696ed74671889b2c46ca5ec7e2b54c",
+        "calls": [
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]",
+          "call     [System.String:CompareOrdinal(System.String,System.String):int]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this]",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:RemoveRange(int,int):this]",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_NEWSFAST",
+          "call     CORINFO_HELP_STRCNS",
+          "call     [System.ArgumentNullException:.ctor(System.String):this]",
+          "call     CORINFO_HELP_THROW",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "GameplayTags.GameplayTagContainerAlgorithms:CopyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": {
+        "code_bytes": 362,
+        "normalized_sha256": "29e8b3f4d8b42ca511ae9e102757861bbeff33f0a852f81eef98e2a6e88aa243",
+        "calls": [
+          "tail.jmp [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool]",
+          "call     [System.Array:Clear(System.Array,int,int)]",
+          "call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "tail.jmp [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this]",
+          "tail.jmp [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]",
+          "call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]",
+          "call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]",
+          "call     CORINFO_HELP_RNGCHKFAIL"
+        ]
+      },
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this (FullOpts)": {
+        "code_bytes": 436,
+        "normalized_sha256": "b6000486c202729721da4aa2cf168e430f6d6537938d956d764cc4f291324c73",
+        "calls": [
+          "call     [CORINFO_HELP_ISINSTANCEOFINTERFACE]",
+          "call     [r11]System.Collections.Generic.ICollection`1[GameplayTags.GameplayTag]:get_Count():int:this",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:set_Capacity(int):this]",
+          "call     [r11]System.Collections.Generic.ICollection`1[GameplayTags.GameplayTag]:CopyTo(GameplayTags.GameplayTag[],int):this",
+          "call     [r11]System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]:GetEnumerator():System.Collections.Generic.IEnumerator`1[GameplayTags.GameplayTag]:this",
+          "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+          "call     [r11]System.Collections.Generic.IEnumerator`1[GameplayTags.GameplayTag]:get_Current():GameplayTags.GameplayTag:this",
+          "call     CORINFO_HELP_ASSIGN_REF",
+          "call     [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this]",
+          "call     [r11]System.Collections.IEnumerator:MoveNext():bool:this",
+          "call     [r11]System.IDisposable:Dispose():this",
+          "call     CORINFO_HELP_OVERFLOW",
+          "call     [System.ThrowHelper:ThrowArgumentNullException(int)]",
+          "call     [r11]System.IDisposable:Dispose():this"
+        ]
+      },
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:CopyTo(GameplayTags.GameplayTag[],int):this (FullOpts)": {
+        "code_bytes": 24,
+        "normalized_sha256": "6b05d464bb360462d2e2ced66c2b869d027349d19b8e659556be1504113e3d0c",
+        "calls": [
+          "tail.jmp [System.Array:Copy(System.Array,int,System.Array,int,int)]"
+        ]
+      }
+    }
+  },
+  "equal_normalized_methods": {
+    "B11__C1": {
+      "GameplayTags.GameplayTagContainer:EnsureCapacity(int):this (FullOpts)": true,
+      "GameplayTags.GameplayTagContainer:IntersectionExact(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer (FullOpts)": true,
+      "GameplayTags.GameplayTagContainer:Union(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer (FullOpts)": true,
+      "GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool (FullOpts)": true,
+      "GameplayTags.GameplayTagContainerAlgorithms:CopyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": false,
+      "GameplayTags.GameplayTagContainerAlgorithms:IntersectionExactSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": true,
+      "GameplayTags.GameplayTagContainerAlgorithms:UnionSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": true,
+      "Program+<>c__DisplayClass10_0:<Run>b__10(int):this (FullOpts)": true,
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this (FullOpts)": true,
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this (FullOpts)": true,
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:CopyTo(GameplayTags.GameplayTag[],int):this (FullOpts)": true
+    },
+    "C1__current792": {
+      "GameplayTags.GameplayTagContainer:EnsureCapacity(int):this (FullOpts)": true,
+      "GameplayTags.GameplayTagContainer:IntersectionExact(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer (FullOpts)": true,
+      "GameplayTags.GameplayTagContainer:Union(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer):GameplayTags.GameplayTagContainer (FullOpts)": true,
+      "GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool (FullOpts)": true,
+      "GameplayTags.GameplayTagContainerAlgorithms:CopyValidated(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": true,
+      "GameplayTags.GameplayTagContainerAlgorithms:IntersectionExactSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": true,
+      "GameplayTags.GameplayTagContainerAlgorithms:UnionSorted(GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer,GameplayTags.GameplayTagContainer) (FullOpts)": true,
+      "Program+<>c__DisplayClass10_0:<Run>b__10(int):this (FullOpts)": true,
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this (FullOpts)": true,
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this (FullOpts)": true,
+      "System.Collections.Generic.List`1[GameplayTags.GameplayTag]:CopyTo(GameplayTags.GameplayTag[],int):this (FullOpts)": true
+    }
+  }
+}

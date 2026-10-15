@@ -1,0 +1,2262 @@
+{
+  "label": "compare-core-setunion-l0-r0-c0-both-empty-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46542797200004316
+}
+{
+  "label": "compare-core-setunion-l0-r0-c0-both-empty-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5151821210001799
+}
+{
+  "label": "compare-core-setunion-l0-r0-c0-both-empty-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652503339998475
+}
+{
+  "label": "compare-core-setunion-l0-r0-c0-both-empty-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154690279998704
+}
+{
+  "label": "compare-core-setunion-l0-r0-c0-both-empty-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.465728836000153
+}
+{
+  "label": "compare-core-setunion-l0-r0-c0-both-empty-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5151510089999647
+}
+{
+  "label": "compare-core-setunion-l0-r0-c0-both-empty-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46511024300002646
+}
+{
+  "label": "compare-core-setunion-l0-r0-c0-both-empty-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155829200000426
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-full-overlap-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46541347800007316
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-full-overlap-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46507166800006416
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-full-overlap-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652017529999739
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-full-overlap-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4651220939999803
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-full-overlap-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46528379200003656
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-full-overlap-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652484390001064
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-full-overlap-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.465197427000021
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-full-overlap-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46512617100006537
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-lhs-before-rhs-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4654433529999551
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-lhs-before-rhs-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152809030000753
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-lhs-before-rhs-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153428570001779
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-lhs-before-rhs-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153512089998458
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-lhs-before-rhs-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5158420799998567
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-lhs-before-rhs-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155112609998014
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-lhs-before-rhs-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153856770000402
+}
+{
+  "label": "compare-core-setunion-l1-r1-c2-lhs-before-rhs-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5655273020001914
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-full-overlap-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5653415429999313
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-full-overlap-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154111710000961
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-full-overlap-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153837590000876
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-full-overlap-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152541810000457
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-full-overlap-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5657849669998996
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-full-overlap-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5661864670000796
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-full-overlap-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5656921970000894
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-full-overlap-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153933859999142
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-half-overlap-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5656529550001324
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-half-overlap-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5654255790000207
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-half-overlap-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154648210000232
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-half-overlap-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155252819999987
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-half-overlap-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5658189670000411
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-half-overlap-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153327020000233
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-half-overlap-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5156215070001053
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-half-overlap-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153549159999784
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-lhs-before-rhs-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155507179999859
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-lhs-before-rhs-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5658083329999499
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-lhs-before-rhs-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5654829930001597
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-lhs-before-rhs-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5667596470000262
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-lhs-before-rhs-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5657195700000557
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-lhs-before-rhs-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5661253609998766
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-lhs-before-rhs-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5656392930000038
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-lhs-before-rhs-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154604120000386
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-rhs-before-lhs-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155055230000016
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-rhs-before-lhs-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154618100000334
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-rhs-before-lhs-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152727770000638
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-rhs-before-lhs-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5653246879999188
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-rhs-before-lhs-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.515335246000177
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-rhs-before-lhs-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.565463156000078
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-rhs-before-lhs-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5654208079999989
+}
+{
+  "label": "compare-core-setunion-l1024-r1024-c2048-rhs-before-lhs-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5204183450000528
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-full-overlap-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46526126000003387
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-full-overlap-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155729809998775
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-full-overlap-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6157595399999991
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-full-overlap-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5657324029998563
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-full-overlap-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46513557699995545
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-full-overlap-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5151662519999718
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-full-overlap-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46527416100002483
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-full-overlap-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4653112510000028
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-half-overlap-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4150309560000096
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-half-overlap-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46523926999998366
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-half-overlap-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4653833129998475
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-half-overlap-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46550441599993064
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-half-overlap-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5156948889998603
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-half-overlap-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4654426679999233
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-half-overlap-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4150615569999445
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-half-overlap-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.518058111000073
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-lhs-before-rhs-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4653599830000985
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-lhs-before-rhs-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154349240001466
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-lhs-before-rhs-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4651630880000539
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-lhs-before-rhs-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46506068399980904
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-lhs-before-rhs-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152797409998584
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-lhs-before-rhs-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4650647839998783
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-lhs-before-rhs-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652027869999529
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-lhs-before-rhs-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46545165899988206
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-rhs-before-lhs-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4650493809999716
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-rhs-before-lhs-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.41494796699998915
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-rhs-before-lhs-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4650137249998352
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-rhs-before-lhs-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4651698029999807
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-rhs-before-lhs-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154418290001104
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-rhs-before-lhs-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4650319799998215
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-rhs-before-lhs-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46503762099996493
+}
+{
+  "label": "compare-core-setunion-l8-r8-c16-rhs-before-lhs-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46507052600009047
+}
+{
+  "label": "compare-core-union-l0-r0-c0-both-empty-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652317600000515
+}
+{
+  "label": "compare-core-union-l0-r0-c0-both-empty-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46533225300004233
+}
+{
+  "label": "compare-core-union-l0-r0-c0-both-empty-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46591570599980514
+}
+{
+  "label": "compare-core-union-l0-r0-c0-both-empty-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652486470001804
+}
+{
+  "label": "compare-core-union-l0-r0-c0-both-empty-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4654542109999511
+}
+{
+  "label": "compare-core-union-l0-r0-c0-both-empty-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4651145840000481
+}
+{
+  "label": "compare-core-union-l0-r0-c0-both-empty-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46513804500000333
+}
+{
+  "label": "compare-core-union-l0-r0-c0-both-empty-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46532194800010984
+}
+{
+  "label": "compare-core-union-l1-r1-c2-full-overlap-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46515484700012166
+}
+{
+  "label": "compare-core-union-l1-r1-c2-full-overlap-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652315280000039
+}
+{
+  "label": "compare-core-union-l1-r1-c2-full-overlap-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46518898499994066
+}
+{
+  "label": "compare-core-union-l1-r1-c2-full-overlap-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46514658099999906
+}
+{
+  "label": "compare-core-union-l1-r1-c2-full-overlap-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4650651229999312
+}
+{
+  "label": "compare-core-union-l1-r1-c2-full-overlap-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154380409999249
+}
+{
+  "label": "compare-core-union-l1-r1-c2-full-overlap-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155029040001864
+}
+{
+  "label": "compare-core-union-l1-r1-c2-full-overlap-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5160153510000782
+}
+{
+  "label": "compare-core-union-l1-r1-c2-lhs-before-rhs-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.515480726000078
+}
+{
+  "label": "compare-core-union-l1-r1-c2-lhs-before-rhs-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46504738799990264
+}
+{
+  "label": "compare-core-union-l1-r1-c2-lhs-before-rhs-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652747550001095
+}
+{
+  "label": "compare-core-union-l1-r1-c2-lhs-before-rhs-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46513328800006093
+}
+{
+  "label": "compare-core-union-l1-r1-c2-lhs-before-rhs-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4650697569998101
+}
+{
+  "label": "compare-core-union-l1-r1-c2-lhs-before-rhs-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46527664800009916
+}
+{
+  "label": "compare-core-union-l1-r1-c2-lhs-before-rhs-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5151736109999092
+}
+{
+  "label": "compare-core-union-l1-r1-c2-lhs-before-rhs-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152419109999755
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-full-overlap-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5151589549998334
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-full-overlap-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.465374077999968
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-full-overlap-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46507569300001705
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-full-overlap-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4662580199999411
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-full-overlap-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.465382444999932
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-full-overlap-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154655229998752
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-full-overlap-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152904040000976
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-full-overlap-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46515630499993676
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-half-overlap-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152556460000142
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-half-overlap-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4650795029999699
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-half-overlap-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46521495699994375
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-half-overlap-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4649894280000808
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-half-overlap-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4649551009999868
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-half-overlap-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46493008800007374
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-half-overlap-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5150971410000693
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-half-overlap-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652183780001451
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-lhs-before-rhs-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5159273210001629
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-lhs-before-rhs-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5677295769999091
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-lhs-before-rhs-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4656484879999425
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-lhs-before-rhs-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155862350000007
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-lhs-before-rhs-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5655253360000643
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-lhs-before-rhs-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154135899999801
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-lhs-before-rhs-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153832799999236
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-lhs-before-rhs-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5162583789999644
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-rhs-before-lhs-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.517200258999992
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-rhs-before-lhs-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153407420000349
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-rhs-before-lhs-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5171841999999742
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-rhs-before-lhs-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5173228989999643
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-rhs-before-lhs-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.516141338000125
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-rhs-before-lhs-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5161203469999691
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-rhs-before-lhs-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153559499999574
+}
+{
+  "label": "compare-core-union-l1024-r1024-c2048-rhs-before-lhs-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154915939999682
+}
+{
+  "label": "compare-core-union-l8-r8-c16-full-overlap-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4658201419999841
+}
+{
+  "label": "compare-core-union-l8-r8-c16-full-overlap-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4654284959999586
+}
+{
+  "label": "compare-core-union-l8-r8-c16-full-overlap-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5159230620001836
+}
+{
+  "label": "compare-core-union-l8-r8-c16-full-overlap-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4653044899998804
+}
+{
+  "label": "compare-core-union-l8-r8-c16-full-overlap-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.465489929000114
+}
+{
+  "label": "compare-core-union-l8-r8-c16-full-overlap-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46558293400016737
+}
+{
+  "label": "compare-core-union-l8-r8-c16-full-overlap-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.465427795000096
+}
+{
+  "label": "compare-core-union-l8-r8-c16-full-overlap-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46541994899985184
+}
+{
+  "label": "compare-core-union-l8-r8-c16-half-overlap-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153116940000473
+}
+{
+  "label": "compare-core-union-l8-r8-c16-half-overlap-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155569640000977
+}
+{
+  "label": "compare-core-union-l8-r8-c16-half-overlap-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46532888599995204
+}
+{
+  "label": "compare-core-union-l8-r8-c16-half-overlap-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4651502970000365
+}
+{
+  "label": "compare-core-union-l8-r8-c16-half-overlap-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652461260000109
+}
+{
+  "label": "compare-core-union-l8-r8-c16-half-overlap-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46605675199998586
+}
+{
+  "label": "compare-core-union-l8-r8-c16-half-overlap-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.465263977999939
+}
+{
+  "label": "compare-core-union-l8-r8-c16-half-overlap-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46530411300000196
+}
+{
+  "label": "compare-core-union-l8-r8-c16-lhs-before-rhs-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5162191449999227
+}
+{
+  "label": "compare-core-union-l8-r8-c16-lhs-before-rhs-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4659322649999922
+}
+{
+  "label": "compare-core-union-l8-r8-c16-lhs-before-rhs-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46520245600004273
+}
+{
+  "label": "compare-core-union-l8-r8-c16-lhs-before-rhs-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46512445899998056
+}
+{
+  "label": "compare-core-union-l8-r8-c16-lhs-before-rhs-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5657413520000318
+}
+{
+  "label": "compare-core-union-l8-r8-c16-lhs-before-rhs-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.41514532400015014
+}
+{
+  "label": "compare-core-union-l8-r8-c16-lhs-before-rhs-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46535895300007724
+}
+{
+  "label": "compare-core-union-l8-r8-c16-lhs-before-rhs-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46505423400003565
+}
+{
+  "label": "compare-core-union-l8-r8-c16-rhs-before-lhs-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46521895199998653
+}
+{
+  "label": "compare-core-union-l8-r8-c16-rhs-before-lhs-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.465715691000014
+}
+{
+  "label": "compare-core-union-l8-r8-c16-rhs-before-lhs-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4151274870000634
+}
+{
+  "label": "compare-core-union-l8-r8-c16-rhs-before-lhs-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46506867599987345
+}
+{
+  "label": "compare-core-union-l8-r8-c16-rhs-before-lhs-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652317719999246
+}
+{
+  "label": "compare-core-union-l8-r8-c16-rhs-before-lhs-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4651545750000423
+}
+{
+  "label": "compare-core-union-l8-r8-c16-rhs-before-lhs-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4651298629999019
+}
+{
+  "label": "compare-core-union-l8-r8-c16-rhs-before-lhs-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46504243600020345
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153245919998426
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.51583358400012
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155360100000053
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.565529738000123
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152950780000083
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5654870430000756
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152815010001177
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152324329999374
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153423790000033
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153924549999829
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154438380000101
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155278329998509
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154334810001728
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5151936590000332
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154380179999407
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153573919999417
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153783220000605
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152011170000605
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153523880001103
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46582040200019037
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.465409267999803
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46509681699990324
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46514895100017384
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154120940001121
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5655335579999701
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152758329998051
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5654929019999599
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153830199999447
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154067850000956
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153727990000334
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5656243640000866
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152610170000571
+}
+{
+  "label": "compare-guard-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46529971499990097
+}
+{
+  "label": "compare-guard-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652108299999327
+}
+{
+  "label": "compare-guard-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4655237219999435
+}
+{
+  "label": "compare-guard-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46522744499998225
+}
+{
+  "label": "compare-guard-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152978239998447
+}
+{
+  "label": "compare-guard-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652312359999087
+}
+{
+  "label": "compare-guard-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4655519689999892
+}
+{
+  "label": "compare-guard-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.515822769000124
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4651117169998997
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46508255900016593
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4653628610001306
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155370859999948
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5150877580001634
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5156831059998694
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5156089580000298
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5657530680000491
+}
+{
+  "label": "compare-guard-lifecycle-s1024-t1024-c1024-half-overlap-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155225010000777
+}
+{
+  "label": "compare-guard-lifecycle-s1024-t1024-c1024-half-overlap-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.565685048999967
+}
+{
+  "label": "compare-guard-lifecycle-s1024-t1024-c1024-half-overlap-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.515512352000087
+}
+{
+  "label": "compare-guard-lifecycle-s1024-t1024-c1024-half-overlap-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154912699999841
+}
+{
+  "label": "compare-guard-lifecycle-s1024-t1024-c1024-half-overlap-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.515657155000099
+}
+{
+  "label": "compare-guard-lifecycle-s1024-t1024-c1024-half-overlap-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152687239999523
+}
+{
+  "label": "compare-guard-lifecycle-s1024-t1024-c1024-half-overlap-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5660110600001644
+}
+{
+  "label": "compare-guard-lifecycle-s1024-t1024-c1024-half-overlap-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6157459369999287
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5151801439999417
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152585430000727
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152583280000727
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153939469998932
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5655199790001006
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5684004590000313
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5658237320001263
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5660060610000528
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-0-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5655425279999235
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-0-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5657976069999222
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-1-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5652902229999199
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-1-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154471270000158
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-2-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5653829370000949
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-2-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153456850000566
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-3-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5656115839999529
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-3-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5654479660001925
+}
+{
+  "label": "fixture-core-setunion-l0-r0-c0-both-empty-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16422790199999326
+}
+{
+  "label": "fixture-core-setunion-l0-r0-c0-both-empty-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16628023399994163
+}
+{
+  "label": "fixture-core-setunion-l1-r1-c2-full-overlap-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16438417199992728
+}
+{
+  "label": "fixture-core-setunion-l1-r1-c2-full-overlap-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16425177299993265
+}
+{
+  "label": "fixture-core-setunion-l1-r1-c2-lhs-before-rhs-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16463503499994658
+}
+{
+  "label": "fixture-core-setunion-l1-r1-c2-lhs-before-rhs-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1647325379999529
+}
+{
+  "label": "fixture-core-setunion-l1024-r1024-c2048-full-overlap-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1643784489999689
+}
+{
+  "label": "fixture-core-setunion-l1024-r1024-c2048-full-overlap-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16447793899988028
+}
+{
+  "label": "fixture-core-setunion-l1024-r1024-c2048-half-overlap-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1643396469999061
+}
+{
+  "label": "fixture-core-setunion-l1024-r1024-c2048-half-overlap-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2147608789998685
+}
+{
+  "label": "fixture-core-setunion-l1024-r1024-c2048-lhs-before-rhs-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21467437000001155
+}
+{
+  "label": "fixture-core-setunion-l1024-r1024-c2048-lhs-before-rhs-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.214523397999983
+}
+{
+  "label": "fixture-core-setunion-l1024-r1024-c2048-rhs-before-lhs-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16428281499997865
+}
+{
+  "label": "fixture-core-setunion-l1024-r1024-c2048-rhs-before-lhs-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2146991969998453
+}
+{
+  "label": "fixture-core-setunion-l8-r8-c16-full-overlap-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1642206349999924
+}
+{
+  "label": "fixture-core-setunion-l8-r8-c16-full-overlap-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1642826290001267
+}
+{
+  "label": "fixture-core-setunion-l8-r8-c16-half-overlap-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16668126299987307
+}
+{
+  "label": "fixture-core-setunion-l8-r8-c16-half-overlap-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.164811224999994
+}
+{
+  "label": "fixture-core-setunion-l8-r8-c16-lhs-before-rhs-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16422788600016247
+}
+{
+  "label": "fixture-core-setunion-l8-r8-c16-lhs-before-rhs-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16429820799999106
+}
+{
+  "label": "fixture-core-setunion-l8-r8-c16-rhs-before-lhs-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1643254960001741
+}
+{
+  "label": "fixture-core-setunion-l8-r8-c16-rhs-before-lhs-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.164697882000155
+}
+{
+  "label": "fixture-core-union-l0-r0-c0-both-empty-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1643679119999888
+}
+{
+  "label": "fixture-core-union-l0-r0-c0-both-empty-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1643483989998913
+}
+{
+  "label": "fixture-core-union-l1-r1-c2-full-overlap-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1643621240000357
+}
+{
+  "label": "fixture-core-union-l1-r1-c2-full-overlap-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16811110200001167
+}
+{
+  "label": "fixture-core-union-l1-r1-c2-lhs-before-rhs-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1641702700001133
+}
+{
+  "label": "fixture-core-union-l1-r1-c2-lhs-before-rhs-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21448300199995174
+}
+{
+  "label": "fixture-core-union-l1024-r1024-c2048-full-overlap-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.164376792999974
+}
+{
+  "label": "fixture-core-union-l1024-r1024-c2048-full-overlap-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16441451500008952
+}
+{
+  "label": "fixture-core-union-l1024-r1024-c2048-half-overlap-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21456263999994007
+}
+{
+  "label": "fixture-core-union-l1024-r1024-c2048-half-overlap-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2144273220001196
+}
+{
+  "label": "fixture-core-union-l1024-r1024-c2048-lhs-before-rhs-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21469788499985043
+}
+{
+  "label": "fixture-core-union-l1024-r1024-c2048-lhs-before-rhs-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21457916600002136
+}
+{
+  "label": "fixture-core-union-l1024-r1024-c2048-rhs-before-lhs-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16434822299993357
+}
+{
+  "label": "fixture-core-union-l1024-r1024-c2048-rhs-before-lhs-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.164656247000039
+}
+{
+  "label": "fixture-core-union-l8-r8-c16-full-overlap-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16430259900016608
+}
+{
+  "label": "fixture-core-union-l8-r8-c16-full-overlap-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16429801200001748
+}
+{
+  "label": "fixture-core-union-l8-r8-c16-half-overlap-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16443960600008722
+}
+{
+  "label": "fixture-core-union-l8-r8-c16-half-overlap-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16511866400014696
+}
+{
+  "label": "fixture-core-union-l8-r8-c16-lhs-before-rhs-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16433632099983697
+}
+{
+  "label": "fixture-core-union-l8-r8-c16-lhs-before-rhs-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16430551799999193
+}
+{
+  "label": "fixture-core-union-l8-r8-c16-rhs-before-lhs-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16428519800001595
+}
+{
+  "label": "fixture-core-union-l8-r8-c16-rhs-before-lhs-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16430988499996602
+}
+{
+  "label": "fixture-guard-append-s1023-t1024-c1024-last-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16428807300007975
+}
+{
+  "label": "fixture-guard-append-s1023-t1024-c1024-last-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16433827900004871
+}
+{
+  "label": "fixture-guard-append-s1023-t1024-c2048-last-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16432839899994178
+}
+{
+  "label": "fixture-guard-append-s1023-t1024-c2048-last-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1641890590001367
+}
+{
+  "label": "fixture-guard-copy-s0-t0-c0-same-names-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16445923100013715
+}
+{
+  "label": "fixture-guard-copy-s0-t0-c0-same-names-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16478376899999603
+}
+{
+  "label": "fixture-guard-copy-s1-t1-c1-same-names-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1644862309999553
+}
+{
+  "label": "fixture-guard-copy-s1-t1-c1-same-names-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1645048489999681
+}
+{
+  "label": "fixture-guard-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16439668699990762
+}
+{
+  "label": "fixture-guard-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16455023799994706
+}
+{
+  "label": "fixture-guard-lifecycle-s1-t1-c1-full-overlap-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1642130499999439
+}
+{
+  "label": "fixture-guard-lifecycle-s1-t1-c1-full-overlap-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16447755800004416
+}
+{
+  "label": "fixture-guard-lifecycle-s1024-t1024-c1024-half-overlap-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16471411500015165
+}
+{
+  "label": "fixture-guard-lifecycle-s1024-t1024-c1024-half-overlap-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21441942999990715
+}
+{
+  "label": "fixture-guard-right-s1023-t1024-c1024-last-new-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16423192799993558
+}
+{
+  "label": "fixture-guard-right-s1023-t1024-c1024-last-new-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21450057800007016
+}
+{
+  "label": "fixture-guard-right-s1023-t1024-c2048-last-retained-C3a",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1642258839999613
+}
+{
+  "label": "fixture-guard-right-s1023-t1024-c2048-last-retained-current792",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1657058490000054
+}
+{
+  "label": "pilot-core-setunion-l0-r0-c0-both-empty-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1644312450000598
+}
+{
+  "label": "pilot-core-setunion-l0-r0-c0-both-empty-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4650029980000454
+}
+{
+  "label": "pilot-core-setunion-l1-r1-c2-full-overlap-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21477245899995978
+}
+{
+  "label": "pilot-core-setunion-l1-r1-c2-full-overlap-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4153013469999678
+}
+{
+  "label": "pilot-core-setunion-l1-r1-c2-lhs-before-rhs-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16441774500003703
+}
+{
+  "label": "pilot-core-setunion-l1-r1-c2-lhs-before-rhs-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.315711796999949
+}
+{
+  "label": "pilot-core-setunion-l1-r1-c2-lhs-before-rhs-retained-2",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5162271009999131
+}
+{
+  "label": "pilot-core-setunion-l1024-r1024-c2048-full-overlap-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.26469888299993727
+}
+{
+  "label": "pilot-core-setunion-l1024-r1024-c2048-full-overlap-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153908129998399
+}
+{
+  "label": "pilot-core-setunion-l1024-r1024-c2048-half-overlap-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2650003109999943
+}
+{
+  "label": "pilot-core-setunion-l1024-r1024-c2048-half-overlap-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155701690000569
+}
+{
+  "label": "pilot-core-setunion-l1024-r1024-c2048-lhs-before-rhs-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2647296689999621
+}
+{
+  "label": "pilot-core-setunion-l1024-r1024-c2048-lhs-before-rhs-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5655649049999738
+}
+{
+  "label": "pilot-core-setunion-l1024-r1024-c2048-rhs-before-lhs-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.3148361250000562
+}
+{
+  "label": "pilot-core-setunion-l1024-r1024-c2048-rhs-before-lhs-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.567125840000017
+}
+{
+  "label": "pilot-core-setunion-l8-r8-c16-full-overlap-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21441308099997514
+}
+{
+  "label": "pilot-core-setunion-l8-r8-c16-full-overlap-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46546882400002687
+}
+{
+  "label": "pilot-core-setunion-l8-r8-c16-half-overlap-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21466663899991545
+}
+{
+  "label": "pilot-core-setunion-l8-r8-c16-half-overlap-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46534741200002827
+}
+{
+  "label": "pilot-core-setunion-l8-r8-c16-lhs-before-rhs-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21458823800003302
+}
+{
+  "label": "pilot-core-setunion-l8-r8-c16-lhs-before-rhs-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46528619300011087
+}
+{
+  "label": "pilot-core-setunion-l8-r8-c16-rhs-before-lhs-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16436331099998824
+}
+{
+  "label": "pilot-core-setunion-l8-r8-c16-rhs-before-lhs-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46510833600018486
+}
+{
+  "label": "pilot-core-union-l0-r0-c0-both-empty-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21440987099981612
+}
+{
+  "label": "pilot-core-union-l0-r0-c0-both-empty-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.3648007189999589
+}
+{
+  "label": "pilot-core-union-l0-r0-c0-both-empty-new-2",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5163976259998435
+}
+{
+  "label": "pilot-core-union-l1-r1-c2-full-overlap-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16465923400005522
+}
+{
+  "label": "pilot-core-union-l1-r1-c2-full-overlap-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.314997632000086
+}
+{
+  "label": "pilot-core-union-l1-r1-c2-full-overlap-new-2",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4654835670000921
+}
+{
+  "label": "pilot-core-union-l1-r1-c2-lhs-before-rhs-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16434040800004368
+}
+{
+  "label": "pilot-core-union-l1-r1-c2-lhs-before-rhs-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4151692020000155
+}
+{
+  "label": "pilot-core-union-l1-r1-c2-lhs-before-rhs-new-2",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.465189589999909
+}
+{
+  "label": "pilot-core-union-l1024-r1024-c2048-full-overlap-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2645579100001214
+}
+{
+  "label": "pilot-core-union-l1024-r1024-c2048-full-overlap-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4652324349999617
+}
+{
+  "label": "pilot-core-union-l1024-r1024-c2048-half-overlap-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2646949019999738
+}
+{
+  "label": "pilot-core-union-l1024-r1024-c2048-half-overlap-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4651521529999627
+}
+{
+  "label": "pilot-core-union-l1024-r1024-c2048-lhs-before-rhs-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.264617699999917
+}
+{
+  "label": "pilot-core-union-l1024-r1024-c2048-lhs-before-rhs-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153561419999733
+}
+{
+  "label": "pilot-core-union-l1024-r1024-c2048-rhs-before-lhs-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.26468084499992983
+}
+{
+  "label": "pilot-core-union-l1024-r1024-c2048-rhs-before-lhs-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46513390600011917
+}
+{
+  "label": "pilot-core-union-l8-r8-c16-full-overlap-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2147605200000271
+}
+{
+  "label": "pilot-core-union-l8-r8-c16-full-overlap-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4153825199998664
+}
+{
+  "label": "pilot-core-union-l8-r8-c16-full-overlap-new-2",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4657648559998506
+}
+{
+  "label": "pilot-core-union-l8-r8-c16-half-overlap-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16471166299993456
+}
+{
+  "label": "pilot-core-union-l8-r8-c16-half-overlap-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.515815296000028
+}
+{
+  "label": "pilot-core-union-l8-r8-c16-lhs-before-rhs-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16427105299999312
+}
+{
+  "label": "pilot-core-union-l8-r8-c16-lhs-before-rhs-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46536794600001485
+}
+{
+  "label": "pilot-core-union-l8-r8-c16-rhs-before-lhs-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16449357800001962
+}
+{
+  "label": "pilot-core-union-l8-r8-c16-rhs-before-lhs-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4653040000000601
+}
+{
+  "label": "pilot-guard-append-s1023-t1024-c1024-last-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.26467676600009327
+}
+{
+  "label": "pilot-guard-append-s1023-t1024-c1024-last-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46533616799979427
+}
+{
+  "label": "pilot-guard-append-s1023-t1024-c2048-last-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2645375160000185
+}
+{
+  "label": "pilot-guard-append-s1023-t1024-c2048-last-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5151901680001174
+}
+{
+  "label": "pilot-guard-copy-s0-t0-c0-same-names-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16432366499998352
+}
+{
+  "label": "pilot-guard-copy-s0-t0-c0-same-names-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5152236379999522
+}
+{
+  "label": "pilot-guard-copy-s1-t1-c1-same-names-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16482188100007988
+}
+{
+  "label": "pilot-guard-copy-s1-t1-c1-same-names-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5153202239998791
+}
+{
+  "label": "pilot-guard-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2144730800000616
+}
+{
+  "label": "pilot-guard-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46519666800008963
+}
+{
+  "label": "pilot-guard-lifecycle-s1-t1-c1-full-overlap-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21451638600001388
+}
+{
+  "label": "pilot-guard-lifecycle-s1-t1-c1-full-overlap-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.41540617500004373
+}
+{
+  "label": "pilot-guard-lifecycle-s1-t1-c1-full-overlap-new-2",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4653092399998968
+}
+{
+  "label": "pilot-guard-lifecycle-s1024-t1024-c1024-half-overlap-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154361669999616
+}
+{
+  "label": "pilot-guard-right-s1023-t1024-c1024-last-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.264924148000091
+}
+{
+  "label": "pilot-guard-right-s1023-t1024-c1024-last-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4651689710001392
+}
+{
+  "label": "pilot-guard-right-s1023-t1024-c2048-last-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.26459972099996776
+}
+{
+  "label": "pilot-guard-right-s1023-t1024-c2048-last-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5170690429999922
+}

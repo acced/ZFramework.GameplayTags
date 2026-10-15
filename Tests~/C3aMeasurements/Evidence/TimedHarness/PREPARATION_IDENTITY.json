@@ -1,0 +1,32 @@
+{
+  "status": "prepared_static_checked_not_built_or_timed",
+  "baseline_commit": "792ce83f1c2a9aeaadc045c192d70081d866d903",
+  "origin": {
+    "Program.cs": "62638366804b87989b49a15d14fc15daf1dce8a7d93ef7fb0698825d77ac14d7",
+    "run_original.py": "8368e0a64b2eeef0e54d7ade57b7feafee5a37d76b58110871516580ae4b3b5a",
+    "build_snapshots.sh": "a57a916b0c1cc463558c54fd3749c14761c008ee8e7297aa67bc9537f029e370",
+    "summarize.py": "ab79bd495cc674ffe55b547500ca57f5361cfa1aa211a41888c356eee5f5188a"
+  },
+  "cells": 31,
+  "formal_processes": 248,
+  "pilot_processes_max": 124,
+  "fixture_processes": 62,
+  "target_processes_max": 434,
+  "formal_pair_orders": [
+    "current792,C3a",
+    "C3a,current792",
+    "C3a,current792",
+    "current792,C3a"
+  ],
+  "proposed_aggregate_wall_cap_seconds": 900,
+  "child_cap_seconds": 60,
+  "checks": [
+    "Python AST",
+    "bash -n",
+    "31 unique cells and exact geometries",
+    "count/version/checksum bounds",
+    "C12 unchanged project/stubs/config",
+    "synthetic summary without .NET"
+  ],
+  "audit_correction": "Exact lifecycle-copy source contains512 values but has capacity1024, matching IntersectionExact reservation; target capacity1024."
+}

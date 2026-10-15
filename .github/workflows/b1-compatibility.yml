@@ -25,3 +25,5 @@ jobs:
             "PR4=$GITHUB_WORKSPACE/Tests~/C12Correctness/Baselines/PR4/Runtime" \
             "C1=$GITHUB_WORKSPACE/Tests~/C12Correctness/Baselines/C1/Runtime" \
             "current=$GITHUB_WORKSPACE/Runtime"
+      - name: C3a experimental correctness and compatibility
+        run: bash Tests~/C3aMeasurements/correctness.sh "$RUNNER_TEMP/c3a-correctness"

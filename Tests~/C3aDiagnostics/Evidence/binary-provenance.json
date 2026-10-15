@@ -1,0 +1,29 @@
+{
+  "assembly": "C3aNaturalDiagnostics",
+  "configuration": "Release",
+  "target_framework": "net8.0",
+  "sdk_version": "8.0.425",
+  "versions": {
+    "B11": {
+      "C3aNaturalDiagnostics": "16e92da8e6e963f19914b0724ed865d32cf4dee9eeb9c393a3d21a85411ae840",
+      "C3aNaturalDiagnostics.deps.json": "ac4630fa7e68063555148811fa88328b649d745a8b6dcaa8603a42028a2da4ab",
+      "C3aNaturalDiagnostics.dll": "ae343c0175a5c66cef1c7784ddf86c763ccd0b6e007da18138680998f4619dcd",
+      "C3aNaturalDiagnostics.pdb": "f7fa50a58697a376a423c149e689ab04e42125c8fc23e8a0e611fe88a7e7d953",
+      "C3aNaturalDiagnostics.runtimeconfig.json": "97c9700542b659150b230c3578b29530fd76ab01ec66a92cd16945e0245713df"
+    },
+    "C1": {
+      "C3aNaturalDiagnostics": "16e92da8e6e963f19914b0724ed865d32cf4dee9eeb9c393a3d21a85411ae840",
+      "C3aNaturalDiagnostics.deps.json": "ac4630fa7e68063555148811fa88328b649d745a8b6dcaa8603a42028a2da4ab",
+      "C3aNaturalDiagnostics.dll": "be2be5d08baf117bacb3e1e1049e831591283eb6ee3ec8a21f9022dfb02cfd79",
+      "C3aNaturalDiagnostics.pdb": "bb5bf0419881b15353e57c1076db40f44104cc8f9c079a13a6f71300619d21bf",
+      "C3aNaturalDiagnostics.runtimeconfig.json": "97c9700542b659150b230c3578b29530fd76ab01ec66a92cd16945e0245713df"
+    },
+    "current792": {
+      "C3aNaturalDiagnostics": "16e92da8e6e963f19914b0724ed865d32cf4dee9eeb9c393a3d21a85411ae840",
+      "C3aNaturalDiagnostics.deps.json": "ac4630fa7e68063555148811fa88328b649d745a8b6dcaa8603a42028a2da4ab",
+      "C3aNaturalDiagnostics.dll": "6105c06060566a388ab9ab7df8734fc20b03e64398e388b9d70c588408d3704d",
+      "C3aNaturalDiagnostics.pdb": "b7d8eb9cb49105bf35ce6aa1715e360841624428cba372f74f42aa2c7b4e8486",
+      "C3aNaturalDiagnostics.runtimeconfig.json": "97c9700542b659150b230c3578b29530fd76ab01ec66a92cd16945e0245713df"
+    }
+  }
+}
