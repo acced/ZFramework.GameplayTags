@@ -17,13 +17,18 @@ namespace GameplayTags
 
         internal static void CopyValidated(GameplayTagContainer source, GameplayTagContainer result)
         {
+            if (source == null || source.Count == 0)
+            {
+                result.Clear();
+                return;
+            }
             bool fast = AllRegistered(source);
             result.Clear();
-            if (source == null) return;
             result.EnsureCapacity(source.Count);
             if (fast)
             {
-                result.Tags.AddRange(source.Tags);
+                if (source.Count == 1) result.Tags.Add(source[0]);
+                else result.Tags.AddRange(source.Tags);
                 return;
             }
             // Keep live traversal and sorted partial state through warning callbacks.
