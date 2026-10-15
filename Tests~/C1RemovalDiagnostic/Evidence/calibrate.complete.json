@@ -1,0 +1,8 @@
+{
+  "status": "complete",
+  "cells": 12,
+  "pilots": 25,
+  "elapsed_seconds": 12.418940580000253,
+  "counts_sha256": "c7e5938ed3615aedc65d827cecf735a10b3c6be3f6e705b03fd86b8faeaeda88",
+  "note": "Short or capped counts remain flagged; no acceptance inference."
+}

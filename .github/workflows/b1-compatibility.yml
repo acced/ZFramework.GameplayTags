@@ -27,3 +27,5 @@ jobs:
             "current=$GITHUB_WORKSPACE/Runtime"
       - name: C3a experimental correctness and compatibility
         run: bash Tests~/C3aMeasurements/correctness.sh "$RUNNER_TEMP/c3a-correctness"
+      - name: C1-removal diagnostic correctness and compatibility
+        run: bash Tests~/C1RemovalDiagnostic/correctness.sh "$RUNNER_TEMP/c1-removal-correctness"

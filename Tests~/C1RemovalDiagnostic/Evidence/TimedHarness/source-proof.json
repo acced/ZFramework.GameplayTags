@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "reference_commit": "792ce83f1c2a9aeaadc045c192d70081d866d903",
+  "reference_runtime_tree": "1e42d9659e26e385b267f877a9e3e493ce0eb916",
+  "reference_runtime_file_count": 16,
+  "R_equals_git_reference_runtime": true,
+  "production_Runtime_equals_R": true,
+  "historical_commit": "352d304299ecbb7486e2c6a56ba71874c90fe21b",
+  "historical_runtime_tree": "e187f359e18947164de8ff2c94d909a46c6a3b93",
+  "historical_PR4_baseline_files_verified_against_git": [
+    "AssemblyInfo.cs",
+    "GameplayTag.cs",
+    "GameplayTagContainer.cs",
+    "GameplayTagContainerAlgorithms.cs",
+    "GameplayTagManager.cs",
+    "GameplayTagQuery.cs",
+    "GameplayTagSettings.cs"
+  ],
+  "RMinusC1_method_body_equals_exact_historical_CopyValidated": true,
+  "only_method_body_changed": true,
+  "C2_and_all_other_Runtime_bytes_unchanged": true,
+  "changed_file": "GameplayTagContainerAlgorithms.cs",
+  "changed_method": "CopyValidated",
+  "method_body_sha256": {
+    "R": "9914b6309c6b90cc61bafffd7a4216e4383179ef06b9832e2c02bcab16f190a6",
+    "RMinusC1": "34540b34b313f5a94a8b933304afe08df883798af7ba91a438555ebd1d3d773d"
+  },
+  "builds_or_harness_runs_performed_by_source_verification": false
+}

@@ -1,0 +1,107 @@
+{
+  "scope": "Sanitized public identity receipt. Original raw stdout, terminal, stderr and numerical summaries are byte-identical. Original launch/build/environment values and machine paths are not published.",
+  "sdk": "8.0.425",
+  "runtime": "Microsoft.NETCore.App 8.0.31",
+  "os": "Linux",
+  "machine": "x86_64",
+  "tiered_compilation": 0,
+  "compile_input_files": {
+    "Program.cs": "9a2c081506c8887fa438599377d1d60be481dee7270d10ea9cb3f44b6c42b46e",
+    "UnityStubs.cs": "970032bab87b97d6fd825c5c08a09f94a827d11f803397bd82f349c248460b45",
+    "C1RemovalDiagnostic.csproj": "aa1b582b6590f6e89bffb7af0cf7e8f10482e49420a52146f4cdb5dc1517cf1f",
+    "NuGet.Config": "2142cfb2dfa2c7feefbe40fabcc68b0dfecadafa99a1db9b70239d977cf2a7ef"
+  },
+  "dotnet_host_sha256": "7dda7a639bc35fba05c40d308b0296450aa4e628d109245a6312c385da9b0931",
+  "original_manifest_sha256": "0f5eb598bc5d8edc2aad967ebdb214b547d8628278573daa6b3dce34dbfac871",
+  "original_freeze_sha256": "a44b6785ac2693b87016d1eec2c043a67dfbaba5694d5d9fe47dff604ce46208",
+  "original_source_pins_sha256": "5f56f886edc78aef7d9378364e810121697e0a4abce78f08acba1b08e2a09f5e",
+  "original_sdk_runtime_receipt_sha256": "d1252cda4494bd33aeeeb1179eb04cec3220e65fbb9bcccc8a040eb2735e5739",
+  "original_sdk_selection_sha256": "8fe9f4e7c811472092c6264a786c677dbe383a521b82a3982b257443defcc805",
+  "measured_harness": {
+    "C1RemovalDiagnostic.csproj": "aa1b582b6590f6e89bffb7af0cf7e8f10482e49420a52146f4cdb5dc1517cf1f",
+    "CopyValidated-removal.patch": "0472b3fc80a1e8c11db602573b11243b4cb5358970054a2aef0088e027b798e2",
+    "NuGet.Config": "2142cfb2dfa2c7feefbe40fabcc68b0dfecadafa99a1db9b70239d977cf2a7ef",
+    "PROTOCOL.md": "3d20c077d5a9dfcdaf0b8a65af00a3dc8e68a4be306f31203d08dc0b4337be67",
+    "Program.cs": "9a2c081506c8887fa438599377d1d60be481dee7270d10ea9cb3f44b6c42b46e",
+    "README.md": "b35a98115e263f21b5b8bee5a94326f3c1d1b211ae81070d57fb0e048e2ff281",
+    "UnityStubs.cs": "970032bab87b97d6fd825c5c08a09f94a827d11f803397bd82f349c248460b45",
+    "build_snapshots.sh": "8577f4c933d472d0de15e60ba835df57a91fdaee0b73dc7fbdc73157c930b51c",
+    "cells.json": "dc0416fb063b6b6bd12d0975d2c96dc3f8d7f954db87f17eef9a26bbbf4f1b00",
+    "correctness-inputs.sha256": "65914f8d6b8a66089d69d9292699807cef2819e78630da096afc9c058ec78285",
+    "correctness.sh": "365d1c095bab62da5a5edd927eb46241ce3329cccca5fd8c210f75d17a1bd735",
+    "measurement-inputs.sha256": "5bedf158cba91fac2d14fab037d2ebedb98296d7bf2016bc9b565b31d49a93f7",
+    "prepare_protocol.py": "c5b04d329dc726936d90ca50f44661dd8c49c5929ad13d71d6c60fafd2e7d18d",
+    "run_bounded.sh": "1ff4fad99960b4d9f51c5edcb6df4b8d3659204ecd2b391b33db81f661ba68d4",
+    "run_comparison.py": "6457dd45db175dddf49bae785d6d6eb021861ba0fb2b4deb3e9ab89f74320386",
+    "source-proof.json": "192a506682fad70062951003bcab02b96d2583ea015ea29ded564456371dda8a",
+    "source_pins.json": "5f56f886edc78aef7d9378364e810121697e0a4abce78f08acba1b08e2a09f5e",
+    "summarize.py": "bf3c334ec3a4ae243686b7d04b158ae2c5267e5bf382747bfb48b8c46aa9c788",
+    "verify_sources.py": "1264ee5b714735f4f7845974044878fd815634019ae87afe2531ff88f2adcb0c"
+  },
+  "sources": {
+    "R": {
+      "source_id": "792ce83f1c2a9aeaadc045c192d70081d866d903:Runtime",
+      "files": {
+        "AssemblyInfo.cs": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4",
+        "AssemblyInfo.cs.meta": "2d3da3e6216c297b859cb7e6387352a5182b6f54674f0ecbbe9f44d70f7822de",
+        "GameplayTag.cs": "811610e3ab03098c750180acc9e4b2c101a9732924c4ec32029b46bf0b613758",
+        "GameplayTag.cs.meta": "6c7c83b76381077ebd955fb0b247f092271fe63f864601299205f21e3aed6982",
+        "GameplayTagContainer.cs": "cde7d94d624ab6f5b1b6305a21e82b8371cf59895a879834fa3677b1ee4d6866",
+        "GameplayTagContainer.cs.meta": "e8d9bfdf8c49db016e48fe068d9fd76585d1e6dda1cd9e0aac91d41f8cfb8b14",
+        "GameplayTagContainerAlgorithms.cs": "55d8352d53a3528a75181a4fe02d3796b41e4cf177716235dd7d85964c1ea9f6",
+        "GameplayTagContainerAlgorithms.cs.meta": "df8d3e02e61a3407ce252c4f0137e7adf115a1c3790c9b4103a2c83577d52170",
+        "GameplayTagManager.cs": "fd627ed71f631aa6e2341568db5903908ab4309d7db468b0a1a6bba3411dd3ae",
+        "GameplayTagManager.cs.meta": "3335db4fc45b6d7ae0b5457b4f42cec3fb31e2167ca955ccdc6bee8d14d4ea92",
+        "GameplayTagQuery.cs": "57f38ae71f0fbcf7c8b0ac8be8d2c2d0052435a594bcecbdc43d8ba2bc0fef62",
+        "GameplayTagQuery.cs.meta": "956a69410151fffdcd1e06a32ba56bba2ba68aa381d07cbc9836230d98f9522b",
+        "GameplayTagSettings.cs": "99826726b17ac0553e3a218a6024ec91471a7a3267dafbe1a2c0cb2da31b5122",
+        "GameplayTagSettings.cs.meta": "89f9dcc51db2f8409bae247f02d902d179b8850cabe7159113bc704a7c3e8647",
+        "GameplayTags.asmdef": "ac3527d9d55cea4179f4d87dc1c1354306f9b2f3cf9018b6b049dc55e8b851c7",
+        "GameplayTags.asmdef.meta": "4981c1d8fed1cdadfb67e08fdcc51181874cbcc79cf23c712b7a83f50378a7e8"
+      }
+    },
+    "RMinusC1": {
+      "source_id": "792ce83f1c2a9aeaadc045c192d70081d866d903:Runtime with only CopyValidated body from 352d304299ecbb7486e2c6a56ba71874c90fe21b",
+      "files": {
+        "AssemblyInfo.cs": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4",
+        "AssemblyInfo.cs.meta": "2d3da3e6216c297b859cb7e6387352a5182b6f54674f0ecbbe9f44d70f7822de",
+        "GameplayTag.cs": "811610e3ab03098c750180acc9e4b2c101a9732924c4ec32029b46bf0b613758",
+        "GameplayTag.cs.meta": "6c7c83b76381077ebd955fb0b247f092271fe63f864601299205f21e3aed6982",
+        "GameplayTagContainer.cs": "cde7d94d624ab6f5b1b6305a21e82b8371cf59895a879834fa3677b1ee4d6866",
+        "GameplayTagContainer.cs.meta": "e8d9bfdf8c49db016e48fe068d9fd76585d1e6dda1cd9e0aac91d41f8cfb8b14",
+        "GameplayTagContainerAlgorithms.cs": "d3c1a98223da310d7cfef0d7c61a7e5b8716b27322048f3a20e1a2f7ea8b24ea",
+        "GameplayTagContainerAlgorithms.cs.meta": "df8d3e02e61a3407ce252c4f0137e7adf115a1c3790c9b4103a2c83577d52170",
+        "GameplayTagManager.cs": "fd627ed71f631aa6e2341568db5903908ab4309d7db468b0a1a6bba3411dd3ae",
+        "GameplayTagManager.cs.meta": "3335db4fc45b6d7ae0b5457b4f42cec3fb31e2167ca955ccdc6bee8d14d4ea92",
+        "GameplayTagQuery.cs": "57f38ae71f0fbcf7c8b0ac8be8d2c2d0052435a594bcecbdc43d8ba2bc0fef62",
+        "GameplayTagQuery.cs.meta": "956a69410151fffdcd1e06a32ba56bba2ba68aa381d07cbc9836230d98f9522b",
+        "GameplayTagSettings.cs": "99826726b17ac0553e3a218a6024ec91471a7a3267dafbe1a2c0cb2da31b5122",
+        "GameplayTagSettings.cs.meta": "89f9dcc51db2f8409bae247f02d902d179b8850cabe7159113bc704a7c3e8647",
+        "GameplayTags.asmdef": "ac3527d9d55cea4179f4d87dc1c1354306f9b2f3cf9018b6b049dc55e8b851c7",
+        "GameplayTags.asmdef.meta": "4981c1d8fed1cdadfb67e08fdcc51181874cbcc79cf23c712b7a83f50378a7e8"
+      }
+    }
+  },
+  "binaries": {
+    "R": {
+      "source_id": "792ce83f1c2a9aeaadc045c192d70081d866d903:Runtime",
+      "files": {
+        "C1RemovalDiagnostic": "72baf218507d106a73295ad5b960cad0e6f8f5dcf2ad556450de7bfea6851bf8",
+        "C1RemovalDiagnostic.deps.json": "b13d24cad862ac391fb6a12dbeb5e0b7e05340fcaa98d9f0a4fb36de717759d6",
+        "C1RemovalDiagnostic.dll": "16a42865d5f74c1f753077146ee3e4f084badd41e383f016cb9b4f02d7126195",
+        "C1RemovalDiagnostic.pdb": "9fbbebd93bee403da0c04d2f26f91308e7c57a9651c0dbb4d7cf51ba8fed04f8",
+        "C1RemovalDiagnostic.runtimeconfig.json": "97c9700542b659150b230c3578b29530fd76ab01ec66a92cd16945e0245713df"
+      }
+    },
+    "RMinusC1": {
+      "source_id": "792ce83f1c2a9aeaadc045c192d70081d866d903:Runtime with only CopyValidated body from 352d304299ecbb7486e2c6a56ba71874c90fe21b",
+      "files": {
+        "C1RemovalDiagnostic": "72baf218507d106a73295ad5b960cad0e6f8f5dcf2ad556450de7bfea6851bf8",
+        "C1RemovalDiagnostic.deps.json": "b13d24cad862ac391fb6a12dbeb5e0b7e05340fcaa98d9f0a4fb36de717759d6",
+        "C1RemovalDiagnostic.dll": "43f240eb24601ac45f3e8f2bfa14697d1f02a7b19d4498aec419789cfd806834",
+        "C1RemovalDiagnostic.pdb": "16afda01bbd6285a92910e96d4b29fcfd43dfa4e7651a5938d1257e6bb8d156e",
+        "C1RemovalDiagnostic.runtimeconfig.json": "97c9700542b659150b230c3578b29530fd76ab01ec66a92cd16945e0245713df"
+      }
+    }
+  }
+}

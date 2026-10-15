@@ -1,0 +1,139 @@
+{
+  "status": "complete; descriptive only; predeclared stop applies",
+  "invocations": 145,
+  "formal_samples": 96,
+  "pilot_samples": 25,
+  "fixture_invocations": 24,
+  "numeric_samples": 121,
+  "all_numeric_rows_validated": true,
+  "all_terminal_returncodes_zero": true,
+  "all_stderr_files_empty": true,
+  "adequate_baseline_cells": 11,
+  "capped_cells": [
+    "diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once"
+  ],
+  "short_formal_samples": [
+    {
+      "key": "diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once",
+      "version": "R",
+      "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-0-R",
+      "calls": 16384,
+      "elapsed_ms": 230.81118,
+      "ns_per_op": 14087.596435546875,
+      "bytes_per_op": 0,
+      "gc0": 0,
+      "gc1": 0,
+      "gc2": 0
+    },
+    {
+      "key": "diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once",
+      "version": "RMinusC1",
+      "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-0-RMinusC1",
+      "calls": 16384,
+      "elapsed_ms": 223.69284,
+      "ns_per_op": 13653.12744140625,
+      "bytes_per_op": 0,
+      "gc0": 0,
+      "gc1": 0,
+      "gc2": 0
+    },
+    {
+      "key": "diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once",
+      "version": "R",
+      "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-1-R",
+      "calls": 16384,
+      "elapsed_ms": 235.662011,
+      "ns_per_op": 14383.667663574219,
+      "bytes_per_op": 0,
+      "gc0": 0,
+      "gc1": 0,
+      "gc2": 0
+    },
+    {
+      "key": "diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once",
+      "version": "RMinusC1",
+      "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-1-RMinusC1",
+      "calls": 16384,
+      "elapsed_ms": 213.457698,
+      "ns_per_op": 13028.423950195312,
+      "bytes_per_op": 0,
+      "gc0": 0,
+      "gc1": 0,
+      "gc2": 0
+    },
+    {
+      "key": "diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once",
+      "version": "R",
+      "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-2-R",
+      "calls": 16384,
+      "elapsed_ms": 218.589061,
+      "ns_per_op": 13341.617492675781,
+      "bytes_per_op": 0,
+      "gc0": 0,
+      "gc1": 0,
+      "gc2": 0
+    },
+    {
+      "key": "diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once",
+      "version": "RMinusC1",
+      "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-2-RMinusC1",
+      "calls": 16384,
+      "elapsed_ms": 216.516539,
+      "ns_per_op": 13215.120788574219,
+      "bytes_per_op": 0,
+      "gc0": 0,
+      "gc1": 0,
+      "gc2": 0
+    },
+    {
+      "key": "diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once",
+      "version": "R",
+      "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-3-R",
+      "calls": 16384,
+      "elapsed_ms": 224.540362,
+      "ns_per_op": 13704.856079101562,
+      "bytes_per_op": 0,
+      "gc0": 0,
+      "gc1": 0,
+      "gc2": 0
+    },
+    {
+      "key": "diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once",
+      "version": "RMinusC1",
+      "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-3-RMinusC1",
+      "calls": 16384,
+      "elapsed_ms": 226.405978,
+      "ns_per_op": 13818.724243164062,
+      "bytes_per_op": 0,
+      "gc0": 0,
+      "gc1": 0,
+      "gc2": 0
+    }
+  ],
+  "short_pilot_samples": 14,
+  "fractional_allocation_rows": 0,
+  "pool_setup_allocation_bytes_min": 135659952,
+  "pool_setup_allocation_bytes_max": 135674168,
+  "pool_setup_gc_deltas_unique": [
+    [
+      24,
+      13,
+      3
+    ]
+  ],
+  "pool_timed_gc_deltas_unique": [
+    [
+      0,
+      0,
+      0
+    ]
+  ],
+  "pool_actual_backing_payload_bytes_unique": [
+    134217728
+  ],
+  "fresh_physical_binary_AA": false,
+  "historical_AA_role": "Context only, never a numerical waiver or acceptance cutoff",
+  "production_disposition": "Unchanged R; no C1-removal promotion",
+  "stopping_interpretation": "Mixed primary lifecycle and copy signs. Cause unconfirmed; stop this investigation round with no new variant, rerun, profiling, or A/A repeat.",
+  "consolidation": "Six byte-identical raw shards, terminal and stderr shards, with per-call offset/length/SHA256 in call-index.jsonl. Launch commands and machine paths omitted; original launch hashes retained."
+}

@@ -1,0 +1,3 @@
+key,version,samples,min_ns,median_ns,max_ns,short_samples,all_validated
+diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once,R,4,13341.617492675781,13896.226257324219,14383.667663574219,4,True
+diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once,RMinusC1,4,13028.423950195312,13434.124114990234,13818.724243164062,4,True

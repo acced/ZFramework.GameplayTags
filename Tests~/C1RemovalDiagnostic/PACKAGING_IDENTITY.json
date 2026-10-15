@@ -1,0 +1,41 @@
+{
+  "scope": "Reversible sibling staging only; no target execution, Runtime mutation, pinned-input edit or remote write during packaging.",
+  "original_evidence_invocations": 145,
+  "original_numeric_samples": 121,
+  "frozen_harness_files": {
+    "C1RemovalDiagnostic.csproj": "aa1b582b6590f6e89bffb7af0cf7e8f10482e49420a52146f4cdb5dc1517cf1f",
+    "CopyValidated-removal.patch": "0472b3fc80a1e8c11db602573b11243b4cb5358970054a2aef0088e027b798e2",
+    "NuGet.Config": "2142cfb2dfa2c7feefbe40fabcc68b0dfecadafa99a1db9b70239d977cf2a7ef",
+    "PROTOCOL.md": "3d20c077d5a9dfcdaf0b8a65af00a3dc8e68a4be306f31203d08dc0b4337be67",
+    "Program.cs": "9a2c081506c8887fa438599377d1d60be481dee7270d10ea9cb3f44b6c42b46e",
+    "README.md": "b35a98115e263f21b5b8bee5a94326f3c1d1b211ae81070d57fb0e048e2ff281",
+    "UnityStubs.cs": "970032bab87b97d6fd825c5c08a09f94a827d11f803397bd82f349c248460b45",
+    "build_snapshots.sh": "8577f4c933d472d0de15e60ba835df57a91fdaee0b73dc7fbdc73157c930b51c",
+    "cells.json": "dc0416fb063b6b6bd12d0975d2c96dc3f8d7f954db87f17eef9a26bbbf4f1b00",
+    "correctness-inputs.sha256": "65914f8d6b8a66089d69d9292699807cef2819e78630da096afc9c058ec78285",
+    "correctness.sh": "365d1c095bab62da5a5edd927eb46241ce3329cccca5fd8c210f75d17a1bd735",
+    "measurement-inputs.sha256": "5bedf158cba91fac2d14fab037d2ebedb98296d7bf2016bc9b565b31d49a93f7",
+    "prepare_protocol.py": "c5b04d329dc726936d90ca50f44661dd8c49c5929ad13d71d6c60fafd2e7d18d",
+    "run_bounded.sh": "1ff4fad99960b4d9f51c5edcb6df4b8d3659204ecd2b391b33db81f661ba68d4",
+    "run_comparison.py": "6457dd45db175dddf49bae785d6d6eb021861ba0fb2b4deb3e9ab89f74320386",
+    "source-proof.json": "192a506682fad70062951003bcab02b96d2583ea015ea29ded564456371dda8a",
+    "source_pins.json": "5f56f886edc78aef7d9378364e810121697e0a4abce78f08acba1b08e2a09f5e",
+    "summarize.py": "bf3c334ec3a4ae243686b7d04b158ae2c5267e5bf382747bfb48b8c46aa9c788",
+    "verify_sources.py": "1264ee5b714735f4f7845974044878fd815634019ae87afe2531ff88f2adcb0c"
+  },
+  "summarizer_sha256": "bf3c334ec3a4ae243686b7d04b158ae2c5267e5bf382747bfb48b8c46aa9c788",
+  "public_original_stdout_terminal_stderr_byte_identity_verified": true,
+  "source_and_binary_frozen_hashes_verified": true,
+  "numerical_csvs_produced_by_unchanged_frozen_summarizer": true,
+  "publication_document_changes": {
+    "README.md": {
+      "collected_sha256": "b35a98115e263f21b5b8bee5a94326f3c1d1b211ae81070d57fb0e048e2ff281",
+      "published_sha256": "85b2b61195885664eee8c151899f8f5664212f82501d4769603538e48192dcb8"
+    },
+    "measurement-inputs.sha256": {
+      "collected_sha256": "5bedf158cba91fac2d14fab037d2ebedb98296d7bf2016bc9b565b31d49a93f7",
+      "published_sha256": "b1749b5f7fc312b02568630c91f37c906782eea7d7a515700e9e03a3d0e009f6"
+    },
+    "note": "README outcome/reproduction wording and its hash manifest only. All collected executable inputs and protocol remain byte-identical; originals remain in Evidence/TimedHarness."
+  }
+}

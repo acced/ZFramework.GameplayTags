@@ -1,0 +1,13 @@
+key,classification,pairs,pair_signs,median_ratio,min_ratio,max_ratio,faster_pairs,slower_pairs,equal_pairs,all_validated,any_short
+diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once,preprepared-single-copy-diagnostic,4,0:faster;1:faster;2:faster;3:slower,0.9798390521340453,0.9057789887059905,1.008308599769693,3,1,0,True,True
+guard-append-s1023-t1024-c1024-last-new,whole-public-workflow,4,0:faster;1:slower;2:slower;3:faster,1.0278986973493112,0.9428886997547434,1.1302738073379042,2,2,0,True,False
+guard-append-s1023-t1024-c2048-last-retained,whole-public-workflow,4,0:faster;1:faster;2:faster;3:slower,0.96136944496035,0.9082635465190382,1.1311727241735878,3,1,0,True,False
+guard-copy-s0-t0-c0-same-names-retained,whole-public-workflow,4,0:slower;1:slower;2:slower;3:slower,2.147418992495328,1.6728565775405457,2.2906394572298736,0,4,0,True,False
+guard-copy-s0-t1-c1-same-names-retained,whole-public-workflow,4,0:slower;1:slower;2:slower;3:slower,1.5163149103324245,1.333440389148888,1.5809764736078578,0,4,0,True,False
+guard-copy-s1-t1-c1-same-names-retained,whole-public-workflow,4,0:slower;1:slower;2:slower;3:slower,1.2916292146390314,1.2017706125653569,1.3715848315328854,0,4,0,True,False
+guard-copy-s1-t2-c2-same-names-retained,whole-public-workflow,4,0:slower;1:faster;2:slower;3:slower,1.1572541831843992,0.9791896189441526,1.192538987356,1,3,0,True,False
+guard-lifecycle-s1-t1-c1-full-overlap-new,whole-public-workflow,4,0:slower;1:slower;2:faster;3:slower,1.0492457834652167,0.9422097688654735,1.187412487516237,1,3,0,True,False
+guard-right-s1023-t1024-c1024-last-new,whole-public-workflow,4,0:slower;1:faster;2:slower;3:faster,1.0122804375750563,0.9850090258645984,1.1046984786816045,2,2,0,True,False
+guard-right-s1023-t1024-c2048-last-retained,whole-public-workflow,4,0:faster;1:slower;2:faster;3:faster,0.930091963016612,0.8360212634099133,1.054036020666313,3,1,0,True,False
+primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained,whole-public-workflow,4,0:slower;1:faster;2:slower;3:slower,1.0469596203860467,0.8694306756510202,1.151657962874875,1,3,0,True,False
+primary-lifecycle-s1024-t1024-c1024-half-overlap-new,whole-public-workflow,4,0:slower;1:slower;2:slower;3:faster,1.0717581275357124,0.8893182546400652,1.164570867581729,1,3,0,True,False

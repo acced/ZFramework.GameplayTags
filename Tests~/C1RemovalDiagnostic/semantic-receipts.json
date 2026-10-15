@@ -1,0 +1,66 @@
+{
+  "status": "PASS",
+  "sources": {
+    "R": {
+      "roadmap_assertions": 1002001,
+      "roadmap_transcript": "6EA12A348CF620CDC4FC89C09BEC0C8933A7B22A8542A2214F0CB4CE011A948F",
+      "c12_assertions": 197333,
+      "c12_transcript": "7D22FEB7F987696BD817E126DD29BABFF5F0DCFE622C617391FA1E2D8B053BA8",
+      "netstandard2_1_CSharp9": "PASS"
+    },
+    "RMinusC1": {
+      "roadmap_assertions": 1002001,
+      "roadmap_transcript": "6EA12A348CF620CDC4FC89C09BEC0C8933A7B22A8542A2214F0CB4CE011A948F",
+      "c12_assertions": 197333,
+      "c12_transcript": "7D22FEB7F987696BD817E126DD29BABFF5F0DCFE622C617391FA1E2D8B053BA8",
+      "netstandard2_1_CSharp9": "PASS"
+    }
+  },
+  "differential_transcripts_equal": true,
+  "sources_before_after_byte_equal": true,
+  "sdk_version": "8.0.425",
+  "sdk_rollForward": "disable",
+  "runtime_source_proof": {
+    "status": "PASS",
+    "reference_commit": "792ce83f1c2a9aeaadc045c192d70081d866d903",
+    "reference_runtime_tree": "1e42d9659e26e385b267f877a9e3e493ce0eb916",
+    "reference_runtime_file_count": 16,
+    "R_equals_git_reference_runtime": true,
+    "production_Runtime_equals_R": true,
+    "historical_commit": "352d304299ecbb7486e2c6a56ba71874c90fe21b",
+    "historical_runtime_tree": "e187f359e18947164de8ff2c94d909a46c6a3b93",
+    "historical_PR4_baseline_files_verified_against_git": [
+      "AssemblyInfo.cs",
+      "GameplayTag.cs",
+      "GameplayTagContainer.cs",
+      "GameplayTagContainerAlgorithms.cs",
+      "GameplayTagManager.cs",
+      "GameplayTagQuery.cs",
+      "GameplayTagSettings.cs"
+    ],
+    "RMinusC1_method_body_equals_exact_historical_CopyValidated": true,
+    "only_method_body_changed": true,
+    "C2_and_all_other_Runtime_bytes_unchanged": true,
+    "changed_file": "GameplayTagContainerAlgorithms.cs",
+    "changed_method": "CopyValidated",
+    "method_body_sha256": {
+      "R": "9914b6309c6b90cc61bafffd7a4216e4383179ef06b9832e2c02bcab16f190a6",
+      "RMinusC1": "34540b34b313f5a94a8b933304afe08df883798af7ba91a438555ebd1d3d773d"
+    },
+    "builds_or_harness_runs_performed_by_source_verification": false
+  },
+  "exact_semantic_receipt_copies_sha256": {
+    "summary.json": "d5b22fef2282edf9a5a2e3c4d0bff8154374865d65d1cf62d0007f67fd4a4bf6",
+    "roadmap.differential.log": "2a4e178fb5885b6e49eedd4f66e3e53cbd560ce8f9a5555f9bf21fc440ef9bcb",
+    "c12.differential.log": "6537d9b775f5cd21cce24e2c72e1e374aace8dbb4718cc434472fe48d38ede18",
+    "global.json": "9969992897aee36fbc62db0976390d87b1275dc0d7c6fcb937a7f81a316f97dc",
+    "R/roadmap.log": "517dd06065371f751739e0786051c273bf875a16fa623acedccec500775635a6",
+    "R/c12.log": "f96ea03a6aa1a4ded4c0c422bc5e79f344b7f96bdfe75b47be2ec00f66fc9c74",
+    "R/compat.log": "cbc8778609d52747d6fa5f9550b2e65bf0724108b9e96347f3531ed47e9e824f",
+    "RMinusC1/roadmap.log": "517dd06065371f751739e0786051c273bf875a16fa623acedccec500775635a6",
+    "RMinusC1/c12.log": "f96ea03a6aa1a4ded4c0c422bc5e79f344b7f96bdfe75b47be2ec00f66fc9c74",
+    "RMinusC1/compat.log": "8de39ae9380a489a03af138d0b73ad7685cbbb00f39e27e8db38d5551a17e98e"
+  },
+  "portable_source_inventory_note": "Only runtime_path values changed from executor-absolute to repository-relative; source IDs and file hashes are unchanged. Original before/after inventory bytes were equal.",
+  "new_target_invocations_during_staging": 0
+}
