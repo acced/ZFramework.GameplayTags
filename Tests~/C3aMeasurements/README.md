@@ -24,13 +24,13 @@ C3a was not accepted for production. The comparison was mixed, with repeated los
 
 ## Portable correctness, without benchmarks
 
-From repository root, with Python3 and an installed .NET8 SDK on PATH (or DOTNET set):
+From repository root, with Python3 and installed .NET SDK8.0.425 on PATH (or DOTNET set):
 
     H="$PWD/Tests~/C3aMeasurements"
     python3 "$H/verify_sources.py"
     timeout --signal=TERM --kill-after=5s 175s bash "$H/correctness.sh" "$PWD/../c3a-fresh-correctness"
 
-Use a new absolute output directory. This reuses Roadmap with phase APIs/optimization probes, C12Correctness, and netstandard2.1/C#9 compilation for both pinned snapshots. It checks identical differential transcripts, exact source/input hashes and exclusive output. The180s ceiling includes cleanup. It does not invoke the measurement harness. Existing semantic logs are in Evidence/Semantics; newly run results are separate evidence.
+Use a new absolute output directory. The script creates an output-local global.json pinned to8.0.425 with rollForward disabled, then runs all dotnet commands from that directory. This selects the required installed SDK even if the host defaults to a newer SDK; it changes no repository SDK settings. This narrow CI recovery leaves measured inputs and evidence untouched. This reuses Roadmap with phase APIs/optimization probes, C12Correctness, and netstandard2.1/C#9 compilation for both pinned snapshots. It checks identical differential transcripts, exact source/input hashes and exclusive output. The180s ceiling includes cleanup. It does not invoke the measurement harness. Existing semantic logs are in Evidence/Semantics; newly run results are separate evidence.
 
 ## Fresh comparison, only when explicitly requested
 

@@ -13,8 +13,13 @@ mkdir -p "$out"
 python3 "$here/verify_sources.py" > "$out/sources.before.json"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 export DOTNET_CLI_HOME="$out/dotnet-home" NUGET_PACKAGES="$out/packages"
+# Select the measured SDK even when the host defaults to a newer installed SDK.
+cat > "$out/global.json" <<'JSON'
+{"sdk":{"version":"8.0.425","rollForward":"disable"}}
+JSON
+cd "$out"
 "$DOTNET" --info > "$out/dotnet-info.txt"
-[[ "$("$DOTNET" --version)" == 8.* ]] || { echo 'Expected a .NET8 SDK' >&2; exit 1; }
+[[ "$("$DOTNET" --version)" == 8.0.425 ]] || { echo 'Expected .NET SDK8.0.425' >&2; exit 1; }
 for label in current792 C3a; do
   runtime="$here/Sources/$label/Runtime"
   mkdir -p "$out/$label"
