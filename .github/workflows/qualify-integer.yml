@@ -16,18 +16,23 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.425'
-      - name: Materialize reviewed upload-relative changes on staging only
+      - name: Materialize audited sources on staging only
         run: |
           test "$GITHUB_REF_NAME" = work/integer-hardening-20261015
           python3 Tools~/Hardening/bootstrap.py
-          git add -A Runtime Editor Tests~ Tools~
+          python3 Tools~/Hardening/finalize.py
+          git add -A Runtime Editor Tests~ Tools~ Documentation~ README.md CHANGELOG.md package.json global.json
           if ! git diff --cached --quiet; then
-            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'refactor: materialize audited integer hardening and uploaded baseline'
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'fix: finalize integer safety contracts and uploaded-source comparison'
             git push origin HEAD:refs/heads/work/integer-hardening-20261015
           fi
           git rev-parse HEAD > "$RUNNER_TEMP/tested-commit.txt"
-      - name: Correctness, safety reproductions and compatibility
+      - name: Correctness, baseline failure reproductions and compatibility
         run: bash Tools~/Hardening/validate.sh "$RUNNER_TEMP/validation"
+      - name: Same-host uploaded versus hardened public-workflow screen
+        run: python3 Tools~/Hardening/benchmark.py "$RUNNER_TEMP/performance"
+      - name: Installable source package with per-file checksums
+        run: python3 Tools~/Hardening/package.py "$RUNNER_TEMP/package"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -36,3 +41,7 @@ jobs:
             ${{ runner.temp }}/tested-commit.txt
             ${{ runner.temp }}/validation/*.log
             ${{ runner.temp }}/validation/SUMMARY.txt
+            ${{ runner.temp }}/performance/*.csv
+            ${{ runner.temp }}/performance/*.json
+            ${{ runner.temp }}/performance/*/build.log
+            ${{ runner.temp }}/package/*
