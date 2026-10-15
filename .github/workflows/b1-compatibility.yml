@@ -1,0 +1,59 @@
+name: B1 compatibility
+on:
+  push:
+    branches: [refactor/roadmap-b1-20261013]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  portable-correctness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.425'
+      - name: Differential behavior and compatibility compile
+        run: bash Tests~/Roadmap/run.sh
+      - name: C1/C2 supplemental differential behavior
+        run: |
+          sha256sum -c Tests~/C12Correctness/SOURCE_SHA256SUMS
+          bash Tests~/C12Correctness/run.sh \
+            "B1=$GITHUB_WORKSPACE/Tests~/Roadmap/Baselines/B1/Runtime" \
+            "PR4=$GITHUB_WORKSPACE/Tests~/C12Correctness/Baselines/PR4/Runtime" \
+            "C1=$GITHUB_WORKSPACE/Tests~/C12Correctness/Baselines/C1/Runtime" \
+            "current=$GITHUB_WORKSPACE/Runtime"
+      - name: C3a experimental correctness and compatibility
+        run: bash Tests~/C3aMeasurements/correctness.sh "$RUNNER_TEMP/c3a-correctness"
+      - name: C1-removal diagnostic correctness and compatibility
+        run: bash Tests~/C1RemovalDiagnostic/correctness.sh "$RUNNER_TEMP/c1-removal-correctness"
+  release-package:
+    needs: portable-correctness
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.425'
+      - name: Release packager regression tests
+        run: python3 Tools~/Release/test_build.py
+      - name: Compile Unity tests against NUnit and portable stubs (not Unity execution)
+        working-directory: Tools~/Release
+        run: dotnet build UnityTests.Compile.csproj -c Release --configfile NuGet.Config
+      - name: Freeze audit and deterministic UPM package
+        run: |
+          python3 Tools~/Release/build.py --output "$RUNNER_TEMP/release-candidate"
+          python3 Tools~/Release/build.py --output "$RUNNER_TEMP/release-repeat"
+          cmp "$RUNNER_TEMP/release-candidate/zframework.gameplaytag-1.1.0-rc.1.tgz" "$RUNNER_TEMP/release-repeat/zframework.gameplaytag-1.1.0-rc.1.tgz"
+          (cd "$RUNNER_TEMP/release-candidate" && sha256sum -c *.sha256)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-candidate-${{ github.sha }}
+          path: ${{ runner.temp }}/release-candidate/
+          if-no-files-found: error
+          retention-days: 30

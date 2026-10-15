@@ -1,0 +1,8 @@
+{
+  "status": "complete",
+  "processes": 62,
+  "cells": 31,
+  "calls": 1,
+  "timing": false,
+  "note": "Benchmark fixtures only; separate semantic pass still required."
+}

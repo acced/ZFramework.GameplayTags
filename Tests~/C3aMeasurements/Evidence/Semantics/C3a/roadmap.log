@@ -1,0 +1,4 @@
+PASS B1.1 containment probes: exact-fit append and both union target aliases retain capacity and source identities
+PASS B1.1 core capacity probes: factory/filter/reused sparse targets retain exact B1 min-count policy
+PASS assertions=1002001
+TRANSCRIPT 6EA12A348CF620CDC4FC89C09BEC0C8933A7B22A8542A2214F0CB4CE011A948F

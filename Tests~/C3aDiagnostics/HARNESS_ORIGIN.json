@@ -1,0 +1,19 @@
+{
+  "commit": "792ce83f1c2a9aeaadc045c192d70081d866d903",
+  "unchanged_files": {
+    "Program.cs": {
+      "source": "Tests~/C12Measurements/Program.cs",
+      "sha256": "62638366804b87989b49a15d14fc15daf1dce8a7d93ef7fb0698825d77ac14d7"
+    },
+    "UnityStubs.cs": {
+      "source": "Tests~/C12Measurements/UnityStubs.cs",
+      "sha256": "970032bab87b97d6fd825c5c08a09f94a827d11f803397bd82f349c248460b45"
+    },
+    "NuGet.Config": {
+      "source": "Tests~/C12Measurements/NuGet.Config",
+      "sha256": "2142cfb2dfa2c7feefbe40fabcc68b0dfecadafa99a1db9b70239d977cf2a7ef"
+    }
+  },
+  "project_change": "AssemblyName is C3aNaturalDiagnostics for the diagnostic capture filter; compilation otherwise uses the same runtime sources and harness. No runtime method or inlining attributes were altered.",
+  "portable_scripts": "Publication build/capture/decoder scripts were adapted from the reviewed private runners and syntax-checked only. Saved-text normalization was reapplied to original dumps; no new build or workload target was launched."
+}

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup>
+  <OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework>
+  <StartupObject>C12Correctness</StartupObject><EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  <ImplicitUsings>disable</ImplicitUsings><Nullable>disable</Nullable><LangVersion>9.0</LangVersion>
+  <GenerateAssemblyInfo>false</GenerateAssemblyInfo><DefineConstants>PHASE_APIS</DefineConstants>
+  <RuntimePath Condition="'$(RuntimePath)' == ''">../../Runtime</RuntimePath>
+ </PropertyGroup>
+ <ItemGroup><Compile Include="$(RuntimePath)/*.cs"/><Compile Include="../Roadmap/Program.cs"/>
+ <Compile Include="../Roadmap/UnityStubs.cs"/><Compile Include="Supplement.cs"/></ItemGroup>
+</Project>

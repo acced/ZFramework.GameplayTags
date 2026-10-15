@@ -1,0 +1,7 @@
+.github/
+.gitignore
+Tests~/
+Tools~/
+**/bin/
+**/obj/
+**/__pycache__/

@@ -1,0 +1,8 @@
+declared_universe=4096;actual_registry_count=4096;tag_record_size=8
+runtime=.NET 8.0.31; os=Debian GNU/Linux 13 (trixie); cpu=9; stopwatch=1000000000; tiered=0
+stale_snapshot_array_payload,B11Narrow,0,before_rebind=0,after_rebind=0,after_next_rebuild_and_clear=0
+stale_snapshot_array_payload,B11Narrow,1,before_rebind=0,after_rebind=0,after_next_rebuild_and_clear=0
+stale_snapshot_array_payload,B11Narrow,8,before_rebind=0,after_rebind=0,after_next_rebuild_and_clear=0
+stale_snapshot_array_payload,B11Narrow,64,before_rebind=0,after_rebind=0,after_next_rebuild_and_clear=0
+stale_snapshot_array_payload,B11Narrow,1024,before_rebind=0,after_rebind=0,after_next_rebuild_and_clear=0
+sink=3161319672

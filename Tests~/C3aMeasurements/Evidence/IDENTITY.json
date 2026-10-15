@@ -1,0 +1,101 @@
+{
+  "scope": "Sanitized identity receipt; raw numeric and terminal files are byte-identical. Machine-local paths, launch commands, environment values and build logs omitted.",
+  "sdk": "8.0.425",
+  "runtime": "Microsoft.NETCore.App8.0.31",
+  "os": "Debian13Linuxx64",
+  "tiered_compilation": 0,
+  "compile_input_files": {
+    "Program.cs": "daac57a934fdb4338103c93fcc1d64316816d1ae7eac4850416d40fc152f9962",
+    "UnityStubs.cs": "970032bab87b97d6fd825c5c08a09f94a827d11f803397bd82f349c248460b45",
+    "C3aMeasurements.csproj": "aa1b582b6590f6e89bffb7af0cf7e8f10482e49420a52146f4cdb5dc1517cf1f",
+    "NuGet.Config": "2142cfb2dfa2c7feefbe40fabcc68b0dfecadafa99a1db9b70239d977cf2a7ef"
+  },
+  "dotnet_host_sha256": "7dda7a639bc35fba05c40d308b0296450aa4e628d109245a6312c385da9b0931",
+  "original_manifest_sha256": "fd7969d8db4f6d0890328a34d5d78570f69db66bdd7502fa01a60b4fbf7558d3",
+  "original_freeze_sha256": "cc2b59c75601e2eb95c53b0709ffd0fc1bca4c2d9884029294b4729a175bbb7b",
+  "original_source_pins_sha256": "b11ab6390157b27b0235698164b1cb25975284fd52ede572b75422e87837fa4f",
+  "original_sdk_runtime_receipt_sha256": "09c1b3b452c7bf51540c98b289de23afd0e1b0f7a089be4e06e0586521c2aa62",
+  "measured_harness": {
+    "C3aMeasurements.csproj": "aa1b582b6590f6e89bffb7af0cf7e8f10482e49420a52146f4cdb5dc1517cf1f",
+    "NuGet.Config": "2142cfb2dfa2c7feefbe40fabcc68b0dfecadafa99a1db9b70239d977cf2a7ef",
+    "PREPARATION_IDENTITY.json": "c7882f89541feccc66587afaee0dc5a26c16f9cbdaefecafac37cdc26b7cb141",
+    "PROTOCOL.md": "fa45dff9747f1f9740080c69bee082a50a2f6ebb83212d1fecaaaa1d22ef7e95",
+    "Program.cs": "daac57a934fdb4338103c93fcc1d64316816d1ae7eac4850416d40fc152f9962",
+    "README.md": "30227d1927e63881fcde1b84c04848e56b23a7b89afd263c40c37ade670617b5",
+    "SOURCE_REVIEW.md": "dcd07041d53f8150fba0d5963ccdd4e85a839efe604d18402dc74ad7e0bb8cfd",
+    "UnityStubs.cs": "970032bab87b97d6fd825c5c08a09f94a827d11f803397bd82f349c248460b45",
+    "build_snapshots.sh": "512fb811d4cf7ef2c10295f74e54861f7c98758b387debaee63e91aa33c80870",
+    "cells.json": "3375e9515c3a6aaf698c057624b3a47e690ccdee89a6fdecc7184e22baec76bb",
+    "prepare_protocol.py": "5bdec95f6fb503d36626eeb6ae03ab1da3bad1d0e053a2dbabb383ec856351d1",
+    "run_comparison.py": "19530b06d357a6dd62e2355b4af91414c41117e925b73ca549f2a8aa2eda69d1",
+    "source_pins.json": "b11ab6390157b27b0235698164b1cb25975284fd52ede572b75422e87837fa4f",
+    "summarize.py": "88f344ed6ec0326750e594c8970c2cdc1dc3f6ca881d762088d799b9628bd7bd",
+    "verify_sources.py": "234d38402b1e6e9ad3e89af6ef7e1098b35c83531394c47db5b3c6b253416a72"
+  },
+  "sources": {
+    "current792": {
+      "source_id": "792ce83f1c2a9aeaadc045c192d70081d866d903",
+      "files": {
+        "AssemblyInfo.cs": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4",
+        "AssemblyInfo.cs.meta": "2d3da3e6216c297b859cb7e6387352a5182b6f54674f0ecbbe9f44d70f7822de",
+        "GameplayTag.cs": "811610e3ab03098c750180acc9e4b2c101a9732924c4ec32029b46bf0b613758",
+        "GameplayTag.cs.meta": "6c7c83b76381077ebd955fb0b247f092271fe63f864601299205f21e3aed6982",
+        "GameplayTagContainer.cs": "cde7d94d624ab6f5b1b6305a21e82b8371cf59895a879834fa3677b1ee4d6866",
+        "GameplayTagContainer.cs.meta": "e8d9bfdf8c49db016e48fe068d9fd76585d1e6dda1cd9e0aac91d41f8cfb8b14",
+        "GameplayTagContainerAlgorithms.cs": "55d8352d53a3528a75181a4fe02d3796b41e4cf177716235dd7d85964c1ea9f6",
+        "GameplayTagContainerAlgorithms.cs.meta": "df8d3e02e61a3407ce252c4f0137e7adf115a1c3790c9b4103a2c83577d52170",
+        "GameplayTagManager.cs": "fd627ed71f631aa6e2341568db5903908ab4309d7db468b0a1a6bba3411dd3ae",
+        "GameplayTagManager.cs.meta": "3335db4fc45b6d7ae0b5457b4f42cec3fb31e2167ca955ccdc6bee8d14d4ea92",
+        "GameplayTagQuery.cs": "57f38ae71f0fbcf7c8b0ac8be8d2c2d0052435a594bcecbdc43d8ba2bc0fef62",
+        "GameplayTagQuery.cs.meta": "956a69410151fffdcd1e06a32ba56bba2ba68aa381d07cbc9836230d98f9522b",
+        "GameplayTagSettings.cs": "99826726b17ac0553e3a218a6024ec91471a7a3267dafbe1a2c0cb2da31b5122",
+        "GameplayTagSettings.cs.meta": "89f9dcc51db2f8409bae247f02d902d179b8850cabe7159113bc704a7c3e8647",
+        "GameplayTags.asmdef": "ac3527d9d55cea4179f4d87dc1c1354306f9b2f3cf9018b6b049dc55e8b851c7",
+        "GameplayTags.asmdef.meta": "4981c1d8fed1cdadfb67e08fdcc51181874cbcc79cf23c712b7a83f50378a7e8"
+      }
+    },
+    "C3a": {
+      "source_id": "792ce83f1c2a9aeaadc045c192d70081d866d903 + C3a nonalias UnionSorted compare/tails patch",
+      "files": {
+        "AssemblyInfo.cs": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4",
+        "AssemblyInfo.cs.meta": "2d3da3e6216c297b859cb7e6387352a5182b6f54674f0ecbbe9f44d70f7822de",
+        "GameplayTag.cs": "811610e3ab03098c750180acc9e4b2c101a9732924c4ec32029b46bf0b613758",
+        "GameplayTag.cs.meta": "6c7c83b76381077ebd955fb0b247f092271fe63f864601299205f21e3aed6982",
+        "GameplayTagContainer.cs": "cde7d94d624ab6f5b1b6305a21e82b8371cf59895a879834fa3677b1ee4d6866",
+        "GameplayTagContainer.cs.meta": "e8d9bfdf8c49db016e48fe068d9fd76585d1e6dda1cd9e0aac91d41f8cfb8b14",
+        "GameplayTagContainerAlgorithms.cs": "88836e6359a0adb56a29c321483975fd46f42402db8d9cfad830fb1438428757",
+        "GameplayTagContainerAlgorithms.cs.meta": "df8d3e02e61a3407ce252c4f0137e7adf115a1c3790c9b4103a2c83577d52170",
+        "GameplayTagManager.cs": "fd627ed71f631aa6e2341568db5903908ab4309d7db468b0a1a6bba3411dd3ae",
+        "GameplayTagManager.cs.meta": "3335db4fc45b6d7ae0b5457b4f42cec3fb31e2167ca955ccdc6bee8d14d4ea92",
+        "GameplayTagQuery.cs": "57f38ae71f0fbcf7c8b0ac8be8d2c2d0052435a594bcecbdc43d8ba2bc0fef62",
+        "GameplayTagQuery.cs.meta": "956a69410151fffdcd1e06a32ba56bba2ba68aa381d07cbc9836230d98f9522b",
+        "GameplayTagSettings.cs": "99826726b17ac0553e3a218a6024ec91471a7a3267dafbe1a2c0cb2da31b5122",
+        "GameplayTagSettings.cs.meta": "89f9dcc51db2f8409bae247f02d902d179b8850cabe7159113bc704a7c3e8647",
+        "GameplayTags.asmdef": "ac3527d9d55cea4179f4d87dc1c1354306f9b2f3cf9018b6b049dc55e8b851c7",
+        "GameplayTags.asmdef.meta": "4981c1d8fed1cdadfb67e08fdcc51181874cbcc79cf23c712b7a83f50378a7e8"
+      }
+    }
+  },
+  "binaries": {
+    "current792": {
+      "source_id": "792ce83f1c2a9aeaadc045c192d70081d866d903",
+      "files": {
+        "C3aMeasurements": "faddd61b835581193231c78b6eefa6ba372d456320b59629dfed15cf59d6d543",
+        "C3aMeasurements.deps.json": "3ae3dbb22d328bf0f937a8eb44044e208f83260d192db5def3ead47523868106",
+        "C3aMeasurements.dll": "2fc6791db33478fb9c5fd297afce653ebba6dc6a03c0cf16bc1fa0630befb812",
+        "C3aMeasurements.pdb": "1b08290576a568967d2ef9416dd3eb8dbe9576848872e215fdca96b2a6fc4543",
+        "C3aMeasurements.runtimeconfig.json": "97c9700542b659150b230c3578b29530fd76ab01ec66a92cd16945e0245713df"
+      }
+    },
+    "C3a": {
+      "source_id": "792ce83f1c2a9aeaadc045c192d70081d866d903 + C3a nonalias UnionSorted compare/tails patch",
+      "files": {
+        "C3aMeasurements": "faddd61b835581193231c78b6eefa6ba372d456320b59629dfed15cf59d6d543",
+        "C3aMeasurements.deps.json": "3ae3dbb22d328bf0f937a8eb44044e208f83260d192db5def3ead47523868106",
+        "C3aMeasurements.dll": "ed8918a4861d040e9e64d3a0ca0398d4532085c56f36a3bd0b199bc2a62ac0b8",
+        "C3aMeasurements.pdb": "a685c8d30de5ab5ca51653f1ec8b21d3bae3b179a6eff5c1dca21784a04db522",
+        "C3aMeasurements.runtimeconfig.json": "97c9700542b659150b230c3578b29530fd76ab01ec66a92cd16945e0245713df"
+      }
+    }
+  }
+}

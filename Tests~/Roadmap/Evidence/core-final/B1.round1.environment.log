@@ -1,0 +1,3 @@
+declared_universe=4096;actual_registry_count=4096;tag_record_size=8
+runtime=.NET 8.0.31; os=Debian GNU/Linux 13 (trixie); cpu=9; stopwatch=1000000000; tiered=0
+sink=94791760

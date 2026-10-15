@@ -1,0 +1,41 @@
+{
+  "B11": {
+    "commit": "352d304299ecbb7486e2c6a56ba71874c90fe21b",
+    "repository_path": "Tests~/C12Correctness/Baselines/PR4/Runtime",
+    "files": {
+      "AssemblyInfo.cs": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4",
+      "GameplayTag.cs": "811610e3ab03098c750180acc9e4b2c101a9732924c4ec32029b46bf0b613758",
+      "GameplayTagContainer.cs": "cde7d94d624ab6f5b1b6305a21e82b8371cf59895a879834fa3677b1ee4d6866",
+      "GameplayTagContainerAlgorithms.cs": "3a98190d288ca445fcb0146b3d100a88f2a875f3e335c38d01395ea77326a7ba",
+      "GameplayTagManager.cs": "fd627ed71f631aa6e2341568db5903908ab4309d7db468b0a1a6bba3411dd3ae",
+      "GameplayTagQuery.cs": "57f38ae71f0fbcf7c8b0ac8be8d2c2d0052435a594bcecbdc43d8ba2bc0fef62",
+      "GameplayTagSettings.cs": "99826726b17ac0553e3a218a6024ec91471a7a3267dafbe1a2c0cb2da31b5122"
+    }
+  },
+  "C1": {
+    "commit": "6830b912ad5c3eb00f78059e7c1f374e4d959028",
+    "repository_path": "Tests~/C12Correctness/Baselines/C1/Runtime",
+    "files": {
+      "AssemblyInfo.cs": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4",
+      "GameplayTag.cs": "811610e3ab03098c750180acc9e4b2c101a9732924c4ec32029b46bf0b613758",
+      "GameplayTagContainer.cs": "cde7d94d624ab6f5b1b6305a21e82b8371cf59895a879834fa3677b1ee4d6866",
+      "GameplayTagContainerAlgorithms.cs": "7d4aa2f4023247c7d9703a2747aa5a3b4d26863577885796aa308eef06d871c4",
+      "GameplayTagManager.cs": "fd627ed71f631aa6e2341568db5903908ab4309d7db468b0a1a6bba3411dd3ae",
+      "GameplayTagQuery.cs": "57f38ae71f0fbcf7c8b0ac8be8d2c2d0052435a594bcecbdc43d8ba2bc0fef62",
+      "GameplayTagSettings.cs": "99826726b17ac0553e3a218a6024ec91471a7a3267dafbe1a2c0cb2da31b5122"
+    }
+  },
+  "current792": {
+    "commit": "792ce83f1c2a9aeaadc045c192d70081d866d903",
+    "repository_path": "Tests~/C3aMeasurements/Sources/current792/Runtime",
+    "files": {
+      "AssemblyInfo.cs": "f1a839c47d30932d2aa70197d42572ee541e33dfed1f81c214e28ef3880ad1e4",
+      "GameplayTag.cs": "811610e3ab03098c750180acc9e4b2c101a9732924c4ec32029b46bf0b613758",
+      "GameplayTagContainer.cs": "cde7d94d624ab6f5b1b6305a21e82b8371cf59895a879834fa3677b1ee4d6866",
+      "GameplayTagContainerAlgorithms.cs": "55d8352d53a3528a75181a4fe02d3796b41e4cf177716235dd7d85964c1ea9f6",
+      "GameplayTagManager.cs": "fd627ed71f631aa6e2341568db5903908ab4309d7db468b0a1a6bba3411dd3ae",
+      "GameplayTagQuery.cs": "57f38ae71f0fbcf7c8b0ac8be8d2c2d0052435a594bcecbdc43d8ba2bc0fef62",
+      "GameplayTagSettings.cs": "99826726b17ac0553e3a218a6024ec91471a7a3267dafbe1a2c0cb2da31b5122"
+    }
+  }
+}

@@ -308,3 +308,17 @@ Sample.State.Debuff.Control.Stunned,Prevents actions,Default,false,true
 ## 许可证
 
 [MIT](./LICENSE.md)。
+
+
+## B1 roadmap compatibility candidate
+
+Merge-based bulk operations and alias-safe reusable target APIs are described in [the Phase 1 notes](Documentation~/B1_ROADMAP.md). Name-sorted storage is retained. [Portable tests](Tests~/Roadmap/README.md) do not replace Unity validation.
+
+
+### B1.1 refinements
+
+B1.1 retains per-call validation reuse, bulk copy, direct-source append, alias-aware union and single-list construction. Intersection/difference keep B1 policies after the separately measured sparse/skew experiment showed regressions. See [changes](Documentation~/B11_CHANGES.md) and [final core results](Documentation~/B11_FINAL_RESULTS.md), including losing rows and preserved experimental datasets. P1 remains separate and is not included in this production update.
+
+### C1 / C2 copy and append refinements
+
+Empty/singleton copies use dedicated paths, and append/aliased union reuses containment-scan progress for suffix-only merging. [The complete C1/C2 report](Tests~/C12Measurements/OUTCOME.md) includes both preserved A/A datasets, all raw comparisons, lower growth allocation, the C1 large-lifecycle loss and mixed C2 timings. This remains a scoped draft review, not general performance acceptance. [Supplemental correctness tests](Tests~/C12Correctness/README.md) cover callbacks, aliases, representative identity and prefix/tail behavior.

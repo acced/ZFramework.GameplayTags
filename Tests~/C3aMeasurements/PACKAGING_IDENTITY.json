@@ -1,0 +1,35 @@
+{
+  "status": "experimental_only_not_accepted_for_production",
+  "production_commit": "792ce83f1c2a9aeaadc045c192d70081d866d903",
+  "changed_after_measurement": {
+    "README.md": {
+      "measured_sha256": "30227d1927e63881fcde1b84c04848e56b23a7b89afd263c40c37ade670617b5",
+      "packaged_sha256": "5ad60435c0ac9428cf7503ee57681c4edf874a78a53dc7c83f5582cbd2455cff"
+    },
+    "build_snapshots.sh": {
+      "measured_sha256": "512fb811d4cf7ef2c10295f74e54861f7c98758b387debaee63e91aa33c80870",
+      "packaged_sha256": "167138f32dec3168e0700a2491c16cc72a1fc7f9cbdef13d53e239d4d8cf0c5c"
+    },
+    "source_pins.json": {
+      "measured_sha256": "b11ab6390157b27b0235698164b1cb25975284fd52ede572b75422e87837fa4f",
+      "packaged_sha256": "035f80313f3898e8207df20a7c87a466d949e6e40221d3837dac48cd81172a09"
+    },
+    "verify_sources.py": {
+      "measured_sha256": "234d38402b1e6e9ad3e89af6ef7e1098b35c83531394c47db5b3c6b253416a72",
+      "packaged_sha256": "b7da1c4020533211db342a3826753c950b754b07dd13e011c675295052ce967b"
+    }
+  },
+  "change_scope": "README disposition/public reproduction; source resolution and source-verifier wording only. New correctness.sh reuses original pinned semantic suites. No timed Program/project/stubs/grid/counts/numeric/terminal edits.",
+  "original_harness": "Evidence/TimedHarness",
+  "measured_source_identity": "Evidence/IDENTITY.json",
+  "static_checks": [
+    "Python AST",
+    "bash -n on both build/correctness scripts",
+    "vendored source hashes equal measured source snapshots",
+    "original compilation/grid/runner/summarizer hashes unchanged",
+    "all raw JSONL/CSV and terminal copies byte-identical",
+    "read_evidence.py verifies377 indexed original byte ranges,315 numeric samples,62 fixtures and common-count hash, with no targets"
+  ],
+  "new_target_invocations_during_packaging": 0,
+  "consolidated_evidence": "Original per-call raw/terminal bytes concatenated losslessly into six raw shards and one terminal shard; each range checked against unchanged private originals, with byte offsets/lengths/hash and complete call state in call-index.jsonl. No numeric/validation/state/error records omitted."
+}

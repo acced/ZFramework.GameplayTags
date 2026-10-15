@@ -1,0 +1,29 @@
+{
+  "warmups_per_target": 64,
+  "requested_lifecycles_per_target": 1,
+  "total_lifecycles_per_target": 65,
+  "formal_timing_samples": 0,
+  "versions": {
+    "B11": {
+      "kind": "validation",
+      "key": "diagnostic-actual-lifecycle-1024-copy512",
+      "calls": 1,
+      "status": "PASS",
+      "sink": 499265
+    },
+    "C1": {
+      "kind": "validation",
+      "key": "diagnostic-actual-lifecycle-1024-copy512",
+      "calls": 1,
+      "status": "PASS",
+      "sink": 499265
+    },
+    "current792": {
+      "kind": "validation",
+      "key": "diagnostic-actual-lifecycle-1024-copy512",
+      "calls": 1,
+      "status": "PASS",
+      "sink": 499265
+    }
+  }
+}

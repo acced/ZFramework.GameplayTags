@@ -1,0 +1,10 @@
+bin/
+obj/
+results/
+*.log
+*.status
+# Root Unity ignore rules exclude project files; this project is maintained source.
+!C12Correctness.csproj
+# Explicitly retain immutable baseline source fixtures.
+!Baselines/
+!Baselines/**

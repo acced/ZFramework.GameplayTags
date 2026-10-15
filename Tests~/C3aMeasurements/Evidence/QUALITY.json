@@ -1,0 +1,56 @@
+{
+  "formal_samples": 248,
+  "pilot_samples": 67,
+  "fixture_invocations": 62,
+  "all_numeric_rows_validated": true,
+  "all_terminal_returncodes_zero": true,
+  "all_stderr_files_empty": true,
+  "all31_baseline_counts_adequate": true,
+  "capped_counts": 0,
+  "short_formal_samples": [
+    {
+      "key": "core-setunion-l8-r8-c16-half-overlap-retained",
+      "pair": "0",
+      "version": "C3a",
+      "calls": "461488",
+      "elapsed_ms": "243.990506",
+      "ns_per_op": "528.7039012932081",
+      "bytes_per_op": "0",
+      "gc0": "0",
+      "gc1": "0",
+      "gc2": "0"
+    },
+    {
+      "key": "core-setunion-l8-r8-c16-half-overlap-retained",
+      "pair": "3",
+      "version": "C3a",
+      "calls": "461488",
+      "elapsed_ms": "245.309523",
+      "ns_per_op": "531.5620839545123",
+      "bytes_per_op": "0",
+      "gc0": "0",
+      "gc1": "0",
+      "gc2": "0"
+    },
+    {
+      "key": "core-union-l1024-r1024-c2048-half-overlap-new",
+      "pair": "1",
+      "version": "C3a",
+      "calls": "5356",
+      "elapsed_ms": "247.557191",
+      "ns_per_op": "46220.536034353994",
+      "bytes_per_op": "16464",
+      "gc0": "21",
+      "gc1": "1",
+      "gc2": "0"
+    }
+  ],
+  "short_pilot_samples": 36,
+  "fractional_allocation_rows": 0,
+  "fresh_physical_binary_AA": false,
+  "existing_AA_context": "../C12Measurements/Evidence; no reuse as present-run ratios or same-day certification",
+  "production_disposition": "C3a experimental only; production Runtime remains792ce83f1c2a9aeaadc045c192d70081d866d903",
+  "stderr_files_omitted": 377,
+  "stderr_representation": "Explicit empty stderr_contents for each of377 call-index records",
+  "consolidation": "Six stage/round raw shards plus terminal-records.jsonseq; exact original byte ranges with per-call offset/length/SHA256 in call-index.jsonl"
+}

@@ -1,0 +1,870 @@
+{
+  "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-0-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 1.970153345000199
+}
+{
+  "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-0-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 1.9705600239999512
+}
+{
+  "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-1-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 1.9703034379999735
+}
+{
+  "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-1-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 1.8700587759999507
+}
+{
+  "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-2-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 1.8704090790001828
+}
+{
+  "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-2-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 1.9197114109997528
+}
+{
+  "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-3-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 1.9705238390001796
+}
+{
+  "label": "compare-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-3-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 2.020897206999962
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-0-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5661709999999402
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-0-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5669813180002166
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-1-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5187961100000393
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-1-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5662569760002043
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-2-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5161420950003048
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-2-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.568028970999876
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-3-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.565957213999809
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c1024-last-new-3-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.515991657000086
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-0-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5660646559999805
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-0-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5158651850001661
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-1-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5690451919999759
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-1-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5159734300000309
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-2-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5158496680001008
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-2-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5157102989996929
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-3-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5157229010001174
+}
+{
+  "label": "compare-guard-append-s1023-t1024-c2048-last-retained-3-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5656574690001435
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-0-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5163579969998864
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-0-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.9178567919998386
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-1-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5659745250000014
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-1-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.9173596429995996
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-2-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.616158226999687
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-2-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.8669321520001176
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-3-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5158714409999448
+}
+{
+  "label": "compare-guard-copy-s0-t0-c0-same-names-retained-3-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.9171762410001065
+}
+{
+  "label": "compare-guard-copy-s0-t1-c1-same-names-retained-0-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6167845670001952
+}
+{
+  "label": "compare-guard-copy-s0-t1-c1-same-names-retained-0-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.7189299159999791
+}
+{
+  "label": "compare-guard-copy-s0-t1-c1-same-names-retained-1-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5661344730001474
+}
+{
+  "label": "compare-guard-copy-s0-t1-c1-same-names-retained-1-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.7172195610000927
+}
+{
+  "label": "compare-guard-copy-s0-t1-c1-same-names-retained-2-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5663893860000826
+}
+{
+  "label": "compare-guard-copy-s0-t1-c1-same-names-retained-2-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.7164552959998218
+}
+{
+  "label": "compare-guard-copy-s0-t1-c1-same-names-retained-3-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5662551969999186
+}
+{
+  "label": "compare-guard-copy-s0-t1-c1-same-names-retained-3-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.7667743860001792
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-0-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5659038549997604
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-0-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6678274030000466
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-1-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5658127419997072
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-1-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6677251239998441
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-2-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5660421970001153
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-2-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6664158480002698
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-3-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6184089960001984
+}
+{
+  "label": "compare-guard-copy-s1-t1-c1-same-names-retained-3-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.7162882090001403
+}
+{
+  "label": "compare-guard-copy-s1-t2-c2-same-names-retained-0-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5157463340001414
+}
+{
+  "label": "compare-guard-copy-s1-t2-c2-same-names-retained-0-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5656461909998143
+}
+{
+  "label": "compare-guard-copy-s1-t2-c2-same-names-retained-1-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6162521200003539
+}
+{
+  "label": "compare-guard-copy-s1-t2-c2-same-names-retained-1-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6163894859996617
+}
+{
+  "label": "compare-guard-copy-s1-t2-c2-same-names-retained-2-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5659730810002657
+}
+{
+  "label": "compare-guard-copy-s1-t2-c2-same-names-retained-2-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6671774600004028
+}
+{
+  "label": "compare-guard-copy-s1-t2-c2-same-names-retained-3-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5159575030002088
+}
+{
+  "label": "compare-guard-copy-s1-t2-c2-same-names-retained-3-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6160738819999096
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-0-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5657941240001492
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-0-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6165532499999244
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-1-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5659232430002703
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-1-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5660117229999742
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-2-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6163496250001117
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-2-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6164058310000655
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-3-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5658245760000682
+}
+{
+  "label": "compare-guard-lifecycle-s1-t1-c1-full-overlap-new-3-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6160416619995885
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-0-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5158268440000029
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-0-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5664624790001653
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-1-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5658583409999665
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-1-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5659629679998943
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-2-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5200902340002358
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-2-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5154769820001093
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-3-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6163067400002546
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c1024-last-new-3-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5665958730000966
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-0-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6164255159997083
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-0-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5158235160001823
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-1-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6166099209999629
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-1-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6703395819999969
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-2-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6158491379997031
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-2-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5659371780002402
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-3-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5659270770001967
+}
+{
+  "label": "compare-guard-right-s1023-t1024-c2048-last-retained-3-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5659086750001734
+}
+{
+  "label": "compare-primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-0-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5659528770001998
+}
+{
+  "label": "compare-primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-0-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5677455899999586
+}
+{
+  "label": "compare-primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-1-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6165931880000244
+}
+{
+  "label": "compare-primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-1-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5159321510000154
+}
+{
+  "label": "compare-primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-2-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5658685260000311
+}
+{
+  "label": "compare-primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-2-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5657957479998004
+}
+{
+  "label": "compare-primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-3-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5159554409997327
+}
+{
+  "label": "compare-primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-3-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.56604888999982
+}
+{
+  "label": "compare-primary-lifecycle-s1024-t1024-c1024-half-overlap-new-0-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.666251905000081
+}
+{
+  "label": "compare-primary-lifecycle-s1024-t1024-c1024-half-overlap-new-0-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.7164678270000877
+}
+{
+  "label": "compare-primary-lifecycle-s1024-t1024-c1024-half-overlap-new-1-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6661103359997469
+}
+{
+  "label": "compare-primary-lifecycle-s1024-t1024-c1024-half-overlap-new-1-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.716494352999689
+}
+{
+  "label": "compare-primary-lifecycle-s1024-t1024-c1024-half-overlap-new-2-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6159875710000051
+}
+{
+  "label": "compare-primary-lifecycle-s1024-t1024-c1024-half-overlap-new-2-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6660187350003071
+}
+{
+  "label": "compare-primary-lifecycle-s1024-t1024-c1024-half-overlap-new-3-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.716404182000133
+}
+{
+  "label": "compare-primary-lifecycle-s1024-t1024-c1024-half-overlap-new-3-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6664008860002468
+}
+{
+  "label": "fixture-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16456332400002793
+}
+{
+  "label": "fixture-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21467482300022311
+}
+{
+  "label": "fixture-guard-append-s1023-t1024-c1024-last-new-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2147381800000403
+}
+{
+  "label": "fixture-guard-append-s1023-t1024-c1024-last-new-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2146926740001618
+}
+{
+  "label": "fixture-guard-append-s1023-t1024-c2048-last-retained-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21529776000033962
+}
+{
+  "label": "fixture-guard-append-s1023-t1024-c2048-last-retained-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21472447099995406
+}
+{
+  "label": "fixture-guard-copy-s0-t0-c0-same-names-retained-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1645430319999832
+}
+{
+  "label": "fixture-guard-copy-s0-t0-c0-same-names-retained-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16440325499979735
+}
+{
+  "label": "fixture-guard-copy-s0-t1-c1-same-names-retained-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1647810239996943
+}
+{
+  "label": "fixture-guard-copy-s0-t1-c1-same-names-retained-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.1650099860003138
+}
+{
+  "label": "fixture-guard-copy-s1-t1-c1-same-names-retained-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16467431099999885
+}
+{
+  "label": "fixture-guard-copy-s1-t1-c1-same-names-retained-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16467421400011517
+}
+{
+  "label": "fixture-guard-copy-s1-t2-c2-same-names-retained-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16447102099982658
+}
+{
+  "label": "fixture-guard-copy-s1-t2-c2-same-names-retained-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16465086800008066
+}
+{
+  "label": "fixture-guard-lifecycle-s1-t1-c1-full-overlap-new-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21475236300011602
+}
+{
+  "label": "fixture-guard-lifecycle-s1-t1-c1-full-overlap-new-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21500290599988148
+}
+{
+  "label": "fixture-guard-right-s1023-t1024-c1024-last-new-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21483525800022107
+}
+{
+  "label": "fixture-guard-right-s1023-t1024-c1024-last-new-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21544546399991304
+}
+{
+  "label": "fixture-guard-right-s1023-t1024-c2048-last-retained-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21524838200002705
+}
+{
+  "label": "fixture-guard-right-s1023-t1024-c2048-last-retained-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.265231373000006
+}
+{
+  "label": "fixture-primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.16451410600029703
+}
+{
+  "label": "fixture-primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21458516600023358
+}
+{
+  "label": "fixture-primary-lifecycle-s1024-t1024-c1024-half-overlap-new-R",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2150663929996881
+}
+{
+  "label": "fixture-primary-lifecycle-s1024-t1024-c1024-half-overlap-new-RMinusC1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21489897699984795
+}
+{
+  "label": "pilot-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.36531530899992504
+}
+{
+  "label": "pilot-diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 2.019709588000296
+}
+{
+  "label": "pilot-guard-append-s1023-t1024-c1024-last-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.3150098870000875
+}
+{
+  "label": "pilot-guard-append-s1023-t1024-c1024-last-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5659812820003935
+}
+{
+  "label": "pilot-guard-append-s1023-t1024-c2048-last-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.3653617879999729
+}
+{
+  "label": "pilot-guard-append-s1023-t1024-c2048-last-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5155234089997975
+}
+{
+  "label": "pilot-guard-copy-s0-t0-c0-same-names-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21497841699965647
+}
+{
+  "label": "pilot-guard-copy-s0-t0-c0-same-names-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.515962158000093
+}
+{
+  "label": "pilot-guard-copy-s0-t1-c1-same-names-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21497289799981445
+}
+{
+  "label": "pilot-guard-copy-s0-t1-c1-same-names-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5657281419998981
+}
+{
+  "label": "pilot-guard-copy-s1-t1-c1-same-names-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2158930320001673
+}
+{
+  "label": "pilot-guard-copy-s1-t1-c1-same-names-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5159138829999392
+}
+{
+  "label": "pilot-guard-copy-s1-t2-c2-same-names-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.21519847399986247
+}
+{
+  "label": "pilot-guard-copy-s1-t2-c2-same-names-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5657323099999303
+}
+{
+  "label": "pilot-guard-lifecycle-s1-t1-c1-full-overlap-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.2148015390002911
+}
+{
+  "label": "pilot-guard-lifecycle-s1-t1-c1-full-overlap-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46546737700009544
+}
+{
+  "label": "pilot-guard-lifecycle-s1-t1-c1-full-overlap-new-2",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5657654820001881
+}
+{
+  "label": "pilot-guard-right-s1023-t1024-c1024-last-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.4154546420004408
+}
+{
+  "label": "pilot-guard-right-s1023-t1024-c1024-last-new-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.46551528000009057
+}
+{
+  "label": "pilot-guard-right-s1023-t1024-c1024-last-new-2",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5656627240000489
+}
+{
+  "label": "pilot-guard-right-s1023-t1024-c2048-last-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.3653170540001156
+}
+{
+  "label": "pilot-guard-right-s1023-t1024-c2048-last-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.6167022250001537
+}
+{
+  "label": "pilot-primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.26493052100022396
+}
+{
+  "label": "pilot-primary-copy-s512-t1024-c1024-lifecycle-intersection-refs-retained-1",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.5658168489999298
+}
+{
+  "label": "pilot-primary-lifecycle-s1024-t1024-c1024-half-overlap-new-0",
+  "status": "exited",
+  "returncode": 0,
+  "elapsed_seconds": 0.716199484000299
+}

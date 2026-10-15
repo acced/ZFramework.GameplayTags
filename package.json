@@ -1,19 +1,11 @@
 {
   "name": "zframework.gameplaytag",
   "displayName": "ZFramework Gameplay Tags",
-  "version": "1.0.0",
+  "version": "1.1.0-rc.1",
   "unity": "2021.3",
-  "description": "An Unreal-style Gameplay Tags implementation for Unity: hierarchical dot-separated tags, containers, queries, redirects and editor tooling.",
-  "keywords": [
-    "gameplay-tags",
-    "gameplay-ability-system",
-    "gas",
-    "zframework",
-    "unity"
-  ],
-  "author": {
-    "name": "ZFramework"
-  },
+  "description": "Hierarchical gameplay tags with name-stable serialization, ordered containers, reusable set operations, queries, redirects and editor tooling. B1.1 + C1 + C2 release candidate; Unity validation remains pending.",
+  "keywords": ["gameplay-tags", "gameplay-ability-system", "gas", "zframework", "unity"],
+  "author": { "name": "ZFramework" },
   "license": "MIT",
   "samples": [
     {

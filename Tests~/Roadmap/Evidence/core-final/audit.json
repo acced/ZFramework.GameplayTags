@@ -1,0 +1,131 @@
+{
+  "stage": "final-conservative-core",
+  "expected_cells": 77,
+  "rounds": 4,
+  "versions": [
+    "B1",
+    "B11Core"
+  ],
+  "source_hashes_unchanged": true,
+  "runs": [
+    {
+      "version": "B1",
+      "round": 1,
+      "samples": 77,
+      "batch_ms_total": 8330.522,
+      "short_batches": 23,
+      "capped_batches": 0,
+      "gc0": 981,
+      "gc1": 24,
+      "gc2": 10
+    },
+    {
+      "version": "B1",
+      "round": 2,
+      "samples": 77,
+      "batch_ms_total": 9268.379,
+      "short_batches": 22,
+      "capped_batches": 0,
+      "gc0": 981,
+      "gc1": 24,
+      "gc2": 10
+    },
+    {
+      "version": "B1",
+      "round": 3,
+      "samples": 77,
+      "batch_ms_total": 9215.405999999999,
+      "short_batches": 21,
+      "capped_batches": 0,
+      "gc0": 981,
+      "gc1": 24,
+      "gc2": 10
+    },
+    {
+      "version": "B1",
+      "round": 4,
+      "samples": 77,
+      "batch_ms_total": 15182.993,
+      "short_batches": 8,
+      "capped_batches": 0,
+      "gc0": 981,
+      "gc1": 24,
+      "gc2": 10
+    },
+    {
+      "version": "B11Core",
+      "round": 1,
+      "samples": 77,
+      "batch_ms_total": 8061.816,
+      "short_batches": 32,
+      "capped_batches": 0,
+      "gc0": 794,
+      "gc1": 15,
+      "gc2": 3
+    },
+    {
+      "version": "B11Core",
+      "round": 2,
+      "samples": 77,
+      "batch_ms_total": 8364.187,
+      "short_batches": 32,
+      "capped_batches": 0,
+      "gc0": 794,
+      "gc1": 15,
+      "gc2": 3
+    },
+    {
+      "version": "B11Core",
+      "round": 3,
+      "samples": 77,
+      "batch_ms_total": 11120.693,
+      "short_batches": 22,
+      "capped_batches": 0,
+      "gc0": 794,
+      "gc1": 15,
+      "gc2": 3
+    },
+    {
+      "version": "B11Core",
+      "round": 4,
+      "samples": 77,
+      "batch_ms_total": 9348.879,
+      "short_batches": 27,
+      "capped_batches": 0,
+      "gc0": 794,
+      "gc1": 15,
+      "gc2": 3
+    }
+  ],
+  "all_correctness_assertions_passed": true,
+  "shared_calibration_counts_verified": true,
+  "sample_count": 616,
+  "by_version": {
+    "B1": {
+      "samples": 308,
+      "batch_ms_total": 41997.3,
+      "batch_ms_min": 9.578,
+      "batch_ms_median": 128.358,
+      "batch_ms_max": 463.063,
+      "short_batches": 74,
+      "capped_batches": 0,
+      "gc0": 3924,
+      "gc1": 96,
+      "gc2": 40
+    },
+    "B11Core": {
+      "samples": 308,
+      "batch_ms_total": 36895.575,
+      "batch_ms_min": 10.327,
+      "batch_ms_median": 104.9565,
+      "batch_ms_max": 415.186,
+      "short_batches": 113,
+      "capped_batches": 0,
+      "gc0": 3176,
+      "gc1": 60,
+      "gc2": 12
+    }
+  },
+  "original_count_provenance_and_short_targets_verified": true,
+  "calibration_performed": false
+}

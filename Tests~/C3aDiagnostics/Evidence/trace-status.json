@@ -1,0 +1,21 @@
+{
+  "trace_workload_targets_launched": 0,
+  "nettrace_files": 0,
+  "cpu_sample_result_available": false,
+  "gc_pause_result_available": false,
+  "attempts": [
+    {
+      "kind": "initial profiler setup",
+      "version": "B11",
+      "tool_exit_code": 2,
+      "failure": "Unix-domain socket creation failed: SocketException 13, Permission denied. This happened before workload launch. No validation output or trace file was created."
+    },
+    {
+      "kind": "single approved elevated retry",
+      "bootstrap_exit_code": 1,
+      "failure": "Environment bootstrap failed on a read-only filesystem before Python or the tracing tool ran. Protected host-path details are omitted."
+    }
+  ],
+  "later_versions": "C1 and current792 tracing were not attempted after the setup failure. No further retry or alternate route.",
+  "decoder_status": "Prepared source only; not compiled or executed because no trace exists."
+}

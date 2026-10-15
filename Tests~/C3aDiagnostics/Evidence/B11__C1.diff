@@ -1,0 +1,224 @@
+--- B11
++++ C1
+@@ -1452,21 +1452,57 @@
+ ; FullOpts code
+ ; optimized code
+ ; rbp based frame
+-; partially interruptible
++; fully interruptible
+ ; No PGO data
+-; 0 inlinees with PGO data; 9 single block inlinees; 2 inlinees without PGO data
++; 0 inlinees with PGO data; 17 single block inlinees; 5 inlinees without PGO data
+ 
+ G_M_IG01:                ;; offset=0x0000
+        push     rbp
+        push     r15
+        push     r14
++       push     r13
+        push     rbx
+-       push     rax
+        lea      rbp, [rsp+0x20]
+        mov      rbx, rdi
+        mov      r15, rsi
+  
+-G_M_IG02:                ;; offset=0x0012
++G_M_IG02:                ;; offset=0x0013
++       test     rbx, rbx
++       je       SHORT G_M_IG04
++ 
++G_M_IG03:                ;; offset=0x0018
++       mov      rdi, gword ptr [rbx+0x08]
++       cmp      dword ptr [rdi+0x10], 0
++       jne      SHORT G_M_IG07
++ 
++G_M_IG04:                ;; offset=0x0022
++       mov      rdi, gword ptr [r15+0x08]
++       inc      dword ptr [rdi+0x14]
++       mov      edx, dword ptr [rdi+0x10]
++       xor      esi, esi
++       mov      dword ptr [rdi+0x10], esi
++       test     edx, edx
++       jle      SHORT G_M_IG06
++       mov      rdi, gword ptr [rdi+0x08]
++       xor      esi, esi
++ 
++G_M_IG05:                ;; offset=0x003B
++       pop      rbx
++       pop      r13
++       pop      r14
++       pop      r15
++       pop      rbp
++       tail.jmp [System.Array:Clear(System.Array,int,int)]
++ 
++G_M_IG06:                ;; offset=0x0049
++       pop      rbx
++       pop      r13
++       pop      r14
++       pop      r15
++       pop      rbp
++       ret      
++ 
++G_M_IG07:                ;; offset=0x0052
+        mov      rdi, rbx
+        call     [GameplayTags.GameplayTagContainerAlgorithms:AllRegistered(GameplayTags.GameplayTagContainer):bool]
+        mov      r14d, eax
+@@ -1476,83 +1512,110 @@
+        xor      esi, esi
+        mov      dword ptr [rdi+0x10], esi
+        test     edx, edx
+-       jle      SHORT G_M_IG04
+- 
+-G_M_IG03:                ;; offset=0x0031
++       jle      SHORT G_M_IG08
+        mov      rdi, gword ptr [rdi+0x08]
+        xor      esi, esi
+        call     [System.Array:Clear(System.Array,int,int)]
+  
+-G_M_IG04:                ;; offset=0x003D
+-       test     rbx, rbx
+-       jne      SHORT G_M_IG06
+- 
+-G_M_IG05:                ;; offset=0x0042
+-       add      rsp, 8
+-       pop      rbx
+-       pop      r14
+-       pop      r15
+-       pop      rbp
+-       ret      
+- 
+-G_M_IG06:                ;; offset=0x004D
++G_M_IG08:                ;; offset=0x007D
+        mov      rsi, gword ptr [rbx+0x08]
+        mov      esi, dword ptr [rsi+0x10]
+        mov      rdi, r15
+        call     [GameplayTags.GameplayTagContainer:EnsureCapacity(int):this]
+        test     r14d, r14d
+-       je       SHORT G_M_IG08
++       je       G_M_IG13
++       mov      rsi, gword ptr [rbx+0x08]
++       mov      r14d, dword ptr [rsi+0x10]
++       cmp      r14d, 1
++       jne      SHORT G_M_IG11
+        mov      rdi, gword ptr [r15+0x08]
++       test     r14d, r14d
++       je       G_M_IG16
++       mov      rsi, gword ptr [rsi+0x08]
++       cmp      dword ptr [rsi+0x08], 0
++       jbe      G_M_IG17
++       mov      rsi, gword ptr [rsi+0x10]
++       inc      dword ptr [rdi+0x14]
++       mov      rax, gword ptr [rdi+0x08]
++       mov      ecx, dword ptr [rdi+0x10]
++       mov      edx, dword ptr [rax+0x08]
++       cmp      edx, ecx
++       jbe      SHORT G_M_IG10
++       lea      edx, [rcx+0x01]
++       mov      dword ptr [rdi+0x10], edx
++       mov      edi, ecx
++       lea      rdi, bword ptr [rax+8*rdi+0x10]
++       call     CORINFO_HELP_ASSIGN_REF
++       nop      
++ 
++G_M_IG09:                ;; offset=0x00E7
++       pop      rbx
++       pop      r13
++       pop      r14
++       pop      r15
++       pop      rbp
++       ret      
++ 
++G_M_IG10:                ;; offset=0x00F0
++       pop      rbx
++       pop      r13
++       pop      r14
++       pop      r15
++       pop      rbp
++       tail.jmp [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddWithResize(GameplayTags.GameplayTag):this]
++ 
++G_M_IG11:                ;; offset=0x00FE
++       mov      rdi, gword ptr [r15+0x08]
++       cmp      dword ptr [rdi], edi
++ 
++G_M_IG12:                ;; offset=0x0104
++       pop      rbx
++       pop      r13
++       pop      r14
++       pop      r15
++       pop      rbp
++       tail.jmp [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]
++ 
++G_M_IG13:                ;; offset=0x0112
++       xor      r13d, r13d
+        mov      rsi, gword ptr [rbx+0x08]
+-       cmp      dword ptr [rdi], edi
+- 
+-G_M_IG07:                ;; offset=0x006C
+-       add      rsp, 8
+-       pop      rbx
+-       pop      r14
+-       pop      r15
+-       pop      rbp
+-       tail.jmp [System.Collections.Generic.List`1[GameplayTags.GameplayTag]:AddRange(System.Collections.Generic.IEnumerable`1[GameplayTags.GameplayTag]):this]
+- 
+-G_M_IG08:                ;; offset=0x007C
+-       xor      r14d, r14d
++       mov      r14d, dword ptr [rsi+0x10]
++       test     r14d, r14d
++       jle      SHORT G_M_IG15
++ 
++G_M_IG14:                ;; offset=0x0122
+        mov      rdi, gword ptr [rbx+0x08]
+-       cmp      dword ptr [rdi+0x10], 0
+-       jle      SHORT G_M_IG10
+- 
+-G_M_IG09:                ;; offset=0x0089
+-       mov      rdi, gword ptr [rbx+0x08]
+-       cmp      r14d, dword ptr [rdi+0x10]
+-       jae      SHORT G_M_IG11
++       cmp      r13d, dword ptr [rdi+0x10]
++       jae      SHORT G_M_IG16
+        mov      rdi, gword ptr [rdi+0x08]
+-       cmp      r14d, dword ptr [rdi+0x08]
+-       jae      SHORT G_M_IG12
+-       mov      esi, r14d
++       cmp      r13d, dword ptr [rdi+0x08]
++       jae      SHORT G_M_IG17
++       mov      esi, r13d
+        mov      rsi, gword ptr [rdi+8*rsi+0x10]
+        mov      rdi, r15
+        call     [GameplayTags.GameplayTagContainer:AddTag(GameplayTags.GameplayTag):bool:this]
+-       inc      r14d
++       inc      r13d
+        mov      rax, gword ptr [rbx+0x08]
+-       cmp      r14d, dword ptr [rax+0x10]
+-       jl       SHORT G_M_IG09
+- 
+-G_M_IG10:                ;; offset=0x00BB
+-       add      rsp, 8
+-       pop      rbx
++       cmp      r13d, dword ptr [rax+0x10]
++       jl       SHORT G_M_IG14
++ 
++G_M_IG15:                ;; offset=0x0154
++       pop      rbx
++       pop      r13
+        pop      r14
+        pop      r15
+        pop      rbp
+        ret      
+  
+-G_M_IG11:                ;; offset=0x00C6
++G_M_IG16:                ;; offset=0x015D
+        call     [System.ThrowHelper:ThrowArgumentOutOfRange_IndexMustBeLessException()]
+        int3     
+  
+-G_M_IG12:                ;; offset=0x00CD
++G_M_IG17:                ;; offset=0x0164
+        call     CORINFO_HELP_RNGCHKFAIL
+        int3     
+  
+-; Total bytes of code 211
++; Total bytes of code 362
+ 
+ 
+ 

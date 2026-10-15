@@ -1,0 +1,30 @@
+{
+  "sdk": {
+    "version": "8.0.425",
+    "runtime": "8.0.31",
+    "platform": "linux-x64",
+    "release_metadata": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/8.0/releases.json",
+    "download": "https://builds.dotnet.microsoft.com/dotnet/Sdk/8.0.425/dotnet-sdk-8.0.425-linux-x64.tar.gz",
+    "archive_sha512": "934b8060a7190e5909ad1fd0785db542f487b3bbf6cdd14826b02095fdd0d0394298b1634085eff302928fccc33f7c1a7253e9b87df555fc36fce819bcd2e798",
+    "verification": "Archive SHA512 matched official Microsoft release metadata and separately supplied expected hash before extraction."
+  },
+  "dotnet_trace": {
+    "package": "dotnet-trace",
+    "version": "8.0.547301",
+    "official_registry": "https://api.nuget.org/v3/index.json",
+    "gallery": "https://www.nuget.org/packages/dotnet-trace/8.0.547301",
+    "owners": [
+      "Microsoft",
+      "dotnetframework"
+    ],
+    "authors": "Microsoft",
+    "source_repository": "https://github.com/dotnet/diagnostics",
+    "source_commit": "358ff9556edceba1e8689fbfd1fc67588d8ab6cb",
+    "license": "MIT",
+    "package_raw_sha256": "75efb0fd727dccaf110152ab76f2b3b8fbf918e8521f65826a71464a0c9616e5",
+    "package_raw_sha512_base64": "EZNDTjUfgSGtr8GwvxVHeDGUGLhBNTbtTdzTHfL2onmZBVTFwSKZydUb1wiJ1XNVqLwKTVZyTk1aTBNaJkisUg==",
+    "nuget_cached_sha512": "PwS4JVYQ3mQI0PlZ0Zg/fSkjNs09PRFRBDbEe7x5pau7i3NjFpzqok5I+X0L6jVs6sUiOZPx6wBxM26lrYAnhA==",
+    "verification": "dotnet nuget verify --all returned 0 with Microsoft author and NuGet repository signatures; cache content hash is recorded separately and not claimed as a raw ZIP checksum",
+    "traceevent_sha256": "ddb3822d932fef32848d905f48158dfbb4e1363288f31f1147c872a0b1f5565a"
+  }
+}

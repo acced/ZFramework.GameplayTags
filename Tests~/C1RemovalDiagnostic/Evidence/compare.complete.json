@@ -1,0 +1,8 @@
+{
+  "status": "complete",
+  "elapsed_seconds": 68.90520340500007,
+  "counts_sha256": "c7e5938ed3615aedc65d827cecf735a10b3c6be3f6e705b03fd86b8faeaeda88",
+  "processes": 96,
+  "pairs": 48,
+  "note": "Completeness only, not performance acceptance."
+}

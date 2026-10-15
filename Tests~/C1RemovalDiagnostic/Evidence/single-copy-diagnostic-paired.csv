@@ -1,0 +1,5 @@
+key,pair,classification,version,reference,sign,ns,reference_ns,ratio,elapsed_ms,reference_elapsed_ms,bytes_per_op,reference_bytes_per_op,both_validated,either_short
+diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once,0,preprepared-single-copy-diagnostic,RMinusC1,R,faster,13653.12744140625,14087.596435546875,0.9691594661922356,223.69284,230.81118,0,0,True,True
+diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once,1,preprepared-single-copy-diagnostic,RMinusC1,R,faster,13028.423950195312,14383.667663574219,0.9057789887059905,213.457698,235.662011,0,0,True,True
+diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once,2,preprepared-single-copy-diagnostic,RMinusC1,R,faster,13215.120788574219,13341.617492675781,0.990518638075855,216.516539,218.589061,0,0,True,True
+diagnostic-copy-s512-t1024-c1024-lifecycle-intersection-refs-preprepared-once,3,preprepared-single-copy-diagnostic,RMinusC1,R,slower,13818.724243164062,13704.856079101562,1.008308599769693,226.405978,224.540362,0,0,True,True

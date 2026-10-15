@@ -1,0 +1,58 @@
+{
+  "result": "PASS",
+  "inspection": "Static publication scan, not a proof against every possible sensitive string. No runtime target, build, package installation, or decoder execution was performed. Saved-text normalization was reapplied to existing captures.",
+  "files_scanned": 27,
+  "patterns_checked": [
+    "private_absolute_paths",
+    "protected_execution_paths",
+    "credential_shapes",
+    "forbidden_binary_or_trace_extension",
+    "binary_content",
+    "unreviewed_wide_hex_literal",
+    "packed_utf16_constants_not_preserved"
+  ],
+  "findings": [],
+  "retained_packed_utf16_constants": [
+    "0x6C006F00720074",
+    "0x74006E006F0063"
+  ],
+  "additional_checks": {
+    "all_three_source_inventories_match_frozen_hashes": true,
+    "unchanged_harness_files_match_origin_hashes": true,
+    "portable_python_source_syntax": true,
+    "private_environment_receipts_included": false,
+    "sdk_or_tool_cache_included": false,
+    "nettrace_files_included": false,
+    "actual_private_absolute_paths_included": false,
+    "all_three_native_listings_retain_packed_utf16_constants": true
+  },
+  "scanned_relative_paths": [
+    ".gitignore",
+    "Evidence/B11.selected.normalized.asm",
+    "Evidence/B11__C1.diff",
+    "Evidence/C1.selected.normalized.asm",
+    "Evidence/C1__current792.diff",
+    "Evidence/binary-provenance.json",
+    "Evidence/current792.selected.normalized.asm",
+    "Evidence/jit-comparison.json",
+    "Evidence/original-artifact-hashes.json",
+    "Evidence/trace-status.json",
+    "Evidence/validation.json",
+    "HARNESS_ORIGIN.json",
+    "README.md",
+    "REPORT.md",
+    "SOURCE_MANIFEST.json",
+    "TOOL_PROVENANCE.json",
+    "analyze_jit.py",
+    "build.py",
+    "decode_traces.py",
+    "decoder/NuGet.Config",
+    "decoder/PauseDecoder.csproj",
+    "decoder/Program.cs",
+    "harness/C3aNaturalDiagnostics.csproj",
+    "harness/NuGet.Config",
+    "harness/Program.cs",
+    "harness/UnityStubs.cs",
+    "run_diagnostics.py"
+  ]
+}

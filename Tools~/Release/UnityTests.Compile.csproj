@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <AssemblyName>GameplayTags.Tests</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <Nullable>disable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../Runtime/*.cs" />
+    <Compile Include="../../Tests/Runtime/*.cs" />
+    <Compile Include="../../Tests~/Roadmap/UnityStubs.cs" />
+    <Compile Include="UnityCompileOnly.cs" />
+    <PackageReference Include="NUnit" Version="3.13.3" PrivateAssets="all" />
+  </ItemGroup>
+</Project>
