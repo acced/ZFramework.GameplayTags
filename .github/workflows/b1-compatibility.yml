@@ -17,3 +17,11 @@ jobs:
           dotnet-version: '8.0.425'
       - name: Differential behavior and compatibility compile
         run: bash Tests~/Roadmap/run.sh
+      - name: C1/C2 supplemental differential behavior
+        run: |
+          sha256sum -c Tests~/C12Correctness/SOURCE_SHA256SUMS
+          bash Tests~/C12Correctness/run.sh \
+            "B1=$GITHUB_WORKSPACE/Tests~/Roadmap/Baselines/B1/Runtime" \
+            "PR4=$GITHUB_WORKSPACE/Tests~/C12Correctness/Baselines/PR4/Runtime" \
+            "C1=$GITHUB_WORKSPACE/Tests~/C12Correctness/Baselines/C1/Runtime" \
+            "current=$GITHUB_WORKSPACE/Runtime"

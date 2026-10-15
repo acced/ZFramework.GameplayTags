@@ -1,0 +1,21 @@
+{
+  "timed_inputs_byte_identical": {
+    "Program.cs": "62638366804b87989b49a15d14fc15daf1dce8a7d93ef7fb0698825d77ac14d7",
+    "C12Measurements.csproj": "aa1b582b6590f6e89bffb7af0cf7e8f10482e49420a52146f4cdb5dc1517cf1f",
+    "UnityStubs.cs": "970032bab87b97d6fd825c5c08a09f94a827d11f803397bd82f349c248460b45",
+    "NuGet.Config": "2142cfb2dfa2c7feefbe40fabcc68b0dfecadafa99a1db9b70239d977cf2a7ef",
+    "cells.json": "b91f1711405110eb6bf44cd0dc70e1ba0db6a76c3a62d553a9a91975b2959521"
+  },
+  "launcher_original_hashes": {
+    "run_original.py": "709c2346086450aa4178f01bf3a6853ec6491d0d719a368dc8e3becc4ff1251e",
+    "run_repaired.py": "9daf31518ae49dc72e6c1a0bc22a9f578fb66a39cfe6c2eef7f9bd595377f6c1",
+    "build_snapshots.sh": "b609387d7e91690bf496e5066b4f54eff88837e5b428c09e436f2fab929532e2"
+  },
+  "launcher_published_hashes": {
+    "run_original.py": "8368e0a64b2eeef0e54d7ade57b7feafee5a37d76b58110871516580ae4b3b5a",
+    "run_repaired.py": "aff7b1e6e114b21d31fb4a428e3ff44a8d6fa7dafa1db693fd06ddb54c729965",
+    "build_snapshots.sh": "a57a916b0c1cc463558c54fd3749c14761c008ee8e7297aa67bc9537f029e370"
+  },
+  "packaging_only": true,
+  "no_packaging_build_or_timing": true
+}

@@ -1,0 +1,9 @@
+stage,key,version,reference,samples,median_ratio,min_ratio,max_ratio,faster_pairs,all_validated,any_short
+aa,C1-copy-s0-t0-c0-same-names-retained,A2,A,4,1.0028268657606678,0.9775548465377738,1.0892109040600282,2,True,False
+aa,C1-copy-s1-t1-c1-same-names-retained,A2,A,4,1.0067050009527767,0.9686918689681797,1.0239875871084532,2,True,False
+aa,C2-append-s1023-t1024-c2048-last-retained,A2,A,4,0.959639991632659,0.9249104488448386,1.056707517366142,3,True,True
+aa,C2-right-s1023-t1024-c2048-last-retained,A2,A,4,1.0214534900664685,0.9776844604096089,1.0932188556207498,1,True,True
+aa,control-control-s1-t1-c1-contained-retained,A2,A,4,0.98987906427661,0.9080676857185973,1.2890736710276938,2,True,True
+aa,control-control-s1024-t1024-c1024-contained-retained,A2,A,4,0.9970105893437138,0.9178005066173657,1.0278897867492702,2,True,True
+aa,control-enumerate-s1-t1-c1-contained-retained,A2,A,4,1.0392287250654153,0.9893161692393091,1.0812924609985628,1,True,True
+aa,control-enumerate-s1024-t1024-c1024-contained-retained,A2,A,4,1.0679362837134494,0.9481273007382738,1.1318043448706339,1,True,True
