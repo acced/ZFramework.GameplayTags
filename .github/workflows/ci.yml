@@ -14,7 +14,12 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.425'
-      - run: bash Tools~/Hardening/validate.sh "$RUNNER_TEMP/validation"
+      - name: Correctness and compatibility, not timing acceptance
+        run: bash Tools~/Hardening/validate.sh "$RUNNER_TEMP/validation"
+      - name: Unity asset metadata
+        run: python3 Tests~/validate_package.py
+      - name: Installable integer candidate
+        run: python3 Tools~/Hardening/package.py "$RUNNER_TEMP/package"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -22,3 +27,4 @@ jobs:
           path: |
             ${{ runner.temp }}/validation/*.log
             ${{ runner.temp }}/validation/SUMMARY.txt
+            ${{ runner.temp }}/package/*

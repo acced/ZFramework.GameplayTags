@@ -1,10 +1,11 @@
-name: Integer staging qualification
+name: Integer final source qualification
 on:
   push:
     branches: [work/integer-hardening-20261015]
   workflow_dispatch:
 permissions:
   contents: write
+  actions: read
 jobs:
   qualify:
     runs-on: ubuntu-latest
@@ -16,32 +17,31 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.425'
-      - name: Materialize audited sources on staging only
+      - name: Archive completed evidence without new performance sampling
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           test "$GITHUB_REF_NAME" = work/integer-hardening-20261015
-          python3 Tools~/Hardening/bootstrap.py
-          python3 Tools~/Hardening/finalize.py
-          git add -A Runtime Editor Tests~ Tools~ Documentation~ README.md CHANGELOG.md package.json global.json
-          if ! git diff --cached --quiet; then
-            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'fix: finalize integer safety contracts and uploaded-source comparison'
+          if test ! -f Tests~/Hardening/Evidence/qualification/import-receipt.json; then
+            gh run download 38720019332 --repo acced/ZFramework.GameplayTags --name integer-qualification-38720019332 --dir "$RUNNER_TEMP/qualification-original"
+            python3 Tools~/Hardening/archive_evidence.py "$RUNNER_TEMP/qualification-original"
+            git add Tests~/Hardening/Evidence
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'test: preserve all uploaded-versus-hardened samples and safety results'
             git push origin HEAD:refs/heads/work/integer-hardening-20261015
           fi
           git rev-parse HEAD > "$RUNNER_TEMP/tested-commit.txt"
-      - name: Correctness, baseline failure reproductions and compatibility
+      - name: Final correctness and compatibility
         run: bash Tools~/Hardening/validate.sh "$RUNNER_TEMP/validation"
-      - name: Same-host uploaded versus hardened public-workflow screen
-        run: python3 Tools~/Hardening/benchmark.py "$RUNNER_TEMP/performance"
-      - name: Installable source package with per-file checksums
+      - name: Unity asset metadata validation
+        run: python3 Tests~/validate_package.py
+      - name: Final installable package
         run: python3 Tools~/Hardening/package.py "$RUNNER_TEMP/package"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: integer-qualification-${{ github.run_id }}
+          name: integer-final-qualification-${{ github.run_id }}
           path: |
             ${{ runner.temp }}/tested-commit.txt
             ${{ runner.temp }}/validation/*.log
             ${{ runner.temp }}/validation/SUMMARY.txt
-            ${{ runner.temp }}/performance/*.csv
-            ${{ runner.temp }}/performance/*.json
-            ${{ runner.temp }}/performance/*/build.log
             ${{ runner.temp }}/package/*
