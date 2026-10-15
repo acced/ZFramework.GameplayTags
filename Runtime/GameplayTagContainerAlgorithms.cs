@@ -62,21 +62,23 @@ namespace GameplayTags
                 return;
             }
             // A contained input needs neither a larger buffer nor a merge. These
-            // count/range bounds are exact; a late missing member can cost an extra
-            // scan before the merge below, but no workload-specific cutoff is used.
+            // count/range bounds are exact; if containment fails, keep the scanned
+            // prefix and merge only the remaining suffixes.
+            int destinationStart = 0, sourceStart = 0;
             if (right.Count <= oldCount &&
                 string.CompareOrdinal(output[0].Name, right[0].Name) <= 0 &&
                 string.CompareOrdinal(right[right.Count - 1].Name, output[oldCount - 1].Name) <= 0 &&
-                TryApplyContainedSource(output, right, preferSourceOnEqual))
+                TryApplyContainedSource(output, right, preferSourceOnEqual, out destinationStart, out sourceStart))
                 return;
 
             // Grow the logical Count before indexed writes. Read the distinct source
             // directly; backward writes stay beyond unread destination members.
             // Existing destination members, including unknown names, are retained.
-            destination.EnsureCapacity(oldCount + right.Count);
-            output.AddRange(right);
+            destination.EnsureCapacity(oldCount + (right.Count - sourceStart));
+            if (sourceStart == 0) output.AddRange(right);
+            else for (int i = sourceStart; i < right.Count; i++) output.Add(right[i]);
             int a = oldCount - 1, b = right.Count - 1, write = output.Count - 1;
-            while (a >= 0 && b >= 0)
+            while (a >= destinationStart && b >= sourceStart)
             {
                 int order = string.CompareOrdinal(output[a].Name, right[b].Name);
                 if (order > 0) output[write--] = output[a--];
@@ -89,15 +91,17 @@ namespace GameplayTags
                     a--; b--;
                 }
             }
-            while (b >= 0) output[write--] = right[b--];
-            while (a >= 0) output[write--] = output[a--];
-            if (write >= 0) output.RemoveRange(0, write + 1);
+            while (b >= sourceStart) output[write--] = right[b--];
+            while (a >= destinationStart) output[write--] = output[a--];
+            // The gap consists only of duplicates in the merged suffix. Never
+            // remove or rewrite the already resolved destination prefix.
+            if (write >= destinationStart) output.RemoveRange(destinationStart, write - destinationStart + 1);
         }
 
         private static bool TryApplyContainedSource(List<GameplayTag> destination, List<GameplayTag> source,
-            bool preferSourceOnEqual)
+            bool preferSourceOnEqual, out int a, out int b)
         {
-            int a = 0, b = 0;
+            a = 0; b = 0;
             while (a < destination.Count && b < source.Count)
             {
                 int order = string.CompareOrdinal(destination[a].Name, source[b].Name);
