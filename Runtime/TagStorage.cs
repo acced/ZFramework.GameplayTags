@@ -19,6 +19,33 @@ namespace GameplayTags
         }
 
         internal const int LinearCapacity = 8;
+        internal const int MaxCapacity = 1 << 28;
+#if DEBUG || GAMEPLAYTAGS_CHECKED_ENUMERATION
+        internal long Version;
+#endif
+
+        internal static void ValidateCapacity(int capacity)
+        {
+            if ((uint)capacity > MaxCapacity)
+                throw new ArgumentOutOfRangeException(nameof(capacity));
+        }
+        [System.Diagnostics.Conditional("DEBUG"), System.Diagnostics.Conditional("GAMEPLAYTAGS_CHECKED_ENUMERATION")]
+        internal void Changed()
+        {
+#if DEBUG || GAMEPLAYTAGS_CHECKED_ENUMERATION
+            unchecked { Version++; }
+#endif
+        }
+
+        internal void ValidateAdd(int id, int amount)
+        {
+            if (id == 0) throw new ArgumentException("A registered non-None tag is required.", nameof(id));
+            if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
+            var path = GameplayTagManager.GetHierarchyIndices(id);
+            // Every descendant count is bounded by its root's total.
+            if (GetCount(path[0]) > int.MaxValue - amount)
+                throw new OverflowException("Gameplay tag count exceeds Int32.MaxValue.");
+        }
         internal Entry[] Entries = Array.Empty<Entry>();
         internal int[] ExplicitIndices = Array.Empty<int>();
         internal int Count;
@@ -86,6 +113,7 @@ namespace GameplayTags
 
         internal int AddExplicit(int id, int amount = 1)
         {
+            Changed();
             int index = Find(id);
             if (index < 0)
                 index = Insert(id);
@@ -97,13 +125,16 @@ namespace GameplayTags
         // Set insertion and its duplicate semantics require just one lookup.
         internal bool TryAddExplicit(int id)
         {
+            if (id == 0) return false;
             int index = Find(id);
             if (index < 0)
                 index = Insert(id);
             else if (Entries[index].ExplicitCount != 0)
                 return false;
             Entries[index].ExplicitCount = 1;
+            Entries[index].Count++;
             AddExplicitIndex(index);
+            Changed();
             return true;
         }
 
@@ -125,9 +156,14 @@ namespace GameplayTags
 
         internal int RemoveExplicit(int id, int amount = 1)
         {
+            if (id == 0) return -1;
+            if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
             int index = Find(id);
             if (index < 0 || Entries[index].ExplicitCount == 0)
                 return -1;
+            if (Entries[index].ExplicitCount < amount)
+                throw new ArgumentOutOfRangeException(nameof(amount), "Removal exceeds explicit count.");
+            Changed();
             int count = Entries[index].ExplicitCount -= amount;
             if (count == 0)
             {
@@ -211,6 +247,7 @@ namespace GameplayTags
         // Reserve the maximum number of distinct tags INCLUDING ancestors.
         internal void EnsureCapacity(int capacity)
         {
+            ValidateCapacity(capacity);
             EnsureEntryCapacity(capacity);
             if (ExplicitIndices.Length < capacity)
             {
@@ -223,6 +260,7 @@ namespace GameplayTags
 
         private void EnsureEntryCapacity(int capacity)
         {
+            ValidateCapacity(capacity);
             if (Entries.Length < capacity)
             {
                 int size = Math.Max(LinearCapacity, Entries.Length * 2);
@@ -244,7 +282,9 @@ namespace GameplayTags
             // buffer must not turn Clear into an operation over its capacity.
             int[] buckets = m_Buckets;
             int mask = m_BucketMask;
-            if (mask != 0)
+            if (mask != 0 && Count >= (mask + 1) / 4)
+                Array.Clear(buckets, 0, mask + 1);
+            else if (mask != 0)
             {
                 // Match the encoded dense index, deliberately scanning past holes
                 // made earlier in this loop (ordinary Find would stop too soon).
@@ -258,6 +298,7 @@ namespace GameplayTags
             }
             Count = 0;
             ExplicitCount = 0;
+            Changed();
         }
 
         internal void CopyFrom(TagStorage other)
@@ -265,6 +306,7 @@ namespace GameplayTags
             if (ReferenceEquals(this, other))
                 return;
             int count = other.Count;
+            Changed();
             if (count == 0)
             {
                 Clear();
@@ -301,6 +343,7 @@ namespace GameplayTags
         // Shared parents combine pending contributions before forwarding them.
         internal void AddUnion(TagStorage source)
         {
+            Changed();
             if (source.ExplicitCount <= 8)
             {
                 for (int i = 0; i < source.ExplicitCount; i++)
@@ -309,7 +352,7 @@ namespace GameplayTags
                     if (!TryAddExplicit(id))
                         continue;
                     ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
-                    for (int j = 0; j < path.Length; j++)
+                    for (int j = 0; j < path.Length - 1; j++)
                         AddTotal(path[j]);
                 }
                 return;
@@ -385,27 +428,25 @@ namespace GameplayTags
 
         internal void BuildFromExplicitIds(int explicitCount)
         {
+            Changed();
             if (explicitCount == 0)
             {
                 Clear();
                 return;
             }
-            Array.Sort(ExplicitIndices, 0, explicitCount);
+            SortIds(ExplicitIndices, explicitCount);
 
-            // Sorted DFS IDs let us count each missing path segment once. This
-            // determines exact live capacity without reserving both input closures.
+            // In DFS order, an ancestor <= the previous explicit ID already
+            // belongs to that ID's closure. Walk only newly introduced segments,
+            // once per node, to size the result without reserving discarded paths.
             int total = 0;
-            int depth = 0;
-            ReadOnlySpan<int> previous = default;
+            int previousId = 0;
             for (int i = 0; i < explicitCount; i++)
             {
                 int id = ExplicitIndices[i];
-                while (depth != 0 && id >= GameplayTagManager.GetSubtreeEnd(previous[depth - 1]))
-                    depth--;
-                ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
-                total += path.Length - depth;
-                depth = path.Length;
-                previous = path;
+                for (int pathId = id; pathId > previousId; pathId = GameplayTagManager.GetParentIndex(pathId))
+                    total++;
+                previousId = id;
             }
 
             ResetIndex(BucketCapacityFor(total));
@@ -416,21 +457,33 @@ namespace GameplayTags
             // array and no per-node hash lookup is needed for ancestor counts.
             int next = 0;
             int parent = -1;
-            depth = 0;
+            previousId = 0;
             for (int i = 0; i < explicitCount; i++)
             {
                 int id = ExplicitIndices[i];
-                while (depth != 0 && id >= GameplayTagManager.GetSubtreeEnd(Entries[parent].Id))
+                int ancestor = id;
+                int length = 0;
+                while (ancestor > previousId)
                 {
+                    length++;
+                    ancestor = GameplayTagManager.GetParentIndex(ancestor);
+                }
+                while (parent >= 0 && Entries[parent].Id != ancestor)
                     parent = Entries[parent].ExplicitIndex;
-                    depth--;
-                }
-                ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
-                while (depth < path.Length)
+
+                // Reserve the new path segment, then fill it from leaf to root.
+                // Direct parent links avoid constructing and traversing a hierarchy
+                // span for every selected tag. The emitted order remains DFS.
+                int leaf = next + length - 1;
+                int pathId = id;
+                for (int index = leaf; index >= next; index--)
                 {
-                    Entries[next] = new Entry { Id = path[depth++], ExplicitIndex = parent };
-                    parent = next++;
+                    Entries[index] = new Entry { Id = pathId, ExplicitIndex = index == next ? parent : index - 1 };
+                    pathId = GameplayTagManager.GetParentIndex(pathId);
                 }
+                next = leaf + 1;
+                parent = leaf;
+                previousId = id;
                 Entries[parent].Count = 1;
                 Entries[parent].ExplicitCount = 1;
                 ExplicitIndices[i] = parent;
@@ -449,8 +502,47 @@ namespace GameplayTags
             BuildIndex();
         }
 
+        // Only the live prefix contains IDs; the retained tail may contain stale
+        // dense indices. Generic Array.Sort's range overload allocates a comparison
+        // delegate on Unity Mono. Integer heapsort needs neither boxing nor scratch
+        // storage, has bounded O(n log n) work, and skips already ordered input.
+        private static void SortIds(int[] ids, int count)
+        {
+            int ordered = 1;
+            while (ordered < count && ids[ordered - 1] <= ids[ordered])
+                ordered++;
+            if (ordered == count)
+                return;
+
+            for (int root = count / 2 - 1; root >= 0; root--)
+                SiftDown(ids, ids[root], root, count);
+            for (int end = count - 1; end > 0; end--)
+            {
+                int value = ids[end];
+                ids[end] = ids[0];
+                SiftDown(ids, value, 0, end);
+            }
+        }
+
+        private static void SiftDown(int[] ids, int value, int root, int count)
+        {
+            // This condition also keeps 2 * root + 1 within the live prefix.
+            while (root < count / 2)
+            {
+                int child = root * 2 + 1;
+                if (child + 1 < count && ids[child] < ids[child + 1])
+                    child++;
+                if (value >= ids[child])
+                    break;
+                ids[root] = ids[child];
+                root = child;
+            }
+            ids[root] = value;
+        }
+
         private static int ArrayCapacityFor(int count)
         {
+            ValidateCapacity(count);
             int capacity = LinearCapacity;
             while (capacity < count)
                 capacity *= 2;
@@ -459,6 +551,7 @@ namespace GameplayTags
 
         private static int BucketCapacityFor(int count)
         {
+            ValidateCapacity(count);
             if (count <= LinearCapacity)
                 return 0;
             int capacity = 32;

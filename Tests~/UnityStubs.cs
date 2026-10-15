@@ -16,3 +16,5 @@ namespace UnityEngine
         public T AddComponent<T>() where T : new() { return new T(); }
     }
 }
+
+namespace UnityEngine.Serialization { [System.AttributeUsage(System.AttributeTargets.Field)] public sealed class FormerlySerializedAsAttribute : System.Attribute { public FormerlySerializedAsAttribute(string name) {} } }

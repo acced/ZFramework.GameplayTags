@@ -10,6 +10,7 @@ namespace GameplayTags
     /// The name remains present for source and Unity asset serialization compatibility.
     /// </summary>
     [Serializable]
+    [DataContract]
     [DebuggerDisplay("{m_Name,nq}")]
     public struct GameplayTag : IEquatable<GameplayTag>
 #if UNITY_5_3_OR_NEWER
@@ -17,8 +18,13 @@ namespace GameplayTags
 #endif
     {
         public static readonly GameplayTag None = default;
-        public readonly int RuntimeIndex => m_RuntimeIndex;
-        internal readonly ref readonly GameplayTagDefinition Definition => ref GameplayTagManager.GetDefinitionFromRuntimeIndex(m_RuntimeIndex);
+        // A cached handle stays integer-only. A name restored without a struct callback
+        // resolves on demand; cache Resolve() at an application loading boundary.
+        public readonly int RuntimeIndex => m_RuntimeIndex != 0 ? m_RuntimeIndex :
+            GameplayTagManager.ResolveIndex(m_SerializedName);
+        public readonly bool IsValid => RuntimeIndex != 0;
+        public readonly GameplayTag Resolve() => new GameplayTag(m_SerializedName, RuntimeIndex);
+        internal readonly ref readonly GameplayTagDefinition Definition => ref GameplayTagManager.GetDefinitionFromRuntimeIndex(RuntimeIndex);
 
         /// <summary>Strict ancestors in root-to-parent order, excluding this tag.</summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -38,15 +44,26 @@ namespace GameplayTags
         public readonly int HierarchyLevel => Definition.HierarchyLevel;
         public readonly string Description => Definition.Description;
         public readonly GameplayTagFlags Flags => Definition.Flags;
-        public readonly string Name => m_Name;
+        public readonly string Name => m_SerializedName;
 
         /// <summary>The immediate parent, or None for a root/None tag.</summary>
         public readonly GameplayTag ParentTag => GameplayTagManager.GetTagFromRuntimeIndex(
-            GameplayTagManager.GetParentIndex(m_RuntimeIndex));
+            GameplayTagManager.GetParentIndex(RuntimeIndex));
 
-        // Retained field name and visibility keep existing Unity assets and property drawers compatible.
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        public string m_Name;
+        [DataMember(Name = "m_Name", Order = 0)]
+#if UNITY_5_3_OR_NEWER
+        [UnityEngine.SerializeField]
+        [UnityEngine.Serialization.FormerlySerializedAs("m_Name")]
+#endif
+        private string m_SerializedName;
+
+        // Source-compatible assignment invalidates the ID. Unity edits the backing
+        // field directly; reloads reset the nonserialized ID.
+        public string m_Name
+        {
+            readonly get => m_SerializedName;
+            set { m_SerializedName = value; m_RuntimeIndex = 0; }
+        }
 
         [NonSerialized]
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
@@ -54,28 +71,30 @@ namespace GameplayTags
 
         internal GameplayTag(string name, int runtimeTagIndex)
         {
-            m_Name = name;
+            m_SerializedName = name;
             m_RuntimeIndex = runtimeTagIndex;
         }
 
         /// <summary>True only for a strict descendant. A tag and None are never their own ancestors.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool IsParentOf(in GameplayTag tag) => tag.m_RuntimeIndex > m_RuntimeIndex &&
-            tag.m_RuntimeIndex < GameplayTagManager.GetSubtreeEnd(m_RuntimeIndex);
+        public readonly bool IsParentOf(in GameplayTag tag)
+        {
+            int parent = RuntimeIndex, child = tag.RuntimeIndex;
+            return parent != 0 && child > parent && child < GameplayTagManager.GetSubtreeEnd(parent);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool IsChildOf(in GameplayTag parentTag) => m_RuntimeIndex > parentTag.m_RuntimeIndex &&
-            m_RuntimeIndex < GameplayTagManager.GetSubtreeEnd(parentTag.m_RuntimeIndex);
+        public readonly bool IsChildOf(in GameplayTag parentTag) => parentTag.IsParentOf(this);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Equals(GameplayTag other) => m_RuntimeIndex == other.m_RuntimeIndex;
+        public readonly bool Equals(GameplayTag other) => RuntimeIndex == other.RuntimeIndex;
 
-        public readonly override bool Equals(object obj) => obj is GameplayTag tag && m_RuntimeIndex == tag.m_RuntimeIndex;
+        public readonly override bool Equals(object obj) => obj is GameplayTag tag && RuntimeIndex == tag.RuntimeIndex;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly override int GetHashCode() => m_RuntimeIndex;
+        public readonly override int GetHashCode() => RuntimeIndex;
 
-        public readonly override string ToString() => m_RuntimeIndex == 0 ? "<None>" : m_Name;
+        public readonly override string ToString() => RuntimeIndex == 0 ? "<None>" : m_SerializedName;
 
         // Runtime IDs may change when declarations change. Both serializers store names
         // and resolve IDs after deserialization, never restore a stale numeric identity.
@@ -85,18 +104,16 @@ namespace GameplayTags
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context) => OnAfterDeserialize();
 
-        public void OnBeforeSerialize() => m_Name = m_RuntimeIndex == 0
-            ? null
-            : GameplayTagManager.GetTagFromRuntimeIndex(m_RuntimeIndex).m_Name;
-
-        public void OnAfterDeserialize() => this = GameplayTagManager.RequestTag(m_Name);
+        // Serialization must neither freeze the registry nor discard an unknown name.
+        public void OnBeforeSerialize() { }
+        public void OnAfterDeserialize() => m_RuntimeIndex = 0;
 
         public static implicit operator GameplayTag(string tagName) => GameplayTagManager.RequestTag(tagName);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(in GameplayTag lhs, in GameplayTag rhs) => lhs.m_RuntimeIndex == rhs.m_RuntimeIndex;
+        public static bool operator ==(in GameplayTag lhs, in GameplayTag rhs) => lhs.RuntimeIndex == rhs.RuntimeIndex;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(in GameplayTag lhs, in GameplayTag rhs) => lhs.m_RuntimeIndex != rhs.m_RuntimeIndex;
+        public static bool operator !=(in GameplayTag lhs, in GameplayTag rhs) => lhs.RuntimeIndex != rhs.RuntimeIndex;
     }
 }

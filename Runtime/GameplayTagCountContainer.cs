@@ -197,7 +197,7 @@ namespace GameplayTags
         /// <summary>Adds one occurrence of each distinct explicit tag in the source.</summary>
         public void AddTags<T>(in T other) where T : IGameplayTagContainer
         {
-            TagStorage source = other.Indices.Storage;
+            TagStorage source = GameplayTagContainer.GetStorage(other);
             if (source == null)
                 return;
 
@@ -217,6 +217,7 @@ namespace GameplayTags
 
         private void AddTagInternal(int id, int amount, bool notify)
         {
+            Storage.ValidateAdd(id, amount);
             Storage.AddExplicit(id, amount);
             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
             if (!notify)
@@ -251,7 +252,7 @@ namespace GameplayTags
         /// <summary>Removes one occurrence of each distinct explicit tag in the source.</summary>
         public void RemoveTags<T>(in T other) where T : IGameplayTagContainer
         {
-            TagStorage source = other.Indices.Storage;
+            TagStorage source = GameplayTagContainer.GetStorage(other);
             if (source == null)
                 return;
 
@@ -284,6 +285,7 @@ namespace GameplayTags
 
         private bool RemoveTagInternal(int id, int amount, bool notify)
         {
+            if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
             if (Storage.RemoveExplicit(id, amount) < 0)
                 return false;
 

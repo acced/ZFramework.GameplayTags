@@ -28,6 +28,7 @@ namespace GameplayTags
         internal void RegisterTag(string name, string description = null,
             GameplayTagFlags flags = GameplayTagFlags.None)
         {
+            GameplayTagUtility.ValidateName(name);
             Node parent = m_Root;
             int start = 0;
             while (true)
@@ -86,7 +87,7 @@ namespace GameplayTags
                 if (node.SubtreeEnd > node.Parent.SubtreeEnd)
                     node.Parent.SubtreeEnd = node.SubtreeEnd;
                 if (node.Children.Count == 0)
-                    pathLength += node.Depth;
+                    pathLength = checked(pathLength + node.Depth);
             }
 
             hierarchyIndices = new int[pathLength];

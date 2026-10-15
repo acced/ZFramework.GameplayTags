@@ -24,13 +24,15 @@ namespace GameplayTags
 
         public GameplayTagContainerBinds(GameplayTagCountContainer container)
         {
-            m_State = new BindState(container);
+            m_State = new BindState(container ?? throw new ArgumentNullException(nameof(container)));
         }
 
         /// <summary>Subscribes and immediately reports the current presence of the tag.</summary>
         public void Bind(GameplayTag tag, Action<bool> onTagAddedOrRemoved)
         {
-            BindState state = m_State;
+            BindState state = m_State ?? throw new InvalidOperationException("Uninitialized binding group.");
+            if (onTagAddedOrRemoved == null) throw new ArgumentNullException(nameof(onTagAddedOrRemoved));
+            if (!tag.IsValid) throw new ArgumentException("A registered tag is required.", nameof(tag));
             if (state.Count == state.Items.Length)
                 Array.Resize(ref state.Items, state.Count == 0 ? 4 : state.Count * 2);
 
@@ -38,7 +40,22 @@ namespace GameplayTags
 
             state.Items[state.Count++] = new BindData { Tag = tag, Callback = OnChanged };
             state.Container.RegisterTagEventCallback(tag, GameplayTagEventType.NewOrRemoved, OnChanged);
-            onTagAddedOrRemoved(state.Container.GetTagCount(tag) != 0);
+            try { onTagAddedOrRemoved(state.Container.GetTagCount(tag) != 0); }
+            catch
+            {
+                // The initial observer may throw or reenter UnbindAll/Bind. Remove
+                // only this subscription, leaving any independently created ones.
+                state.Container.RemoveTagEventCallback(tag, GameplayTagEventType.NewOrRemoved, OnChanged);
+                for (int i = 0; i < state.Count; i++)
+                    if (state.Items[i].Callback == (OnTagCountChangedDelegate)OnChanged)
+                    {
+                        state.Count--;
+                        Array.Copy(state.Items, i + 1, state.Items, i, state.Count - i);
+                        state.Items[state.Count] = default;
+                        break;
+                    }
+                throw;
+            }
         }
 
         public void UnbindAll()

@@ -44,6 +44,13 @@ namespace GameplayTags
                 IGameplayTagCountContainer previous = m_ParentContainer;
                 if (ReferenceEquals(previous, value))
                     return;
+                IGameplayTagCountContainer cursor = value;
+                while (cursor is GameplayTagHierarchicalContainer node)
+                {
+                    if (ReferenceEquals(node, this))
+                        throw new ArgumentException("A parent link must not create a cycle.", nameof(value));
+                    cursor = node.m_ParentContainer;
+                }
 
                 if (!m_UnderlyingContainer.HasListeners && !ParentHasListeners(previous) && !ParentHasListeners(value))
                 {
@@ -102,6 +109,8 @@ namespace GameplayTags
         /// <summary>Adds a positive number of explicit occurrences to this container and its parent.</summary>
         public void AddTag(GameplayTag tag, int amount)
         {
+            int id = tag.RuntimeIndex;
+            ValidateChainAddition(id, amount);
             if (!HasListenersInChain())
             {
                 AddTagInternal(tag.RuntimeIndex, amount);
@@ -128,7 +137,7 @@ namespace GameplayTags
         /// <summary>Adds one occurrence of every distinct explicit tag in the source.</summary>
         public void AddTags<T>(in T other) where T : IGameplayTagContainer
         {
-            int count = SnapshotExplicitTags(other.Indices.Storage);
+            int count = SnapshotExplicitTags(GameplayTagContainer.GetStorage(other));
             if (!HasListenersInChain())
             {
                 for (int i = 0; i < count; i++)
@@ -162,6 +171,7 @@ namespace GameplayTags
         /// </summary>
         public void RemoveTag(GameplayTag tag, int amount)
         {
+            if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
             if (!HasListenersInChain())
             {
                 RemoveTagInternal(tag.RuntimeIndex, amount);
@@ -188,7 +198,7 @@ namespace GameplayTags
         /// <summary>Removes one occurrence of every distinct explicit tag in the source.</summary>
         public void RemoveTags<T>(in T other) where T : IGameplayTagContainer
         {
-            int count = SnapshotExplicitTags(other.Indices.Storage);
+            int count = SnapshotExplicitTags(GameplayTagContainer.GetStorage(other));
             if (!HasListenersInChain())
             {
                 for (int i = 0; i < count; i++)
@@ -308,6 +318,17 @@ namespace GameplayTags
                 for (int i = 0; i < amount; i++)
                     parent.RemoveTag(tag);
             }
+        }
+
+        private void ValidateChainAddition(int id, int amount)
+        {
+            IGameplayTagCountContainer cursor = this;
+            while (cursor is GameplayTagHierarchicalContainer node)
+            {
+                node.Indices.Storage.ValidateAdd(id, amount);
+                cursor = node.m_ParentContainer;
+            }
+            if (cursor is GameplayTagCountContainer counted) counted.Indices.Storage.ValidateAdd(id, amount);
         }
 
         private bool HasListenersInChain() => m_UnderlyingContainer.HasListeners || ParentHasListeners(m_ParentContainer);

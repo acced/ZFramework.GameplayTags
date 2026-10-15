@@ -34,7 +34,7 @@ internal static class Check
         Assert(!a.Equals((object)a.Name) && a.Equals((object)a), "boxed equality contract");
         var rehydrated = new GameplayTag { m_Name = "A.B.C" }; rehydrated.OnAfterDeserialize();
         Assert(rehydrated == abc, "deserialize"); rehydrated.m_Name = "bad"; rehydrated.OnBeforeSerialize();
-        Assert(rehydrated.m_Name == abc.Name, "serialize canonical name");
+        Assert(rehydrated.m_Name == "bad" && rehydrated.RuntimeIndex == 0, "name setter invalidates cached ID");
         var serializer = new DataContractSerializer(typeof(GameplayTag));
         using (var stream = new MemoryStream())
         {

@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
@@ -18,7 +18,7 @@ namespace GameplayTags.Editor
          int oldIndentLevel = EditorGUI.indentLevel;
          EditorGUI.indentLevel = 0;
 
-         SerializedProperty nameProperty = property.FindPropertyRelative("m_Name");
+         SerializedProperty nameProperty = property.FindPropertyRelative("m_SerializedName");
          GameplayTag tag = GameplayTagManager.RequestTag(nameProperty.stringValue);
 
          if (tag != GameplayTag.None)

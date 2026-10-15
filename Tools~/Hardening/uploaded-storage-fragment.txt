@@ -1,0 +1,113 @@
+        internal void BuildFromExplicitIds(int explicitCount)
+        {
+            if (explicitCount == 0)
+            {
+                Clear();
+                return;
+            }
+            SortIds(ExplicitIndices, explicitCount);
+
+            // In DFS order, an ancestor <= the previous explicit ID already
+            // belongs to that ID's closure. Walk only newly introduced segments,
+            // once per node, to size the result without reserving discarded paths.
+            int total = 0;
+            int previousId = 0;
+            for (int i = 0; i < explicitCount; i++)
+            {
+                int id = ExplicitIndices[i];
+                for (int pathId = id; pathId > previousId; pathId = GameplayTagManager.GetParentIndex(pathId))
+                    total++;
+                previousId = id;
+            }
+
+            ResetIndex(BucketCapacityFor(total));
+            EnsureOverwriteCapacity(total, explicitCount);
+
+            // Until the final explicit-index pass, ExplicitIndex is a parent
+            // dense index. The entries themselves are the DFS stack: no scratch
+            // array and no per-node hash lookup is needed for ancestor counts.
+            int next = 0;
+            int parent = -1;
+            previousId = 0;
+            for (int i = 0; i < explicitCount; i++)
+            {
+                int id = ExplicitIndices[i];
+                int ancestor = id;
+                int length = 0;
+                while (ancestor > previousId)
+                {
+                    length++;
+                    ancestor = GameplayTagManager.GetParentIndex(ancestor);
+                }
+                while (parent >= 0 && Entries[parent].Id != ancestor)
+                    parent = Entries[parent].ExplicitIndex;
+
+                // Reserve the new path segment, then fill it from leaf to root.
+                // Direct parent links avoid constructing and traversing a hierarchy
+                // span for every selected tag. The emitted order remains DFS.
+                int leaf = next + length - 1;
+                int pathId = id;
+                for (int index = leaf; index >= next; index--)
+                {
+                    Entries[index] = new Entry { Id = pathId, ExplicitIndex = index == next ? parent : index - 1 };
+                    pathId = GameplayTagManager.GetParentIndex(pathId);
+                }
+                next = leaf + 1;
+                parent = leaf;
+                previousId = id;
+                Entries[parent].Count = 1;
+                Entries[parent].ExplicitCount = 1;
+                ExplicitIndices[i] = parent;
+            }
+
+            for (int i = next - 1; i >= 0; i--)
+            {
+                int parentIndex = Entries[i].ExplicitIndex;
+                if (parentIndex >= 0)
+                    Entries[parentIndex].Count += Entries[i].Count;
+            }
+            for (int i = 0; i < explicitCount; i++)
+                Entries[ExplicitIndices[i]].ExplicitIndex = i;
+            Count = next;
+            ExplicitCount = explicitCount;
+            BuildIndex();
+        }
+
+        // Only the live prefix contains IDs; the retained tail may contain stale
+        // dense indices. Generic Array.Sort's range overload allocates a comparison
+        // delegate on Unity Mono. Integer heapsort needs neither boxing nor scratch
+        // storage, has bounded O(n log n) work, and skips already ordered input.
+        private static void SortIds(int[] ids, int count)
+        {
+            int ordered = 1;
+            while (ordered < count && ids[ordered - 1] <= ids[ordered])
+                ordered++;
+            if (ordered == count)
+                return;
+
+            for (int root = count / 2 - 1; root >= 0; root--)
+                SiftDown(ids, ids[root], root, count);
+            for (int end = count - 1; end > 0; end--)
+            {
+                int value = ids[end];
+                ids[end] = ids[0];
+                SiftDown(ids, value, 0, end);
+            }
+        }
+
+        private static void SiftDown(int[] ids, int value, int root, int count)
+        {
+            // This condition also keeps 2 * root + 1 within the live prefix.
+            while (root < count / 2)
+            {
+                int child = root * 2 + 1;
+                if (child + 1 < count && ids[child] < ids[child + 1])
+                    child++;
+                if (value >= ids[child])
+                    break;
+                ids[root] = ids[child];
+                root = child;
+            }
+            ids[root] = value;
+        }
+

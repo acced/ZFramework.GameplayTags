@@ -21,6 +21,7 @@ internal static class Program
         Run("registry and strict ancestor relationships", Registry);
         Run("set closure, duplicate insertion and ancestor reference counts", SetBasics);
         Run("copy, union, intersection, aliases and reuse", SetOperations);
+        Run("uploaded bulk intersection regression", BulkIntersections);
         Run("queries, parent/child extraction and requirements", Queries);
         Run("randomized set operations and dense swap deletion", RandomizedSets);
         Run("randomized count model and bulk aliases", RandomizedCounts);
@@ -231,6 +232,63 @@ internal static class Program
         foreach (string name in Names) reserved.AddTag(T(name));
         foreach (string name in Names.Reverse()) reserved.RemoveTag(T(name));
         AssertSet(reserved, Set(), "reserved storage add/remove all");
+    }
+
+    private static void BulkIntersections()
+    {
+        var random = new Random(540917);
+        var reused = Container(Names.Reverse());
+        reused.EnsureCapacity(Names.Length * 8);
+        for (int trial = 0; trial < 48; trial++)
+        {
+            // Include explicit ancestors, unrelated roots and insertion orders
+            // that differ from DFS. The reference model uses names exclusively.
+            string[] left = Names.OrderBy(_ => random.Next()).Take(trial * 17 % (Names.Length + 1)).ToArray();
+            string[] right = Names.OrderBy(_ => random.Next()).Take(trial * 31 % (Names.Length + 1)).ToArray();
+            if (trial % 3 == 0) { Array.Sort(left, StringComparer.Ordinal); Array.Sort(right, StringComparer.Ordinal); }
+            if (trial % 3 == 1) { Array.Reverse(left); Array.Reverse(right); }
+            var expected = new HashSet<string>(left.Intersect(right), StringComparer.Ordinal);
+            var a = Container(left);
+            var b = Container(right);
+            var countedA = new GameplayTagCountContainer();
+            var countedB = new GameplayTagCountContainer();
+            foreach (string name in left) countedA.AddTag(T(name), 1 + random.Next(4));
+            foreach (string name in right) countedB.AddTag(T(name), 1 + random.Next(4));
+
+            VerifyThenDrain(GameplayTagContainer.Intersection(a, b), expected, "new intersection");
+            GameplayTagContainer.Intersection(reused, a, b);
+            VerifyThenDrain(reused, expected, "reused prefix with stale retained tail");
+            VerifyThenDrain(GameplayTagContainer.Intersection(countedA, countedB), expected, "counted intersection normalizes layers");
+            VerifyThenDrain(GameplayTagContainer.Intersection(a, countedB), expected, "mixed intersection");
+            GameplayTagContainer.Copy(reused, countedA);
+            VerifyThenDrain(reused, new HashSet<string>(left, StringComparer.Ordinal), "counted copy uses same bulk builder");
+
+            var alias = Container(left);
+            GameplayTagContainer.Intersection(alias, alias, b);
+            VerifyThenDrain(alias, expected, "output aliases lhs");
+            alias = Container(right);
+            GameplayTagContainer.Intersection(alias, a, alias);
+            VerifyThenDrain(alias, expected, "output aliases rhs");
+            alias = Container(left);
+            alias.IntersectWith(b);
+            VerifyThenDrain(alias, expected, "in-place intersection");
+            AssertSet(a, new HashSet<string>(left, StringComparer.Ordinal), "lhs unchanged");
+            AssertSet(b, new HashSet<string>(right, StringComparer.Ordinal), "rhs unchanged");
+        }
+    }
+
+    private static void VerifyThenDrain(GameplayTagContainer actual, HashSet<string> expected, string context)
+    {
+        var remaining = new HashSet<string>(expected, StringComparer.Ordinal);
+        AssertSet(actual, remaining, context);
+        // Removing explicit ancestors first exposes stale contribution counts
+        // which checking only the initial intersection could miss.
+        foreach (string name in expected.OrderBy(n => n.Length).ThenBy(n => n, StringComparer.Ordinal))
+        {
+            actual.RemoveTag(T(name));
+            remaining.Remove(name);
+            AssertSet(actual, remaining, context + " remove " + name);
+        }
     }
 
     private static void AssertQueries(GameplayTagContainer holder, HashSet<string> holderNames,

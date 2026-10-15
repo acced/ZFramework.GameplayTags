@@ -36,13 +36,14 @@ namespace GameplayTags
 
         /// <summary>
         /// Freeze an explicit declaration set without scanning assemblies. Call before any
-        /// tag lookup. Names must be valid; call GameplayTagUtility.ValidateName explicitly
+        /// tag lookup. Names are validated before registry publication.
         /// for untrusted input. Replacing a live registry would invalidate every existing ID
         /// and is deliberately rejected. Duplicate flags are ORed; descriptions use ordinal
         /// minimum. Automatically created parents OR their descendants' declared flags.
         /// </summary>
         public static void Initialize(params GameplayTagRegistration[] registrations)
         {
+            if (registrations == null) throw new ArgumentNullException(nameof(registrations));
             lock (s_InitializationLock)
             {
                 if (s_IsInitialized)
@@ -109,11 +110,21 @@ namespace GameplayTags
             }
         }
 
+        internal static int ResolveIndex(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return 0;
+            InitializeIfNeeded();
+            return s_IndicesByName.TryGetValue(name, out int index) ? index : 0;
+        }
+
         private static void Publish(GameplayTagRegistrationContext context)
         {
-            context.Build(out s_Definitions, out s_Tags, out s_Parents, out s_SubtreeEnds,
-                out s_HierarchyIndices, out s_HierarchyTags, out s_IndicesByName);
-            // Volatile publication follows all array writes. The arrays are never mutated again.
+            // A failed build never partially overwrites the process registry.
+            context.Build(out var definitions, out var tags, out var parents, out var ends,
+                out var hierarchyIndices, out var hierarchyTags, out var indices);
+            s_Definitions = definitions; s_Tags = tags; s_Parents = parents;
+            s_SubtreeEnds = ends; s_HierarchyIndices = hierarchyIndices;
+            s_HierarchyTags = hierarchyTags; s_IndicesByName = indices;
             s_IsInitialized = true;
         }
 

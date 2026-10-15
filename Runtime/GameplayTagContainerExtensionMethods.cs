@@ -7,25 +7,25 @@ namespace GameplayTags
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasTag<T>(this T container, GameplayTag tag) where T : IGameplayTagContainer
         {
-            TagStorage storage = container.Indices.Storage;
+            TagStorage storage = GameplayTagContainer.GetStorage(container);
             return storage != null && storage.Contains(tag.RuntimeIndex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasTagExact<T>(this T container, GameplayTag tag) where T : IGameplayTagContainer
         {
-            TagStorage storage = container.Indices.Storage;
+            TagStorage storage = GameplayTagContainer.GetStorage(container);
             return storage != null && storage.ContainsExplicit(tag.RuntimeIndex);
         }
 
         /// <summary>Any explicit query tag is present in the holder's ancestor closure. Null query means empty.</summary>
         public static bool HasAny<T, U>(this T container, in U other)
             where T : IGameplayTagContainer where U : IGameplayTagContainer =>
-            other is null ? false : HasAnyInternal(container.Indices.Storage, other.Indices.Storage, false);
+            other is null ? false : HasAnyInternal(GameplayTagContainer.GetStorage(container), other.Indices.Storage, false);
 
         public static bool HasAnyExact<T, U>(this T container, in U other)
             where T : IGameplayTagContainer where U : IGameplayTagContainer =>
-            other is null ? false : HasAnyInternal(container.Indices.Storage, other.Indices.Storage, true);
+            other is null ? false : HasAnyInternal(GameplayTagContainer.GetStorage(container), other.Indices.Storage, true);
 
         private static bool HasAnyInternal(TagStorage holder, TagStorage query, bool exact)
         {
@@ -59,12 +59,12 @@ namespace GameplayTags
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasAll<T, U>(this T container, in U other)
             where T : IGameplayTagContainer where U : IGameplayTagContainer =>
-            other is null || HasAllInternal(container.Indices.Storage, other.Indices.Storage, false);
+            other is null || HasAllInternal(GameplayTagContainer.GetStorage(container), other.Indices.Storage, false);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasAllExact<T, U>(this T container, in U other)
             where T : IGameplayTagContainer where U : IGameplayTagContainer =>
-            other is null || HasAllInternal(container.Indices.Storage, other.Indices.Storage, true);
+            other is null || HasAllInternal(GameplayTagContainer.GetStorage(container), other.Indices.Storage, true);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool HasAllInternal(TagStorage holder, TagStorage query, bool exact)

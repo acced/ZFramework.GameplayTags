@@ -1,0 +1,27 @@
+{
+  "upstream": "21e2d93d85380fb9267284c5469fb21d31d21a78",
+  "uploaded_archive_sha256": "dfc429acae4db5f3e3d37160567b41c6b09e8d07a6dfd84087e3e2c39a1cb6f4",
+  "normalized_uploaded_runtime_sha256": {
+    "GameObjectGameplayTagContainer.cs": "2826ab87baf0cd558d53a730f3bfb48bd94a8345b79b6dbbb1c98eb7abe79a74",
+    "GameplayTagFlags.cs": "f01a828ca09b16ba76d0928cec313ad4db6543f98dd8ec760876928033d1cb12",
+    "GameplayTagManager.cs": "4d931365b965aee5d59a0782314c7cddfbde97a73b09bb743d2c883752ddc341",
+    "GameplayTagContainerExtensionMethods.cs": "96067d19715f0a516f818467f01180718f1fd8fe5176e1bb9e2b1c802d86454c",
+    "GameplayTagEnumerator.cs": "5ceeaab6e65ee8ac0393e3cf5815b4d55d6d17b630a1a92f8fdc81e021e2daf9",
+    "GameplayTagContainerUtility.cs": "f6f62ce3f41baf36ef5e71b92c31511833656aae3834b240535b420389f522c4",
+    "GameplayTagCountContainer.cs": "2507f999f41b18019d3a5478f9d42599792dfd7a0e517730309e54cfa99ee858",
+    "GameplayTagContainerBinds.cs": "7c1f1faee1e486bab0ffda0539249a6cc20cbc8c570d6dd2bb2239cd72553150",
+    "GameplayTagRegistrationContext.cs": "5795ab0f7f6a7672a557841a327b673c00c0c8599302face56aeed3247f07ef8",
+    "GameplayTagContainerDebugView.cs": "329846fecdfe0a176cae5dd78856ef8d2b5e9a87c976bc05c61433c1fb3aa9f3",
+    "GameplayTagAttribute.cs": "a2daa19a2712caa3e75afd9888fbbc3325135c6012aa5cdd6b72008336710397",
+    "TagStorage.cs": "ee18eb7c87a978dc266fbd179b1a2ccc037cf218898d5eca9dbab64eb6031158",
+    "GameplayTagUtility.cs": "8c23380b52c53b8e9d707abdcf16f66bb8a5fec7627f5ec1c95e04d4f1c2a96d",
+    "GameplayTagRequirements.cs": "25982793636c07582d12acd77c63b02c8c38d4cdc4e6a1f9233c6417e7ccf4f9",
+    "GameplayTagContainer.cs": "75060335c3eb1755997b6fbb1f5366c73e3d96c5ccfe4eb3a6bdd202d96be9af",
+    "GameplayTagHierarchicalContanier.cs": "00bb82b1d7603d3579b511f6d3504d8d2771ccb662187350678ec4e706307c77",
+    "GameplayTag.cs": "0367808f8c540762b064c0ebd0e0d2ebb660b6eadf4dae724678029f49a37e7b",
+    "GameplayTagDefinition.cs": "7cf498e3b14f6ae9d328898c9f833608fe71a05911805086deab27f684442c68",
+    "GameplayTagContainerPool.cs": "f88beb9962b220ab5274f85450cd513b25e095915e257a605114d3a7dcbfad76"
+  },
+  "materialization_only": true,
+  "validation": "not-yet-run"
+}
