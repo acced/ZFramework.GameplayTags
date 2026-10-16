@@ -1,9 +1,8 @@
 using System;
-using System.Threading;
 
 namespace GameplayTags
 {
-    /// <summary>Thread-local pool. Copied leases are idempotent and cannot return a later borrow.</summary>
+    /// <summary>A small thread-local pool. Release each lease exactly once, on the borrowing thread.</summary>
     public class GameplayTagContainerPool
     {
         private const int RetainedLimit = 64;
@@ -12,60 +11,25 @@ namespace GameplayTags
 
         public readonly struct PooledContainer : IDisposable
         {
-            private readonly GameplayTagContainer m_Container;
-            private readonly long m_Generation;
-            public GameplayTagContainer Container
-            {
-                get
-                {
-                    if (m_Container == null || m_Container.PoolReturned || m_Container.PoolGeneration != m_Generation)
-                        throw new ObjectDisposedException(nameof(PooledContainer));
-                    return m_Container;
-                }
-            }
-            public PooledContainer(GameplayTagContainer container)
-            {
-                if (container == null) throw new ArgumentNullException(nameof(container));
-                container.RequireWritable();
-                if (container.PoolReturned) throw new ObjectDisposedException(nameof(container));
-                if (container.PoolThread == 0) container.PoolThread = Thread.CurrentThread.ManagedThreadId;
-                m_Container = container;
-                m_Generation = container.PoolGeneration;
-            }
-            public void Dispose()
-            {
-                if (m_Container == null || m_Container.PoolReturned || m_Container.PoolGeneration != m_Generation) return;
-                Release(m_Container);
-            }
+            public GameplayTagContainer Container { get; }
+            public PooledContainer(GameplayTagContainer container) => Container = container;
+            public void Dispose() => Release(Container);
         }
 
         public static GameplayTagContainer Get()
         {
-            GameplayTagContainer container;
-            if (s_Count == 0) container = new GameplayTagContainer();
-            else
-            {
-                container = s_Items[--s_Count];
-                s_Items[s_Count] = null;
-            }
-            container.PoolGeneration = checked(container.PoolGeneration + 1);
-            container.PoolReturned = false;
-            container.PoolThread = Thread.CurrentThread.ManagedThreadId;
+            if (s_Count == 0)
+                return new GameplayTagContainer();
+            GameplayTagContainer container = s_Items[--s_Count];
+            s_Items[s_Count] = null;
             return container;
         }
 
         public static void Release(GameplayTagContainer container)
         {
-            if (container == null) throw new ArgumentNullException(nameof(container));
-            container.RequireWritable();
-            if (container.PoolReturned) throw new InvalidOperationException("Container already returned to pool.");
-            int thread = Thread.CurrentThread.ManagedThreadId;
-            if (container.PoolThread != 0 && container.PoolThread != thread)
-                throw new InvalidOperationException("Return the container on its borrowing thread.");
             container.Clear();
-            container.PoolThread = thread;
-            container.PoolReturned = true;
-            if (s_Count == RetainedLimit) return;
+            if (s_Count == RetainedLimit)
+                return;
             s_Items ??= new GameplayTagContainer[RetainedLimit];
             s_Items[s_Count++] = container;
         }

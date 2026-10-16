@@ -118,10 +118,6 @@ namespace GameplayTags
         public void RegisterTagEventCallback(GameplayTag tag, GameplayTagEventType eventType,
             OnTagCountChangedDelegate callback)
         {
-            if (callback == null) throw new ArgumentNullException(nameof(callback));
-            if (tag.RuntimeIndex == 0) throw new ArgumentException("A registered tag is required.", nameof(tag));
-            if (eventType != GameplayTagEventType.NewOrRemoved && eventType != GameplayTagEventType.AnyCountChange)
-                throw new ArgumentOutOfRangeException(nameof(eventType));
             int index = FindCallback(tag.RuntimeIndex);
             if (index < 0)
             {
@@ -144,10 +140,6 @@ namespace GameplayTags
         public void RemoveTagEventCallback(GameplayTag tag, GameplayTagEventType eventType,
             OnTagCountChangedDelegate callback)
         {
-            if (callback == null) throw new ArgumentNullException(nameof(callback));
-            if (tag.RuntimeIndex == 0) throw new ArgumentException("A registered tag is required.", nameof(tag));
-            if (eventType != GameplayTagEventType.NewOrRemoved && eventType != GameplayTagEventType.AnyCountChange)
-                throw new ArgumentOutOfRangeException(nameof(eventType));
             int index = FindCallback(tag.RuntimeIndex);
             if (index < 0)
                 return;
@@ -205,11 +197,10 @@ namespace GameplayTags
         /// <summary>Adds one occurrence of each distinct explicit tag in the source.</summary>
         public void AddTags<T>(in T other) where T : IGameplayTagContainer
         {
-            TagStorage source = GameplayTagContainer.GetStorage(other);
+            TagStorage source = other.Indices.Storage;
             if (source == null)
                 return;
 
-            Storage.ValidateBulkAdd(source);
             bool notify = HasListeners;
             int count = source.ExplicitCount;
             for (int i = 0; i < count; i++)
@@ -226,7 +217,6 @@ namespace GameplayTags
 
         private void AddTagInternal(int id, int amount, bool notify)
         {
-            Storage.ValidateAdd(id, amount);
             Storage.AddExplicit(id, amount);
             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
             if (!notify)
@@ -261,7 +251,7 @@ namespace GameplayTags
         /// <summary>Removes one occurrence of each distinct explicit tag in the source.</summary>
         public void RemoveTags<T>(in T other) where T : IGameplayTagContainer
         {
-            TagStorage source = GameplayTagContainer.GetStorage(other);
+            TagStorage source = other.Indices.Storage;
             if (source == null)
                 return;
 
@@ -294,7 +284,6 @@ namespace GameplayTags
 
         private bool RemoveTagInternal(int id, int amount, bool notify)
         {
-            if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
             if (Storage.RemoveExplicit(id, amount) < 0)
                 return false;
 

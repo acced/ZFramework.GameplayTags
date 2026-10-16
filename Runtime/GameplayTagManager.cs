@@ -12,8 +12,7 @@ namespace GameplayTags
     /// </summary>
     public class GameplayTagManager
     {
-        private static readonly object s_InitializationLock = new object();
-        private static volatile bool s_IsInitialized;
+        private static bool s_IsInitialized;
         private static Dictionary<string, int> s_IndicesByName;
         private static GameplayTagDefinition[] s_Definitions = { GameplayTagDefinition.None };
         private static GameplayTag[] s_Tags = { default };
@@ -35,28 +34,20 @@ namespace GameplayTags
         }
 
         /// <summary>
-        /// Freeze an explicit declaration set without scanning assemblies. Call before any
-        /// tag lookup. Names are validated before registry publication.
-        /// for untrusted input. Replacing a live registry would invalidate every existing ID
-        /// and is deliberately rejected. Duplicate flags are ORed; descriptions use ordinal
-        /// minimum. Automatically created parents OR their descendants' declared flags.
+        /// Publish valid declarations once on the owning initialization thread,
+        /// before loading serialized tags or exposing handles to other threads.
+        /// The caller guarantees valid names, one-time initialization and publication.
+        /// Duplicate flags are ORed; descriptions use ordinal minimum.
         /// </summary>
         public static void Initialize(params GameplayTagRegistration[] registrations)
         {
-            if (registrations == null) throw new ArgumentNullException(nameof(registrations));
-            lock (s_InitializationLock)
+            var context = new GameplayTagRegistrationContext();
+            for (int i = 0; i < registrations.Length; ++i)
             {
-                if (s_IsInitialized)
-                    throw new InvalidOperationException("The gameplay tag registry is already initialized.");
-
-                var context = new GameplayTagRegistrationContext();
-                for (int i = 0; i < registrations.Length; ++i)
-                {
-                    GameplayTagRegistration registration = registrations[i];
-                    context.RegisterTag(registration.Name, registration.Description, registration.Flags);
-                }
-                Publish(context);
+                GameplayTagRegistration registration = registrations[i];
+                context.RegisterTag(registration.Name, registration.Description, registration.Flags);
             }
+            Publish(context);
         }
 
         /// <summary>All tags in ordinal sibling order and depth-first preorder; excludes None.</summary>
@@ -69,47 +60,31 @@ namespace GameplayTags
         /// <summary>Resolve a case-sensitive ordinal name. Unknown, null and empty names return None.</summary>
         public static GameplayTag RequestTag(string name)
         {
-            if (string.IsNullOrEmpty(name))
-                return GameplayTag.None;
-            InitializeIfNeeded();
-            return s_IndicesByName.TryGetValue(name, out int index) ? s_Tags[index] : GameplayTag.None;
+            int index = ResolveIndex(name);
+            return s_Tags[index];
         }
 
         public static bool RequestTag(string name, out GameplayTag tag)
         {
-            if (!string.IsNullOrEmpty(name))
-            {
-                InitializeIfNeeded();
-                if (s_IndicesByName.TryGetValue(name, out int index))
-                {
-                    tag = s_Tags[index];
-                    return true;
-                }
-            }
-            tag = GameplayTag.None;
-            return false;
+            int index = ResolveIndex(name);
+            tag = s_Tags[index];
+            return index != 0;
         }
 
-        /// <summary>Discover assembly-level declarations once. Prefer explicit Initialize for AOT/startup control.</summary>
+        /// <summary>Discover declarations once on the initialization thread. Prefer explicit Initialize for AOT.</summary>
         public static void InitializeIfNeeded()
         {
-            if (s_IsInitialized)
-                return;
-            lock (s_InitializationLock)
-            {
-                if (s_IsInitialized)
-                    return;
-
-                var context = new GameplayTagRegistrationContext();
-                Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                Array.Sort(assemblies, (a, b) => string.CompareOrdinal(a.FullName, b.FullName));
-                for (int i = 0; i < assemblies.Length; ++i)
-                    foreach (GameplayTagAttribute declaration in assemblies[i].GetCustomAttributes<GameplayTagAttribute>())
-                        context.RegisterTag(declaration.TagName, declaration.Description, declaration.Flags);
-                Publish(context);
-            }
+            if (s_IsInitialized) return;
+            var context = new GameplayTagRegistrationContext();
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            Array.Sort(assemblies, (a, b) => string.CompareOrdinal(a.FullName, b.FullName));
+            for (int i = 0; i < assemblies.Length; ++i)
+                foreach (GameplayTagAttribute declaration in assemblies[i].GetCustomAttributes<GameplayTagAttribute>())
+                    context.RegisterTag(declaration.TagName, declaration.Description, declaration.Flags);
+            Publish(context);
         }
 
+        // Cold name boundary only. Cached handles never call this from RuntimeIndex.
         internal static int ResolveIndex(string name)
         {
             if (string.IsNullOrEmpty(name)) return 0;
@@ -119,12 +94,9 @@ namespace GameplayTags
 
         private static void Publish(GameplayTagRegistrationContext context)
         {
-            // A failed build never partially overwrites the process registry.
-            context.Build(out var definitions, out var tags, out var parents, out var ends,
-                out var hierarchyIndices, out var hierarchyTags, out var indices);
-            s_Definitions = definitions; s_Tags = tags; s_Parents = parents;
-            s_SubtreeEnds = ends; s_HierarchyIndices = hierarchyIndices;
-            s_HierarchyTags = hierarchyTags; s_IndicesByName = indices;
+            context.Build(out s_Definitions, out s_Tags, out s_Parents, out s_SubtreeEnds,
+                out s_HierarchyIndices, out s_HierarchyTags, out s_IndicesByName);
+            // Caller owns synchronization; published arrays are thereafter read-only.
             s_IsInitialized = true;
         }
 

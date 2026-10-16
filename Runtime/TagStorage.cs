@@ -19,33 +19,6 @@ namespace GameplayTags
         }
 
         internal const int LinearCapacity = 8;
-        internal const int MaxCapacity = 1 << 28;
-#if DEBUG || GAMEPLAYTAGS_CHECKED_ENUMERATION
-        internal long Version;
-#endif
-
-        internal static void ValidateCapacity(int capacity)
-        {
-            if ((uint)capacity > MaxCapacity)
-                throw new ArgumentOutOfRangeException(nameof(capacity));
-        }
-        [System.Diagnostics.Conditional("DEBUG"), System.Diagnostics.Conditional("GAMEPLAYTAGS_CHECKED_ENUMERATION")]
-        internal void Changed()
-        {
-#if DEBUG || GAMEPLAYTAGS_CHECKED_ENUMERATION
-            unchecked { Version++; }
-#endif
-        }
-
-        internal void ValidateAdd(int id, int amount)
-        {
-            if (id == 0) throw new ArgumentException("A registered non-None tag is required.", nameof(id));
-            if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
-            var path = GameplayTagManager.GetHierarchyIndices(id);
-            // Every descendant count is bounded by its root's total.
-            if (GetCount(path[0]) > int.MaxValue - amount)
-                throw new OverflowException("Gameplay tag count exceeds Int32.MaxValue.");
-        }
         internal Entry[] Entries = Array.Empty<Entry>();
         internal int[] ExplicitIndices = Array.Empty<int>();
         internal int Count;
@@ -113,7 +86,6 @@ namespace GameplayTags
 
         internal int AddExplicit(int id, int amount = 1)
         {
-            Changed();
             int index = Find(id);
             if (index < 0)
                 index = Insert(id);
@@ -123,33 +95,8 @@ namespace GameplayTags
         }
 
         // Set insertion and its duplicate semantics require just one lookup.
-        // A near-overflow batch needs exact per-root accounting before any writes.
-        // The usual path allocates nothing; the cold saturation path uses a map.
-        internal void ValidateBulkAdd(TagStorage source)
-        {
-            if (source == null) return;
-            int n = source.ExplicitCount;
-            for (int i = 0; i < n; i++)
-            {
-                int id = source.Entries[source.ExplicitIndices[i]].Id;
-                int root = GameplayTagManager.GetHierarchyIndices(id)[0];
-                if (GetCount(root) <= int.MaxValue - n) continue;
-                var additions = new System.Collections.Generic.Dictionary<int, int>();
-                for (int j = 0; j < n; j++)
-                {
-                    id = source.Entries[source.ExplicitIndices[j]].Id;
-                    root = GameplayTagManager.GetHierarchyIndices(id)[0];
-                    additions.TryGetValue(root, out int amount);
-                    additions[root] = amount + 1;
-                }
-                foreach (var pair in additions) ValidateAdd(pair.Key, pair.Value);
-                return;
-            }
-        }
-
         internal bool TryAddExplicit(int id)
         {
-            if (id == 0) return false;
             int index = Find(id);
             if (index < 0)
                 index = Insert(id);
@@ -158,7 +105,6 @@ namespace GameplayTags
             Entries[index].ExplicitCount = 1;
             Entries[index].Count++;
             AddExplicitIndex(index);
-            Changed();
             return true;
         }
 
@@ -180,14 +126,9 @@ namespace GameplayTags
 
         internal int RemoveExplicit(int id, int amount = 1)
         {
-            if (id == 0) return -1;
-            if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
             int index = Find(id);
             if (index < 0 || Entries[index].ExplicitCount == 0)
                 return -1;
-            if (Entries[index].ExplicitCount < amount)
-                throw new ArgumentOutOfRangeException(nameof(amount), "Removal exceeds explicit count.");
-            Changed();
             int count = Entries[index].ExplicitCount -= amount;
             if (count == 0)
             {
@@ -271,7 +212,6 @@ namespace GameplayTags
         // Reserve the maximum number of distinct tags INCLUDING ancestors.
         internal void EnsureCapacity(int capacity)
         {
-            ValidateCapacity(capacity);
             EnsureEntryCapacity(capacity);
             if (ExplicitIndices.Length < capacity)
             {
@@ -284,7 +224,6 @@ namespace GameplayTags
 
         private void EnsureEntryCapacity(int capacity)
         {
-            ValidateCapacity(capacity);
             if (Entries.Length < capacity)
             {
                 int size = Math.Max(LinearCapacity, Entries.Length * 2);
@@ -322,7 +261,6 @@ namespace GameplayTags
             }
             Count = 0;
             ExplicitCount = 0;
-            Changed();
         }
 
         internal void CopyFrom(TagStorage other)
@@ -330,7 +268,6 @@ namespace GameplayTags
             if (ReferenceEquals(this, other))
                 return;
             int count = other.Count;
-            Changed();
             if (count == 0)
             {
                 Clear();
@@ -362,12 +299,9 @@ namespace GameplayTags
                 BuildIndex();
         }
 
-        // Add a distinct explicit set to a normal set. Each new explicit tag
-        // contributes to itself immediately, then queues only its direct parent.
-        // Shared parents combine pending contributions before forwarding them.
+        // Add unique explicit members and propagate shared ancestor contributions in batches.
         internal void AddUnion(TagStorage source)
         {
-            Changed();
             if (source.ExplicitCount <= 8)
             {
                 for (int i = 0; i < source.ExplicitCount; i++)
@@ -452,7 +386,6 @@ namespace GameplayTags
 
         internal void BuildFromExplicitIds(int explicitCount)
         {
-            Changed();
             if (explicitCount == 0)
             {
                 Clear();
@@ -566,7 +499,6 @@ namespace GameplayTags
 
         private static int ArrayCapacityFor(int count)
         {
-            ValidateCapacity(count);
             int capacity = LinearCapacity;
             while (capacity < count)
                 capacity *= 2;
@@ -575,7 +507,6 @@ namespace GameplayTags
 
         private static int BucketCapacityFor(int count)
         {
-            ValidateCapacity(count);
             if (count <= LinearCapacity)
                 return 0;
             int capacity = 32;

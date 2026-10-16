@@ -1,8 +1,8 @@
 {
   "name": "com.acced.zframework.gameplaytags",
-  "version": "2.1.0-rc.1",
+  "version": "2.1.0-rc.2",
   "displayName": "ZFramework Gameplay Tags",
-  "description": "Performance-first hierarchical gameplay tags with compact indexed storage and reference-counted ancestor closure.",
+  "description": "Caller-contract performance core: cached integer handles, compact indexed storage and batched ancestor propagation.",
   "unity": "2022.3",
   "license": "MIT",
   "keywords": [

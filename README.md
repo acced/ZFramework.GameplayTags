@@ -1,169 +1,466 @@
-# Integer hardening candidate — 2.1.0-rc.1
+# ZFramework Gameplay Tags
 
-本轮采用上传整数版，新增安全性与序列化修复；并非原 name-based rc.1 的兼容替换。详见 [加固说明与迁移边界](Documentation~/HARDENING.md)。性能收益与检查成本必须同时评估，未执行真实 Unity/IL2CPP 验收。以下为整数路线原有使用说明，性能历史不能解释为本轮实测。
+[简体中文](README_CN.md) | **English**
 
-# ZFramework.GameplayTags
+A small C# gameplay-tag library for Unity: cached integer handles, hierarchical matching, explicit sets, reference-counted tags, parent containers and change notifications.
 
-面向性能的 C# 层级标签库。运行时使用整数 ID、紧凑数组与开放寻址索引；标签祖先关系在注册时编译为连续区间。支持普通集合、计数集合、父容器传播、条件查询、事件、对象池、Unity 序列化和源码生成。
+**The core trusts the caller.** Resolve names at loading boundaries, cache handles and keep hot paths on integers. Input validation, lifetime ownership, initialization order and synchronization belong to the application; the runtime does not add a defensive policy layer.
 
-这一版重写了运行时存储和算法。**普通集合删除只更新受影响的祖先，不再重建全部隐式标签。** 不为每个实体分配覆盖整个全局注册表的数组。首次重写的历史测量见 [性能说明](Documentation~/PERFORMANCE.md)，Copy、Union 与显式 Intersection 的后续优化和交叉测量见 [批量操作性能记录](Documentation~/BULK_PERFORMANCE.md)，升级行为见 [迁移说明](Documentation~/MIGRATION.md)。
+| Item | Value |
+| --- | --- |
+| Package | `com.acced.zframework.gameplaytags` |
+| Source version | `2.1.0-rc.2` |
+| Unity package target | Unity 2022.3 or later; validate on your actual Editor and player backend |
+| Standalone target | .NET Standard 2.1, C# 9 |
+| Namespace | `GameplayTags` |
+| Unity assembly | `ZFramework.GameplayTags` |
+| License | [MIT](LICENSE) |
 
-## 安装与构建
+This is a source candidate, not a claim of universal speedups or completed Unity/IL2CPP certification. The repository contains the library, editor integration and usage documentation only. Historical tests, benchmarks and experiments remain in Git history, not in the current package.
 
-Unity Package Manager 可从本仓库的 Git URL 安装；选择包含本版本 `package.json` 的分支、tag 或提交，并在 URL 后追加 `#引用` 固定版本。包以 Unity 2022.3、C# 9、.NET Standard 2.1 为兼容目标，包含独立的 Runtime / Editor assembly definition 与固定 GUID 的 `.meta` 文件。普通 .NET 核心不依赖 Unity；以下测试需要 .NET 8 SDK：
+## Contents
+
+[Installation](#installation) · [Quick start](#quick-start) · [Registration](#registration) · [Tag semantics](#tag-semantics) · [Sets](#sets) · [Queries](#queries) · [Set algebra](#set-algebra) · [Enumeration](#enumeration) · [Counts](#counts) · [Events](#events) · [Parent containers](#parent-containers) · [Pooling](#pooling) · [Unity and serialization](#unity-and-serialization) · [Caller contract](#caller-contract) · [API map](#api-map)
+
+<a id="installation"></a>
+## Installation
+
+### Unity Package Manager
+
+Open Package Manager, select **+ → Add package from git URL**, then enter:
+
+```text
+https://github.com/acced/ZFramework.GameplayTags.git#main
+```
+
+Or add this entry to the existing `dependencies` object in `Packages/manifest.json`:
+
+```json
+"com.acced.zframework.gameplaytags": "https://github.com/acced/ZFramework.GameplayTags.git#main"
+```
+
+Use `#<commit-sha>` instead of `#main` to pin a reviewed revision. For a local checkout, use **Add package from disk** and select its `package.json`. Remove other packages or copied sources defining the same `GameplayTags` types first. Do not install this package alongside the name-based `zframework.gameplaytag` package.
+
+If your scripts use assembly definitions, reference **`ZFramework.GameplayTags`**. The included Editor assembly is Editor-only. Installation reference: [Unity Git dependencies](https://docs.unity3d.com/2022.3/Documentation/Manual/upm-ui-giturl.html).
+
+### Standalone C#
+
+The optional project compiles the core without the GameObject adapter or Editor code:
 
 ```bash
 dotnet build GameplayTags.Runtime.csproj -c Release
-dotnet run --project Tests~/GameplayTags.Tests.csproj -c Release
 ```
 
-`Tests~`、`Benchmarks~`、`SourceGenerator~` 和 `Documentation~` 不参与 Unity 脚本导入。Unity 编辑器、Mono 与 IL2CPP 的实际性能应在目标项目中单独测量。
+Reference `GameplayTags.Runtime.csproj` from an application targeting a compatible framework. No source-generator project, NUnit dependency or test runner is required by the core.
 
-## 注册一次，缓存句柄
+<a id="quick-start"></a>
+## Quick start
+
+Create `GameTagDeclarations.cs`. Assembly attributes must appear after `using` directives and before any namespace or type declaration:
 
 ```csharp
 using GameplayTags;
 
-// 在读取任何标签、访问生成的缓存句柄之前执行。
-GameplayTagManager.Initialize(
-    new GameplayTagRegistration("State.Stunned", "无法行动"),
-    new GameplayTagRegistration("State.Burning", "持续燃烧"),
-    new GameplayTagRegistration("Ability.Fire.Cast"));
+[assembly: GameplayTagAttribute("State.Burning", "Fire damage is active.")]
+[assembly: GameplayTagAttribute("State.Frozen", "Movement is frozen.")]
+[assembly: GameplayTagAttribute("Ability.Cast", "Spell casting is available.")]
 
-GameplayTag stunned = GameplayTagManager.RequestTag("State.Stunned");
-GameplayTag burning = GameplayTagManager.RequestTag("State.Burning");
-GameplayTag state = GameplayTagManager.RequestTag("State"); // 父标签自动生成。
-```
-
-也可沿用 assembly attributes。此时第一次有效名称查询调用 `InitializeIfNeeded()`，扫描已加载程序集，然后冻结注册表：
-
-```csharp
-[assembly: GameplayTags.GameplayTag("State.Stunned", "无法行动")]
-[assembly: GameplayTags.GameplayTag("State.Burning")]
-```
-
-两种入口选择一种。显式 `Initialize(...)` 只注册传入的声明，不再扫描程序集；冻结后不支持重新注册或替换 ID。名称按 `StringComparer.Ordinal` 区分大小写。运行时 ID 只在当前注册表中有效，资产、存档和网络协议应保存名称或使用自己的稳定映射。
-
-Unity 的 Editor 标签窗口和资产反序列化也会触发名称查询，因此显式初始化必须早于这些路径，不能默认等到 `Awake`。使用序列化标签资产时，assembly attributes 是直接可用的注册方式。关闭 Domain Reload 时，已冻结的静态注册表会跨 Play 会话保留，不要在每次进入 Play 时重复初始化。
-
-`RequestTag(name)` 对未知、空或 null 名称返回 `GameplayTag.None`，没有日志。外部输入可以在加载边界使用 `RequestTag(name, out tag)` 和 `GameplayTagUtility.IsValidName(name)`；不要在每帧重复进行字符串查找。
-
-## 普通集合与层级查询
-
-```csharp
-// capacity 包含祖先：这是总 distinct tag 容量，不只是显式标签数量。
-var tags = new GameplayTagContainer(capacity: 8);
-tags.AddTag(stunned);
-tags.AddTag(stunned);                     // 集合语义：重复添加不增加数量。
-
-bool a = tags.HasTag(stunned);            // true
-bool b = tags.HasTag(state);              // true，隐式祖先。
-bool c = tags.HasTagExact(state);         // false，未显式加入。
-
-tags.AddTag(burning);
-tags.RemoveTag(stunned);
-bool d = tags.HasTag(state);              // true，Burning 仍贡献 State。
-
-foreach (GameplayTag tag in tags) { }      // 具体类型 foreach 不装箱。
-foreach (GameplayTag tag in tags.GetExplicitTags()) { }
-```
-
-`TagCount` 是包含祖先的不同标签数量；`ExplicitTagCount` 是显式不同标签数量。`IsParentOf` / `IsChildOf` 表示严格祖先关系，自己与自己不匹配，`None` 不充当根节点。
-
-查询另一集合时，查询集合的**显式标签**是条件：
-
-| 调用 | 含义 |
-| --- | --- |
-| `holder.HasTag(tag)` | holder 显式或隐式包含 tag |
-| `holder.HasTagExact(tag)` | holder 显式包含 tag |
-| `holder.HasAny(query)` | 至少满足 query 的一个显式条件 |
-| `holder.HasAll(query)` | 满足 query 的全部显式条件 |
-| `HasAnyExact` / `HasAllExact` | 只使用 holder 的显式标签匹配 |
-| `holder.HasAll(queryA, queryB)` | 同时满足两组条件 |
-| `GameplayTagContainerUtility.HasAll(a, b, query)` | 每个条件由 a 或 b 任意一方满足 |
-
-空条件的 `HasAny` 为 false，`HasAll` 为 true。null 查询集合沿用空条件语义。`GetParentTags` / `GetChildTags` 及其 Explicit 版本向调用者的列表追加结果，不会隐式清空列表。
-
-集合代数以显式标签为基础，再生成结果的祖先闭包：
-
-```csharp
-GameplayTagContainer union = GameplayTagContainer.Union(left, right);
-GameplayTagContainer common = GameplayTagContainer.Intersection(left, right);
-
-// 支持覆盖输出及输入/输出别名。
-GameplayTagContainer.Intersection(left, left, right);
-GameplayTagContainer.Copy(destination, source);
-```
-
-## 计数与事件
-
-```csharp
-var counts = new GameplayTagCountContainer(capacity: 16);
-counts.RegisterTagEventCallback(state, GameplayTagEventType.NewOrRemoved,
-    (tag, count) => UpdateStatePresence(count != 0));
-counts.OnAnyTagCountChange += (tag, count) => ObserveCount(tag, count);
-
-counts.AddTag(stunned, 3);
-int exact = counts.GetExplicitTagCount(stunned); // 3
-int total = counts.GetTagCount(state);           // 3
-counts.RemoveTag(stunned, 2);                    // 两者都变为 1。
-counts.Clear();                                 // 两类事件都收到归零通知。
-```
-
-`NewOrRemoved` 仅用于 0 与非 0 之间的转换；`AnyCountChange` 用于每次计数变化。`AddTags(other)` / `RemoveTags(other)` 对来源中的每个**不同显式标签**加/减一次，不复制来源的完整次数。使用 amount 重载可以批量更新一个标签；amount 必须为正，删除量不得大于现有显式次数。
-
-普通计数容器在完整修改完成后派发回调。批量操作先完成全部修改，再派发通知；回调可重入修改同一容器，新的通知排到当前队列后面。通知携带该次修改后的计数，回调读取容器时可能看到更晚的重入状态。回调抛出的异常直接传播，已经提交的数据不回滚，尚未派发的通知被释放，下次修改可正常派发。
-
-没有监听器时跳过事件队列。队列和快照缓冲可复用；第一次增长容量、订阅委托和创建集合仍会分配内存。`RemoveAllTagEventCallbacks()` 清除逐标签订阅；全局 C# events 仍由订阅方解除。
-
-## 父容器、条件与对象池
-
-`GameplayTagHierarchicalContainer.Parent` 接收子容器的全部显式次数。换父容器、清空、移除部分标签都会按实际次数转移贡献。父关系必须无环；传播到父容器的次数由子容器拥有，应通过子容器修改，不能在父容器直接删除这些贡献。清空一个仍承载子容器贡献的父容器前，应先解除相应子容器的 Parent。
-
-```csharp
-var parent = new GameplayTagCountContainer();
-var child = new GameplayTagHierarchicalContainer { Parent = parent };
-child.AddTag(stunned, 3);
-child.Parent = anotherParent; // 原父容器减少 3，新父容器增加 3。
-
-var requirements = new GameplayTagRequirements(forbidden, required);
-bool allowed = requirements.Matches(staticTags, dynamicTags);
-
-using (GameplayTagContainerPool.Get(out GameplayTagContainer temporary))
+// Application-owned cached handles. No generated code is required.
+public static class GameTags
 {
-    temporary.AddTags(tags);
-    // 借用期间使用 temporary。
+    public static readonly GameplayTag State = GameplayTagManager.RequestTag("State");
+    public static readonly GameplayTag Burning = GameplayTagManager.RequestTag("State.Burning");
+    public static readonly GameplayTag Frozen = GameplayTagManager.RequestTag("State.Frozen");
+    public static readonly GameplayTag Cast = GameplayTagManager.RequestTag("Ability.Cast");
 }
 ```
 
-内置父容器链在提交整条链后派发事件；自定义 `IGameplayTagCountContainer` 父容器控制自己的通知时机。对象池按线程存储，最多保留 64 个容器；借出的容器必须在借用线程上释放一次，释放后不可继续使用。
+Create `TagExample.cs` and attach it to a GameObject. This example creates its container at runtime; serialized containers have the additional loading requirements described below.
 
-`GameplayTagContainerBinds` 实现 `IDisposable`，绑定后立即报告存在状态，结构体副本共享订阅所有权。Unity 的 `GameObjectGameplayTagContainer` 在 `Awake` 前就提供可用的运行时容器，在 `Awake` 加入持久标签。
+```csharp
+using GameplayTags;
+using UnityEngine;
 
-## 使用契约与兼容范围
+public sealed class TagExample : MonoBehaviour
+{
+    private GameplayTagContainer tags;
 
-- 热路径信任调用者：修改操作只接收当前注册表中有效的非 None 标签；不做重复名称验证、警告日志或异常包装。
-- 容器不是并发集合。注册表冻结后可并发读取；同一个可变容器需要由调用方保证单线程访问或外部同步。
-- 枚举顺序不固定，删除采用末项交换。修改集合使已有枚举器失效；不执行版本检测。
-- `GameplayTagContainer.Empty` 是只读约定下的共享空查询对象，请勿修改。
-- `m_Name` 与 `m_SerializedExplicitTags` 保留给旧资产和序列化；运行时修改应使用库 API，不能直接篡改这些字段。
-- CLR 自身的数组边界检查仍然存在。没有使用不受管理的指针来绕开内存边界。
+    private void Awake()
+    {
+        // Cold assembly-discovery path. Do this on the initialization thread.
+        GameplayTagManager.InitializeIfNeeded();
+        tags = new GameplayTagContainer(16);
+        tags.AddTag(GameTags.Burning);
 
-生成的类型可避免手写名称：参见 [源码生成器](SourceGenerator~/README.md)。该生成器需要单独构建；Unity 安装步骤也在该文档中。
+        Debug.Log(tags.HasTag(GameTags.State));          // True: ancestor match.
+        Debug.Log(tags.HasTagExact(GameTags.State));     // False: not explicit.
+        Debug.Log(tags.HasTagExact(GameTags.Burning));   // True.
+        Debug.Log(tags.ExplicitTagCount);                // 1.
+        Debug.Log(tags.TagCount);                        // 2: State + State.Burning.
 
-## 验证与复现
+        tags.RemoveTag(GameTags.Burning);
+        Debug.Log(tags.IsEmpty);                         // True.
+    }
+}
+```
 
-行为验证包含确定性回归、随机操作与独立 HashSet / Dictionary / 名称前缀模型对照。基准用固定提交的原始源码和同一套场景比较，并记录分配量；不以计时阈值作为 CI 正确性断言。
+The remaining examples use the declarations and `GameTags` class above. Method-body snippets belong inside your application's methods.
 
-详细命令、环境限制和结果见 [性能说明](Documentation~/PERFORMANCE.md)。
+<a id="registration"></a>
+## Registration and cached handles
 
-## 算法参考
+Choose one registration strategy for each process/domain.
 
-以下是结构选型的原始资料，不能视为本库在某种硬件上的性能保证：
+**Assembly declarations:** use `[assembly: GameplayTagAttribute(...)]`. The first `InitializeIfNeeded()`, nonempty name lookup, `TagCount` or `GetAllTags()` can discover declarations in currently loaded assemblies. Later-loaded assemblies are not automatically added to an already initialized registry.
 
-- [LLVM 容器指南](https://llvm.org/docs/ProgrammersManual.html#set-like-containers-std-set-smallset-setvector-etc)：小集合线性扫描、DenseSet 与 SparseSet 的成本取舍。
-- [EnTT 作者：稀疏集合](https://skypjack.github.io/2020-08-02-ecs-baf-part-9/)：连续存储与末项交换删除。
-- [Jeff Erickson：Depth-First Search](https://courses.grainger.illinois.edu/cs374al1/fa2025/notes/06-dfs.pdf)：DFS 区间与祖先关系。
-- [Abseil Swiss Tables](https://abseil.io/about/design/swisstables)：分组探测、控制字节和 SIMD 设计。本库使用适合可移植 C# 的标量索引，并未把它命名为 SwissTable。
+**Explicit registration:** call `Initialize` once, before any lookup, cached-field access, Inspector-driven lookup or container deserialization. This path does not scan assembly declarations; supply the complete set yourself:
 
-MIT License。
+```csharp
+// Alternative to assembly discovery, not a second initialization step.
+GameplayTagManager.Initialize(
+    new GameplayTagRegistration("State.Burning", "Fire damage is active."),
+    new GameplayTagRegistration("State.Frozen", "Movement is frozen."),
+    new GameplayTagRegistration("Ability.Cast", "Spell casting is available."));
+
+GameplayTag burning = GameplayTagManager.RequestTag("State.Burning");
+```
+
+Parents such as `State` and `Ability` are added automatically. Names are case-sensitive. Labels should contain letters, digits or underscores and use `.` as a separator. `GameplayTagUtility.IsValidName(name)` and `ValidateName(name)` are optional authoring/import tools; registration does not call them automatically.
+
+`RequestTag(name)` returns `GameplayTag.None` for a missing, null or empty name. Its `out` overload reports resolution success:
+
+```csharp
+if (GameplayTagManager.RequestTag(externalName, out GameplayTag resolved))
+{
+    // Caller-side validation at the boundary; cache resolved before repeated use.
+    destination.AddTag(resolved);
+}
+```
+
+Here `externalName` and `destination` are application inputs. Do not repeatedly resolve strings in `Update`, and do not rely on the implicit string-to-tag conversion inside a hot loop.
+
+`Initialize` has no repeated-initialization guard or lock. **Publish once and never rebuild the registry while handles, containers, subscriptions or pooled containers remain live.** Initialization ordering and cross-thread publication are the caller's responsibility. Runtime IDs belong to that registry; they are not stable save-file, network or cross-build identifiers.
+
+<a id="tag-semantics"></a>
+## Tag semantics
+
+`GameplayTag` stores a name and a cached integer. `RuntimeIndex`, `IsValid`, equality and hashing use the cached ID; changing `m_Name` does not update it. `IsValid` means the cached ID is nonzero, not that a name has just been checked against the registry.
+
+```csharp
+GameplayTag edited = new GameplayTag { m_Name = "State.Burning" };
+edited = edited.Resolve(); // Assign the returned struct at the loading/editing boundary.
+```
+
+Unresolved and unknown handles have ID zero and compare equal to `None`, even when their stored names differ. Never use them as distinct dictionary keys. Do not change a tag used as a hash key.
+
+| Member | Meaning |
+| --- | --- |
+| `Name` / `Label` | Full name / final path segment |
+| `Description` / `Flags` | Registration metadata; flags are not permission checks |
+| `ParentTag` | Immediate parent; `None` for a root |
+| `ParentTags` | Strict ancestors, root to immediate parent |
+| `HierarchyTags` | Root-to-self path, including the tag |
+| `ChildTags` | All strict registered descendants in DFS order |
+| `HierarchyLevel` | Root is level 1 |
+| `IsParentOf` / `IsChildOf` | Strict relationship: a tag is not its own ancestor |
+
+These relationship properties describe the **registry**, not membership in a particular container. `GetAllTags()` returns a read-only span in DFS order, not a promise of globally name-sorted container enumeration. Built-in `HideInEditor` is obsolete; do not base new behavior on it.
+
+<a id="sets"></a>
+## Ordinary sets
+
+`GameplayTagContainer` owns a set of explicit members and maintains their ancestor closure. Adding the same explicit tag twice does not increase its contribution.
+
+```csharp
+var tags = new GameplayTagContainer(32); // Capacity includes distinct ancestors.
+bool added = tags.TryAddTag(GameTags.Burning);       // True.
+bool duplicate = tags.TryAddTag(GameTags.Burning);   // False.
+tags.AddTag(GameTags.Frozen);
+
+// State remains present while either descendant contributes it.
+tags.RemoveTag(GameTags.Burning);
+bool stillPresent = tags.HasTag(GameTags.State);     // True.
+bool removedAgain = tags.TryRemoveTag(GameTags.Burning); // False.
+
+tags.Clear(); // Removes members; retains reusable backing capacity.
+```
+
+`TryAddTag` and `TryRemoveTag` report membership changes; they are **not** validation APIs. Supply valid, non-None resolved tags. Removing an implicit parent does not remove its descendants or their contribution. Add the parent explicitly first when you need an independent parent membership.
+
+`EnsureCapacity(n)` reserves for **distinct tags including ancestors**, not just explicit leaves and not multiplicity. It does not add members or shrink retained storage. All count/capacity arithmetic and available-memory limits belong to the caller.
+
+<a id="queries"></a>
+## Any/all queries and requirements
+
+The holder supplies membership; the other container supplies explicit conditions:
+
+```csharp
+var holder = new GameplayTagContainer();
+holder.AddTag(GameTags.Burning);
+holder.AddTag(GameTags.Cast);
+var query = new GameplayTagContainer();
+query.AddTag(GameTags.State);
+
+bool any = holder.HasAny(query);          // True.
+bool all = holder.HasAll(query);          // True.
+bool anyExact = holder.HasAnyExact(query); // False.
+bool allExact = holder.HasAllExact(query); // False.
+```
+
+`HasAny(emptyQuery)` is false; `HasAll(emptyQuery)` is true. A typed null **query** has the same semantics. This does not permit calling instance methods on a null holder or passing null mutation operands.
+
+Two query sets versus two holders are different operations:
+
+```csharp
+bool bothQueries = holder.HasAll(queryA, queryB);
+bool splitAcrossHolders = GameplayTagContainerUtility.HasAll(staticTags, dynamicTags, query);
+bool splitExact = GameplayTagContainerUtility.HasAllExact(staticTags, dynamicTags, query);
+```
+
+The first requires the holder to satisfy both condition sets. The latter two allow each condition to come from either holder without constructing a union. Variables in this snippet are your existing non-null containers.
+
+```csharp
+var forbidden = new GameplayTagContainer();
+forbidden.AddTag(GameTags.Frozen);
+var required = new GameplayTagContainer();
+required.AddTag(GameTags.Cast);
+var rule = new GameplayTagRequirements(forbidden, required);
+
+bool canCast = rule.Matches(holder);
+// rule.Matches(staticTags, dynamicTags) also supports two holders.
+```
+
+Requirements use hierarchical matching. They retain references to the condition containers, so later changes to those containers affect matching. An empty requirement succeeds.
+
+<a id="set-algebra"></a>
+## Copy, union, intersection and difference
+
+```csharp
+var left = new GameplayTagContainer();
+left.AddTag(GameTags.Burning);
+left.AddTag(GameTags.Cast);
+var right = new GameplayTagContainer();
+right.AddTag(GameTags.Frozen);
+right.AddTag(GameTags.Cast);
+
+var output = new GameplayTagContainer(32);
+GameplayTagContainer.Copy(output, left);              // Replace output.
+output.AddTags(right);                                // Union into existing output.
+GameplayTagContainer union = GameplayTagContainer.Union(left, right);
+GameplayTagContainer intersection = GameplayTagContainer.Intersection(left, right);
+GameplayTagContainer.Intersection(output, left, right); // Replace with {Ability.Cast}.
+left.IntersectWith(right);                            // In-place explicit intersection.
+GameplayTagContainer clone = right.Clone();           // Independently mutable storage.
+clone.RemoveTags(intersection);                       // Explicit set difference.
+```
+
+Union/intersection act on **explicit members**, then derive the result's ancestors. `{State.Burning}` intersected with `{State.Frozen}` is empty, not an implicit `State` result. Counted inputs contribute existence once per distinct explicit tag, not their multiplicity.
+
+Copy to self is a no-op. Intersection output may be either input. `AddTags(self)` on an ordinary set is a no-op; `RemoveTags(self)` clears it. Reuse `Copy(output, left); output.AddTags(right);` when output is distinct from both inputs. If output is already `right`, append `left` directly instead: copying over `right` first would destroy that input.
+
+There is no rc.1-style `SetUnion`, `CopyFrom` or `SetIntersectionExact` method on this integer API. Use the methods above.
+
+For a UI delta, `current.GetDiffExplicitTags(previous, added, removed)` **appends** current-minus-previous to `added` and previous-minus-current to `removed`. Clear reused output lists first.
+
+<a id="enumeration"></a>
+## Enumeration and hierarchy extraction
+
+```csharp
+foreach (GameplayTag tag in tags.GetExplicitTags()) { /* Explicit members only. */ }
+foreach (GameplayTag tag in tags) { /* All members, including implicit ancestors. */ }
+```
+
+`ExplicitTagCount` is the number of distinct explicit members. `TagCount` includes distinct implicit ancestors. Concrete enumeration uses a struct enumerator; using it through `IEnumerable<GameplayTag>`/`IEnumerator<GameplayTag>` can box. `Indices` is a shared live storage view, not a snapshot; use `Clone` or `Copy` for an independent result.
+
+Enumeration is unordered and becomes invalid after mutation. No fail-fast version tracking is provided, including Debug builds. Do not infer insertion order or rely on an observed DFS order after a bulk operation.
+
+Sort only where your UI, save format or protocol actually needs it:
+
+```csharp
+var names = new System.Collections.Generic.List<string>();
+foreach (GameplayTag tag in tags.GetExplicitTags()) names.Add(tag.Name);
+names.Sort(System.StringComparer.Ordinal);
+```
+
+`GetParentTags(tag, list)` and `GetChildTags(tag, list)` append matching strict ancestors/descendants that are present in the container. `GetExplicitParentTags`/`GetExplicitChildTags` restrict membership to explicit tags. All four append without clearing. Parent results are nearest-parent first; do not rely on child result ordering.
+
+<a id="counts"></a>
+## Reference-counted tags
+
+Use `GameplayTagCountContainer` when independent systems contribute the same tag:
+
+```csharp
+var effects = new GameplayTagCountContainer(32);
+effects.AddTag(GameTags.Burning, 3);
+effects.AddTag(GameTags.Frozen, 2);
+
+int burningCount = effects.GetExplicitTagCount(GameTags.Burning); // 3.
+int stateExplicit = effects.GetExplicitTagCount(GameTags.State);  // 0.
+int stateTotal = effects.GetTagCount(GameTags.State);             // 5.
+int distinctExplicit = effects.ExplicitTagCount;                 // 2, not 5.
+int distinctTotal = effects.TagCount;                            // 3.
+
+effects.RemoveTag(GameTags.Burning, 2);                           // Burning is now 1.
+effects.Clear();
+```
+
+Amounts must be positive; removal must not exceed the tag's explicit count; accumulated counts must not overflow. No preflight checks are performed. A member with no explicit occurrences is ignored by removal.
+
+`AddTags(source)` adds **one** occurrence per distinct explicit source member. `RemoveTags(source)` removes one each; it does not copy/remove the source's multiplicity. `RemoveTags(self)` therefore subtracts one occurrence per explicit member, unlike the ordinary set's clear behavior. `Clear()` removes all counts but keeps subscriptions. To preserve source multiplicity explicitly, iterate a distinct counted source and use `AddTag(tag, source.GetExplicitTagCount(tag))`.
+
+<a id="events"></a>
+## Events and binding lifetime
+
+```csharp
+var effects = new GameplayTagCountContainer();
+OnTagCountChangedDelegate onChange = (tag, count) =>
+    UnityEngine.Debug.Log($"{tag.Name}: {count}");
+
+effects.RegisterTagEventCallback(GameTags.State, GameplayTagEventType.AnyCountChange, onChange);
+effects.AddTag(GameTags.Burning); // State callback: 1.
+effects.AddTag(GameTags.Frozen);  // State callback: 2.
+effects.Clear();                 // State callback: 0.
+effects.RemoveTagEventCallback(GameTags.State, GameplayTagEventType.AnyCountChange, onChange);
+```
+
+`AnyCountChange` observes changes to the total count. `NewOrRemoved` observes only zero-to-positive and positive-to-zero transitions. Ancestors receive contributions and can have their own notifications. Registering a raw callback does not immediately report the current value.
+
+Global events are `OnAnyTagCountChange` and `OnAnyTagNewOrRemove`. Unsubscribe with the same delegate. `RemoveAllTagEventCallbacks()` clears tag-specific registrations, **not** subscribers attached with `+=` to the global events.
+
+`GameplayTagContainerBinds` provides grouped presence subscriptions and immediately reports current presence:
+
+```csharp
+using (var binds = new GameplayTagContainerBinds(effects))
+{
+    binds.Bind(GameTags.State, present => UnityEngine.Debug.Log(present));
+    effects.AddTag(GameTags.Burning);
+} // Disposes these subscriptions, not the effects container.
+```
+
+Bindings can allocate state/delegates; set them up outside hot loops. Copies share subscription state. The immediate Bind callback is not rolled back automatically on error; the caller owns disposal. Established count-event dispatch observes committed changes; reentrant events are queued. A thrown callback propagates, retains committed state and releases pending notifications. This is cleanup, not transactional rollback.
+
+<a id="parent-containers"></a>
+## Parent containers
+
+Container parents aggregate contributions; they are different from the dotted-name hierarchy:
+
+```csharp
+var actor = new GameplayTagCountContainer();
+var equipment = new GameplayTagHierarchicalContainer { Parent = actor };
+var aura = new GameplayTagHierarchicalContainer { Parent = actor };
+equipment.AddTag(GameTags.Cast, 2);
+aura.AddTag(GameTags.Cast);
+int total = actor.GetExplicitTagCount(GameTags.Cast); // 3.
+
+equipment.Parent = null;                            // Detach its two contributions.
+int remaining = actor.GetExplicitTagCount(GameTags.Cast); // 1.
+equipment.Parent = actor;                           // Transfer existing contributions back.
+equipment.Clear();                                 // Remove only equipment's contributions.
+aura.Clear();
+aura.Parent = null;
+equipment.Parent = null;
+```
+
+Contributions flow **child to parent**, not parent to child. Reparenting transfers existing explicit counts. Prevent cycles, overflow and concurrent changes yourself. Never directly remove child-owned contributions from an aggregate parent, or clear the parent while children still assume their contributions are present. Clear/detach children first. Built-in chains batch notifications; custom parent implementations control their own behavior. Long parent-container chains still have recursive propagation cost.
+
+<a id="pooling"></a>
+## Reuse and pooling
+
+```csharp
+using (GameplayTagContainerPool.Get(out GameplayTagContainer temporary))
+{
+    temporary.EnsureCapacity(64);
+    temporary.AddTag(GameTags.Burning);
+    temporary.AddTag(GameTags.Cast);
+    // Consume temporary here. Do not let the reference escape the scope.
+}
+```
+
+Or pair `GameplayTagContainerPool.Get()` with exactly one `Release(container)`. Return on the borrowing thread. Do not copy a lease and dispose both copies, dispose a default lease, return twice, or access a returned reference. The pool does not check these mistakes. Each thread keeps up to 64 returned containers; their retained buffers can remain large. New containers, growth, serialization and cold array-pool rentals can allocate. Warm reuse is not an unconditional zero-allocation guarantee.
+
+<a id="unity-and-serialization"></a>
+## Unity components, Inspector and serialization
+
+The included property drawers edit `GameplayTag.m_Name` and `GameplayTagContainer.m_SerializedExplicitTags`. They select registered tags; they are not a settings-asset manager and do not create declarations. Recompile/reload the domain after changing assembly declarations; the registry does not refresh itself on every lookup.
+
+```csharp
+using GameplayTags;
+using UnityEngine;
+
+public sealed class SerializedTagOwner : MonoBehaviour
+{
+    [SerializeField] private GameplayTag selectedTag;
+    [SerializeField] private GameplayTagContainer configuredTags = new GameplayTagContainer();
+
+    private void Awake()
+    {
+        // Registry must already be ready before serialized containers are loaded.
+        // Resolve standalone struct fields explicitly; assign the returned value.
+        selectedTag = selectedTag.Resolve();
+    }
+}
+```
+
+**Initialization comes before deserialization, not merely before the first Update.** Container `OnAfterDeserialize()` rebuilds membership immediately and may cause assembly discovery when the registry is not ready. Unity serialization callbacks can run away from the main thread, and struct callbacks must not be assumed to run. Prepare registration on the owning thread before loading assets/scenes, including the Editor path. An `Awake`/`BeforeSceneLoad` hook alone must not be assumed to precede every Editor or asset deserialization. See [Unity serialization callbacks](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/ISerializationCallbackReceiver.html).
+
+With domain reload disabled, static registry fields, cached handles, subscriptions and thread-local pools can survive a play transition. Do not republish a different registry over them. Keep the same registry, or arrange a genuine domain restart and rebuild all dependent state. See [Unity domain reloading](https://docs.unity3d.com/2022.3/Documentation/Manual/DomainReloading.html).
+
+`GameObjectGameplayTagContainer` exposes a runtime `GameplayTagCountContainer` through its `GameplayTagContainer` property. `m_PersistentTags` are added once in the component's `Awake`. The count container exists before Awake, but persistent contributions do not; accessing an inactive object or relying on another component's Awake order requires application coordination. `gameObject.Bind()` gets/adds this component and returns a binding group; dispose that group when its owner is disabled/destroyed.
+
+Normal containers serialize explicit **names**, sorted Ordinal, and derive ancestors again when loaded. Unknown names are not restored as members and may be discarded on subsequent serialization. Single tags have name-based .NET DataContract callbacks; standalone Unity tag fields should be resolved explicitly by their owner. `GameplayTagCountContainer` and `GameplayTagHierarchicalContainer` are runtime objects, not persistence DTOs: store names/counts in your own save model.
+
+Never persist `RuntimeIndex` or private arrays. Editing `m_Name` requires `tag = tag.Resolve()` afterward. Directly changing a live container's serialized name list does not update membership; use Add/Remove APIs, or explicitly rebuild from that list at a controlled loading boundary. Calling container `OnAfterDeserialize()` replaces runtime state, so do not call it casually on a modified live container.
+
+<a id="caller-contract"></a>
+## Caller contract and performance boundaries
+
+| Responsibility | Requirement |
+| --- | --- |
+| Registry | Initialize once before loading/binding; no replacement while state is live; caller-owned synchronization |
+| Handles | Valid, resolved, non-None mutation operands from that registry; resolve again after name editing |
+| Collections | Non-null mutation operands; `Empty` is read-only by convention, not enforcement |
+| Counts/capacity | Positive amounts, no excess removal or overflow; valid allocatable capacities and arithmetic |
+| Ownership | No parent cycles; remove contributions through the child that owns them |
+| Concurrency | No concurrent mutation; no mutation during enumeration; no automatic thread safety |
+| Pooling | Single-owner lease; exactly one same-thread return; no use after return |
+| Errors | Caller handles invalid inputs and callback failures; no general rollback guarantee |
+
+The implementation keeps duplicate-set semantics, missing-member no-ops, alias handling, ancestor accounting and internal resource cleanup. Those are algorithm behavior, not defensive validation. There is no checked-mode switch, name-consistency fallback on every query, pool-generation tracker or count-overflow preflight.
+
+Cache handles, reuse containers/output lists, reserve realistic closure capacity and keep diagnostics/logging out of hot loops. Storage includes entries, hash buckets and an explicit index, so it is **not four bytes per tag**. Hierarchical updates cost work along ancestor paths; intersections can sort selected IDs and rebuild closure. Measure your own mixes, hierarchy depths, memory usage and Unity backend before making performance claims. This managed implementation is not a NativeContainer or a Burst/Jobs-safe API.
+
+### Upgrading from the name-based package
+
+This is not a drop-in replacement for name-based 1.1 rc.1. Package/assembly identities, APIs, container serialized fields, ordering and registry lifetime differ. Replace `Count` with the appropriate explicit/total count, use integer-version Copy/Union/Intersection APIs, migrate stored tag names deliberately and sort at output boundaries when required. The old Settings/Redirects APIs are not provided. No automatic YAML, prefab or settings migration runs.
+
+<a id="api-map"></a>
+## API map and repository layout
+
+| Type | Use |
+| --- | --- |
+| `GameplayTagManager` | One-time registration, name lookup, registered metadata |
+| `GameplayTag` | Cached handle, strict hierarchy relationships, explicit Resolve |
+| `GameplayTagContainer` | Ordinary explicit set, clone/copy, union, intersection, difference |
+| `GameplayTagCountContainer` | Multiplicity, aggregate ancestor counts, notifications |
+| `GameplayTagHierarchicalContainer` | Count contributions to an aggregate parent |
+| `GameplayTagRequirements` | Required/forbidden conditions, one or two holders |
+| `GameplayTagContainerUtility` | Two-holder queries and container hierarchy extraction |
+| `GameplayTagContainerBinds` | Grouped tag-presence subscriptions |
+| `GameplayTagContainerPool` | Thread-local temporary ordinary containers |
+| `GameObjectGameplayTagContainer` | Unity component adapter |
+| `GameplayTagUtility` | Explicit name validation and path parsing |
+
+Name helpers include `GetHierarchyNames`, `GetHierarchyLevelFromName`, `TryGetParentName` and `GetLabel`; the historical `GetHeirarchy...` spellings remain as aliases. Parsing helpers assume valid input.
+
+```text
+Runtime/                      Core and Unity component adapter
+Editor/                       Inspector drawers and popup tree views
+GameplayTags.Runtime.csproj    Optional standalone core build
+package.json                  UPM identity and minimum Unity target
+README.md / README_CN.md      English / Simplified Chinese usage
+LICENSE                       MIT license
+```
+
+Necessary `.meta` files are retained. Tests, benchmarks, experimental snapshots, result archives, SDK pins, packaging tools, optional source-generator projects and their CI workflows are not part of this clean tree. No generated `GameTags` API is assumed: the cached class in the quick start is ordinary application code. Removed development material remains available in repository history.
+
+[Runtime source](Runtime) · [Editor source](Editor) · [MIT license](LICENSE)

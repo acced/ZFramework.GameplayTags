@@ -63,35 +63,7 @@ namespace GameplayTags
 #endif
     {
         /// <summary>Shared empty query operand. Treat as read-only.</summary>
-        public static GameplayTagContainer Empty { get; } = new GameplayTagContainer(true);
-        [NonSerialized] private readonly bool m_ReadOnly;
-        [NonSerialized] internal long PoolGeneration;
-        [NonSerialized] internal bool PoolReturned;
-        [NonSerialized] internal int PoolThread;
-
-        private GameplayTagContainer(bool readOnly) { m_ReadOnly = readOnly; }
-        internal void RequireWritable()
-        {
-            if (m_ReadOnly) throw new InvalidOperationException("The shared Empty container is read-only.");
-        }
-        private TagStorage Storage
-        {
-            get
-            {
-                if (!m_Indices.IsCreated) RestoreSerializedNames();
-                return m_Indices.Storage;
-            }
-        }
-        private void RestoreSerializedNames()
-        {
-            var restored = new GameplayTagContainer();
-            if (m_SerializedExplicitTags != null)
-                for (int i = 0; i < m_SerializedExplicitTags.Count; i++)
-                    if (GameplayTagManager.RequestTag(m_SerializedExplicitTags[i], out var tag)) restored.AddTag(tag);
-            m_Indices = restored.m_Indices;
-        }
-        internal static TagStorage GetStorage<T>(in T value) where T : IGameplayTagContainer =>
-            value is null ? null : value.Indices.Storage;
+        public static GameplayTagContainer Empty { get; } = new GameplayTagContainer();
 
         [NonSerialized] private GameplayTagContainerIndices m_Indices = GameplayTagContainerIndices.Create();
         // Force a name-based object contract. Otherwise DataContractSerializer
@@ -99,42 +71,39 @@ namespace GameplayTags
         // ancestors as explicit tags, changing the meaning of the container.
         [DataMember(Order = 0)] public List<string> m_SerializedExplicitTags;
 
-        public bool IsEmpty => Storage.ExplicitCount == 0;
-        public int ExplicitTagCount => Storage.ExplicitCount;
-        public int TagCount => Storage.Count;
-        public GameplayTagContainerIndices Indices { get { _ = Storage; return m_Indices; } }
+        public bool IsEmpty => m_Indices.Storage.ExplicitCount == 0;
+        public int ExplicitTagCount => m_Indices.Storage.ExplicitCount;
+        public int TagCount => m_Indices.Storage.Count;
+        public GameplayTagContainerIndices Indices => m_Indices;
 
         public GameplayTagContainer() { }
         /// <param name="capacity">Distinct tag capacity, including ancestors.</param>
-        public GameplayTagContainer(int capacity) => Storage.EnsureCapacity(capacity);
+        public GameplayTagContainer(int capacity) => m_Indices.Storage.EnsureCapacity(capacity);
         public GameplayTagContainer(IGameplayTagContainer other) => Copy(this, other);
 
         /// <summary>Reserve distinct tag capacity, including ancestors.</summary>
-        public void EnsureCapacity(int capacity) { RequireWritable(); Storage.EnsureCapacity(capacity); }
+        public void EnsureCapacity(int capacity) => m_Indices.Storage.EnsureCapacity(capacity);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool HasTag(GameplayTag tag) => Storage.Contains(tag.RuntimeIndex);
+        public bool HasTag(GameplayTag tag) => m_Indices.Storage.Contains(tag.RuntimeIndex);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool HasTagExact(GameplayTag tag) => Storage.ContainsExplicit(tag.RuntimeIndex);
+        public bool HasTagExact(GameplayTag tag) => m_Indices.Storage.ContainsExplicit(tag.RuntimeIndex);
 
         public GameplayTagContainer Clone()
         {
             var clone = new GameplayTagContainer();
-            clone.Storage.CopyFrom(Storage);
+            clone.m_Indices.Storage.CopyFrom(m_Indices.Storage);
             return clone;
         }
 
         public static void Copy<T>(GameplayTagContainer dest, in T src) where T : IGameplayTagContainer
         {
-            if (dest == null) throw new ArgumentNullException(nameof(dest));
-            dest.RequireWritable();
-            TagStorage source = GetStorage(src);
-            if (source == null) { dest.Clear(); return; }
-            if (ReferenceEquals(dest.Storage, source))
+            TagStorage source = src.Indices.Storage;
+            if (ReferenceEquals(dest.m_Indices.Storage, source))
                 return;
             if (src is GameplayTagContainer)
             {
-                dest.Storage.CopyFrom(source);
+                dest.m_Indices.Storage.CopyFrom(source);
                 dest.m_SerializedExplicitTags?.Clear();
                 return;
             }
@@ -145,10 +114,8 @@ namespace GameplayTags
 
         public bool TryAddTag(GameplayTag tag)
         {
-            RequireWritable();
+            TagStorage storage = m_Indices.Storage;
             int id = tag.RuntimeIndex;
-            if (id == 0) return false;
-            TagStorage storage = Storage;
             if (!storage.TryAddExplicit(id))
                 return false;
             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
@@ -161,11 +128,11 @@ namespace GameplayTags
 
         public bool TryRemoveTag(GameplayTag tag)
         {
-            RequireWritable();
-            TagStorage storage = Storage;
-            if (storage.RemoveExplicit(tag.RuntimeIndex) < 0)
+            TagStorage storage = m_Indices.Storage;
+            int id = tag.RuntimeIndex;
+            if (storage.RemoveExplicit(id) < 0)
                 return false;
-            ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(tag.RuntimeIndex);
+            ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
             for (int i = 0; i < hierarchy.Length; i++)
                 storage.RemoveTotal(hierarchy[i]);
             return true;
@@ -173,20 +140,17 @@ namespace GameplayTags
 
         public void AddTags<T>(in T other) where T : IGameplayTagContainer
         {
-            RequireWritable();
-            TagStorage source = GetStorage(other);
-            if (source == null) return;
-            if (ReferenceEquals(source, Storage))
+            TagStorage source = other.Indices.Storage;
+            if (ReferenceEquals(source, m_Indices.Storage))
                 return;
-            foreach (GameplayTag tag in other.GetExplicitTags())
-                AddTag(tag);
+            // Reuse the union's batched ancestor propagation; counted inputs
+            // contribute existence only, once per explicit member.
+            m_Indices.Storage.AddUnion(source);
         }
 
         public void RemoveTags<T>(in T other) where T : IGameplayTagContainer
         {
-            RequireWritable();
-            if (other is null) return;
-            if (ReferenceEquals(other.Indices.Storage, Storage))
+            if (ReferenceEquals(other.Indices.Storage, m_Indices.Storage))
             {
                 Clear();
                 return;
@@ -197,9 +161,6 @@ namespace GameplayTags
 
         public void Clear()
         {
-            RequireWritable();
-            // Clearing a pending deserialize must not initialize the registry.
-            if (!m_Indices.IsCreated) m_Indices = GameplayTagContainerIndices.Create();
             m_Indices.Storage.Clear();
             m_SerializedExplicitTags?.Clear();
         }
@@ -209,7 +170,7 @@ namespace GameplayTags
             where T : IGameplayTagContainer where U : IGameplayTagContainer
         {
             var result = new GameplayTagContainer();
-            result.SetIntersection(GetStorage(lhs), GetStorage(rhs),
+            result.SetIntersection(lhs.Indices.Storage, rhs.Indices.Storage,
                 lhs is GameplayTagContainer, rhs is GameplayTagContainer);
             return result;
         }
@@ -218,14 +179,12 @@ namespace GameplayTags
         public static void Intersection<T, U>(GameplayTagContainer output, in T lhs, in U rhs)
             where T : IGameplayTagContainer where U : IGameplayTagContainer
         {
-            if (output == null) throw new ArgumentNullException(nameof(output));
-            output.SetIntersection(GetStorage(lhs), GetStorage(rhs),
+            output.SetIntersection(lhs.Indices.Storage, rhs.Indices.Storage,
                 lhs is GameplayTagContainer, rhs is GameplayTagContainer);
         }
 
         private void SetIntersection(TagStorage a, TagStorage b, bool aIsSet, bool bIsSet)
         {
-            RequireWritable();
             if (a == null || b == null || a.ExplicitCount == 0 || b.ExplicitCount == 0)
             {
                 Clear();
@@ -239,7 +198,7 @@ namespace GameplayTags
                 b = temporary;
                 aIsSet = bIsSet;
             }
-            TagStorage output = Storage;
+            TagStorage output = m_Indices.Storage;
             if (ReferenceEquals(a, b))
             {
                 if (aIsSet)
@@ -297,14 +256,14 @@ namespace GameplayTags
 
         public void IntersectWith<T>(in T other) where T : IGameplayTagContainer
         {
-            SetIntersection(Storage, GetStorage(other), true, other is GameplayTagContainer);
+            SetIntersection(m_Indices.Storage, other.Indices.Storage, true, other is GameplayTagContainer);
         }
 
         public static GameplayTagContainer Union<T, U>(in T lhs, in U rhs)
             where T : IGameplayTagContainer where U : IGameplayTagContainer
         {
             var result = new GameplayTagContainer();
-            TagStorage a = GetStorage(lhs), b = GetStorage(rhs);
+            TagStorage a = lhs.Indices.Storage, b = rhs.Indices.Storage;
             bool aIsSet = lhs is GameplayTagContainer, bIsSet = rhs is GameplayTagContainer;
             // Prefer a normal seed: a counted input contributes existence only.
             // Otherwise copying the larger closure leaves less work to append.
@@ -322,11 +281,11 @@ namespace GameplayTags
                 return result;
             }
             if (aIsSet)
-                result.Storage.CopyFrom(a);
+                result.m_Indices.Storage.CopyFrom(a);
             else
                 result.CopyExplicitStorage(a);
             if (b != null && b.ExplicitCount != 0 && !ReferenceEquals(a, b))
-                result.Storage.AddUnion(b);
+                result.m_Indices.Storage.AddUnion(b);
             return result;
         }
 
@@ -337,7 +296,7 @@ namespace GameplayTags
                 Clear();
                 return;
             }
-            TagStorage output = Storage;
+            TagStorage output = m_Indices.Storage;
             int count = source.ExplicitCount;
             output.EnsureExplicitCapacity(count);
             for (int i = 0; i < count; i++)
@@ -358,25 +317,24 @@ namespace GameplayTags
                     removed.Add(tag);
         }
 
-        public GameplayTagEnumerator GetTags() => new GameplayTagEnumerator(Storage);
-        public GameplayTagEnumerator GetExplicitTags() => new GameplayTagEnumerator(Storage, true);
+        public GameplayTagEnumerator GetTags() => new GameplayTagEnumerator(m_Indices.Storage);
+        public GameplayTagEnumerator GetExplicitTags() => new GameplayTagEnumerator(m_Indices.Storage, true);
         public GameplayTagEnumerator GetEnumerator() => GetTags();
         IEnumerator<GameplayTag> IEnumerable<GameplayTag>.GetEnumerator() => GetTags();
         IEnumerator IEnumerable.GetEnumerator() => GetTags();
 
         public void GetParentTags(GameplayTag tag, List<GameplayTag> output) =>
-            GameplayTagContainerUtility.GetParentTags(Storage, tag, output);
+            GameplayTagContainerUtility.GetParentTags(m_Indices.Storage, tag, output);
         public void GetChildTags(GameplayTag tag, List<GameplayTag> output) =>
-            GameplayTagContainerUtility.GetChildTags(Storage, tag, output);
+            GameplayTagContainerUtility.GetChildTags(m_Indices.Storage, tag, output);
         public void GetExplicitParentTags(GameplayTag tag, List<GameplayTag> output) =>
-            GameplayTagContainerUtility.GetParentTags(Storage, tag, output, true);
+            GameplayTagContainerUtility.GetParentTags(m_Indices.Storage, tag, output, true);
         public void GetExplicitChildTags(GameplayTag tag, List<GameplayTag> output) =>
-            GameplayTagContainerUtility.GetChildTags(Storage, tag, output, true);
+            GameplayTagContainerUtility.GetChildTags(m_Indices.Storage, tag, output, true);
 
         // Names are a cold serialization boundary. Runtime state never stores strings.
         public void OnBeforeSerialize()
         {
-            if (!m_Indices.IsCreated) return; // Preserve pending names, no registry access.
             m_SerializedExplicitTags ??= new List<string>(ExplicitTagCount);
             m_SerializedExplicitTags.Clear();
             foreach (GameplayTag tag in GetExplicitTags())
@@ -384,13 +342,15 @@ namespace GameplayTags
             m_SerializedExplicitTags.Sort(StringComparer.Ordinal);
         }
 
+        // Requires a published registry. No pending state or first-access checks.
         public void OnAfterDeserialize()
         {
-            RequireWritable();
-            // Managed callbacks only mark pending state. Bind on first normal access,
-            // after the application's explicit registry initialization opportunity.
-            if (m_Indices.IsCreated) m_Indices.Storage.Changed();
-            m_Indices = default;
+            m_Indices = GameplayTagContainerIndices.Create();
+            if (m_SerializedExplicitTags == null)
+                return;
+            for (int i = 0; i < m_SerializedExplicitTags.Count; i++)
+                if (GameplayTagManager.RequestTag(m_SerializedExplicitTags[i], out GameplayTag tag))
+                    AddTag(tag);
         }
 
         [OnSerializing]

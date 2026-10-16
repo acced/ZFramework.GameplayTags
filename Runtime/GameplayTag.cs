@@ -18,16 +18,13 @@ namespace GameplayTags
 #endif
     {
         public static readonly GameplayTag None = default;
-        // Cached names use one reference-identity guard; a serializer/Inspector may
-        // overwrite the backing name without invoking a struct callback. Such a
-        // change takes the name-resolution path instead of using a stale ID.
-        public readonly int RuntimeIndex => m_RuntimeIndex != 0 &&
-            ReferenceEquals(m_Name, GameplayTagManager.GetTagFromRuntimeIndex(m_RuntimeIndex).m_Name)
-                ? m_RuntimeIndex : GameplayTagManager.ResolveIndex(m_Name);
-        public readonly bool IsValid => RuntimeIndex != 0;
+        // Preconditions: a resolved handle from the current registry; no name edits
+        // without assigning Resolve() at the caller's loading/editing boundary.
+        public readonly int RuntimeIndex => m_RuntimeIndex;
+        public readonly bool IsValid => m_RuntimeIndex != 0;
         public readonly GameplayTag Resolve()
         {
-            int id = RuntimeIndex;
+            int id = GameplayTagManager.ResolveIndex(m_Name);
             return id == 0 ? new GameplayTag(m_Name, 0) : GameplayTagManager.GetTagFromRuntimeIndex(id);
         }
         internal readonly ref readonly GameplayTagDefinition Definition => ref GameplayTagManager.GetDefinitionFromRuntimeIndex(RuntimeIndex);
@@ -77,7 +74,7 @@ namespace GameplayTags
         public readonly bool IsParentOf(in GameplayTag tag)
         {
             int parent = RuntimeIndex, child = tag.RuntimeIndex;
-            return parent != 0 && child > parent && child < GameplayTagManager.GetSubtreeEnd(parent);
+            return child > parent && child < GameplayTagManager.GetSubtreeEnd(parent);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -101,9 +98,11 @@ namespace GameplayTags
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context) => OnAfterDeserialize();
 
-        // Serialization must neither freeze the registry nor discard an unknown name.
+        // Initialize the registry before deserialization. Binding belongs here, never in lookup.
+        // Unity owners must assign Resolve() for standalone struct fields after loading.
+        // Unknown names remain available to an explicit caller-side validation pass.
         public void OnBeforeSerialize() { }
-        public void OnAfterDeserialize() => m_RuntimeIndex = 0;
+        public void OnAfterDeserialize() => m_RuntimeIndex = GameplayTagManager.ResolveIndex(m_Name);
 
         public static implicit operator GameplayTag(string tagName) => GameplayTagManager.RequestTag(tagName);
 
