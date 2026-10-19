@@ -1,0 +1,39 @@
+name: Optimized2 isolated qualification
+on:
+  push:
+    branches: [work/optimized2-20261019]
+permissions:
+  contents: write
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.425'
+      - name: Materialize reviewed source on qualification branch only
+        run: |
+          test "$GITHUB_REF_NAME" = work/optimized2-20261019
+          python3 .verification/bootstrap.py
+          git add Runtime Editor package.json README.md README_CN.md .verification
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'refactor: materialize optimized2 runtime and actual Player metadata generator'
+            git push origin HEAD:refs/heads/work/optimized2-20261019
+          fi
+          git rev-parse HEAD > "$RUNNER_TEMP/tested-commit.txt"
+      - name: Managed correctness and actual compiled metadata fixtures
+        run: bash .verification/run.sh "$RUNNER_TEMP/qualification"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: optimized2-qualification-${{ github.run_id }}
+          retention-days: 30
+          path: |
+            ${{ runner.temp }}/tested-commit.txt
+            ${{ runner.temp }}/qualification/logs/
+            ${{ runner.temp }}/qualification/SUMMARY.txt
+            ${{ runner.temp }}/qualification/package/
