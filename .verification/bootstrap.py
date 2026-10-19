@@ -1,5 +1,5 @@
 """Materialize a checksummed, locally reviewed patch on the qualification branch only."""
-import base64,hashlib,io,pathlib,subprocess,tarfile
+import base64,hashlib,io,pathlib,re,subprocess,tarfile
 root=pathlib.Path(__file__).resolve().parents[1]
 branch=subprocess.check_output(['git','branch','--show-current'],cwd=root,text=True).strip()
 assert branch=='work/optimized2-20261019',branch
@@ -15,8 +15,10 @@ if not (here/'materialized.txt').exists():
             dest=here.joinpath(*path.parts)
             dest.parent.mkdir(parents=True,exist_ok=True)
             dest.write_bytes(archive.extractfile(member).read())
-    subprocess.run(['git','apply','--check',str(here/'candidate.patch')],cwd=root,check=True)
-    subprocess.run(['git','apply',str(here/'candidate.patch')],cwd=root,check=True)
+    patch=here/'candidate.patch'
+    patch.write_text(re.sub(r'(diff --git [^\n]+\n)(--- /dev/null\n)',r'\1new file mode 100644\n\2',patch.read_text()))
+    subprocess.run(['git','apply','--check',str(patch)],cwd=root,check=True)
+    subprocess.run(['git','apply',str(patch)],cwd=root,check=True)
     subprocess.run(['python3',str(here/'update_docs.py')],cwd=root,check=True)
     (here/'materialized.txt').write_text('Reviewed source bundle SHA256 975b5912b58bc374e81d669cef1586d92fe0e6ba27ae538e63c4a0fa77a5b8a8\n')
 print('PASS source patch and documentation materialization; no main ref writes')
