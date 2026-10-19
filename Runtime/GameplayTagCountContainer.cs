@@ -65,6 +65,9 @@ namespace GameplayTags
         private readonly GameplayTagContainerIndices m_Indices = GameplayTagContainerIndices.Create();
         private CallbackEntry[] m_Callbacks = Array.Empty<CallbackEntry>();
         private int m_CallbackCount;
+        private const int IndexedCallbackThreshold = 16;
+        private int[] m_CallbackSlots;
+        private Dictionary<int, int> m_CallbackLookup;
         private DeferredTagChangedDelegate[] m_Events = Array.Empty<DeferredTagChangedDelegate>();
         private int m_EventCount;
         private int m_NextEvent;
@@ -128,6 +131,7 @@ namespace GameplayTags
                 Array.Copy(m_Callbacks, index, m_Callbacks, index + 1, m_CallbackCount - index);
                 m_Callbacks[index] = new CallbackEntry { Id = tag.RuntimeIndex };
                 m_CallbackCount++;
+                UpdateCallbackLookup(index);
             }
 
             ref GameplayTagDelegateInfo callbacks = ref m_Callbacks[index].Callbacks;
@@ -155,6 +159,7 @@ namespace GameplayTags
                 m_CallbackCount--;
                 Array.Copy(m_Callbacks, index + 1, m_Callbacks, index, m_CallbackCount - index);
                 m_Callbacks[m_CallbackCount] = default;
+                UpdateCallbackLookup(index, tag.RuntimeIndex);
             }
         }
 
@@ -162,6 +167,44 @@ namespace GameplayTags
         {
             Array.Clear(m_Callbacks, 0, m_CallbackCount);
             m_CallbackCount = 0;
+            m_CallbackLookup?.Clear();
+            if (m_CallbackSlots != null) Array.Clear(m_CallbackSlots, 0, m_CallbackSlots.Length);
+        }
+
+        private void UpdateCallbackLookup(int firstChanged, int removedId = 0)
+        {
+            if (m_CallbackCount < IndexedCallbackThreshold) return;
+            int tags = GameplayTagManager.TagCount;
+            if (tags <= 512)
+            {
+                if (m_CallbackSlots == null || m_CallbackCount == IndexedCallbackThreshold)
+                {
+                    if (m_CallbackSlots == null) m_CallbackSlots = new int[tags + 1];
+                    else Array.Clear(m_CallbackSlots, 0, m_CallbackSlots.Length);
+                    firstChanged = 0;
+                }
+                else if (removedId != 0) m_CallbackSlots[removedId] = 0;
+                for (int i = firstChanged; i < m_CallbackCount; i++) m_CallbackSlots[m_Callbacks[i].Id] = i + 1;
+            }
+            else
+            {
+                if (m_CallbackLookup == null || m_CallbackCount == IndexedCallbackThreshold)
+                {
+                    if (m_CallbackLookup == null) m_CallbackLookup = new Dictionary<int, int>(m_CallbackCount);
+                    else m_CallbackLookup.Clear();
+                    firstChanged = 0;
+                }
+                else if (removedId != 0) m_CallbackLookup.Remove(removedId);
+                for (int i = firstChanged; i < m_CallbackCount; i++) m_CallbackLookup[m_Callbacks[i].Id] = i;
+            }
+        }
+
+        private int LookupCallback(int id)
+        {
+            if (m_CallbackCount == 0) return -1;
+            if (m_CallbackCount < IndexedCallbackThreshold) return FindCallback(id);
+            if (m_CallbackSlots != null) return m_CallbackSlots[id] - 1;
+            return m_CallbackLookup.TryGetValue(id, out int index) ? index : -1;
         }
 
         private int FindCallback(int id)
@@ -217,21 +260,22 @@ namespace GameplayTags
 
         private void AddTagInternal(int id, int amount, bool notify)
         {
-            Storage.AddExplicit(id, amount);
+            int ownCount = Storage.AddExplicitAndTotal(id, amount);
             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
             if (!notify)
             {
-                for (int i = 0; i < hierarchy.Length; i++)
+                for (int i = 0; i < hierarchy.Length - 1; i++)
                     Storage.AddTotal(hierarchy[i], amount);
                 return;
             }
 
-            for (int i = 0; i < hierarchy.Length; i++)
+            for (int i = 0; i < hierarchy.Length - 1; i++)
             {
                 int current = hierarchy[i];
                 int newCount = Storage.AddTotal(current, amount);
                 QueueChange(current, newCount, newCount == amount);
             }
+            QueueChange(id, ownCount, ownCount == amount);
         }
 
         public void RemoveTag(GameplayTag tag) => RemoveTag(tag, 1);
@@ -256,6 +300,11 @@ namespace GameplayTags
                 return;
 
             bool notify = HasListeners;
+            if (!notify && source.ExplicitCount > 8)
+            {
+                Storage.RemoveSet(source);
+                return;
+            }
             if (ReferenceEquals(source, Storage))
             {
                 int count = source.ExplicitCount;
@@ -284,23 +333,25 @@ namespace GameplayTags
 
         private bool RemoveTagInternal(int id, int amount, bool notify)
         {
-            if (Storage.RemoveExplicit(id, amount) < 0)
+            int ownCount = Storage.RemoveExplicitAndTotal(id, amount);
+            if (ownCount < 0)
                 return false;
 
             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
             if (!notify)
             {
-                for (int i = 0; i < hierarchy.Length; i++)
+                for (int i = 0; i < hierarchy.Length - 1; i++)
                     Storage.RemoveTotal(hierarchy[i], amount);
                 return true;
             }
 
-            for (int i = 0; i < hierarchy.Length; i++)
+            for (int i = 0; i < hierarchy.Length - 1; i++)
             {
                 int current = hierarchy[i];
                 int newCount = Storage.RemoveTotal(current, amount);
                 QueueChange(current, newCount, newCount == 0);
             }
+            QueueChange(id, ownCount, ownCount == 0);
 
             return true;
         }
@@ -321,7 +372,7 @@ namespace GameplayTags
 
         private void QueueChange(int id, int count, bool transition)
         {
-            int index = FindCallback(id);
+            int index = LookupCallback(id);
             GameplayTagDelegateInfo callbacks = index < 0 ? default : m_Callbacks[index].Callbacks;
             if (transition)
             {

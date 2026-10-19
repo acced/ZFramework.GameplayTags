@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -74,6 +75,9 @@ namespace GameplayTags
         public bool IsEmpty => m_Indices.Storage.ExplicitCount == 0;
         public int ExplicitTagCount => m_Indices.Storage.ExplicitCount;
         public int TagCount => m_Indices.Storage.Count;
+        /// <summary>Retained array data only, excluding object headers and shared registry data.</summary>
+        public long RetainedDataBytes => m_Indices.Storage.RetainedBytes +
+            (long)(m_SerializedExplicitTags?.Capacity ?? 0) * IntPtr.Size;
         public GameplayTagContainerIndices Indices => m_Indices;
 
         public GameplayTagContainer() { }
@@ -155,8 +159,11 @@ namespace GameplayTags
                 Clear();
                 return;
             }
-            foreach (GameplayTag tag in other.GetExplicitTags())
-                RemoveTag(tag);
+            TagStorage source = other.Indices.Storage;
+            if (source != null && source.ExplicitCount > 8)
+                m_Indices.Storage.RemoveSet(source);
+            else
+                foreach (GameplayTag tag in other.GetExplicitTags()) RemoveTag(tag);
         }
 
         public void Clear()
@@ -209,49 +216,49 @@ namespace GameplayTags
                 return;
             }
 
-            int matches = 0;
-            // A few missing tags are cheaper to remove from a block copy than
-            // to rebuild the common closure. Capture them before touching an
-            // output that may also be the lookup operand.
-            Span<int> missingIds = stackalloc int[8];
-            int missing = 0;
-            long missingPathWork = 0;
-            for (int i = 0; i < a.ExplicitCount; i++)
+            int[] rented = a.ExplicitCount > 128 ? ArrayPool<int>.Shared.Rent(a.ExplicitCount) : null;
+            Span<int> hits = rented == null ? stackalloc int[128] : rented;
+            try
             {
-                int id = a.Entries[a.ExplicitIndices[i]].Id;
-                if (b.ContainsExplicit(id))
-                    matches++;
-                else if (missing < missingIds.Length)
+                int matches = 0;
+                // A few missing tags are cheaper to remove from a block copy than
+                // to rebuild the common closure. Capture them before touching an
+                // output that may also be the lookup operand.
+                Span<int> missingIds = stackalloc int[8];
+                int missing = 0;
+                long missingPathWork = 0;
+                for (int i = 0; i < a.ExplicitCount; i++)
                 {
-                    missingIds[missing++] = id;
-                    missingPathWork += GameplayTagManager.GetHierarchyIndices(id).Length;
+                    int id = a.Entries[a.ExplicitIndices[i]].Id;
+                    if (b.ContainsExplicit(id))
+                        hits[matches++] = id;
+                    else if (missing < missingIds.Length)
+                    {
+                        missingIds[missing++] = id;
+                        missingPathWork += GameplayTagManager.GetHierarchyIndices(id).Length;
+                    }
                 }
-            }
-            if (matches == 0)
-            {
-                Clear();
-                return;
-            }
-            if (aIsSet && a.ExplicitCount - matches <= missingIds.Length &&
-                (missing == 0 || missingPathWork <= a.Count / 2))
-            {
-                output.CopyFrom(a);
-                for (int i = 0; i < missing; i++)
-                    RemoveTag(GameplayTagManager.GetTagFromRuntimeIndex(missingIds[i]));
-                m_SerializedExplicitTags?.Clear();
-                return;
-            }
+                if (matches == 0)
+                {
+                    Clear();
+                    return;
+                }
+                if (aIsSet && a.ExplicitCount - matches <= missingIds.Length &&
+                    (missing == 0 || missingPathWork <= a.Count / 2))
+                {
+                    output.CopyFrom(a);
+                    for (int i = 0; i < missing; i++)
+                        RemoveTag(GameplayTagManager.GetTagFromRuntimeIndex(missingIds[i]));
+                    m_SerializedExplicitTags?.Clear();
+                    return;
+                }
 
-            output.EnsureExplicitCapacity(matches);
-            int selected = 0;
-            for (int i = 0; i < a.ExplicitCount; i++)
-            {
-                int id = a.Entries[a.ExplicitIndices[i]].Id;
-                if (b.ContainsExplicit(id))
-                    output.ExplicitIndices[selected++] = id;
+                output.EnsureExplicitCapacity(matches);
+                hits.Slice(0, matches).CopyTo(output.ExplicitIndices);
+                output.BuildFromExplicitIds(matches);
+                m_SerializedExplicitTags?.Clear();
             }
-            output.BuildFromExplicitIds(selected);
-            m_SerializedExplicitTags?.Clear();
+            finally { if (rented != null) ArrayPool<int>.Shared.Return(rented); }
         }
 
         public void IntersectWith<T>(in T other) where T : IGameplayTagContainer
@@ -263,12 +270,22 @@ namespace GameplayTags
             where T : IGameplayTagContainer where U : IGameplayTagContainer
         {
             var result = new GameplayTagContainer();
+            Union(result, lhs, rhs);
+            return result;
+        }
+
+        /// <summary>Replace output with the explicit union. Output may alias either input.</summary>
+        public static void Union<T, U>(GameplayTagContainer result, in T lhs, in U rhs)
+            where T : IGameplayTagContainer where U : IGameplayTagContainer
+        {
             TagStorage a = lhs.Indices.Storage, b = rhs.Indices.Storage;
             bool aIsSet = lhs is GameplayTagContainer, bIsSet = rhs is GameplayTagContainer;
             // Prefer a normal seed: a counted input contributes existence only.
             // Otherwise copying the larger closure leaves less work to append.
-            if (a == null || (b != null && ((!aIsSet && bIsSet) ||
-                (aIsSet == bIsSet && a.Count < b.Count))))
+            bool aliasA = ReferenceEquals(a, result.m_Indices.Storage);
+            bool aliasB = ReferenceEquals(b, result.m_Indices.Storage);
+            if (aliasB || (!aliasA && (a == null || (b != null && ((!aIsSet && bIsSet) ||
+                (aIsSet == bIsSet && a.Count < b.Count))))))
             {
                 TagStorage temporary = a;
                 a = b;
@@ -278,7 +295,7 @@ namespace GameplayTags
             if (a == null || a.ExplicitCount == 0)
             {
                 result.CopyExplicitStorage(b);
-                return result;
+                return;
             }
             if (aIsSet)
                 result.m_Indices.Storage.CopyFrom(a);
@@ -286,7 +303,7 @@ namespace GameplayTags
                 result.CopyExplicitStorage(a);
             if (b != null && b.ExplicitCount != 0 && !ReferenceEquals(a, b))
                 result.m_Indices.Storage.AddUnion(b);
-            return result;
+            result.m_SerializedExplicitTags?.Clear();
         }
 
         private void CopyExplicitStorage(TagStorage source)
