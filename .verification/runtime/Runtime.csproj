@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup><TargetFramework>netstandard2.1</TargetFramework><LangVersion>9</LangVersion><AssemblyName>ZFramework.GameplayTags</AssemblyName><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>
+<ItemGroup><Compile Include="../../Runtime/*.cs" Exclude="../../Runtime/GameObjectGameplayTagContainer.cs" /></ItemGroup>
+</Project>

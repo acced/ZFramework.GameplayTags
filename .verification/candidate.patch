@@ -1,0 +1,1428 @@
+diff --git a/Editor/GameplayTagPlayerMetadata.cs b/Editor/GameplayTagPlayerMetadata.cs
+new file mode 100644
+--- /dev/null
++++ b/Editor/GameplayTagPlayerMetadata.cs
+@@ -0,0 +1,125 @@
++using System;
++using System.Collections.Generic;
++using System.IO;
++using System.Linq;
++using Mono.Cecil;
++
++namespace GameplayTags.Editor
++{
++    // Read the actual, pre-stripping Player binaries. Never load a Player assembly
++    // into the Editor domain or execute its attribute constructors/static initializers.
++    internal static class GameplayTagPlayerMetadata
++    {
++        internal const string RegistryType = "GameplayTags.Generated.GameplayTagRegistry";
++        private const string AttributeType = "GameplayTags.GameplayTagAttribute";
++        private const string RuntimeAssembly = "ZFramework.GameplayTags";
++
++        internal sealed class Snapshot
++        {
++            internal GameplayTagRegistration[] Registrations;
++            internal string CompiledFingerprint;
++            internal int RegistryDefinitions;
++            internal bool RuntimeFound;
++        }
++
++        internal static Snapshot Read(IEnumerable<string> playerAssemblyPaths)
++        {
++            string[] paths = playerAssemblyPaths.Select(Path.GetFullPath).Distinct(StringComparer.Ordinal).ToArray();
++            using var resolver = new DefaultAssemblyResolver();
++            foreach (string directory in paths.Select(Path.GetDirectoryName).Distinct(StringComparer.Ordinal))
++                resolver.AddSearchDirectory(directory);
++            var modules = new List<AssemblyDefinition>();
++            var identities = new Dictionary<string, Guid>(StringComparer.Ordinal);
++            var types = new Dictionary<string, TypeDefinition>(StringComparer.Ordinal);
++            var result = new Snapshot();
++            try
++            {
++                foreach (string path in paths)
++                {
++                    AssemblyDefinition assembly;
++                    try
++                    {
++                        assembly = AssemblyDefinition.ReadAssembly(path,
++                            new ReaderParameters { ReadSymbols = false, InMemory = true, ReadingMode = ReadingMode.Deferred, AssemblyResolver = resolver });
++                    }
++                    catch (BadImageFormatException) { continue; } // A native plugin is not a managed declaration source.
++                    string name = assembly.Name.Name;
++                    Guid mvid = assembly.MainModule.Mvid;
++                    if (identities.TryGetValue(name, out Guid previous))
++                    {
++                        assembly.Dispose();
++                        if (previous != mvid)
++                            throw new InvalidOperationException("Different Player assemblies have the same identity: " + name);
++                        continue;
++                    }
++                    identities.Add(name, mvid);
++                    modules.Add(assembly);
++                    foreach (ModuleDefinition module in assembly.Modules)
++                        foreach (TypeDefinition type in module.Types) AddTypes(name, type, types);
++                }
++                result.RuntimeFound = types.ContainsKey(RuntimeAssembly + ":" + AttributeType);
++                if (!result.RuntimeFound)
++                    throw new InvalidOperationException("The Player assembly list does not contain ZFramework.GameplayTags. No registry was generated.");
++
++                var registrations = new List<GameplayTagRegistration>();
++                foreach (AssemblyDefinition assembly in modules)
++                {
++                    foreach (CustomAttribute attribute in assembly.CustomAttributes)
++                    {
++                        if (!IsTagAttribute(attribute.AttributeType, types)) continue;
++                        if (attribute.AttributeType.FullName != AttributeType || ScopeName(attribute.AttributeType) != RuntimeAssembly)
++                            throw new NotSupportedException("Derived gameplay-tag attribute '" + attribute.AttributeType.FullName +
++                                "' cannot be evaluated without executing Player code. Use GameplayTagAttribute directly or explicit registration.");
++                        var arguments = attribute.ConstructorArguments;
++                        string name = (string)arguments[0].Value;
++                        string description = arguments.Count > 1 ? (string)arguments[1].Value : null;
++                        int flags = arguments.Count > 2 ? Convert.ToInt32(arguments[2].Value) : 0;
++                        foreach (CustomAttributeNamedArgument property in attribute.Properties)
++                        {
++                            switch (property.Name)
++                            {
++                                case "TagName": name = (string)property.Argument.Value; break;
++                                case "Description": description = (string)property.Argument.Value; break;
++                                case "Flags": flags = Convert.ToInt32(property.Argument.Value); break;
++                            }
++                        }
++                        registrations.Add(new GameplayTagRegistration(name, description, (GameplayTagFlags)flags));
++                    }
++                    foreach (ModuleDefinition module in assembly.Modules)
++                    {
++                        TypeDefinition provider = module.GetType(RegistryType);
++                        if (provider == null) continue;
++                        result.RegistryDefinitions++;
++                        foreach (FieldDefinition field in provider.Fields)
++                            if (field.Name == "DeclarationFingerprint" && field.HasConstant)
++                                result.CompiledFingerprint = field.Constant as string;
++                    }
++                }
++                result.Registrations = registrations.ToArray();
++                return result;
++            }
++            finally { foreach (AssemblyDefinition assembly in modules) assembly.Dispose(); }
++        }
++
++        private static void AddTypes(string assembly, TypeDefinition type, Dictionary<string, TypeDefinition> types)
++        {
++            types.Add(assembly + ":" + type.FullName, type);
++            foreach (TypeDefinition child in type.NestedTypes) AddTypes(assembly, child, types);
++        }
++
++        private static string ScopeName(TypeReference type) => type.Scope is AssemblyNameReference reference
++            ? reference.Name : type.Module.Assembly.Name.Name;
++
++        private static bool IsTagAttribute(TypeReference type, Dictionary<string, TypeDefinition> types)
++        {
++            while (type != null)
++            {
++                string key = ScopeName(type) + ":" + type.FullName;
++                if (key == RuntimeAssembly + ":" + AttributeType) return true;
++                if (!types.TryGetValue(key, out TypeDefinition definition)) return false;
++                type = definition.BaseType;
++            }
++            return false;
++        }
++    }
++}
+diff --git a/Editor/GameplayTagPlayerMetadata.cs.meta b/Editor/GameplayTagPlayerMetadata.cs.meta
+new file mode 100644
+--- /dev/null
++++ b/Editor/GameplayTagPlayerMetadata.cs.meta
+@@ -0,0 +1,11 @@
++fileFormatVersion: 2
++guid: 6b203faf9db648eda668940ef9ca4487
++MonoImporter:
++  externalObjects: {}
++  serializedVersion: 2
++  defaultReferences: []
++  executionOrder: 0
++  icon: {instanceID: 0}
++  userData: 
++  assetBundleName: 
++  assetBundleVariant: 
+diff --git a/Editor/GameplayTagRegistryGenerator.cs b/Editor/GameplayTagRegistryGenerator.cs
+new file mode 100644
+--- /dev/null
++++ b/Editor/GameplayTagRegistryGenerator.cs
+@@ -0,0 +1,147 @@
++using System;
++using System.Collections.Generic;
++using System.IO;
++using System.Linq;
++using System.Security.Cryptography;
++using System.Text;
++using UnityEditor;
++using UnityEditor.Build;
++using UnityEditor.Build.Reporting;
++
++namespace GameplayTags.Editor
++{
++    /// <summary>
++    /// Opt-in, two-pass Player registration. The current Player compilation is the
++    /// declaration source; Editor reflection is never used to approximate it.
++    /// </summary>
++    public static class GameplayTagRegistryGenerator
++    {
++        public const string OutputPath = "Assets/GameplayTags.Generated.cs";
++        private const string Header = "// Generated by GameplayTagRegistryGenerator.";
++
++        [MenuItem("Tools/Gameplay Tags/Generate Player Registry")]
++        public static void Generate()
++        {
++            EnsureOwnedOutput();
++            if (!File.Exists(OutputPath))
++            {
++                File.WriteAllText(OutputPath, GenerateSource(Array.Empty<GameplayTagRegistration>()), new UTF8Encoding(false));
++                AssetDatabase.ImportAsset(OutputPath);
++            }
++            UnityEngine.Debug.Log("Player registry enabled. Build your actual target/configuration. If declarations changed, " +
++                "the build writes their exact table and stops; allow script compilation and build again. " +
++                "Call GameplayTags.Generated.GameplayTagRegistry.Initialize() before caching tags. " +
++                "No automatic startup callback is installed.");
++        }
++
++        /// <summary>
++        /// Export from actual compiled Player assemblies (including managed plugins).
++        /// Returns true only when both the source and the table compiled into those
++        /// assemblies already match. False means source was refreshed and must be compiled.
++        /// Custom build pipelines may use this same boundary before linking/stripping.
++        /// </summary>
++        public static bool GenerateFromPlayerAssemblies(IEnumerable<string> playerAssemblyPaths)
++        {
++            EnsureOwnedOutput();
++            GameplayTagPlayerMetadata.Snapshot snapshot = GameplayTagPlayerMetadata.Read(playerAssemblyPaths);
++            GameplayTagRegistration[] ordered = Order(snapshot.Registrations);
++            string fingerprint = Fingerprint(ordered);
++            string source = GenerateOrderedSource(ordered, fingerprint);
++            bool sourceMatches = File.Exists(OutputPath) && File.ReadAllText(OutputPath) == source;
++            if (!sourceMatches) File.WriteAllText(OutputPath, source, new UTF8Encoding(false));
++            return sourceMatches && snapshot.RegistryDefinitions == 1 && snapshot.CompiledFingerprint == fingerprint;
++        }
++
++        public static string GenerateSource(IEnumerable<GameplayTagRegistration> registrations)
++        {
++            GameplayTagRegistration[] ordered = Order(registrations);
++            return GenerateOrderedSource(ordered, Fingerprint(ordered));
++        }
++
++        private static GameplayTagRegistration[] Order(IEnumerable<GameplayTagRegistration> registrations) =>
++            registrations.OrderBy(t => t.Name, StringComparer.Ordinal)
++                .ThenBy(t => t.Description, StringComparer.Ordinal).ThenBy(t => (int)t.Flags).ToArray();
++
++        private static string Fingerprint(GameplayTagRegistration[] registrations)
++        {
++            using var stream = new MemoryStream();
++            using (var writer = new BinaryWriter(stream, Encoding.UTF8, true))
++            {
++                writer.Write(registrations.Length);
++                foreach (GameplayTagRegistration tag in registrations)
++                {
++                    WriteNullable(writer, tag.Name);
++                    WriteNullable(writer, tag.Description);
++                    writer.Write((int)tag.Flags);
++                }
++            }
++            using var sha = SHA256.Create();
++            return BitConverter.ToString(sha.ComputeHash(stream.ToArray())).Replace("-", "").ToLowerInvariant();
++        }
++
++        private static void WriteNullable(BinaryWriter writer, string value)
++        {
++            writer.Write(value != null);
++            if (value != null) writer.Write(value);
++        }
++
++        private static string GenerateOrderedSource(GameplayTagRegistration[] registrations, string fingerprint)
++        {
++            var source = new StringBuilder();
++            source.Append(Header).Append(" Do not edit.\n")
++                .Append("// Player declarations are read after actual Player compilation, before stripping.\n")
++                .Append("// Call Initialize once from your boot sequence, before any tag lookup.\n")
++                .Append("namespace GameplayTags.Generated\n{\n    public static class GameplayTagRegistry\n    {\n")
++                .Append("        public const string DeclarationFingerprint = ").Append(Literal(fingerprint)).Append(";\n")
++                .Append("        public static void Initialize()\n        {\n")
++                .Append("#if UNITY_EDITOR\n            GameplayTagManager.InitializeIfNeeded();\n")
++                .Append("#else\n            GameplayTagManager.Initialize(CreateRegistrations());\n#endif\n        }\n")
++                .Append("        public static GameplayTagRegistration[] CreateRegistrations() => new GameplayTagRegistration[]\n        {\n");
++            foreach (GameplayTagRegistration tag in registrations)
++                source.Append("            new GameplayTagRegistration(").Append(Literal(tag.Name)).Append(", ")
++                    .Append(Literal(tag.Description)).Append(", (GameplayTagFlags)").Append((int)tag.Flags).Append("),\n");
++            source.Append("        };\n    }\n}\n");
++            return source.ToString();
++        }
++
++        // Build-time file ownership is not a runtime parameter policy: never overwrite
++        // an application-authored script at the generator's reserved output location.
++        private static void EnsureOwnedOutput()
++        {
++            if (File.Exists(OutputPath) && !File.ReadAllText(OutputPath).StartsWith(Header, StringComparison.Ordinal))
++                throw new InvalidOperationException("Not a generated file: " + OutputPath);
++        }
++
++        private static string Literal(string value)
++        {
++            if (value == null) return "null";
++            var result = new StringBuilder("\"");
++            foreach (char c in value)
++            {
++                if (c == '\\' || c == '"') result.Append('\\').Append(c);
++                else if (c < ' ' || c == '\u2028' || c == '\u2029') result.Append("\\u").Append(((int)c).ToString("x4"));
++                else result.Append(c);
++            }
++            return result.Append('"').ToString();
++        }
++    }
++
++    internal sealed class GameplayTagRegistryBuildCheck : IPostBuildPlayerScriptDLLs
++    {
++        public int callbackOrder => int.MaxValue;
++
++        public void OnPostBuildPlayerScriptDLLs(BuildReport report)
++        {
++            if (!File.Exists(GameplayTagRegistryGenerator.OutputPath)) return;
++            // BuildReport is the actual target/plugin/define selection, not the Editor
++            // AppDomain or a guess based on currently imported assemblies. Native DLLs
++            // are filtered by the metadata reader, not by platform-dependent role text.
++            var paths = report.GetFiles().Where(f => f.path.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
++                .Select(f => f.path);
++            if (!GameplayTagRegistryGenerator.GenerateFromPlayerAssemblies(paths))
++                throw new BuildFailedException("Gameplay tag Player declarations changed. Updated " +
++                    GameplayTagRegistryGenerator.OutputPath + ". Let Unity compile the generated script and build again " +
++                    "with the same target and defines. The current build was stopped rather than shipping a stale table.");
++        }
++    }
++}
+diff --git a/Editor/GameplayTagRegistryGenerator.cs.meta b/Editor/GameplayTagRegistryGenerator.cs.meta
+new file mode 100644
+--- /dev/null
++++ b/Editor/GameplayTagRegistryGenerator.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: c63b0302c346eec40936c6d6cae69332diff --git a/Editor/ZFramework.GameplayTags.Editor.asmdef b/Editor/ZFramework.GameplayTags.Editor.asmdef
+--- a/Editor/ZFramework.GameplayTags.Editor.asmdef
++++ b/Editor/ZFramework.GameplayTags.Editor.asmdef
+@@ -1,10 +1,18 @@
+ {
+   "name": "ZFramework.GameplayTags.Editor",
+   "rootNamespace": "GameplayTags.Editor",
+-  "references": ["ZFramework.GameplayTags"],
+-  "includePlatforms": ["Editor"],
++  "references": [
++    "ZFramework.GameplayTags"
++  ],
++  "includePlatforms": [
++    "Editor"
++  ],
+   "excludePlatforms": [],
+   "allowUnsafeCode": false,
+   "autoReferenced": true,
+-  "noEngineReferences": false
++  "noEngineReferences": false,
++  "overrideReferences": true,
++  "precompiledReferences": [
++    "Mono.Cecil.dll"
++  ]
+ }
+diff --git a/Runtime/GameplayTagContainer.cs b/Runtime/GameplayTagContainer.cs
+--- a/Runtime/GameplayTagContainer.cs
++++ b/Runtime/GameplayTagContainer.cs
+@@ -1,4 +1,5 @@
+ using System;
++using System.Buffers;
+ using System.Collections;
+ using System.Collections.Generic;
+ using System.ComponentModel;
+@@ -74,6 +75,9 @@
+         public bool IsEmpty => m_Indices.Storage.ExplicitCount == 0;
+         public int ExplicitTagCount => m_Indices.Storage.ExplicitCount;
+         public int TagCount => m_Indices.Storage.Count;
++        /// <summary>Retained array data only, excluding object headers and shared registry data.</summary>
++        public long RetainedDataBytes => m_Indices.Storage.RetainedBytes +
++            (long)(m_SerializedExplicitTags?.Capacity ?? 0) * IntPtr.Size;
+         public GameplayTagContainerIndices Indices => m_Indices;
+ 
+         public GameplayTagContainer() { }
+@@ -155,8 +159,11 @@
+                 Clear();
+                 return;
+             }
+-            foreach (GameplayTag tag in other.GetExplicitTags())
+-                RemoveTag(tag);
++            TagStorage source = other.Indices.Storage;
++            if (source != null && source.ExplicitCount > 8)
++                m_Indices.Storage.RemoveSet(source);
++            else
++                foreach (GameplayTag tag in other.GetExplicitTags()) RemoveTag(tag);
+         }
+ 
+         public void Clear()
+@@ -209,49 +216,49 @@
+                 return;
+             }
+ 
+-            int matches = 0;
+-            // A few missing tags are cheaper to remove from a block copy than
+-            // to rebuild the common closure. Capture them before touching an
+-            // output that may also be the lookup operand.
+-            Span<int> missingIds = stackalloc int[8];
+-            int missing = 0;
+-            long missingPathWork = 0;
+-            for (int i = 0; i < a.ExplicitCount; i++)
+-            {
+-                int id = a.Entries[a.ExplicitIndices[i]].Id;
+-                if (b.ContainsExplicit(id))
+-                    matches++;
+-                else if (missing < missingIds.Length)
++            int[] rented = a.ExplicitCount > 128 ? ArrayPool<int>.Shared.Rent(a.ExplicitCount) : null;
++            Span<int> hits = rented == null ? stackalloc int[128] : rented;
++            try
++            {
++                int matches = 0;
++                // A few missing tags are cheaper to remove from a block copy than
++                // to rebuild the common closure. Capture them before touching an
++                // output that may also be the lookup operand.
++                Span<int> missingIds = stackalloc int[8];
++                int missing = 0;
++                long missingPathWork = 0;
++                for (int i = 0; i < a.ExplicitCount; i++)
+                 {
+-                    missingIds[missing++] = id;
+-                    missingPathWork += GameplayTagManager.GetHierarchyIndices(id).Length;
++                    int id = a.Entries[a.ExplicitIndices[i]].Id;
++                    if (b.ContainsExplicit(id))
++                        hits[matches++] = id;
++                    else if (missing < missingIds.Length)
++                    {
++                        missingIds[missing++] = id;
++                        missingPathWork += GameplayTagManager.GetHierarchyIndices(id).Length;
++                    }
+                 }
+-            }
+-            if (matches == 0)
+-            {
+-                Clear();
+-                return;
+-            }
+-            if (aIsSet && a.ExplicitCount - matches <= missingIds.Length &&
+-                (missing == 0 || missingPathWork <= a.Count / 2))
+-            {
+-                output.CopyFrom(a);
+-                for (int i = 0; i < missing; i++)
+-                    RemoveTag(GameplayTagManager.GetTagFromRuntimeIndex(missingIds[i]));
++                if (matches == 0)
++                {
++                    Clear();
++                    return;
++                }
++                if (aIsSet && a.ExplicitCount - matches <= missingIds.Length &&
++                    (missing == 0 || missingPathWork <= a.Count / 2))
++                {
++                    output.CopyFrom(a);
++                    for (int i = 0; i < missing; i++)
++                        RemoveTag(GameplayTagManager.GetTagFromRuntimeIndex(missingIds[i]));
++                    m_SerializedExplicitTags?.Clear();
++                    return;
++                }
++
++                output.EnsureExplicitCapacity(matches);
++                hits.Slice(0, matches).CopyTo(output.ExplicitIndices);
++                output.BuildFromExplicitIds(matches);
+                 m_SerializedExplicitTags?.Clear();
+-                return;
+-            }
+-
+-            output.EnsureExplicitCapacity(matches);
+-            int selected = 0;
+-            for (int i = 0; i < a.ExplicitCount; i++)
+-            {
+-                int id = a.Entries[a.ExplicitIndices[i]].Id;
+-                if (b.ContainsExplicit(id))
+-                    output.ExplicitIndices[selected++] = id;
+-            }
+-            output.BuildFromExplicitIds(selected);
+-            m_SerializedExplicitTags?.Clear();
++            }
++            finally { if (rented != null) ArrayPool<int>.Shared.Return(rented); }
+         }
+ 
+         public void IntersectWith<T>(in T other) where T : IGameplayTagContainer
+@@ -263,12 +270,22 @@
+             where T : IGameplayTagContainer where U : IGameplayTagContainer
+         {
+             var result = new GameplayTagContainer();
++            Union(result, lhs, rhs);
++            return result;
++        }
++
++        /// <summary>Replace output with the explicit union. Output may alias either input.</summary>
++        public static void Union<T, U>(GameplayTagContainer result, in T lhs, in U rhs)
++            where T : IGameplayTagContainer where U : IGameplayTagContainer
++        {
+             TagStorage a = lhs.Indices.Storage, b = rhs.Indices.Storage;
+             bool aIsSet = lhs is GameplayTagContainer, bIsSet = rhs is GameplayTagContainer;
+             // Prefer a normal seed: a counted input contributes existence only.
+             // Otherwise copying the larger closure leaves less work to append.
+-            if (a == null || (b != null && ((!aIsSet && bIsSet) ||
+-                (aIsSet == bIsSet && a.Count < b.Count))))
++            bool aliasA = ReferenceEquals(a, result.m_Indices.Storage);
++            bool aliasB = ReferenceEquals(b, result.m_Indices.Storage);
++            if (aliasB || (!aliasA && (a == null || (b != null && ((!aIsSet && bIsSet) ||
++                (aIsSet == bIsSet && a.Count < b.Count))))))
+             {
+                 TagStorage temporary = a;
+                 a = b;
+@@ -278,7 +295,7 @@
+             if (a == null || a.ExplicitCount == 0)
+             {
+                 result.CopyExplicitStorage(b);
+-                return result;
++                return;
+             }
+             if (aIsSet)
+                 result.m_Indices.Storage.CopyFrom(a);
+@@ -286,7 +303,7 @@
+                 result.CopyExplicitStorage(a);
+             if (b != null && b.ExplicitCount != 0 && !ReferenceEquals(a, b))
+                 result.m_Indices.Storage.AddUnion(b);
+-            return result;
++            result.m_SerializedExplicitTags?.Clear();
+         }
+ 
+         private void CopyExplicitStorage(TagStorage source)
+diff --git a/Runtime/GameplayTagContainerPool.cs b/Runtime/GameplayTagContainerPool.cs
+--- a/Runtime/GameplayTagContainerPool.cs
++++ b/Runtime/GameplayTagContainerPool.cs
+@@ -2,12 +2,58 @@
+ 
+ namespace GameplayTags
+ {
+-    /// <summary>A small thread-local pool. Release each lease exactly once, on the borrowing thread.</summary>
++    /// <summary>
++    /// Thread-local container reuse. Configure retention at a loading boundary.
++    /// The caller owns same-thread, exactly-once return and exclusive ownership.
++    /// </summary>
+     public class GameplayTagContainerPool
+     {
+-        private const int RetainedLimit = 64;
++        /// <summary>Array-payload budgets; object/array headers are not counted.</summary>
++        public readonly struct RetentionPolicy
++        {
++            public readonly int MaxCount;
++            public readonly long MaxContainerBytes;
++            public readonly long MaxTotalBytes;
++
++            public RetentionPolicy(int maxCount, long maxContainerBytes = long.MaxValue,
++                long maxTotalBytes = long.MaxValue)
++            {
++                MaxCount = maxCount;
++                MaxContainerBytes = maxContainerBytes;
++                MaxTotalBytes = maxTotalBytes;
++            }
++
++            public static RetentionPolicy Unbounded => new RetentionPolicy(int.MaxValue);
++            public static RetentionPolicy Disabled => default;
++        }
++
+         [ThreadStatic] private static GameplayTagContainer[] s_Items;
+         [ThreadStatic] private static int s_Count;
++        [ThreadStatic] private static long s_RetainedBytes;
++        [ThreadStatic] private static RetentionPolicy? s_Policy;
++
++        /// <summary>Unset threads use unbounded retention, not a hidden fixed byte budget.</summary>
++        public static RetentionPolicy Policy => s_Policy ?? RetentionPolicy.Unbounded;
++        public static long RetainedDataBytes => s_RetainedBytes;
++        public static int RetainedCount => s_Count;
++
++        /// <summary>
++        /// Drop current cached objects and select this thread's policy. Limits must be
++        /// nonnegative. Configure before borrowing; outstanding leases are caller-owned.
++        /// </summary>
++        public static void Configure(RetentionPolicy policy)
++        {
++            Clear();
++            s_Policy = policy;
++        }
++
++        /// <summary>Release all retained references and the pool array; keep the policy.</summary>
++        public static void Clear()
++        {
++            s_Items = null;
++            s_Count = 0;
++            s_RetainedBytes = 0;
++        }
+ 
+         public readonly struct PooledContainer : IDisposable
+         {
+@@ -18,20 +64,27 @@
+ 
+         public static GameplayTagContainer Get()
+         {
+-            if (s_Count == 0)
+-                return new GameplayTagContainer();
++            if (s_Count == 0) return new GameplayTagContainer();
+             GameplayTagContainer container = s_Items[--s_Count];
+             s_Items[s_Count] = null;
++            s_RetainedBytes -= container.RetainedDataBytes;
+             return container;
+         }
+ 
+         public static void Release(GameplayTagContainer container)
+         {
++            RetentionPolicy policy = Policy;
++            long bytes = container.RetainedDataBytes;
++            // Retention decisions are the selected strategy, not input validation.
++            // Ownership has ended even if the object is not retained.
++            if (s_Count >= policy.MaxCount || bytes > policy.MaxContainerBytes ||
++                bytes > policy.MaxTotalBytes - s_RetainedBytes) return;
+             container.Clear();
+-            if (s_Count == RetainedLimit)
+-                return;
+-            s_Items ??= new GameplayTagContainer[RetainedLimit];
++            if (s_Items == null) s_Items = new GameplayTagContainer[Math.Min(16, policy.MaxCount)];
++            else if (s_Count == s_Items.Length)
++                Array.Resize(ref s_Items, (int)Math.Min((long)policy.MaxCount, (long)s_Count * 2));
+             s_Items[s_Count++] = container;
++            s_RetainedBytes += bytes;
+         }
+ 
+         public static PooledContainer Get(out GameplayTagContainer container)
+diff --git a/Runtime/GameplayTagCountContainer.cs b/Runtime/GameplayTagCountContainer.cs
+--- a/Runtime/GameplayTagCountContainer.cs
++++ b/Runtime/GameplayTagCountContainer.cs
+@@ -65,6 +65,9 @@
+         private readonly GameplayTagContainerIndices m_Indices = GameplayTagContainerIndices.Create();
+         private CallbackEntry[] m_Callbacks = Array.Empty<CallbackEntry>();
+         private int m_CallbackCount;
++        private const int IndexedCallbackThreshold = 16;
++        private int[] m_CallbackSlots;
++        private Dictionary<int, int> m_CallbackLookup;
+         private DeferredTagChangedDelegate[] m_Events = Array.Empty<DeferredTagChangedDelegate>();
+         private int m_EventCount;
+         private int m_NextEvent;
+@@ -128,6 +131,7 @@
+                 Array.Copy(m_Callbacks, index, m_Callbacks, index + 1, m_CallbackCount - index);
+                 m_Callbacks[index] = new CallbackEntry { Id = tag.RuntimeIndex };
+                 m_CallbackCount++;
++                UpdateCallbackLookup(index);
+             }
+ 
+             ref GameplayTagDelegateInfo callbacks = ref m_Callbacks[index].Callbacks;
+@@ -155,6 +159,7 @@
+                 m_CallbackCount--;
+                 Array.Copy(m_Callbacks, index + 1, m_Callbacks, index, m_CallbackCount - index);
+                 m_Callbacks[m_CallbackCount] = default;
++                UpdateCallbackLookup(index, tag.RuntimeIndex);
+             }
+         }
+ 
+@@ -162,6 +167,44 @@
+         {
+             Array.Clear(m_Callbacks, 0, m_CallbackCount);
+             m_CallbackCount = 0;
++            m_CallbackLookup?.Clear();
++            if (m_CallbackSlots != null) Array.Clear(m_CallbackSlots, 0, m_CallbackSlots.Length);
++        }
++
++        private void UpdateCallbackLookup(int firstChanged, int removedId = 0)
++        {
++            if (m_CallbackCount < IndexedCallbackThreshold) return;
++            int tags = GameplayTagManager.TagCount;
++            if (tags <= 512)
++            {
++                if (m_CallbackSlots == null || m_CallbackCount == IndexedCallbackThreshold)
++                {
++                    if (m_CallbackSlots == null) m_CallbackSlots = new int[tags + 1];
++                    else Array.Clear(m_CallbackSlots, 0, m_CallbackSlots.Length);
++                    firstChanged = 0;
++                }
++                else if (removedId != 0) m_CallbackSlots[removedId] = 0;
++                for (int i = firstChanged; i < m_CallbackCount; i++) m_CallbackSlots[m_Callbacks[i].Id] = i + 1;
++            }
++            else
++            {
++                if (m_CallbackLookup == null || m_CallbackCount == IndexedCallbackThreshold)
++                {
++                    if (m_CallbackLookup == null) m_CallbackLookup = new Dictionary<int, int>(m_CallbackCount);
++                    else m_CallbackLookup.Clear();
++                    firstChanged = 0;
++                }
++                else if (removedId != 0) m_CallbackLookup.Remove(removedId);
++                for (int i = firstChanged; i < m_CallbackCount; i++) m_CallbackLookup[m_Callbacks[i].Id] = i;
++            }
++        }
++
++        private int LookupCallback(int id)
++        {
++            if (m_CallbackCount == 0) return -1;
++            if (m_CallbackCount < IndexedCallbackThreshold) return FindCallback(id);
++            if (m_CallbackSlots != null) return m_CallbackSlots[id] - 1;
++            return m_CallbackLookup.TryGetValue(id, out int index) ? index : -1;
+         }
+ 
+         private int FindCallback(int id)
+@@ -217,21 +260,22 @@
+ 
+         private void AddTagInternal(int id, int amount, bool notify)
+         {
+-            Storage.AddExplicit(id, amount);
++            int ownCount = Storage.AddExplicitAndTotal(id, amount);
+             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
+             if (!notify)
+             {
+-                for (int i = 0; i < hierarchy.Length; i++)
++                for (int i = 0; i < hierarchy.Length - 1; i++)
+                     Storage.AddTotal(hierarchy[i], amount);
+                 return;
+             }
+ 
+-            for (int i = 0; i < hierarchy.Length; i++)
++            for (int i = 0; i < hierarchy.Length - 1; i++)
+             {
+                 int current = hierarchy[i];
+                 int newCount = Storage.AddTotal(current, amount);
+                 QueueChange(current, newCount, newCount == amount);
+             }
++            QueueChange(id, ownCount, ownCount == amount);
+         }
+ 
+         public void RemoveTag(GameplayTag tag) => RemoveTag(tag, 1);
+@@ -256,6 +300,11 @@
+                 return;
+ 
+             bool notify = HasListeners;
++            if (!notify && source.ExplicitCount > 8)
++            {
++                Storage.RemoveSet(source);
++                return;
++            }
+             if (ReferenceEquals(source, Storage))
+             {
+                 int count = source.ExplicitCount;
+@@ -284,23 +333,25 @@
+ 
+         private bool RemoveTagInternal(int id, int amount, bool notify)
+         {
+-            if (Storage.RemoveExplicit(id, amount) < 0)
++            int ownCount = Storage.RemoveExplicitAndTotal(id, amount);
++            if (ownCount < 0)
+                 return false;
+ 
+             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
+             if (!notify)
+             {
+-                for (int i = 0; i < hierarchy.Length; i++)
++                for (int i = 0; i < hierarchy.Length - 1; i++)
+                     Storage.RemoveTotal(hierarchy[i], amount);
+                 return true;
+             }
+ 
+-            for (int i = 0; i < hierarchy.Length; i++)
++            for (int i = 0; i < hierarchy.Length - 1; i++)
+             {
+                 int current = hierarchy[i];
+                 int newCount = Storage.RemoveTotal(current, amount);
+                 QueueChange(current, newCount, newCount == 0);
+             }
++            QueueChange(id, ownCount, ownCount == 0);
+ 
+             return true;
+         }
+@@ -321,7 +372,7 @@
+ 
+         private void QueueChange(int id, int count, bool transition)
+         {
+-            int index = FindCallback(id);
++            int index = LookupCallback(id);
+             GameplayTagDelegateInfo callbacks = index < 0 ? default : m_Callbacks[index].Callbacks;
+             if (transition)
+             {
+diff --git a/Runtime/GameplayTagRequirements.cs b/Runtime/GameplayTagRequirements.cs
+--- a/Runtime/GameplayTagRequirements.cs
++++ b/Runtime/GameplayTagRequirements.cs
+@@ -1,32 +1,200 @@
+ using System;
++using System.Buffers;
++using System.Diagnostics;
++using System.Runtime.CompilerServices;
+ 
+ namespace GameplayTags
+ {
+-    [Serializable]
+-    public struct GameplayTagRequirements
++    /// <summary>
++    /// An immutable runtime snapshot of required and forbidden tags. Up to four
++    /// conditions are stored inline; additional conditions share one private integer
++    /// array. Inputs must be resolved tags from the current registry. Rebuild these
++    /// rules after registry initialization; runtime IDs must not be serialized.
++    /// </summary>
++    /// <remarks>
++    /// Required tags use hierarchical matching and must all be present. Forbidden
++    /// tags must all be absent. Copies share only immutable overflow data, never the
++    /// input arrays. Default is an empty rule that matches every holder.
++    /// </remarks>
++    [DebuggerDisplay("Required = {RequiredTagCount}, Forbidden = {ForbiddenTagCount}")]
++    public readonly struct GameplayTagRequirements
+     {
+-        public GameplayTagContainer m_ForbiddenTags;
+-        public GameplayTagContainer m_RequiredTags;
+-        public readonly GameplayTagContainer ForbiddenTags => m_ForbiddenTags;
+-        public readonly GameplayTagContainer RequiredTags => m_RequiredTags;
+-        public readonly bool IsEmpty =>
+-            (m_ForbiddenTags == null || m_ForbiddenTags.IsEmpty) &&
+-            (m_RequiredTags == null || m_RequiredTags.IsEmpty);
+-
+-        public GameplayTagRequirements(GameplayTagContainer forbiddenTags, GameplayTagContainer requiredTags)
+-        {
+-            m_ForbiddenTags = forbiddenTags;
+-            m_RequiredTags = requiredTags;
+-        }
+-
+-        public readonly bool Matches<T>(in T container) where T : IGameplayTagContainer =>
+-            !container.HasAny(m_ForbiddenTags) && container.HasAll(m_RequiredTags);
+-
+-        /// <summary>Required tags may be split across both holders; forbidden tags may appear in neither.</summary>
+-        public readonly bool Matches<T, U>(in T staticContainer, in U dynamicContainer)
+-            where T : IGameplayTagContainer where U : IGameplayTagContainer =>
+-            !staticContainer.HasAny(m_ForbiddenTags) &&
+-            !dynamicContainer.HasAny(m_ForbiddenTags) &&
+-            GameplayTagContainerUtility.HasAll(staticContainer, dynamicContainer, m_RequiredTags);
++        private readonly int m_ForbiddenCount;
++        private readonly int m_RequiredCount;
++        private readonly int m_Id0;
++        private readonly int m_Id1;
++        private readonly int m_Id2;
++        private readonly int m_Id3;
++        private readonly int[] m_Overflow;
++
++        public int ForbiddenTagCount => m_ForbiddenCount;
++        public int RequiredTagCount => Math.Max(0, m_RequiredCount);
++        /// <summary>The required and forbidden conditions contradict each other.</summary>
++        public bool IsImpossible => m_RequiredCount < 0;
++        public bool IsEmpty => (m_ForbiddenCount | m_RequiredCount) == 0;
++
++        /// <summary>
++        /// Copy explicit conditions from tag spans. Empty spans mean no conditions.
++        /// Inputs must be resolved tags from the current registry. Duplicate and implied
++        /// conditions are removed. Getters expose effective conditions in runtime ID order.
++        /// A contradictory rule has IsImpossible set and zero effective conditions.
++        /// </summary>
++        public GameplayTagRequirements(ReadOnlySpan<GameplayTag> forbidden,
++            ReadOnlySpan<GameplayTag> required)
++        {
++            this = default;
++            int count = forbidden.Length + required.Length;
++            int[] rented = count > 128 ? ArrayPool<int>.Shared.Rent(count) : null;
++            Span<int> scratch = rented == null ? stackalloc int[128] : rented;
++            try
++            {
++                Span<int> f = scratch.Slice(0, forbidden.Length);
++                Span<int> r = scratch.Slice(forbidden.Length, required.Length);
++                for (int i = 0; i < f.Length; i++) f[i] = forbidden[i].RuntimeIndex;
++                for (int i = 0; i < r.Length; i++) r[i] = required[i].RuntimeIndex;
++                TagStorage.SortIds(f);
++                TagStorage.SortIds(r);
++                int nf = 0, nr = 0;
++                for (int i = 0; i < f.Length; i++)
++                    if (f[i] != 0 && (nf == 0 || !IsAncestor(f[nf - 1], f[i]))) f[nf++] = f[i];
++                for (int i = 0; i < r.Length; i++)
++                {
++                    if (r[i] == 0) { m_RequiredCount = -1; return; }
++                    if (i + 1 == r.Length || !IsAncestor(r[i], r[i + 1])) r[nr++] = r[i];
++                }
++                int fi = 0;
++                for (int i = 0; i < nr; i++)
++                {
++                    while (fi < nf && GameplayTagManager.GetSubtreeEnd(f[fi]) <= r[i]) fi++;
++                    if (fi < nf && IsAncestor(f[fi], r[i])) { m_RequiredCount = -1; return; }
++                }
++                m_ForbiddenCount = nf;
++                m_RequiredCount = nr;
++                f = f.Slice(0, nf); r = r.Slice(0, nr);
++                count = nf + nr;
++                m_Id0 = count > 0 ? ReadId(f, r, 0) : 0;
++                m_Id1 = count > 1 ? ReadId(f, r, 1) : 0;
++                m_Id2 = count > 2 ? ReadId(f, r, 2) : 0;
++                m_Id3 = count > 3 ? ReadId(f, r, 3) : 0;
++                m_Overflow = count > 4 ? new int[count - 4] : null;
++                for (int i = 4; i < count; i++) m_Overflow[i - 4] = ReadId(f, r, i);
++            }
++            finally { if (rented != null) ArrayPool<int>.Shared.Return(rented); }
++        }
++
++        private GameplayTagRequirements(int forbidden, int required, int additionalRequired)
++        {
++            this = default;
++            if (required == 0 || additionalRequired == 0 ||
++                IsAncestor(forbidden, required) || IsAncestor(forbidden, additionalRequired))
++            { m_RequiredCount = -1; return; }
++            m_ForbiddenCount = forbidden == 0 ? 0 : 1;
++            if (IsAncestor(required, additionalRequired)) required = additionalRequired;
++            else if (!IsAncestor(additionalRequired, required))
++            {
++                m_RequiredCount = 2;
++                if (required > additionalRequired)
++                { int tmp = required; required = additionalRequired; additionalRequired = tmp; }
++            }
++            if (m_RequiredCount == 0) m_RequiredCount = 1;
++            if (m_ForbiddenCount == 1)
++            { m_Id0 = forbidden; m_Id1 = required; m_Id2 = m_RequiredCount == 2 ? additionalRequired : 0; }
++            else
++            { m_Id0 = required; m_Id1 = m_RequiredCount == 2 ? additionalRequired : 0; }
++        }
++
++        private static bool IsAncestor(int parent, int child) =>
++            child >= parent && child < GameplayTagManager.GetSubtreeEnd(parent);
++
++        private static int ReadId(ReadOnlySpan<int> f, ReadOnlySpan<int> r, int index) =>
++            index < f.Length ? f[index] : r[index - f.Length];
++
++        /// <summary>
++        /// Build directly from tag spans, without temporary tag containers. Input
++        /// arrays are not retained. Redundant conditions are removed once at construction.
++        /// Empty spans mean no conditions.
++        /// </summary>
++        public static GameplayTagRequirements Create(ReadOnlySpan<GameplayTag> forbidden,
++            ReadOnlySpan<GameplayTag> required) => new GameplayTagRequirements(forbidden, required);
++
++        /// <summary>
++        /// Allocation-free construction for one forbidden and two required tags.
++        /// This overload needs neither temporary arrays nor temporary containers.
++        /// </summary>
++        public static GameplayTagRequirements Create(GameplayTag forbidden,
++            GameplayTag required, GameplayTag additionalRequired) =>
++            new GameplayTagRequirements(forbidden.RuntimeIndex, required.RuntimeIndex,
++                additionalRequired.RuntimeIndex);
++
++        /// <summary>Get an effective condition; index is local to the forbidden list.</summary>
++        public GameplayTag GetForbiddenTag(int index)
++        {
++            return GameplayTagManager.GetTagFromRuntimeIndex(GetId(index));
++        }
++
++        /// <summary>Get an effective condition; index is local to the required list.</summary>
++        public GameplayTag GetRequiredTag(int index)
++        {
++            return GameplayTagManager.GetTagFromRuntimeIndex(GetId(m_ForbiddenCount + index));
++        }
++
++        /// <summary>Check current holder state. Matching does not allocate or cache the result.</summary>
++        public bool Matches<T>(in T container) where T : IGameplayTagContainer
++        {
++            if (m_RequiredCount <= 0 && m_ForbiddenCount == 0)
++                return m_RequiredCount == 0;
++            TagStorage storage = container.Indices.Storage;
++            if (storage == null)
++                return m_RequiredCount == 0;
++            for (int i = 0; i < m_ForbiddenCount; i++)
++                if (storage.Contains(GetId(i)))
++                    return false;
++            int end = m_ForbiddenCount + m_RequiredCount;
++            for (int i = m_ForbiddenCount; i < end; i++)
++                if (!storage.Contains(GetId(i)))
++                    return false;
++            return true;
++        }
++
++        /// <summary>
++        /// Required tags may be split across holders; forbidden tags may occur in
++        /// neither. Does not create a union or any temporary holder.
++        /// </summary>
++        public bool Matches<T, U>(in T staticContainer, in U dynamicContainer)
++            where T : IGameplayTagContainer where U : IGameplayTagContainer
++        {
++            if (m_RequiredCount <= 0 && m_ForbiddenCount == 0)
++                return m_RequiredCount == 0;
++            TagStorage first = staticContainer.Indices.Storage;
++            TagStorage second = dynamicContainer.Indices.Storage;
++            for (int i = 0; i < m_ForbiddenCount; i++)
++            {
++                int id = GetId(i);
++                if ((first != null && first.Contains(id)) || (second != null && second.Contains(id)))
++                    return false;
++            }
++            int end = m_ForbiddenCount + m_RequiredCount;
++            for (int i = m_ForbiddenCount; i < end; i++)
++            {
++                int id = GetId(i);
++                if ((first == null || !first.Contains(id)) && (second == null || !second.Contains(id)))
++                    return false;
++            }
++            return true;
++        }
++
++        [MethodImpl(MethodImplOptions.AggressiveInlining)]
++        internal int GetId(int index)
++        {
++            switch (index)
++            {
++                case 0: return m_Id0;
++                case 1: return m_Id1;
++                case 2: return m_Id2;
++                case 3: return m_Id3;
++                default: return m_Overflow[index - 4];
++            }
++        }
++
+     }
+ }
+diff --git a/Runtime/GameplayTagRuleSet.cs b/Runtime/GameplayTagRuleSet.cs
+new file mode 100644
+--- /dev/null
++++ b/Runtime/GameplayTagRuleSet.cs
+@@ -0,0 +1,164 @@
++using System;
++using System.Buffers;
++using System.Collections.Generic;
++
++namespace GameplayTags
++{
++    /// <summary>
++    /// Immutable group of fixed rules. Queries each distinct condition once per evaluation.
++    /// Share the group across actors; use one Cache per actor when state changes infrequently.
++    /// Rebuild after registry initialization. No caller-supplied arrays are retained.
++    /// </summary>
++    public sealed class GameplayTagRuleSet
++    {
++        private struct Rule
++        {
++            internal int Start, Forbidden, Count;
++            internal bool Impossible;
++        }
++        private readonly Rule[] m_Rules;
++        private readonly int[] m_Ids;
++        private readonly int[] m_Clauses;
++        private readonly int[] m_DependencyOffsets;
++        private readonly int[] m_Dependencies;
++        public int Count => m_Rules.Length;
++        public int DistinctConditionCount => m_Ids.Length;
++
++        public GameplayTagRuleSet(ReadOnlySpan<GameplayTagRequirements> rules)
++        {
++            m_Rules = new Rule[rules.Length];
++            var ids = new List<int>();
++            var lookup = new Dictionary<int, int>();
++            var clauses = new List<int>();
++            var dependencies = new List<List<int>>();
++            for (int i = 0; i < rules.Length; i++)
++            {
++                GameplayTagRequirements rule = rules[i];
++                int count = rule.ForbiddenTagCount + rule.RequiredTagCount;
++                m_Rules[i] = new Rule { Start = clauses.Count, Count = count,
++                    Forbidden = rule.ForbiddenTagCount, Impossible = rule.IsImpossible };
++                for (int j = 0; j < count; j++)
++                {
++                    int id = rule.GetId(j);
++                    if (!lookup.TryGetValue(id, out int index))
++                    {
++                        index = ids.Count;
++                        ids.Add(id); lookup.Add(id, index); dependencies.Add(new List<int>());
++                    }
++                    clauses.Add(index);
++                    dependencies[index].Add(i);
++                }
++            }
++            m_Ids = ids.ToArray();
++            m_Clauses = clauses.ToArray();
++            m_DependencyOffsets = new int[ids.Count + 1];
++            var flat = new List<int>(clauses.Count);
++            for (int i = 0; i < ids.Count; i++)
++            { m_DependencyOffsets[i] = flat.Count; flat.AddRange(dependencies[i]); }
++            m_DependencyOffsets[ids.Count] = flat.Count;
++            m_Dependencies = flat.ToArray();
++        }
++
++        public void Evaluate<T>(in T holder, Span<bool> results) where T : IGameplayTagContainer =>
++            EvaluateCore(holder.Indices.Storage, null, results);
++
++        public void Evaluate<T, U>(in T first, in U second, Span<bool> results)
++            where T : IGameplayTagContainer where U : IGameplayTagContainer =>
++            EvaluateCore(first.Indices.Storage, second.Indices.Storage, results);
++
++        private void EvaluateCore(TagStorage first, TagStorage second,
++            Span<bool> results)
++        {
++            bool[] rented = m_Ids.Length > 128 ? ArrayPool<bool>.Shared.Rent(m_Ids.Length) : null;
++            Span<bool> values = rented == null ? stackalloc bool[128] : rented;
++            try
++            {
++                if (second == null)
++                    for (int i = 0; i < m_Ids.Length; i++) values[i] = first.Contains(m_Ids[i]);
++                else
++                    for (int i = 0; i < m_Ids.Length; i++) values[i] = first.Contains(m_Ids[i]) || second.Contains(m_Ids[i]);
++                for (int i = 0; i < Count; i++) results[i] = EvaluateRule(i, values);
++            }
++            finally { if (rented != null) ArrayPool<bool>.Shared.Return(rented); }
++        }
++
++        private bool EvaluateRule(int index, ReadOnlySpan<bool> values)
++        {
++            Rule rule = m_Rules[index];
++            if (rule.Impossible) return false;
++            int endForbidden = rule.Start + rule.Forbidden;
++            for (int i = rule.Start; i < endForbidden; i++)
++                if (values[m_Clauses[i]]) return false;
++            for (int i = endForbidden; i < rule.Start + rule.Count; i++)
++                if (!values[m_Clauses[i]]) return false;
++            return true;
++        }
++
++        public Cache CreateCache() => new Cache(this);
++
++        /// <summary>
++        /// Single-owner evaluation state. No event subscriptions or manual invalidation.
++        /// Unchanged presence versions reuse results. Otherwise distinct conditions are
++        /// refreshed and only dependent rules are recomputed. Evaluate reads current state,
++        /// including when invoked from a reentrant buff callback. Returned spans are live
++        /// views invalidated by the next evaluation; do not use this cache concurrently.
++        /// </summary>
++        public sealed class Cache
++        {
++            private readonly GameplayTagRuleSet m_Owner;
++            private readonly bool[] m_Values, m_Results, m_Dirty;
++            private readonly int[] m_DirtyRules;
++            private TagStorage m_First, m_Second;
++            private ulong m_FirstVersion, m_SecondVersion;
++            private bool m_Initialized;
++            internal Cache(GameplayTagRuleSet owner)
++            {
++                m_Owner = owner;
++                m_Values = new bool[owner.m_Ids.Length];
++                m_Results = new bool[owner.Count];
++                m_Dirty = new bool[owner.Count];
++                m_DirtyRules = new int[owner.Count];
++                for (int i = 0; i < owner.Count; i++) m_Results[i] = owner.EvaluateRule(i, m_Values);
++            }
++
++            public ReadOnlySpan<bool> Evaluate<T>(in T holder) where T : IGameplayTagContainer =>
++                Refresh(holder.Indices.Storage, null);
++
++            public ReadOnlySpan<bool> Evaluate<T, U>(in T first, in U second)
++                where T : IGameplayTagContainer where U : IGameplayTagContainer =>
++                Refresh(first.Indices.Storage, second.Indices.Storage);
++
++            private ReadOnlySpan<bool> Refresh(TagStorage first, TagStorage second)
++            {
++                ulong fv = first.PresenceVersion, sv = second?.PresenceVersion ?? 0;
++                if (m_Initialized && ReferenceEquals(first, m_First) && ReferenceEquals(second, m_Second) &&
++                    fv == m_FirstVersion && sv == m_SecondVersion) return m_Results;
++                int dirty = 0;
++                for (int i = 0; i < m_Values.Length; i++)
++                {
++                    int id = m_Owner.m_Ids[i];
++                    bool value = first.Contains(id) || (second != null && second.Contains(id));
++                    if (value == m_Values[i]) continue;
++                    m_Values[i] = value;
++                    for (int j = m_Owner.m_DependencyOffsets[i]; j < m_Owner.m_DependencyOffsets[i + 1]; j++)
++                    {
++                        int rule = m_Owner.m_Dependencies[j];
++                        if (m_Dirty[rule]) continue;
++                        m_Dirty[rule] = true;
++                        m_DirtyRules[dirty++] = rule;
++                    }
++                }
++                for (int i = 0; i < dirty; i++)
++                {
++                    int rule = m_DirtyRules[i];
++                    m_Results[rule] = m_Owner.EvaluateRule(rule, m_Values);
++                    m_Dirty[rule] = false;
++                }
++                m_First = first; m_Second = second;
++                m_FirstVersion = fv; m_SecondVersion = sv;
++                m_Initialized = true;
++                return m_Results;
++            }
++        }
++    }
++}
+diff --git a/Runtime/GameplayTagRuleSet.cs.meta b/Runtime/GameplayTagRuleSet.cs.meta
+new file mode 100644
+--- /dev/null
++++ b/Runtime/GameplayTagRuleSet.cs.meta
+@@ -0,0 +1,2 @@
++fileFormatVersion: 2
++guid: 8dbac89298e95504eb56e6c359fbd730diff --git a/Runtime/TagStorage.cs b/Runtime/TagStorage.cs
+--- a/Runtime/TagStorage.cs
++++ b/Runtime/TagStorage.cs
+@@ -23,6 +23,7 @@
+         internal int[] ExplicitIndices = Array.Empty<int>();
+         internal int Count;
+         internal int ExplicitCount;
++        internal ulong PresenceVersion;
+         private int[] m_Buckets = Array.Empty<int>();
+         // The active index may occupy a prefix of a larger reserved array. This
+         // lets copies transfer the source index even when capacities differ.
+@@ -84,14 +85,15 @@
+             return index < 0 ? 0 : Entries[index].ExplicitCount;
+         }
+ 
+-        internal int AddExplicit(int id, int amount = 1)
++        internal int AddExplicitAndTotal(int id, int amount = 1)
+         {
+             int index = Find(id);
+             if (index < 0)
+                 index = Insert(id);
+             if (Entries[index].ExplicitCount == 0)
+                 AddExplicitIndex(index);
+-            return Entries[index].ExplicitCount += amount;
++            Entries[index].ExplicitCount += amount;
++            return Entries[index].Count += amount;
+         }
+ 
+         // Set insertion and its duplicate semantics require just one lookup.
+@@ -124,11 +126,21 @@
+             return Entries[index].Count += amount;
+         }
+ 
+-        internal int RemoveExplicit(int id, int amount = 1)
+-        {
+-            int index = Find(id);
++        // Update both counts with one lookup. No callback observes partially updated state.
++        internal int RemoveExplicitAndTotal(int id, int amount)
++        {
++            int index = FindForRemoval(id, out int slot);
+             if (index < 0 || Entries[index].ExplicitCount == 0)
+                 return -1;
++            RemoveExplicitAt(index, amount);
++            int total = Entries[index].Count -= amount;
++            if (total == 0)
++                RemoveAt(index, slot);
++            return total;
++        }
++
++        private int RemoveExplicitAt(int index, int amount)
++        {
+             int count = Entries[index].ExplicitCount -= amount;
+             if (count == 0)
+             {
+@@ -140,19 +152,48 @@
+             return count;
+         }
+ 
++        internal int RemoveExplicit(int id, int amount = 1)
++        {
++            int index = Find(id);
++            if (index < 0 || Entries[index].ExplicitCount == 0)
++                return -1;
++            return RemoveExplicitAt(index, amount);
++        }
++
+         // The caller has already removed a present explicit contribution. Every
+         // ancestor is therefore present and has at least 'amount' contributions.
+         internal int RemoveTotal(int id, int amount = 1)
+         {
+-            int index = Find(id);
++            int index = FindForRemoval(id, out int slot);
+             int count = Entries[index].Count -= amount;
+             if (count == 0)
+-                RemoveAt(index);
++                RemoveAt(index, slot);
+             return count;
+         }
+ 
++        // Preserve the successful probe's slot for deletion. Kept separate from Find
++        // so read-only queries do not carry an extra out parameter on Unity Mono.
++        private int FindForRemoval(int id, out int slot)
++        {
++            if (m_BucketMask == 0)
++            {
++                slot = -1;
++                for (int i = 0; i < Count; i++) if (Entries[i].Id == id) return i;
++                return -1;
++            }
++            slot = Hash(id) & m_BucketMask;
++            int encoded;
++            while ((encoded = m_Buckets[slot]) != 0)
++            {
++                if (Entries[encoded - 1].Id == id) return encoded - 1;
++                slot = (slot + 1) & m_BucketMask;
++            }
++            return -1;
++        }
++
+         private int Insert(int id)
+         {
++            PresenceVersion++;
+             EnsureEntryCapacity(Count + 1);
+             int index = Count++;
+             Entries[index] = new Entry { Id = id };
+@@ -167,16 +208,13 @@
+             return index;
+         }
+ 
+-        private void RemoveAt(int index)
+-        {
++        private void RemoveAt(int index, int slot)
++        {
++            PresenceVersion++;
+             int[] buckets = m_Buckets;
+             int mask = m_BucketMask;
+             if (mask != 0)
+             {
+-                int slot = Hash(Entries[index].Id) & mask;
+-                while (buckets[slot] != index + 1)
+-                    slot = (slot + 1) & mask;
+-
+                 // Move entries whose probe sequence crosses the hole. Comparing
+                 // modular distances also handles clusters wrapping around slot zero.
+                 int hole = slot;
+@@ -202,12 +240,16 @@
+                 ExplicitIndices[moved.ExplicitIndex] = index;
+             if (mask != 0)
+             {
+-                int slot = Hash(moved.Id) & mask;
++                slot = Hash(moved.Id) & mask;
+                 while (buckets[slot] != last + 1)
+                     slot = (slot + 1) & mask;
+                 buckets[slot] = index + 1;
+             }
+         }
++
++        // Array payload only; excludes headers and this object.
++        internal long RetainedBytes => (long)Entries.Length * 16 +
++            (long)ExplicitIndices.Length * 4 + (long)m_Buckets.Length * 4;
+ 
+         // Reserve the maximum number of distinct tags INCLUDING ancestors.
+         internal void EnsureCapacity(int capacity)
+@@ -241,6 +283,7 @@
+ 
+         internal void Clear()
+         {
++            if (Count != 0) PresenceVersion++;
+             // Only occupied buckets need clearing; a large, mostly empty retained
+             // buffer must not turn Clear into an operation over its capacity.
+             int[] buckets = m_Buckets;
+@@ -267,6 +310,7 @@
+         {
+             if (ReferenceEquals(this, other))
+                 return;
++            PresenceVersion++;
+             int count = other.Count;
+             if (count == 0)
+             {
+@@ -299,7 +343,9 @@
+                 BuildIndex();
+         }
+ 
+-        // Add unique explicit members and propagate shared ancestor contributions in batches.
++        // Add a distinct explicit set to a normal set. Each new explicit tag
++        // contributes to itself immediately, then queues only its direct parent.
++        // Shared parents combine pending contributions before forwarding them.
+         internal void AddUnion(TagStorage source)
+         {
+             if (source.ExplicitCount <= 8)
+@@ -376,6 +422,59 @@
+             Entries[index].ExplicitCount = unchecked(Entries[index].ExplicitCount + (amount << 1));
+         }
+ 
++        // Remove one explicit occurrence per distinct source member. Sorting the selected
++        // IDs lets each affected ancestor receive its whole delta once. Entries can move
++        // on deletion, so pending work stores stable IDs, never dense indices.
++        internal void RemoveSet(TagStorage source)
++        {
++            if (source == null || source.ExplicitCount == 0 || ExplicitCount == 0)
++                return;
++            TagStorage scan = source.ExplicitCount < ExplicitCount ? source : this;
++            TagStorage lookup = ReferenceEquals(scan, this) ? source : this;
++            int[] rentedIds = scan.ExplicitCount > 64 ? ArrayPool<int>.Shared.Rent(scan.ExplicitCount) : null;
++            Span<int> ids = rentedIds == null ? stackalloc int[64] : rentedIds;
++            int[] rentedStack = null;
++            try
++            {
++                int selected = 0, depth = 0;
++                for (int i = 0; i < scan.ExplicitCount; i++)
++                {
++                    int id = scan.Entries[scan.ExplicitIndices[i]].Id;
++                    if (!ReferenceEquals(scan, lookup) && !lookup.ContainsExplicit(id)) continue;
++                    ids[selected++] = id;
++                    depth = Math.Max(depth, GameplayTagManager.GetHierarchyIndices(id).Length);
++                }
++                if (selected == 0) return;
++                for (int i = 0; i < selected; i++) RemoveExplicit(ids[i]);
++                SortIds(ids.Slice(0, selected));
++                rentedStack = depth > 32 ? ArrayPool<int>.Shared.Rent(depth * 2) : null;
++                Span<int> stack = rentedStack == null ? stackalloc int[64] : rentedStack;
++                int top = 0;
++                for (int i = 0; i <= selected; i++)
++                {
++                    int id = i < selected ? ids[i] : int.MaxValue;
++                    while (top > 0 && id >= GameplayTagManager.GetSubtreeEnd(stack[(top - 1) * 2]))
++                    {
++                        top--;
++                        RemoveTotal(stack[top * 2], i - stack[top * 2 + 1]);
++                    }
++                    if (i == selected) break;
++                    ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
++                    while (top < path.Length)
++                    {
++                        stack[top * 2] = path[top];
++                        stack[top * 2 + 1] = i;
++                        top++;
++                    }
++                }
++            }
++            finally
++            {
++                if (rentedIds != null) ArrayPool<int>.Shared.Return(rentedIds);
++                if (rentedStack != null) ArrayPool<int>.Shared.Return(rentedStack);
++            }
++        }
++
+         // Bulk operations collect unique explicit IDs into ExplicitIndices first.
+         // They may reuse this buffer while filtering an aliased input forwards.
+         internal void EnsureExplicitCapacity(int capacity)
+@@ -386,6 +485,7 @@
+ 
+         internal void BuildFromExplicitIds(int explicitCount)
+         {
++            PresenceVersion++;
+             if (explicitCount == 0)
+             {
+                 Clear();
+@@ -463,8 +563,12 @@
+         // dense indices. Generic Array.Sort's range overload allocates a comparison
+         // delegate on Unity Mono. Integer heapsort needs neither boxing nor scratch
+         // storage, has bounded O(n log n) work, and skips already ordered input.
+-        private static void SortIds(int[] ids, int count)
+-        {
++        internal static void SortIds(int[] ids, int count) => SortIds(ids.AsSpan(0, count));
++
++        internal static void SortIds(Span<int> ids)
++        {
++            int count = ids.Length;
++            if (count < 2) return;
+             int ordered = 1;
+             while (ordered < count && ids[ordered - 1] <= ids[ordered])
+                 ordered++;
+@@ -481,7 +585,7 @@
+             }
+         }
+ 
+-        private static void SiftDown(int[] ids, int value, int root, int count)
++        private static void SiftDown(Span<int> ids, int value, int root, int count)
+         {
+             // This condition also keeps 2 * root + 1 within the live prefix.
+             while (root < count / 2)
+diff --git a/package.json b/package.json
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "com.acced.zframework.gameplaytags",
+-  "version": "2.1.0-rc.2",
++  "version": "2.1.0-rc.2-optimized.2",
+   "displayName": "ZFramework Gameplay Tags",
+   "description": "Caller-contract performance core: cached integer handles, compact indexed storage and batched ancestor propagation.",
+   "unity": "2022.3",
+@@ -12,5 +12,8 @@
+   ],
+   "author": {
+     "name": "acced"
++  },
++  "dependencies": {
++    "com.unity.nuget.mono-cecil": "1.11.6"
+   }
+ }

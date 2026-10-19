@@ -23,6 +23,7 @@ namespace GameplayTags
         internal int[] ExplicitIndices = Array.Empty<int>();
         internal int Count;
         internal int ExplicitCount;
+        internal ulong PresenceVersion;
         private int[] m_Buckets = Array.Empty<int>();
         // The active index may occupy a prefix of a larger reserved array. This
         // lets copies transfer the source index even when capacities differ.
@@ -84,14 +85,15 @@ namespace GameplayTags
             return index < 0 ? 0 : Entries[index].ExplicitCount;
         }
 
-        internal int AddExplicit(int id, int amount = 1)
+        internal int AddExplicitAndTotal(int id, int amount = 1)
         {
             int index = Find(id);
             if (index < 0)
                 index = Insert(id);
             if (Entries[index].ExplicitCount == 0)
                 AddExplicitIndex(index);
-            return Entries[index].ExplicitCount += amount;
+            Entries[index].ExplicitCount += amount;
+            return Entries[index].Count += amount;
         }
 
         // Set insertion and its duplicate semantics require just one lookup.
@@ -124,11 +126,21 @@ namespace GameplayTags
             return Entries[index].Count += amount;
         }
 
-        internal int RemoveExplicit(int id, int amount = 1)
+        // Update both counts with one lookup. No callback observes partially updated state.
+        internal int RemoveExplicitAndTotal(int id, int amount)
         {
-            int index = Find(id);
+            int index = FindForRemoval(id, out int slot);
             if (index < 0 || Entries[index].ExplicitCount == 0)
                 return -1;
+            RemoveExplicitAt(index, amount);
+            int total = Entries[index].Count -= amount;
+            if (total == 0)
+                RemoveAt(index, slot);
+            return total;
+        }
+
+        private int RemoveExplicitAt(int index, int amount)
+        {
             int count = Entries[index].ExplicitCount -= amount;
             if (count == 0)
             {
@@ -140,19 +152,48 @@ namespace GameplayTags
             return count;
         }
 
+        internal int RemoveExplicit(int id, int amount = 1)
+        {
+            int index = Find(id);
+            if (index < 0 || Entries[index].ExplicitCount == 0)
+                return -1;
+            return RemoveExplicitAt(index, amount);
+        }
+
         // The caller has already removed a present explicit contribution. Every
         // ancestor is therefore present and has at least 'amount' contributions.
         internal int RemoveTotal(int id, int amount = 1)
         {
-            int index = Find(id);
+            int index = FindForRemoval(id, out int slot);
             int count = Entries[index].Count -= amount;
             if (count == 0)
-                RemoveAt(index);
+                RemoveAt(index, slot);
             return count;
+        }
+
+        // Preserve the successful probe's slot for deletion. Kept separate from Find
+        // so read-only queries do not carry an extra out parameter on Unity Mono.
+        private int FindForRemoval(int id, out int slot)
+        {
+            if (m_BucketMask == 0)
+            {
+                slot = -1;
+                for (int i = 0; i < Count; i++) if (Entries[i].Id == id) return i;
+                return -1;
+            }
+            slot = Hash(id) & m_BucketMask;
+            int encoded;
+            while ((encoded = m_Buckets[slot]) != 0)
+            {
+                if (Entries[encoded - 1].Id == id) return encoded - 1;
+                slot = (slot + 1) & m_BucketMask;
+            }
+            return -1;
         }
 
         private int Insert(int id)
         {
+            PresenceVersion++;
             EnsureEntryCapacity(Count + 1);
             int index = Count++;
             Entries[index] = new Entry { Id = id };
@@ -167,16 +208,13 @@ namespace GameplayTags
             return index;
         }
 
-        private void RemoveAt(int index)
+        private void RemoveAt(int index, int slot)
         {
+            PresenceVersion++;
             int[] buckets = m_Buckets;
             int mask = m_BucketMask;
             if (mask != 0)
             {
-                int slot = Hash(Entries[index].Id) & mask;
-                while (buckets[slot] != index + 1)
-                    slot = (slot + 1) & mask;
-
                 // Move entries whose probe sequence crosses the hole. Comparing
                 // modular distances also handles clusters wrapping around slot zero.
                 int hole = slot;
@@ -202,12 +240,16 @@ namespace GameplayTags
                 ExplicitIndices[moved.ExplicitIndex] = index;
             if (mask != 0)
             {
-                int slot = Hash(moved.Id) & mask;
+                slot = Hash(moved.Id) & mask;
                 while (buckets[slot] != last + 1)
                     slot = (slot + 1) & mask;
                 buckets[slot] = index + 1;
             }
         }
+
+        // Array payload only; excludes headers and this object.
+        internal long RetainedBytes => (long)Entries.Length * 16 +
+            (long)ExplicitIndices.Length * 4 + (long)m_Buckets.Length * 4;
 
         // Reserve the maximum number of distinct tags INCLUDING ancestors.
         internal void EnsureCapacity(int capacity)
@@ -241,6 +283,7 @@ namespace GameplayTags
 
         internal void Clear()
         {
+            if (Count != 0) PresenceVersion++;
             // Only occupied buckets need clearing; a large, mostly empty retained
             // buffer must not turn Clear into an operation over its capacity.
             int[] buckets = m_Buckets;
@@ -267,6 +310,7 @@ namespace GameplayTags
         {
             if (ReferenceEquals(this, other))
                 return;
+            PresenceVersion++;
             int count = other.Count;
             if (count == 0)
             {
@@ -299,7 +343,9 @@ namespace GameplayTags
                 BuildIndex();
         }
 
-        // Add unique explicit members and propagate shared ancestor contributions in batches.
+        // Add a distinct explicit set to a normal set. Each new explicit tag
+        // contributes to itself immediately, then queues only its direct parent.
+        // Shared parents combine pending contributions before forwarding them.
         internal void AddUnion(TagStorage source)
         {
             if (source.ExplicitCount <= 8)
@@ -376,6 +422,59 @@ namespace GameplayTags
             Entries[index].ExplicitCount = unchecked(Entries[index].ExplicitCount + (amount << 1));
         }
 
+        // Remove one explicit occurrence per distinct source member. Sorting the selected
+        // IDs lets each affected ancestor receive its whole delta once. Entries can move
+        // on deletion, so pending work stores stable IDs, never dense indices.
+        internal void RemoveSet(TagStorage source)
+        {
+            if (source == null || source.ExplicitCount == 0 || ExplicitCount == 0)
+                return;
+            TagStorage scan = source.ExplicitCount < ExplicitCount ? source : this;
+            TagStorage lookup = ReferenceEquals(scan, this) ? source : this;
+            int[] rentedIds = scan.ExplicitCount > 64 ? ArrayPool<int>.Shared.Rent(scan.ExplicitCount) : null;
+            Span<int> ids = rentedIds == null ? stackalloc int[64] : rentedIds;
+            int[] rentedStack = null;
+            try
+            {
+                int selected = 0, depth = 0;
+                for (int i = 0; i < scan.ExplicitCount; i++)
+                {
+                    int id = scan.Entries[scan.ExplicitIndices[i]].Id;
+                    if (!ReferenceEquals(scan, lookup) && !lookup.ContainsExplicit(id)) continue;
+                    ids[selected++] = id;
+                    depth = Math.Max(depth, GameplayTagManager.GetHierarchyIndices(id).Length);
+                }
+                if (selected == 0) return;
+                for (int i = 0; i < selected; i++) RemoveExplicit(ids[i]);
+                SortIds(ids.Slice(0, selected));
+                rentedStack = depth > 32 ? ArrayPool<int>.Shared.Rent(depth * 2) : null;
+                Span<int> stack = rentedStack == null ? stackalloc int[64] : rentedStack;
+                int top = 0;
+                for (int i = 0; i <= selected; i++)
+                {
+                    int id = i < selected ? ids[i] : int.MaxValue;
+                    while (top > 0 && id >= GameplayTagManager.GetSubtreeEnd(stack[(top - 1) * 2]))
+                    {
+                        top--;
+                        RemoveTotal(stack[top * 2], i - stack[top * 2 + 1]);
+                    }
+                    if (i == selected) break;
+                    ReadOnlySpan<int> path = GameplayTagManager.GetHierarchyIndices(id);
+                    while (top < path.Length)
+                    {
+                        stack[top * 2] = path[top];
+                        stack[top * 2 + 1] = i;
+                        top++;
+                    }
+                }
+            }
+            finally
+            {
+                if (rentedIds != null) ArrayPool<int>.Shared.Return(rentedIds);
+                if (rentedStack != null) ArrayPool<int>.Shared.Return(rentedStack);
+            }
+        }
+
         // Bulk operations collect unique explicit IDs into ExplicitIndices first.
         // They may reuse this buffer while filtering an aliased input forwards.
         internal void EnsureExplicitCapacity(int capacity)
@@ -386,6 +485,7 @@ namespace GameplayTags
 
         internal void BuildFromExplicitIds(int explicitCount)
         {
+            PresenceVersion++;
             if (explicitCount == 0)
             {
                 Clear();
@@ -463,8 +563,12 @@ namespace GameplayTags
         // dense indices. Generic Array.Sort's range overload allocates a comparison
         // delegate on Unity Mono. Integer heapsort needs neither boxing nor scratch
         // storage, has bounded O(n log n) work, and skips already ordered input.
-        private static void SortIds(int[] ids, int count)
+        internal static void SortIds(int[] ids, int count) => SortIds(ids.AsSpan(0, count));
+
+        internal static void SortIds(Span<int> ids)
         {
+            int count = ids.Length;
+            if (count < 2) return;
             int ordered = 1;
             while (ordered < count && ids[ordered - 1] <= ids[ordered])
                 ordered++;
@@ -481,7 +585,7 @@ namespace GameplayTags
             }
         }
 
-        private static void SiftDown(int[] ids, int value, int root, int count)
+        private static void SiftDown(Span<int> ids, int value, int root, int count)
         {
             // This condition also keeps 2 * root + 1 within the live prefix.
             while (root < count / 2)
