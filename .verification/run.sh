@@ -6,6 +6,7 @@ out=$1
 mkdir -p "$out/logs" "$out/fixtures"
 export DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 run() { local name=$1; shift; "$@" 2>&1 | tee "$out/logs/$name.log"; }
+run sdk dotnet --info
 run runtime dotnet build GameplayTags.Runtime.csproj -c Release --nologo
 run optimization dotnet run --project .verification/tests/OptimizationTests.csproj -c Release
 run rules dotnet run --project .verification/tests/RuleTests.csproj -c Release
@@ -29,8 +30,7 @@ run provider-android dotnet build .verification/provider/Provider.csproj -c Rele
 run metadata-android-accepted dotnet "$runner" accept-android-dlc-plugin "$project" "$runtime" "$android" "$plugin" "$out/provider-android/GeneratedFixture.dll"
 run metadata-missing dotnet "$runner" missing-runtime "$project"
 run metadata-derived dotnet "$runner" derived "$project" "$runtime" "$out/fixtures/derived/PlayerFixture.dll"
-# Recompile the real Editor generator and reader against portable Unity API stubs.
-# This proves C# / Cecil compatibility, not execution in the Unity Editor.
-run editor-netstandard dotnet build .verification/metadata/Metadata.csproj -c Release -p:TargetFramework=netstandard2.1 -p:OutputType=Library -o "$out/editor-portable" --nologo
+# Compile-only, separate project and restore state. Not Unity engine execution.
+run editor-netstandard dotnet build .verification/editorcompile/EditorCompile.csproj -c Release -o "$out/editor-portable" --nologo
 python3 .verification/package.py "$out/package"
 printf 'PASS managed correctness, pool policies, compiled-fixture Player metadata and packaging. Unity execution/performance not run.\n' | tee "$out/SUMMARY.txt"
