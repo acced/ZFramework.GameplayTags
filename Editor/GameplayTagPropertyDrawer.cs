@@ -19,12 +19,12 @@ namespace GameplayTags.Editor
          EditorGUI.indentLevel = 0;
 
          SerializedProperty nameProperty = property.FindPropertyRelative("m_Name");
-         GameplayTag tag = GameplayTagManager.RequestTag(nameProperty.stringValue);
+         string name = nameProperty.stringValue;
 
-         if (tag != GameplayTag.None)
+         if (!string.IsNullOrEmpty(name))
          {
-            s_TempContent.text = tag.Name;
-            s_TempContent.tooltip = tag.Description;
+            s_TempContent.text = name;
+            s_TempContent.tooltip = GameplayTagEditorCatalog.Description(name);
          }
          else
          {
@@ -46,3 +46,4 @@ namespace GameplayTags.Editor
       }
    }
 }
+

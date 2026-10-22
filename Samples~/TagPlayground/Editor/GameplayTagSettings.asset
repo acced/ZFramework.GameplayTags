@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4b9336882e24e54b92a720f2c0b5d3a, type: 3}
+  m_Name: GameplayTagSettings
+  m_EditorClassIdentifier: 
+  entries:
+  - Name: Demo.Ability.Cast
+    Description: The actor can cast spells.
+  - Name: Demo.Equipment.Weapon.Staff
+    Description: An equipped staff.
+  - Name: Demo.State.Burning
+    Description: One or more burning sources.
+  - Name: Demo.State.Control.Frozen
+    Description: Frozen; blocks casting.
+  - Name: Demo.State.Control.Silenced
+    Description: Silenced; blocks casting.
+

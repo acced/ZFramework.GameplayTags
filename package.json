@@ -13,7 +13,12 @@
   "author": {
     "name": "acced"
   },
-  "dependencies": {
-    "com.unity.nuget.mono-cecil": "1.11.6"
-  }
+  "dependencies": {},
+  "samples": [
+    {
+      "displayName": "Tag Playground",
+      "description": "Single MonoBehaviour API demo: tag matching, requirements, source counts and events printed with Debug.Log.",
+      "path": "Samples~/TagPlayground"
+    }
+  ]
 }

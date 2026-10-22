@@ -11,8 +11,6 @@
   "allowUnsafeCode": false,
   "autoReferenced": true,
   "noEngineReferences": false,
-  "overrideReferences": true,
-  "precompiledReferences": [
-    "Mono.Cecil.dll"
-  ]
+  "overrideReferences": false,
+  "precompiledReferences": []
 }

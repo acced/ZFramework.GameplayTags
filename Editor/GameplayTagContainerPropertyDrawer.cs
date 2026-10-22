@@ -97,10 +97,10 @@ namespace GameplayTags.Editor
          for (int i = 0; i < explicitTagsProperty.arraySize; i++)
          {
             SerializedProperty element = explicitTagsProperty.GetArrayElementAtIndex(i);
-            GameplayTag tag = GameplayTagManager.RequestTag(element.stringValue);
+
 
             s_TempContent.text = element.stringValue;
-            s_TempContent.tooltip = tag.Description ?? "No description";
+            s_TempContent.tooltip = GameplayTagEditorCatalog.Description(element.stringValue) ?? "No description";
             tagRect.width = EditorStyles.label.CalcSize(s_TempContent).x + 22;
             tagsRect.width = Mathf.Max(tagsRect.width, tagRect.width);
             tagsRect.yMax = Mathf.Max(tagRect.yMax, tagsRect.yMax);
@@ -154,3 +154,4 @@ namespace GameplayTags.Editor
       }
    }
 }
+

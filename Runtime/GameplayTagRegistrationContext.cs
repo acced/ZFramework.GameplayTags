@@ -6,17 +6,14 @@ namespace GameplayTags
     /// <summary>A declaration supplied to <see cref="GameplayTagManager.Initialize"/>.</summary>
     public readonly struct GameplayTagRegistration
     {
-        public GameplayTagRegistration(string name, string description = null,
-            GameplayTagFlags flags = GameplayTagFlags.None)
+        public GameplayTagRegistration(string name, string description = null)
         {
             Name = name;
             Description = description;
-            Flags = flags;
         }
 
         public string Name { get; }
         public string Description { get; }
-        public GameplayTagFlags Flags { get; }
     }
 
     /// <summary>Startup-only mutable builder. Discarded after the registry is published.</summary>
@@ -25,8 +22,7 @@ namespace GameplayTags
         private readonly Node m_Root = new Node(null, null, null);
         private readonly Dictionary<string, Node> m_ByName = new Dictionary<string, Node>(StringComparer.Ordinal);
 
-        internal void RegisterTag(string name, string description = null,
-            GameplayTagFlags flags = GameplayTagFlags.None)
+        internal void RegisterTag(string name, string description = null)
         {
             Node parent = m_Root;
             int start = 0;
@@ -49,13 +45,12 @@ namespace GameplayTags
             }
 
             // Declarations are trusted input. ValidateName is an explicit authoring-time
-            // operation, not repeated here or in lookups. Duplicate declarations merge
-            // flags and select an ordinal description so assembly/input order is irrelevant.
+            // operation, not repeated here or in lookups. Duplicate declarations select
+            // an ordinal description so assembly/input order is irrelevant.
             string text = description ?? string.Empty;
             if (!parent.IsDeclared || string.CompareOrdinal(text, parent.Description) < 0)
                 parent.Description = text;
             parent.IsDeclared = true;
-            parent.DeclaredFlags |= flags;
         }
 
         internal void Build(out GameplayTagDefinition[] definitions, out GameplayTag[] tags,
@@ -81,8 +76,6 @@ namespace GameplayTags
             for (int i = order.Count - 1; i > 0; --i)
             {
                 Node node = order[i];
-                node.AggregateFlags |= node.DeclaredFlags;
-                node.Parent.AggregateFlags |= node.AggregateFlags;
                 if (node.SubtreeEnd > node.Parent.SubtreeEnd)
                     node.Parent.SubtreeEnd = node.SubtreeEnd;
                 if (node.Children.Count == 0)
@@ -125,9 +118,8 @@ namespace GameplayTags
             for (int i = 1; i < count; ++i)
             {
                 Node node = order[i];
-                GameplayTagFlags flags = node.IsDeclared ? node.DeclaredFlags : node.AggregateFlags;
                 definitions[i] = new GameplayTagDefinition(node.Name, node.Description,
-                    node.Label, flags, i, node.Parent.Index, node.SubtreeEnd,
+                    node.Label, i, node.Parent.Index, node.SubtreeEnd,
                     node.Depth, node.HierarchyOffset);
                 tags[i] = new GameplayTag(node.Name, i);
                 parents[i] = node.Parent.Index;
@@ -165,8 +157,6 @@ namespace GameplayTags
             internal readonly int Depth;
             internal readonly List<Node> Children = new List<Node>();
             internal string Description = string.Empty;
-            internal GameplayTagFlags DeclaredFlags;
-            internal GameplayTagFlags AggregateFlags;
             internal bool IsDeclared;
             internal int Index;
             internal int SubtreeEnd;

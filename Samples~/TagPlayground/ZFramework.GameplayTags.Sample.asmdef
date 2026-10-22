@@ -1,0 +1,6 @@
+{
+  "name": "ZFramework.GameplayTags.Sample",
+  "rootNamespace": "GameplayTags.Samples",
+  "references": ["ZFramework.GameplayTags", "ZFramework.GameplayTags.Generated"],
+  "autoReferenced": true
+}

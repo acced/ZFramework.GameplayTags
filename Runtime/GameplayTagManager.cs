@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace GameplayTags
 {
     /// <summary>
-    /// Immutable process/domain registry. Initialize once before creating containers,
-    /// or let the first name lookup discover assembly declarations. Cache returned tags;
+    /// Immutable process/domain registry. Initialize explicitly before creating containers.
+    /// Cache returned tags;
     /// runtime IDs are local to this registry and must never be persisted as asset data.
     /// </summary>
     public class GameplayTagManager
@@ -28,7 +27,7 @@ namespace GameplayTags
         {
             get
             {
-                InitializeIfNeeded();
+                RequireInitialized();
                 return s_Tags.Length - 1;
             }
         }
@@ -37,7 +36,7 @@ namespace GameplayTags
         /// Publish valid declarations once on the owning initialization thread,
         /// before loading serialized tags or exposing handles to other threads.
         /// The caller guarantees valid names, one-time initialization and publication.
-        /// Duplicate flags are ORed; descriptions use ordinal minimum.
+        /// Duplicate declarations use the ordinal minimum description.
         /// </summary>
         public static void Initialize(params GameplayTagRegistration[] registrations)
         {
@@ -45,7 +44,7 @@ namespace GameplayTags
             for (int i = 0; i < registrations.Length; ++i)
             {
                 GameplayTagRegistration registration = registrations[i];
-                context.RegisterTag(registration.Name, registration.Description, registration.Flags);
+                context.RegisterTag(registration.Name, registration.Description);
             }
             Publish(context);
         }
@@ -53,7 +52,7 @@ namespace GameplayTags
         /// <summary>All tags in ordinal sibling order and depth-first preorder; excludes None.</summary>
         public static ReadOnlySpan<GameplayTag> GetAllTags()
         {
-            InitializeIfNeeded();
+            RequireInitialized();
             return s_Tags.AsSpan(1);
         }
 
@@ -71,24 +70,18 @@ namespace GameplayTags
             return index != 0;
         }
 
-        /// <summary>Discover declarations once on the initialization thread. Prefer explicit Initialize for AOT.</summary>
-        public static void InitializeIfNeeded()
+        private static void RequireInitialized()
         {
-            if (s_IsInitialized) return;
-            var context = new GameplayTagRegistrationContext();
-            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            Array.Sort(assemblies, (a, b) => string.CompareOrdinal(a.FullName, b.FullName));
-            for (int i = 0; i < assemblies.Length; ++i)
-                foreach (GameplayTagAttribute declaration in assemblies[i].GetCustomAttributes<GameplayTagAttribute>())
-                    context.RegisterTag(declaration.TagName, declaration.Description, declaration.Flags);
-            Publish(context);
+            if (!s_IsInitialized)
+                throw new InvalidOperationException("Call GameplayTagRegistry.Initialize() or " +
+                    "GameplayTagManager.Initialize(registrations) before querying tags.");
         }
 
         // Cold name boundary only. Cached handles never call this from RuntimeIndex.
         internal static int ResolveIndex(string name)
         {
             if (string.IsNullOrEmpty(name)) return 0;
-            InitializeIfNeeded();
+            RequireInitialized();
             return s_IndicesByName.TryGetValue(name, out int index) ? index : 0;
         }
 

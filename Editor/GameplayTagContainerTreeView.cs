@@ -39,8 +39,8 @@ namespace GameplayTags.Editor
          GameplayTagTreeViewItem item = args.item as GameplayTagTreeViewItem;
          using (new EditorGUI.DisabledGroupScope(item.IsIncluded && !item.IsExplicitIncluded))
          {
-            s_TempContent.text = hasSearch ? item.Tag.Name : args.label;
-            s_TempContent.tooltip = item.Tag.Description;
+            s_TempContent.text = hasSearch ? item.Name : args.label;
+            s_TempContent.tooltip = item.Description;
 
             EditorGUI.BeginChangeCheck();
             bool added = EditorGUI.ToggleLeft(rect, s_TempContent, item.IsIncluded);
@@ -51,14 +51,14 @@ namespace GameplayTags.Editor
                {
                   m_ExplicitTagsProperty.InsertArrayElementAtIndex(0);
                   SerializedProperty element = m_ExplicitTagsProperty.GetArrayElementAtIndex(0);
-                  element.stringValue = item.Tag.Name;
+                  element.stringValue = item.Name;
                }
                else
                {
                   for (int i = 0; i < m_ExplicitTagsProperty.arraySize; i++)
                   {
                      SerializedProperty element = m_ExplicitTagsProperty.GetArrayElementAtIndex(i);
-                     if (string.Equals(element.stringValue, item.Tag.Name, StringComparison.Ordinal))
+                     if (string.Equals(element.stringValue, item.Name, StringComparison.Ordinal))
                      {
                         m_ExplicitTagsProperty.DeleteArrayElementAtIndex(i);
                         break;
@@ -75,35 +75,18 @@ namespace GameplayTags.Editor
 
       private void UpdateIncludedTags()
       {
-         foreach (TreeViewItem row in GetRows())
+         foreach (var item in AllTagItems)
          {
-            if (row is GameplayTagTreeViewItem item)
-            {
-               item.IsExplicitIncluded = false;
-               item.IsIncluded = false;
-            }
+            item.IsExplicitIncluded = false;
+            item.IsIncluded = false;
          }
-
          for (int i = 0; i < m_ExplicitTagsProperty.arraySize; i++)
          {
-            SerializedProperty element = m_ExplicitTagsProperty.GetArrayElementAtIndex(i);
-            GameplayTag tag = GameplayTagManager.RequestTag(element.stringValue);
-            GameplayTagTreeViewItem item = FindItem(tag.RuntimeIndex);
-
-            if (item == null)
-               continue;
-
+            var item = FindItem(m_ExplicitTagsProperty.GetArrayElementAtIndex(i).stringValue);
+            if (item == null) continue;
             item.IsExplicitIncluded = true;
-            item.IsIncluded = true;
-
-            foreach (GameplayTag parentTag in tag.ParentTags)
-            {
-               GameplayTagTreeViewItem parentItem = FindItem(parentTag.RuntimeIndex);
-               if (parentItem == null)
-                  continue;
-
-               parentItem.IsIncluded = true;
-            }
+            for (var current = item; current != null; current = current.parent as GameplayTagTreeViewItem)
+               current.IsIncluded = true;
          }
       }
 
@@ -111,23 +94,11 @@ namespace GameplayTags.Editor
       {
          for (int i = 0; i < m_ExplicitTagsProperty.arraySize; i++)
          {
-            SerializedProperty element = m_ExplicitTagsProperty.GetArrayElementAtIndex(i);
-            GameplayTag tag = GameplayTagManager.RequestTag(element.stringValue);
-            GameplayTagTreeViewItem item = FindItem(tag.RuntimeIndex);
-
-            if (item == null)
-               continue;
-
-            foreach (GameplayTag parentTag in tag.ParentTags)
-            {
-               GameplayTagTreeViewItem parentItem = FindItem(parentTag.RuntimeIndex);
-               if (parentItem == null)
-                  continue;
-
-               SetExpanded(parentItem.id, true);
-            }
+            var item = FindItem(m_ExplicitTagsProperty.GetArrayElementAtIndex(i).stringValue);
+            for (var parent = item?.parent as GameplayTagTreeViewItem; parent != null;
+               parent = parent.parent as GameplayTagTreeViewItem)
+               SetExpanded(parent.id, true);
          }
       }
    }
 }
-

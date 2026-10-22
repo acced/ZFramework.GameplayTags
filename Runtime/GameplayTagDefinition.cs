@@ -12,13 +12,12 @@ namespace GameplayTags
     internal readonly struct GameplayTagDefinition
     {
         internal GameplayTagDefinition(string name, string description, string label,
-            GameplayTagFlags flags, int index, int parentIndex, int subtreeEnd,
+            int index, int parentIndex, int subtreeEnd,
             int depth, int hierarchyOffset)
         {
             TagName = name;
             Description = description;
             Label = label;
-            Flags = flags;
             RuntimeIndex = index;
             ParentIndex = parentIndex;
             SubtreeEnd = subtreeEnd;
@@ -30,7 +29,6 @@ namespace GameplayTags
         public string TagName { get; }
         public string Description { get; }
         public string Label { get; }
-        public GameplayTagFlags Flags { get; }
         public int RuntimeIndex { get; }
         public int ParentIndex { get; }
         public int SubtreeEnd { get; }
@@ -58,6 +56,6 @@ namespace GameplayTags
             tag.RuntimeIndex < SubtreeEnd;
 
         internal static GameplayTagDefinition None => new GameplayTagDefinition(
-            null, string.Empty, "None", GameplayTagFlags.None, 0, 0, 1, 0, 0);
+            null, string.Empty, "None", 0, 0, 1, 0, 0);
     }
 }

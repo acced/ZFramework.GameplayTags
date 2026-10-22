@@ -5,10 +5,10 @@ namespace GameplayTags
     /// <summary>Name utilities. Parsing assumes valid input; validation is an explicit cold-path operation.</summary>
     public class GameplayTagUtility
     {
-        /// <summary>Return every root-to-self prefix. The historical spelling is retained for compatibility.</summary>
-        public static string[] GetHeirarchyNames(string tagName)
+        /// <summary>Return every root-to-self prefix.</summary>
+        public static string[] GetHierarchyNames(string tagName)
         {
-            int count = GetHeirarchyLevelFromName(tagName);
+            int count = GetHierarchyLevelFromName(tagName);
             var names = new string[count];
             int position = 0;
             for (int i = 0; i < tagName.Length; ++i)
@@ -18,8 +18,6 @@ namespace GameplayTags
             return names;
         }
 
-        public static string[] GetHierarchyNames(string tagName) => GetHeirarchyNames(tagName);
-
         public static bool TryGetParentName(string name, out string parentName)
         {
             int dot = name.LastIndexOf('.');
@@ -27,7 +25,7 @@ namespace GameplayTags
             return dot >= 0;
         }
 
-        public static int GetHeirarchyLevelFromName(string name)
+        public static int GetHierarchyLevelFromName(string name)
         {
             int level = 1;
             for (int i = 0; i < name.Length; ++i)
@@ -35,8 +33,6 @@ namespace GameplayTags
                     ++level;
             return level;
         }
-
-        public static int GetHierarchyLevelFromName(string name) => GetHeirarchyLevelFromName(name);
 
         public static string GetLabel(string name)
         {

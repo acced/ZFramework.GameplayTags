@@ -18,10 +18,10 @@ namespace GameplayTags.Editor
          m_TagNameProperty = tagProperty.FindPropertyRelative("m_Name");
          m_TagNameProperty.serializedObject.Update();
 
-         GameplayTag tag = GameplayTagManager.RequestTag(m_TagNameProperty.stringValue);
-         if (tag != GameplayTag.None)
+         string name = m_TagNameProperty.stringValue;
+         if (!string.IsNullOrEmpty(name))
          {
-            GameplayTagTreeViewItem item = FindItem(tag.RuntimeIndex);
+            GameplayTagTreeViewItem item = FindItem(name);
             if (item != null)
                SetSelection(new int[] { item.id });
 
@@ -72,10 +72,10 @@ namespace GameplayTags.Editor
          EditorGUI.BeginChangeCheck();
 
          s_TempContent.text = hasSearch ? item.DisplayName : args.label;
-         s_TempContent.tooltip = item.Tag.Description;
+         s_TempContent.tooltip = item.Description;
          if (GUI.Button(rect, s_TempContent, EditorStyles.label))
          {
-            m_TagNameProperty.stringValue = item.Tag.Name;
+            m_TagNameProperty.stringValue = item.Name;
             m_TagNameProperty.serializedObject.ApplyModifiedProperties();
 
             m_OnSelectionChange?.Invoke();
@@ -83,4 +83,5 @@ namespace GameplayTags.Editor
       }
    }
 }
+
 

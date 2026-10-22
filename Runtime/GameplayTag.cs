@@ -7,7 +7,7 @@ namespace GameplayTags
 {
     /// <summary>
     /// A cached tag handle. Equality and hierarchy operations use the runtime ID only.
-    /// The name remains present for source and Unity asset serialization compatibility.
+    /// Names are serialized; runtime IDs are resolved against the initialized registry.
     /// </summary>
     [Serializable]
     [DataContract]
@@ -46,7 +46,6 @@ namespace GameplayTags
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public readonly int HierarchyLevel => Definition.HierarchyLevel;
         public readonly string Description => Definition.Description;
-        public readonly GameplayTagFlags Flags => Definition.Flags;
         public readonly string Name => m_Name;
 
         /// <summary>The immediate parent, or None for a root/None tag.</summary>

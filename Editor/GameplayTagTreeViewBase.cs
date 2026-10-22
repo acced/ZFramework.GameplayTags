@@ -8,23 +8,19 @@ namespace GameplayTags.Editor
 {
    public class GameplayTagTreeViewItem : TreeViewItem
    {
-      public GameplayTag Tag => m_Tag;
-
-      public string DisplayName => Tag.Label;
-
+      public string Name { get; }
+      public string Description { get; }
+      public string DisplayName => GameplayTagUtility.GetLabel(Name);
       public bool IsIncluded { get; set; }
-
       public bool IsExplicitIncluded { get; set; }
 
-      private GameplayTag m_Tag;
-
-      public GameplayTagTreeViewItem(int id, GameplayTag tag)
-         : base(id, tag.HierarchyLevel - 1, tag.Label)
+      public GameplayTagTreeViewItem(int id, string name, string description)
+         : base(id, GameplayTagUtility.GetHierarchyLevelFromName(name) - 1, GameplayTagUtility.GetLabel(name))
       {
-         m_Tag = tag;
+         Name = name;
+         Description = description;
       }
    }
-
    public abstract class GameplayTagTreeViewBase : TreeViewPopupContent.TreeView
    {
       public bool IsEmpty => m_IsEmpty;
@@ -32,6 +28,8 @@ namespace GameplayTags.Editor
       private static Styles s_Styles;
       private SearchField m_SearchField;
       private bool m_IsEmpty;
+      private readonly Dictionary<string, GameplayTagTreeViewItem> itemsByName = new(StringComparer.Ordinal);
+      protected IEnumerable<GameplayTagTreeViewItem> AllTagItems => itemsByName.Values;
 
       public GameplayTagTreeViewBase(TreeViewState treeViewState)
          : base(treeViewState)
@@ -89,7 +87,7 @@ namespace GameplayTags.Editor
       protected override bool DoesItemMatchSearch(TreeViewItem item, string search)
       {
          GameplayTagTreeViewItem tagItem = item as GameplayTagTreeViewItem;
-         return tagItem.DisplayName.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0;
+         return tagItem.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0;
       }
 
       protected override TreeViewItem BuildRoot()
@@ -99,9 +97,14 @@ namespace GameplayTags.Editor
 
          List<TreeViewItem> items = new();
 
-         foreach (GameplayTag tag in GameplayTagManager.GetAllTags())
+         itemsByName.Clear();
+         root.children = new List<TreeViewItem>();
+         int id = 1;
+         foreach (var entry in GameplayTagEditorCatalog.Read())
          {
-            items.Add(new GameplayTagTreeViewItem(tag.RuntimeIndex, tag));
+            var item = new GameplayTagTreeViewItem(id++, entry.Name, entry.Description);
+            items.Add(item);
+            itemsByName.Add(entry.Name, item);
             m_IsEmpty = false;
          }
 
@@ -109,11 +112,8 @@ namespace GameplayTags.Editor
          return root;
       }
 
-      protected GameplayTagTreeViewItem FindItem(int runtimeTagIndex)
-      {
-         return FindItem(runtimeTagIndex, rootItem) as GameplayTagTreeViewItem;
-      }
-
+      protected GameplayTagTreeViewItem FindItem(string name) =>
+         name != null && itemsByName.TryGetValue(name, out var item) ? item : null;
       protected class Styles
       {
          public readonly GUIStyle SearchField;
@@ -129,4 +129,5 @@ namespace GameplayTags.Editor
       }
    }
 }
+
 
