@@ -7,57 +7,43 @@
 
 **Give character states, ability requirements, and stacking effects a shared language.**
 
-ZFramework Gameplay Tags is a C# library for Unity. It lets your game describe *what is true* about an actor or item, then ask questions about those facts without knowing which system supplied them.
+ZFramework Gameplay Tags is a C# library for Unity. Combat adds `State.Burning`, abilities check `Ability.Cast`, and the UI listens for changes. These systems share names and a hierarchy without needing to know whether a state came from equipment, a skill, or the environment.
 
-A character can be `State.Burning`, carry `Equipment.Weapon.Staff`, and have `Ability.Cast` at the same time. Combat adds the states, abilities check their requirements, and the UI listens for changes. Each system uses the same tags.
+**One `GameplayTagContainer` can be both an Inspector-configured field and your runtime container.** Assets store names; loading restores integer membership; subsequent queries use integer indices. The important rule is simple: **prepare the registry before loading content that contains tags.**
 
-[Why tags?](#why-tags) · [Install](#installation) · [Quick start](#quick-start) · [Ability rules](#queries) · [Stacking effects](#counts) · [Notifications](#events) · [Unity integration](#unity-and-serialization) · [API reference](#api-map)
+[Why tags?](#why-tags) · [Install](#installation) · [Quick start](#quick-start) · **[Loading order](#loading)** · [Inspector and saving](#unity-and-serialization) · [Ability rules](#queries) · [Effects and notifications](#counts) · [Set operations](#set-algebra) · [Pooling](#pooling) · [API map](#api-map)
 
 <a name="why-tags"></a>
 ### What does this help with?
 
-Consider three everyday gameplay problems:
-
 | In your game | With Gameplay Tags |
 | --- | --- |
-| A skill requires a staff and casting ability, but must be blocked by crowd control. | Build required and forbidden tag sets, then evaluate one rule. |
-| Two sources apply burning. Removing one must not cancel the other. | Count each contribution; burning disappears only when its count reaches zero. |
-| Equipment and temporary effects both grant the same ability. | Keep their contributions in separate child containers and query the actor's combined state. |
+| Frozen or silenced characters cannot cast. | Put both under `State.Control` and query the parent. |
+| A fireball and a fire zone both apply burning. Ending one must not remove the other. | Count contributions; the state disappears when the last contribution ends. |
+| Equipment and auras own their abilities independently. | Child containers own contributions; a parent aggregates them. |
+| Many skill buttons keep checking the same conditions. | Share fixed rules and use a rule set with a per-character cache. |
 
-Tags also have a hierarchy. `State.Control.Frozen` and `State.Control.Silenced` both match `State.Control`, so a rule can block an entire category without listing every effect.
-
-This is a building block, not an ability framework. It does not apply damage, advance buff timers, or make AI decisions. Your systems own those behaviors; the library gives them a way to describe and query state. For a single independent on/off value, a `bool` is still a good choice.
+This is a gameplay building block, not a complete ability framework. Your game still owns damage, duration, cooldowns, and source objects. A `bool` is fine for an isolated switch; tags help when you need composition across systems, hierarchical matching, or overlapping contributions.
 
 <a name="installation"></a>
 ### Install
 
-The Unity package targets **Unity 2022.3+**. In **Window → Package Manager**, choose **+ → Add package from git URL** and paste:
+The package targets **Unity 2022.3 or later**. In Package Manager, choose **+ → Add package from git URL**:
 
 ```text
 https://github.com/acced/ZFramework.GameplayTags.git#main
 ```
 
-For a reproducible project, replace `main` with the full commit SHA you want to use. With a local checkout, choose **Add package from disk** and select `package.json` instead.
+Replace `main` with a full commit SHA to pin a reviewed revision. For a local checkout, choose **Add package from disk** and select `package.json`. Application assemblies using `.asmdef` files must reference **`ZFramework.GameplayTags`**. The C# namespace is **`GameplayTags`**. Do not install another package defining the same types alongside it.
 
-If your scripts use an assembly definition, add a reference to **`ZFramework.GameplayTags`**. The namespace is **`GameplayTags`**. Do not install another package defining these same types alongside it.
-
-<details>
-<summary>Using the core outside Unity</summary>
-
-Reference the included `GameplayTags.Runtime.csproj` from a compatible C# project, or build it directly:
-
-```bash
-dotnet build GameplayTags.Runtime.csproj -c Release
-```
-
-The standalone project targets .NET Standard 2.1 / C# 9 and excludes the Unity component and Editor integration. The core does not require a source generator.
-
-</details>
+Outside Unity, reference `GameplayTags.Runtime.csproj` or run `dotnet build GameplayTags.Runtime.csproj -c Release`. The standalone target is .NET Standard 2.1 / C# 9; that project excludes the Unity component and Editor integration.
 
 <a name="quick-start"></a>
-### Quick start: put a character into a state
+### Quick start: declare once, use cached handles
 
-First, declare the names your game uses. Create **`GameTags.cs`**:
+The default examples use **assembly declarations**, which are included in the current main branch. Projects with their own configuration or code generation can use [explicit registration](#registration) instead; container usage stays the same.
+
+Create **`GameTags.cs`**. Assembly attributes belong after `using` directives and before type declarations:
 
 ```csharp
 using GameplayTags;
@@ -71,6 +57,7 @@ using GameplayTags;
 public static class GameTags
 {
     static GameTags() { }
+
     public static readonly GameplayTag State = GameplayTagManager.RequestTag("State");
     public static readonly GameplayTag Control = GameplayTagManager.RequestTag("State.Control");
     public static readonly GameplayTag Burning = GameplayTagManager.RequestTag("State.Burning");
@@ -81,9 +68,9 @@ public static class GameTags
 }
 ```
 
-Parent names such as `State`, `State.Control`, and `Equipment.Weapon` are registered automatically. `GameTags` is an ordinary class you own: it resolves each name once and keeps the handle for later use.
+Parent tags are registered automatically. `GameTags` is an application-owned cache, not generated code. Its explicit static constructor prevents early field initialization, but the first access must still happen after registry preparation.
 
-Now create **`CharacterTagsExample.cs`**, attach it to a GameObject, and enter Play Mode:
+To try code-created containers, attach **`CharacterTagsExample.cs`** to an empty GameObject:
 
 ```csharp
 using GameplayTags;
@@ -97,45 +84,147 @@ public sealed class CharacterTagsExample : MonoBehaviour
     {
         GameplayTagManager.InitializeIfNeeded();
         states = new GameplayTagContainer();
-        states.AddTag(GameTags.Burning);
-
-        Debug.Log(states.HasTag(GameTags.State));        // True: burning is a state.
-        Debug.Log(states.HasTagExact(GameTags.State));   // False: State was not added itself.
-        Debug.Log(states.HasTagExact(GameTags.Burning)); // True.
-
         states.AddTag(GameTags.Frozen);
-        Debug.Log(!states.HasTag(GameTags.Control));     // False: crowd control is active.
+
+        Debug.Log(states.HasTag(GameTags.Control));      // True: a control state.
+        Debug.Log(states.HasTagExact(GameTags.Control)); // False: the parent was not added.
+        Debug.Log(states.HasTagExact(GameTags.Frozen));  // True.
 
         states.RemoveTag(GameTags.Frozen);
-        Debug.Log(!states.HasTag(GameTags.Control));     // True: no crowd-control tag remains.
+        Debug.Log(states.IsEmpty);                      // True.
     }
 }
 ```
 
-This example creates its container at runtime. For fields configured in the Inspector, see [Unity integration](#unity-and-serialization). The following snippets belong in your methods and use the same `GameTags` class.
+**Initialization in this `Awake` works because the container is created afterwards.** For containers stored in scenes, Prefabs, or ScriptableObjects, use the loading flow below rather than copying this initialization into the owning component's `Awake`.
+
+<a name="loading"></a>
+### Integrate with your project: initialize, then load
+
+The registry describes the tags available to the project. A container describes the members of one object. Prepare the registry once per process/script domain; each character can have its own container.
+
+```text
+Bootstrap entry (no tag containers waiting to be restored)
+    -> Initialize the chosen, complete registry
+    -> Allow cached tag handles to be accessed
+    -> Start loading gameplay scenes, Prefabs, ScriptableObjects, or saves
+    -> Container callbacks resolve names into integer membership
+    -> Query, mutate, count, and evaluate rules
+```
+
+The boundary is **before deserialization**, not merely before another component's `Awake`. A container restores its members in `OnAfterDeserialize()`. It does not wait for the first query, and there is no additional `LoadInto()` step.
+
+#### Recommended: a bootstrap scene without gameplay content
+
+Create **Boot** and **Game** scenes, add both to the build list, and make Boot the first scene. Boot contains only startup logic. Its serialized references, preloaded assets, and other startup code must not cause tag-bearing gameplay content to load early.
+
+Attach **`GameBootstrap.cs`** to one GameObject in Boot:
+
+```csharp
+using GameplayTags;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public sealed class GameBootstrap : MonoBehaviour
+{
+    private void Awake()
+    {
+        // This example chooses assembly declarations. Replace this call for a custom registry.
+        GameplayTagManager.InitializeIfNeeded();
+
+        // Only now can subsequent content loading restore tag containers.
+        SceneManager.LoadSceneAsync("Game", LoadSceneMode.Single);
+    }
+}
+```
+
+**The ordering guarantee comes from starting the Game scene load only after initialization returns.** Enter through Boot. Opening Game directly and pressing Play bypasses this entry point; your project needs an equivalent startup path for that workflow.
+
+The same rule applies to Resources, Addressables, AssetBundles, and custom save loaders: initialize before the first operation that can load or deserialize the relevant content, not just before `Instantiate` after the asset is already loaded. Start tag-dependent background work after publication; do not let loading threads race to initialize the registry.
+
+| Usage | When must the registry be ready? |
+| --- | --- |
+| `new GameplayTagContainer()` in code | Before resolving handles, adding, or using members. Allocating an empty object is not content loading. |
+| A container field in a scene, Prefab, or ScriptableObject | Before loading that content and its dependencies and restoring the field. |
+| A container restored from a save | Before invoking the deserializer. |
+| An Editor tool that loads assets | Before the tool initiates the relevant asset load; the game's Boot scene is not an Editor startup hook. |
+
+`BeforeSceneLoad` is not a promise that deserialization has yet to happen: Unity documents that the first scene's objects are already in memory, with `Awake` still pending. `AfterAssembliesLoaded` is earlier, but preloaded assets have already initialized. Neither covers arbitrary earlier loads. The explicit bootstrap scene avoids relying on those names as an ordering guarantee. See [BeforeSceneLoad](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/RuntimeInitializeLoadType.BeforeSceneLoad.html) and [AfterAssembliesLoaded](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/RuntimeInitializeLoadType.AfterAssembliesLoaded.html).
+
+Name lookup in main still supports first-use assembly discovery, but **do not make a serialization callback's first lookup choose your initialization strategy**. With an explicit or generated registry, an early Inspector lookup, static field, or callback could publish a different declaration set first.
+
+<a name="unity-and-serialization"></a>
+### One container: configure in the Inspector, use at runtime
+
+`GameplayTagContainer` supports both persistence and runtime use. There is no separate data-container type to manage:
+
+```text
+Asset storage: explicit tag names
+Loading: names -> integer members and ancestors in the current registry
+Runtime: query and modify integer storage directly
+Saving again: current explicit members -> names
+```
+
+Once the loading flow above is in place, configure a container directly on a component in the **Game** scene. Create **`CharacterState.cs`**:
+
+```csharp
+using GameplayTags;
+using UnityEngine;
+
+public sealed class CharacterState : MonoBehaviour
+{
+    [SerializeField] private GameplayTagContainer states = new GameplayTagContainer();
+
+    public GameplayTagContainer Tags => states;
+
+    private void Start()
+    {
+        // Boot prepared the registry; the serialized members have already been restored.
+        Debug.Log(states.HasTag(GameTags.Control));
+    }
+
+    public void ApplyBurning() => states.AddTag(GameTags.Burning);
+    public void RemoveBurning() => states.RemoveTag(GameTags.Burning);
+}
+```
+
+The Inspector drawer selects registered names. Mutating the running character changes that instance directly; no conversion mode is needed. Normal serialization exports its current explicit members, but **changing an in-memory object does not automatically write a disk file or Prefab asset**. Unity or your save workflow decides when and where to persist it.
+
+**When a shared template needs independent runtime state, copy the instance:**
+
+```csharp
+// templateTags is a loaded, restored template container.
+GameplayTagContainer actorTags = templateTags.Clone();
+actorTags.AddTag(GameTags.Burning); // Does not modify the template.
+
+// Or overwrite an existing reusable destination:
+GameplayTagContainer.Copy(actorTags, templateTags);
+```
+
+Persist explicit names, not `RuntimeIndex`; ancestors are reconstructed on load. For counted state, your save format should store explicit names and their counts, not replay aggregate ancestor counts as separate contributions. Unknown names do not restore as members. Renaming or removing declarations requires an authoring/content migration.
+
+Standalone `GameplayTag` fields have a different restoration boundary from containers. Once the registry is ready, assign `tag = tag.Resolve()` in the owner's loading code; do the same after editing `m_Name`. Do not manually repeat `OnAfterDeserialize()` for a container already restored by its callback.
+
+#### Apply the same order in the Editor and across reloads
+
+Inspector work, scene editing, object cloning, and script reloads can also trigger serialization; callbacks may run off the main thread. Explicit/generated registries need an Editor preparation path, not only Player startup. `InitializeOnLoad` can prepare code-owned data, but is not a universal guarantee about all asset callbacks; do not depend on assets whose import has not finished there. See [serialization callbacks](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/ISerializationCallbackReceiver.html) and [Editor initialization](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/InitializeOnLoadAttribute.html).
+
+This guide assumes **registry-ready loading**, not an automatic fallback for arbitrary Editor load order. Do not save an incompletely restored container as a valid empty one. Fix the loading sequence and reload the original asset rather than overwriting its configuration from empty runtime state.
+
+With Domain Reload disabled, the static registry, cached handles, and subscriptions may survive Play Mode sessions. Keep the same registry and clean up application session state. After changing declarations, start again in a fresh script domain; do not rebuild only the registry while retaining old containers and handles. See [Domain Reloading](https://docs.unity3d.com/2022.3/Documentation/Manual/DomainReloading.html).
 
 <a name="tag-semantics"></a>
 <a name="sets"></a>
-### Two questions: “is it in this category?” and “was this tag added?”
+### Belonging to a category versus being added explicitly
 
-Adding `State.Control.Frozen` gives you:
+After adding `State.Control.Frozen`, `HasTag(Control)` is true and `HasTagExact(Control)` is false. Only Frozen is explicit; it contributes State and Control. The reverse does not hold: adding Control alone does not imply Frozen.
 
-```text
-State                       ← matches HasTag
-└── Control                 ← matches HasTag
-    └── Frozen              ← explicitly added; also matches HasTagExact
-```
-
-Use `HasTag(GameTags.Control)` to ask whether *any* crowd-control state is present. Use `HasTagExact(GameTags.Frozen)` when the exact effect matters. A parent does not imply its children: adding `State.Control` alone does not make `State.Control.Frozen` present.
-
-An ordinary `GameplayTagContainer` is a **set**. Adding the same tag twice still gives one explicit member. `TryAddTag` and `TryRemoveTag` report whether membership changed; use a [counted container](#counts) when multiple sources can own the same tag.
-
-`ExplicitTagCount` counts what you added. `TagCount` also includes the implied ancestors. A container holding only `State.Control.Frozen` therefore has **1 explicit tag and 3 total tags**. Removing a merely implicit parent does not remove its children; remove the effect you actually added.
+`ExplicitTagCount` counts explicit members; `TagCount` includes distinct ancestors. They are 1 and 3 in this example. Ordinary containers are sets: adding a duplicate does not stack it. `TryAddTag` and `TryRemoveTag` report membership changes, not input validity. Removing a purely implicit parent does not remove its descendants.
 
 <a name="queries"></a>
-### Recipe 1: decide whether a character can cast
+### Ability rules: a staff, casting ability, and no control state
 
-A skill requires a staff and casting ability, and forbids crowd control. Build its rule when the skill loads, then reuse it:
+Place the following snippets in your application methods, use `GameTags` above, and run them after registry initialization. Create a rule once when loading a skill:
 
 ```csharp
 var castingRule = GameplayTagRequirements.Create(
@@ -146,28 +235,14 @@ actor.AddTag(GameTags.Cast);
 actor.AddTag(GameTags.Staff);
 UnityEngine.Debug.Log(castingRule.Matches(actor)); // True.
 actor.AddTag(GameTags.Silenced);
-UnityEngine.Debug.Log(castingRule.Matches(actor)); // False: silence belongs to Control.
+UnityEngine.Debug.Log(castingRule.Matches(actor)); // False.
 ```
 
-`Create(forbidden, required, additionalRequired)` needs no temporary condition containers. For larger rules, use `new GameplayTagRequirements(forbiddenTags, requiredTags)` with arrays or spans of resolved tags. Construction removes duplicate/implied conditions and identifies contradictions; up to four effective conditions stay inline.
+The three arguments are a forbidden tag and two required tags. For larger rules, pass arrays or spans of resolved tags to `new GameplayTagRequirements(forbidden, required)`. A rule is an immutable snapshot: recreate it when configuration changes. Up to four effective conditions fit inline after simplification. It no longer takes the old pair of mutable condition containers and is not directly asset-serialized.
 
-A rule is an **immutable runtime snapshot**: it does not retain your input arrays. Rebuild it when configuration changes; each match still reads the actor's current state. The old constructor taking two live containers is no longer available. Rules hold runtime IDs, so save names/configuration and reconstruct rules after loading rather than serializing the rule itself.
+`castingRule.Matches(equipment, effects)` lets requirements be supplied by either holder without allocating a union. For simple condition sets, use `HasAny`, `HasAll`, `HasAnyExact`, or `HasAllExact`; an empty query makes Any false and All true.
 
-Simple checks remain available as `HasAny(query)` and `HasAll(query)`, or `HasAnyExact`/`HasAllExact` for exact conditions. An empty condition set satisfies `HasAll`, but not `HasAny`.
-
-Equipment and temporary effects can jointly satisfy a rule without allocating a union:
-
-```csharp
-var equipment = new GameplayTagContainer();
-equipment.AddTag(GameTags.Staff);
-var effects = new GameplayTagContainer();
-effects.AddTag(GameTags.Cast);
-bool canCast = castingRule.Matches(equipment, effects); // True.
-```
-
-### Evaluate shared skill conditions together
-
-Share the rule group across actors, and keep a separate cache for each actor:
+Share a rule set across characters, with a separate cache for each character:
 
 ```csharp
 var rules = new GameplayTagRuleSet(new[]
@@ -177,106 +252,81 @@ var rules = new GameplayTagRuleSet(new[]
 });
 var actorCache = rules.CreateCache();
 System.ReadOnlySpan<bool> available = actorCache.Evaluate(actor);
-bool canUseFirstSkill = available[0];
+bool canCast = available[0];
 ```
 
-The group queries each distinct condition once. An unchanged presence version lets the cache reuse its results; after a change it refreshes distinct conditions and recomputes affected rules. A stack-count change that leaves presence unchanged need not invalidate presence-only rules. The container version is necessary cache state, not an input-validation layer.
-
-Without a cache, use `rules.Evaluate(actor, resultSpan)` with caller-owned space of at least `rules.Count` elements. The cached result span is a borrowed view overwritten by the next evaluation; do not share a cache concurrently. Two holders also work: `actorCache.Evaluate(equipment, effects)`. Create groups and caches outside per-frame loops.
+An unchanged presence version reuses results. After changes, the cache refreshes distinct conditions and recomputes only affected rules. Changing a count without changing presence does not require reevaluating presence conditions. The returned span is borrowed and overwritten on subsequent evaluation; do not share a cache across threads. Uncached `rules.Evaluate(actor, resultSpan)` requires at least `rules.Count` result positions.
 
 <a name="counts"></a>
-### Example: two fires, one burning state
-
-A set cannot distinguish two owners of the same tag. A `GameplayTagCountContainer` can:
+### Stacking effects: ending one source must not remove another
 
 ```csharp
 var effects = new GameplayTagCountContainer();
-
-effects.AddTag(GameTags.Burning); // A fireball applies burning.
-effects.AddTag(GameTags.Burning); // A fire zone applies burning too.
+effects.AddTag(GameTags.Burning); // Fireball.
+effects.AddTag(GameTags.Burning); // Fire zone.
 UnityEngine.Debug.Log(effects.GetExplicitTagCount(GameTags.Burning)); // 2.
 
-effects.RemoveTag(GameTags.Burning); // The fireball effect ends.
-UnityEngine.Debug.Log(effects.HasTag(GameTags.Burning)); // True: the zone still contributes.
-
-effects.RemoveTag(GameTags.Burning); // The character leaves the zone.
+effects.RemoveTag(GameTags.Burning); // Fireball ends.
+UnityEngine.Debug.Log(effects.HasTag(GameTags.Burning)); // True.
+effects.RemoveTag(GameTags.Burning); // Leave the fire zone.
 UnityEngine.Debug.Log(effects.HasTag(GameTags.Burning)); // False.
 ```
 
-Use `AddTag(tag, amount)` / `RemoveTag(tag, amount)` for several occurrences at once. `GetExplicitTagCount(tag)` returns that tag's own count; `GetTagCount(tag)` includes descendant contributions. For example, two burning and one frozen contribution give `State` a total count of three.
+Use `AddTag(tag, amount)` and `RemoveTag(tag, amount)` for multiple occurrences. `GetExplicitTagCount` counts the tag itself; `GetTagCount` includes descendant contributions. `ExplicitTagCount` still counts distinct explicit tags, not total occurrences.
 
-The caller owns effect duration and removal. The container counts contributions; it does not identify the contributing effect objects or expire them automatically. Remove only the occurrences your system owns.
-
-Bulk `AddTags(source)` adds **one occurrence per distinct explicit member**, not the source's multiplicity. `RemoveTags(source)` similarly removes one each. `Clear()` removes all counts but leaves subscriptions in place.
+Each system removes only its own contributions. Bulk `AddTags(source)` and `RemoveTags(source)` add/remove one occurrence per distinct explicit source tag, not the source's multiplicity. `Clear()` removes all counts but keeps subscriptions.
 
 <a name="events"></a>
-### React to state changes instead of checking every frame
-
-A buff icon or animation layer often needs to know when a state appears or disappears. Subscribe to a counted container:
+### Update UI when state changes
 
 ```csharp
 var effects = new GameplayTagCountContainer();
-OnTagCountChangedDelegate onBurningChanged = (tag, count) =>
+OnTagCountChangedDelegate onBurning = (tag, count) =>
     UnityEngine.Debug.Log($"Burning stacks: {count}");
 
 effects.RegisterTagEventCallback(
-    GameTags.Burning, GameplayTagEventType.AnyCountChange, onBurningChanged);
-
-effects.AddTag(GameTags.Burning);    // Callback: 1.
-effects.AddTag(GameTags.Burning);    // Callback: 2.
-effects.RemoveTag(GameTags.Burning); // Callback: 1.
-effects.Clear();                    // Callback: 0.
-
+    GameTags.Burning, GameplayTagEventType.AnyCountChange, onBurning);
+effects.AddTag(GameTags.Burning);    // 1.
+effects.AddTag(GameTags.Burning);    // 2.
+effects.RemoveTag(GameTags.Burning); // 1.
+effects.Clear();                    // 0.
 effects.RemoveTagEventCallback(
-    GameTags.Burning, GameplayTagEventType.AnyCountChange, onBurningChanged);
+    GameTags.Burning, GameplayTagEventType.AnyCountChange, onBurning);
 ```
 
-Choose `NewOrRemoved` when only presence matters: it fires on **0 → positive** and **positive → 0**, not on every stack change. Subscribe to a parent such as `State.Control` to observe the whole category. Direct event registration does not emit an initial value.
-
-For a group of presence subscriptions, `GameplayTagContainerBinds` also reports the current state immediately:
+Use `NewOrRemoved` for appearance/disappearance only; subscribe to a parent to observe its category. Direct registration does not immediately report the current value. Use `GameplayTagContainerBinds` to own a group of presence subscriptions:
 
 ```csharp
-var effects = new GameplayTagCountContainer();
 using (var bindings = new GameplayTagContainerBinds(effects))
 {
-    bindings.Bind(GameTags.Burning, present => UnityEngine.Debug.Log(present)); // False now.
-    effects.AddTag(GameTags.Burning); // True.
-} // Unsubscribes this group; the effects container is still yours.
+    bindings.Bind(GameTags.Burning, present => UnityEngine.Debug.Log(present));
+    effects.AddTag(GameTags.Burning);
+}
 ```
 
-In a UI component, keep the binding group for as long as the view is active and dispose it when the view closes. A `using` block is suitable for a temporary scope, not a persistent UI subscription. Global notifications are available through `OnAnyTagCountChange` and `OnAnyTagNewOrRemove`; unsubscribe from those separately.
-
-Callbacks run after the state change has been committed. Reentrant changes queue their notifications; a thrown callback exception propagates and does not undo the state change.
+A binding immediately reports current presence. Disposing the group removes its subscriptions, not the container. A persistent UI should keep the group until it closes, rather than creating a short-lived `using` every frame. Callbacks see committed state; reentrant changes queue notifications, and exceptions do not undo committed changes.
 
 <a name="parent-containers"></a>
-### Let equipment and effects contribute independently
-
-Use `GameplayTagHierarchicalContainer` when each subsystem should own its tags while the actor exposes their combined counts:
+### Equipment and auras own contributions; the character sees the total
 
 ```csharp
 var actor = new GameplayTagCountContainer();
 var equipment = new GameplayTagHierarchicalContainer { Parent = actor };
 var aura = new GameplayTagHierarchicalContainer { Parent = actor };
-
 equipment.AddTag(GameTags.Cast);
 aura.AddTag(GameTags.Cast);
 UnityEngine.Debug.Log(actor.GetExplicitTagCount(GameTags.Cast)); // 2.
 
-equipment.Parent = null; // Unequip: withdraw equipment's existing contributions.
-UnityEngine.Debug.Log(actor.GetExplicitTagCount(GameTags.Cast)); // 1: the aura remains.
-
-aura.Clear();           // Withdraw the aura's contribution as well.
+equipment.Parent = null;
+UnityEngine.Debug.Log(actor.GetExplicitTagCount(GameTags.Cast)); // 1.
+aura.Clear();
 aura.Parent = null;
 ```
 
-This is **child-to-parent aggregation**, not inheritance from the parent. Detaching does not clear the child itself; attaching it again transfers its current contributions. Container parent links are separate from the dot-separated hierarchy of tag names.
-
-Remove contributions through the child that owns them. Do not clear an aggregate parent while attached children still believe their contributions are present. Keep parent links acyclic.
+This aggregates upwards; children do not inherit parent members. Detaching removes the child's contributions from the parent but does not clear the child. Reattaching transfers its current contributions. Remove contributions through their owner, do not clear an aggregate parent while children remain attached, and keep the parent chain acyclic.
 
 <a name="set-algebra"></a>
-### Combine, filter, and reuse tag sets
-
-Imagine comparing two characters' states:
+### Copy, union, intersection, and difference
 
 ```csharp
 var left = new GameplayTagContainer();
@@ -286,61 +336,41 @@ var right = new GameplayTagContainer();
 right.AddTag(GameTags.Frozen);
 right.AddTag(GameTags.Cast);
 
-var combined = GameplayTagContainer.Union(left, right);       // Burning, Frozen, Cast.
+var combined = GameplayTagContainer.Union(left, right);
 var shared = GameplayTagContainer.Intersection(left, right); // Cast only.
+var remaining = left.Clone();
+remaining.RemoveTags(right); // Burning only.
 
-var remaining = left.Clone(); // Independent storage.
-remaining.RemoveTags(right);  // Burning only.
-```
-
-Operations work on **explicit members** and derive ancestors from the result. Intersecting `{State.Burning}` with `{State.Control.Frozen}` is empty: their common ancestor is not a shared explicit member. Counted inputs contribute membership, not repeated copies of a tag.
-
-For repeated work, keep an output container rather than creating a new one every time:
-
-```csharp
 var output = new GameplayTagContainer(32);
-GameplayTagContainer.Copy(output, left);               // Replace output with left.
-output.AddTags(right);                                 // Merge right into it.
-GameplayTagContainer.Union(output, left, right);      // Replaces output; either input may be output.
-GameplayTagContainer.Intersection(output, left, right); // Replace output with the intersection.
-output.Clear();                                       // Keep capacity for the next use.
+GameplayTagContainer.Copy(output, left);
+GameplayTagContainer.Union(output, left, right);
+GameplayTagContainer.Intersection(output, left, right);
+output.Clear(); // Retain capacity for reuse.
 ```
 
-Here `output` is distinct from both inputs. If output is already one of the union inputs, append the other input directly instead of copying over it. Intersection supports output aliasing either input; `IntersectWith(other)` is its in-place form. Copying a set to itself and adding it to itself are no-ops; removing an ordinary set from itself clears it.
+Operations select explicit members and then derive result ancestors. Burning intersected with Frozen is empty, not an explicit State just because both belong to State. Counted inputs contribute existence, not multiplicity.
+
+Three-argument union/intersection support output aliasing either input. Copying or adding an ordinary set to itself is a no-op; removing it from itself clears it. `AddTags(other)` merges in place; `IntersectWith(other)` intersects in place. Do not overwrite a right-hand input with `Copy(output, left)` before asking it to participate in a union.
 
 <a name="enumeration"></a>
-### Read the members you actually need
+### Enumerate actual effects, or include their ancestors
 
 ```csharp
-var states = new GameplayTagContainer();
-states.AddTag(GameTags.Frozen);
+foreach (GameplayTag tag in actorTags.GetExplicitTags())
+    UnityEngine.Debug.Log(tag.Name); // Directly added members.
 
-foreach (GameplayTag tag in states.GetExplicitTags())
-    UnityEngine.Debug.Log(tag.Name); // State.Control.Frozen.
-
-foreach (GameplayTag tag in states)
-    UnityEngine.Debug.Log(tag.Name); // State, State.Control, State.Control.Frozen; order unspecified.
+foreach (GameplayTag tag in actorTags)
+    UnityEngine.Debug.Log(tag.Name); // Ancestors included.
 ```
 
-Use **`GetExplicitTags()`** for authored effects or a list of active buffs. The default `foreach` also includes ancestors. Enumeration is unordered; do not change a container while enumerating it.
-
-Sort at the display or export boundary when you need stable names:
-
-```csharp
-var names = new System.Collections.Generic.List<string>();
-foreach (GameplayTag tag in states.GetExplicitTags()) names.Add(tag.Name);
-names.Sort(System.StringComparer.Ordinal);
-```
-
-For UI updates, `current.GetDiffExplicitTags(previous, added, removed)` appends the difference to two lists. Clear reusable output lists before calling it. The parent/child extraction helpers also append rather than clear their output.
+Enumeration is unordered; do not mutate during enumeration. For stable UI/export order, collect names and sort with `StringComparer.Ordinal` at that boundary. `GetDiffExplicitTags(previous, added, removed)` and parent/child extraction methods append to output lists rather than clearing them.
 
 <a name="registration"></a>
-### Loading tags from your own data
+### Already have configuration or generated code? Register explicitly
 
-The quick start uses assembly declarations. A game with its own content pipeline can instead provide the full registry at startup:
+At the same startup boundary, **replace** assembly discovery with your complete registry:
 
 ```csharp
-// An alternative to assembly discovery. Run before any lookup or GameTags field access.
 GameplayTagManager.Initialize(
     new GameplayTagRegistration("State.Burning"),
     new GameplayTagRegistration("State.Control.Frozen"),
@@ -349,189 +379,127 @@ GameplayTagManager.Initialize(
     new GameplayTagRegistration("Equipment.Weapon.Staff"));
 ```
 
-Choose one approach. Explicit registration does not merge assembly declarations. Initialize once on the owning thread, before loading tagged assets, and keep that registry unchanged while handles, containers, subscriptions, or pooled objects remain alive. There is no lock or repeated-initialization guard.
+This does not merge assembly attributes. Your own ScriptableObject or configuration generator can emit these registrations; the order remains initialize -> cache handles -> load content. The optional generator included in main is described [next](#player-registry); it is not a ScriptableObject tag-settings window.
 
-Names are case-sensitive. Use `.` between levels and letters, digits, or underscores within each level. For imported data, the `out` lookup lets your application decide how to handle a missing declaration:
+Names are case-sensitive. At a save/input boundary, `RequestTag(name, out tag)` lets the caller handle a missing declaration before caching the result. Avoid implicit string conversions every frame. Keep the published registry unchanged: `Initialize` has no lock or repeated-initialization guard and must not be called again for each scene transition.
 
-```csharp
-string savedName = "State.Burning";
-if (GameplayTagManager.RequestTag(savedName, out GameplayTag tag))
-{
-    var loaded = new GameplayTagContainer();
-    loaded.AddTag(tag);
-}
-```
+<a name="player-registry"></a>
+### Optional: generate the Player registry instead of discovering it at startup
 
-A missing, null, or empty name resolves to `None`. `GameplayTagUtility.IsValidName` and `ValidateName` are available to authoring tools; the runtime does not automatically validate declarations. Cache resolved tags rather than looking up strings on every frame.
+**Tools → Gameplay Tags → Generate Player Registry** enables main's generator. It reads declarations from actual compiled Player DLLs and writes `Assets/GameplayTags.Generated.cs`. Mono.Cecil is Editor-only.
 
-<a name="unity-and-serialization"></a>
-### Inspector fields and saved data
+On the first build or after declarations change, the generator updates the file and stops the build. Let Unity compile it, then build with the same target and defines. The second pass checks both source and compiled fingerprints. Custom pipelines can call `GenerateFromPlayerAssemblies(paths)` before stripping; false means the generated code needs recompilation.
 
-The package includes Inspector drawers for selecting registered tags. They edit names; they do not create declarations or manage a settings asset.
-
-For a single serialized tag, resolve and store the handle after loading:
+In your existing startup entry, **replace** assembly discovery with:
 
 ```csharp
-using GameplayTags;
-using UnityEngine;
-
-public sealed class DamageTypeExample : MonoBehaviour
-{
-    [SerializeField] private GameplayTag damageType;
-
-    private void Awake()
-    {
-        GameplayTagManager.InitializeIfNeeded();
-        damageType = damageType.Resolve();
-    }
-}
+GameplayTags.Generated.GameplayTagRegistry.Initialize();
 ```
 
-Declare the selectable names first. `Resolve()` returns a struct: **assign its result**. Do the same after changing `m_Name` in your own code. Queries use the cached ID and will not repair an edited name for you.
-
-A serialized **container** has a different loading requirement: its deserialization callback immediately rebuilds members. Initialize the registry **before loading those assets or scenes**, including in Editor tooling. An `Awake` method is not a universal solution for serialized containers, and Unity callbacks may run away from the main thread. See [Unity's serialization callback notes](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/ISerializationCallbackReceiver.html).
-
-`GameObjectGameplayTagContainer` provides a ready-made counted container on a GameObject. Its `m_PersistentTags` are added during `Awake`; obtain the runtime container from its `GameplayTagContainer` property. `gameObject.Bind()` gets or adds this component and creates a binding group. Coordinate initialization and binding lifetime with your components.
-
-Save **names**, not `RuntimeIndex`. IDs belong to one registry and can change between builds. Ordinary containers serialize explicit names and derive ancestors on load; unknown names do not restore members. For counted containers, store names and amounts in your game's save data. This library does not provide automatic save migration or name redirects.
-
-With Domain Reload disabled, static registries, cached handles, subscriptions, and pools can survive Play Mode transitions. Keep their registry consistent rather than initializing a replacement over live state. The older name-based package also needs explicit API and asset migration; it is not a drop-in upgrade to this integer version.
+Load content afterwards. This entry uses the generated table in Player and assembly discovery in Editor. It does not generate `GameTags` fields or install an automatic startup callback. Do not combine it with another explicit initialization. Direct `GameplayTagAttribute` declarations and named overrides are supported; custom derived attributes are not executed, and declarations requiring that evaluation are reported during the build rather than silently omitted.
 
 <a name="pooling"></a>
-### Temporary work: choose your reuse policy
+### Temporary work: choose how much to retain
 
-For work repeated every frame, keep a container and call `Clear()` after use. Use the thread-local pool when separate temporary scopes benefit from borrowing:
+For a container used every frame, keeping it and calling `Clear()` may be enough. Use the thread-local pool when you need temporary scopes:
 
 ```csharp
 using (GameplayTagContainerPool.Get(out GameplayTagContainer temporary))
 {
     temporary.AddTag(GameTags.Burning);
-    temporary.AddTag(GameTags.Cast);
+    // Query, combine, or filter; do not keep temporary beyond this scope.
 }
 ```
 
-The default is **unbounded retention**, so a large container is not silently discarded by a built-in 64 KiB threshold. Choose a policy at a loading boundary on the borrowing thread:
+Retention is unbounded by default. Choose one policy at a loading boundary on the thread that owns borrowing and returning:
 
 ```csharp
-// Limit object count, but not an individual container's capacity.
 GameplayTagContainerPool.Configure(new GameplayTagContainerPool.RetentionPolicy(32));
 
-// Or limit count, individual array payload and total array payload.
-// These numbers are application examples, not library defaults.
+// Or cap per-container and total array payload; these are example project budgets.
 GameplayTagContainerPool.Configure(new GameplayTagContainerPool.RetentionPolicy(
     maxCount: 64, maxContainerBytes: 256 * 1024, maxTotalBytes: 4L * 1024 * 1024));
 
-// Or retain nothing, or restore unbounded retention.
+// Or disable retention, or restore unbounded retention. Choose one in your application.
 GameplayTagContainerPool.Configure(GameplayTagContainerPool.RetentionPolicy.Disabled);
 GameplayTagContainerPool.Configure(GameplayTagContainerPool.RetentionPolicy.Unbounded);
 ```
 
-`Configure` drops the current thread's cached objects. `Clear()` also releases the pool array, but keeps the policy. Observe `RetainedCount` and `RetainedDataBytes`; bytes count container array payload only, excluding object/array headers and process-shared data. Budget comparisons implement the selected policy, not argument validation: supply valid, nonnegative limits.
+`Configure` releases cached objects and selects the policy. The pool's `Clear()` releases its cache but preserves policy, unlike a container's `Clear()`, which retains capacity. `RetainedCount` and `RetainedDataBytes` expose retention; bytes count container array payload only.
 
-Configuration is per-thread and does not propagate. Unbounded retention can retain peak memory; consider an application-owned long-lived container or a suitable budget for large workloads. Borrow and return on the same thread exactly once. Do not copy/dispose leases twice, dispose a default lease or access returned references. The pool does not track misuse.
-
-<a name="player-registry"></a>
-### Player registration: read the build, not the Editor's approximation
-
-Assembly discovery and explicit `Initialize` remain available. To avoid discovery reflection at Player startup, enable the Editor generator. Mono.Cecil reads **the actual compiled Player DLL metadata** without loading or executing Player code. Target assembly selection, `#if !UNITY_EDITOR`, platform symbols, extra scripting defines and included managed plugins are taken from that build, not from the Editor AppDomain.
-
-Choose **Tools → Gameplay Tags → Generate Player Registry**, then build normally. On the first build or after declaration changes, the post-script-compilation callback writes `Assets/GameplayTags.Generated.cs` and stops the current build. Let Unity import/compile the updated script, then build with the same configuration. The second pass checks both source and the **fingerprint in the compiled table**. Changing target/defines may require regeneration; an old table is not silently accepted.
-
-This is intentionally a two-pass generation process: C# written after script compilation cannot be treated as already compiled. In batch mode, start another Unity build after the table is generated; do not blindly retry unrelated build errors. A custom pipeline can call `GameplayTagRegistryGenerator.GenerateFromPlayerAssemblies(paths)` with its complete actual Player managed-assembly set before linking/stripping. False means the updated table must be compiled. Without the output file, generation validation is disabled.
-
-The generated table installs **no automatic startup callback**. Call `GameplayTags.Generated.GameplayTagRegistry.Initialize()` once from your boot sequence, before caching tags or loading serialized containers; do not combine it with another explicit initialization. In Editor this entry uses the Editor's own declarations; in Player it uses the generated table. An explicit static constructor on application cache classes avoids `beforefieldinit` eager initialization; their first access must still follow boot.
-
-Direct `GameplayTagAttribute` declarations support constructor arguments and named `TagName`, `Description` and `Flags` overrides. Derived attributes can execute arbitrary code and cannot be evaluated safely from metadata: the build reports them instead of silently omitting them; use direct attributes or explicit registration. Assemblies loaded dynamically later are outside this Player build. Mono.Cecil is referenced only by the Editor assembly, not the runtime API. The callback adds build-time file/metadata work; actual Unity/IL2CPP integration still needs validation in your project.
+Unbounded retention can keep peak memory. The caller owns same-thread, exactly-once return. Do not dispose copied leases twice, dispose a default lease, or use a returned reference.
 
 <a name="caller-contract"></a>
-### Keeping hot paths small
+### Keep runtime work simple
 
-The runtime uses integer handles, packed storage, and a hash index for larger sets. It avoids putting name resolution or general validation in every query. The practical pattern is simple: **register at startup, resolve at loading boundaries, then reuse handles and containers.**
+**Register at startup, restore while loading, use directly at runtime.** No separate data container, hidden recovery inside `HasTag`, or per-query initialization check is needed.
 
-`EnsureCapacity(n)` reserves space for distinct members **including ancestors**, not just leaves. Concrete enumeration uses a struct enumerator; passing through `IEnumerable<GameplayTag>` can box it. New containers, growth, serialization, subscriptions, and first-use pool allocations still cost memory. This is managed C# code, not a Burst/Jobs `NativeContainer`.
+Supply valid non-None handles and non-null mutation operands. Positive counts, valid capacities, non-overflowing arithmetic, contribution ownership, and synchronization belong to the caller. Treat shared `Empty` as read-only. `EnsureCapacity(n)` includes distinct ancestors, not just explicit leaves.
 
-The application supplies valid, non-`None` handles and non-null mutation operands, positive amounts, valid capacities, and nonoverflowing counts. Removal must not exceed the occurrences the caller owns. It also owns synchronization, parent-chain ownership, and pooled lifetimes. `Empty` is shared and must be treated as read-only. Invalid use is not a supported recovery path; the library does not add a defensive layer around it. Keep error handling and validation at your application's boundaries.
-
-**Version note:** the current source is `2.1.0-rc.2-optimized.2`. It is not a claim of completed Unity/IL2CPP qualification or a universal performance win. Measure with your tag counts, hierarchy depth, and target backend before choosing capacity or pooling policies.
+Concrete enumeration uses a struct enumerator; interface enumeration can box. Creation, growth, subscriptions, and serialization may allocate. This is managed C#, not a Burst/Jobs NativeContainer. The current version is `2.1.0-rc.2-optimized.2`; complete Unity/IL2CPP and target-device validation remain project work. This guide is not a claim of universal speedups or new performance acceptance.
 
 <a name="api-map"></a>
-### Find the next API
+### Where to look next
 
-| You want to… | Start here |
+| What you need | Entry point |
 | --- | --- |
-| Hold a set of states | [`GameplayTagContainer`](Runtime/GameplayTagContainer.cs) |
-| Track stacked effects or subscribe to changes | [`GameplayTagCountContainer`](Runtime/GameplayTagCountContainer.cs) |
-| Combine contributions from owned subsystems | [`GameplayTagHierarchicalContainer`](Runtime/GameplayTagHierarchicalContanier.cs) |
-| Express required and forbidden conditions | [`GameplayTagRequirements`](Runtime/GameplayTagRequirements.cs) |
-| Register names and cache handles | [`GameplayTagManager`](Runtime/GameplayTagManager.cs), [`GameplayTag`](Runtime/GameplayTag.cs) |
-| Group subscriptions or borrow a scratch container | [`GameplayTagContainerBinds`](Runtime/GameplayTagContainerBinds.cs), [`GameplayTagContainerPool`](Runtime/GameplayTagContainerPool.cs) |
+| Inspector members, runtime state, copying, and set algebra | [`GameplayTagContainer`](Runtime/GameplayTagContainer.cs) |
+| Effect counts and change notifications | [`GameplayTagCountContainer`](Runtime/GameplayTagCountContainer.cs) |
+| Aggregation of independently owned contributions | [`GameplayTagHierarchicalContainer`](Runtime/GameplayTagHierarchicalContanier.cs) |
+| Fixed ability conditions and shared rule caches | [`GameplayTagRequirements`](Runtime/GameplayTagRequirements.cs), [`GameplayTagRuleSet`](Runtime/GameplayTagRuleSet.cs) |
+| Registry, handles, names, and hierarchy | [`GameplayTagManager`](Runtime/GameplayTagManager.cs), [`GameplayTag`](Runtime/GameplayTag.cs) |
+| Groups of UI subscriptions and temporary containers | [`GameplayTagContainerBinds`](Runtime/GameplayTagContainerBinds.cs), [`GameplayTagContainerPool`](Runtime/GameplayTagContainerPool.cs) |
 
-`GameplayTag` also exposes `Name`, `Label`, `Description`, `Flags`, `ParentTag`, `ParentTags`, `HierarchyTags`, and `ChildTags`. These describe the registry. `IsParentOf` / `IsChildOf` are strict: a tag is not its own ancestor. For members present in a container, use `GetParentTags`, `GetChildTags`, or their explicit-only variants.
+`GameplayTag` exposes `Name`, `Label`, `Description`, `Flags`, `ParentTag`, `ParentTags`, `HierarchyTags`, and `ChildTags`. These describe the registry; `IsParentOf` and `IsChildOf` are strict relationships, excluding self. `GameObjectGameplayTagContainer` attaches counted state to a GameObject and adds persistent tags in `Awake`; the registry must still be prepared earlier.
 
-The repository keeps the [runtime](Runtime), [Editor integration](Editor), and these guides together. License: [MIT](LICENSE).
-
-[CN · 简体中文](#cn) · [Back to English](#en)
+License: [MIT](LICENSE). Main contains the runtime, Editor integration, package configuration, and usage guides only.
 
 ---
+
+**[EN · English](#en) | [CN · 简体中文](#cn)**
 
 <a name="cn"></a>
 ## 简体中文
 
-[EN · English](#en) | **CN · 简体中文**
-
 **用同一套标签，描述角色状态、技能条件和 Buff 叠加。**
 
-ZFramework Gameplay Tags 是一个面向 Unity 的 C# 游戏标签库。它让不同系统都能回答一个问题：**这个角色或物品，现在具备哪些状态和能力？**
+ZFramework Gameplay Tags 是一个面向 Unity 的 C# 游戏标签库。战斗系统给角色加上 `State.Burning`，技能系统检查 `Ability.Cast`，UI 监听状态变化。它们共享一套名称和层级，不必知道一个状态具体来自装备、技能还是场景效果。
 
-角色可以同时处于 `State.Burning`，持有 `Equipment.Weapon.Staff`，并具备 `Ability.Cast`。战斗系统添加状态，技能系统检查条件，UI 监听变化。它们使用同一套标签，不必知道状态具体来自哪个系统。
+**一个 `GameplayTagContainer` 就够了：既能在 Inspector 中配置并保存，也能直接用于运行时。** 资源里保存名称，加载时恢复整数成员，后续查询使用整数索引。使用上最重要的一条是：**先准备注册表，再加载带标签的内容。**
 
-[解决什么问题](#cn-why-tags) · [安装](#cn-installation) · [快速开始](#cn-quick-start) · [技能条件](#cn-queries) · [Buff 叠加](#cn-counts) · [变化通知](#cn-events) · [Unity 集成](#cn-unity-and-serialization) · [API 导航](#cn-api-map)
+[用途](#cn-why-tags) · [安装](#cn-installation) · [快速开始](#cn-quick-start) · **[加载顺序](#cn-loading)** · [Inspector 与保存](#cn-unity-and-serialization) · [技能规则](#cn-queries) · [Buff 与通知](#cn-counts) · [集合运算](#cn-set-algebra) · [对象池](#cn-pooling) · [API 导航](#cn-api-map)
 
 <a name="cn-why-tags"></a>
-### 什么时候会用到它？
+### 它能解决什么问题？
 
-假设你正在做一个有技能、装备和 Buff 的游戏：
-
-| 遇到的问题 | 用标签怎么处理 |
+| 游戏中的问题 | 标签库的做法 |
 | --- | --- |
-| 技能要求装备法杖、拥有施法能力，而且不能处于控制状态。 | 把“必须有”和“不能有”的标签组成一条规则。 |
-| 火球和地面火焰同时造成燃烧，其中一个结束后，不应该直接清掉燃烧状态。 | 为每次贡献计数，最后一个来源移除后，状态才消失。 |
-| 装备和光环都能赋予同一种能力，卸下装备不能把光环的效果一起删掉。 | 各自维护子容器，角色容器汇总它们的贡献。 |
+| 受到冰冻或沉默时，角色不能施法。 | 都归入 `State.Control`，检查一个父标签即可。 |
+| 火球和地面火焰都造成燃烧，结束其中一个不能清掉整个状态。 | 使用计数容器，最后一个来源移除后状态才消失。 |
+| 装备和光环分别赋予能力，角色需要统一查询。 | 子容器管理自己的贡献，父容器汇总。 |
+| 技能栏的多个按钮反复检查相同条件。 | 共享固定规则，用规则组与每角色缓存减少重复查询。 |
 
-标签还可以分层。`State.Control.Frozen` 和 `State.Control.Silenced` 都属于 `State.Control`。因此，“受到任意控制时不能施法”只需要检查父标签，不必把每一种控制效果都列出来。
-
-它是一块基础积木，不是一整套技能框架。伤害怎么算、Buff 持续多久、AI 如何决策，仍由你的游戏负责；标签库只处理状态的表达、组合和查询。如果只是一个独立开关，直接用 `bool` 就很好。
+它是游戏逻辑的基础积木，不是一整套技能框架：伤害、持续时间、冷却和来源对象仍由业务管理。只有一个独立开关时，`bool` 就很好；需要跨系统组合、层级匹配和叠加贡献时，再使用标签。
 
 <a name="cn-installation"></a>
 ### 安装
 
-Unity 包目标为 **Unity 2022.3 及以上**。打开 **Window → Package Manager**，选择 **+ → Add package from git URL**，粘贴：
+包目标为 **Unity 2022.3 及以上**。在 Package Manager 选择 **+ → Add package from git URL**：
 
 ```text
 https://github.com/acced/ZFramework.GameplayTags.git#main
 ```
 
-团队项目需要固定版本时，把 `main` 换成你要使用的完整提交号。本地源码则通过 **Add package from disk** 选择 `package.json`。
+团队项目可以把 `main` 换成完整提交号来固定版本。本地源码通过 **Add package from disk** 选择 `package.json`。使用 `.asmdef` 的业务程序集需要引用 **`ZFramework.GameplayTags`**；代码命名空间是 **`GameplayTags`**。不要同时安装另一份定义相同类型的包。
 
-使用 `.asmdef` 的业务程序集需要引用 **`ZFramework.GameplayTags`**，代码命名空间是 **`GameplayTags`**。不要同时安装另一份定义同名类型的包。
-
-<details>
-<summary>在 Unity 之外使用核心库</summary>
-
-在兼容的 C# 工程中引用附带的 `GameplayTags.Runtime.csproj`，或直接构建：
-
-```bash
-dotnet build GameplayTags.Runtime.csproj -c Release
-```
-
-独立工程目标为 .NET Standard 2.1 / C# 9，不包含 Unity 组件和 Editor 集成，也不需要源码生成器。
-
-</details>
+独立 C# 项目可以引用 `GameplayTags.Runtime.csproj`，或执行 `dotnet build GameplayTags.Runtime.csproj -c Release`。核心目标为 .NET Standard 2.1 / C# 9，独立工程不编译 Unity 组件和 Editor 代码。
 
 <a name="cn-quick-start"></a>
-### 快速开始：给角色添加一个状态
+### 快速开始：声明一次，运行时使用句柄
 
-先声明游戏会用到的标签。创建 **`GameTags.cs`**：
+本指南的默认示例使用当前主线内置的**程序集声明**。已有自己的配置或代码生成流程时，也可以使用[显式注册](#cn-registration)，容器用法不变。
+
+创建 **`GameTags.cs`**，把程序集特性放在 `using` 之后、类型声明之前：
 
 ```csharp
 using GameplayTags;
@@ -545,6 +513,7 @@ using GameplayTags;
 public static class GameTags
 {
     static GameTags() { }
+
     public static readonly GameplayTag State = GameplayTagManager.RequestTag("State");
     public static readonly GameplayTag Control = GameplayTagManager.RequestTag("State.Control");
     public static readonly GameplayTag Burning = GameplayTagManager.RequestTag("State.Burning");
@@ -555,9 +524,9 @@ public static class GameTags
 }
 ```
 
-`State`、`State.Control`、`Equipment.Weapon` 等父标签会自动注册。这里的 `GameTags` 就是你自己维护的普通类：解析一次名称，把句柄留给后续代码使用。
+父标签会自动补全。`GameTags` 只是业务自己的缓存类，不依赖源码生成器。显式静态构造器避免字段提前初始化，但首次访问仍应在注册表准备好之后。
 
-再创建 **`CharacterTagsExample.cs`**，挂到 GameObject 上，进入 Play Mode：
+只体验纯代码用法时，把下面的 **`CharacterTagsExample.cs`** 挂到空物体上：
 
 ```csharp
 using GameplayTags;
@@ -571,45 +540,147 @@ public sealed class CharacterTagsExample : MonoBehaviour
     {
         GameplayTagManager.InitializeIfNeeded();
         states = new GameplayTagContainer();
-        states.AddTag(GameTags.Burning);
-
-        Debug.Log(states.HasTag(GameTags.State));        // True：燃烧属于 State。
-        Debug.Log(states.HasTagExact(GameTags.State));   // False：没有直接加入 State。
-        Debug.Log(states.HasTagExact(GameTags.Burning)); // True。
-
         states.AddTag(GameTags.Frozen);
-        Debug.Log(!states.HasTag(GameTags.Control));     // False：还不能行动。
+
+        Debug.Log(states.HasTag(GameTags.Control));      // True: 属于控制状态。
+        Debug.Log(states.HasTagExact(GameTags.Control)); // False: 没有直接添加父标签。
+        Debug.Log(states.HasTagExact(GameTags.Frozen));  // True。
 
         states.RemoveTag(GameTags.Frozen);
-        Debug.Log(!states.HasTag(GameTags.Control));     // True：已经没有控制状态。
+        Debug.Log(states.IsEmpty);                      // True。
     }
 }
 ```
 
-这个例子在运行时创建容器。在 Inspector 中配置标签字段的用法见 [Unity 集成](#cn-unity-and-serialization)。后面的代码片段放进业务方法即可，沿用上面的 `GameTags`。
+**这里在 `Awake` 初始化成立，是因为容器也在它之后才创建。** 如果容器来自场景、Prefab 或 SO 字段，使用下面的加载流程，而不是把同样的 `Awake` 调用复制过去。
+
+<a name="cn-loading"></a>
+### 接入项目：先初始化，再加载内容
+
+注册表回答“项目有哪些标签”，容器回答“这个对象有哪些成员”。注册表每个进程／脚本域准备一次；每个角色可以有自己的容器。
+
+```text
+启动入口（不含需要恢复的标签容器）
+    ↓ 初始化选定的完整注册表
+    ↓ 允许访问缓存句柄
+    ↓ 发起游戏场景、Prefab、SO 或存档的加载
+    ↓ 容器回调按名称恢复整数成员
+    ↓ 查询、增删、计数和规则匹配
+```
+
+关键不是“比其他组件的 `Awake` 早”，而是**比带标签内容的反序列化早**。容器会在 `OnAfterDeserialize()` 立即恢复成员，不等第一次查询，也不需要再调用一次 `LoadInto()`。
+
+#### 推荐方式：一个不携带游戏内容的启动场景
+
+新建 **Boot** 和 **Game** 场景，都加入构建列表，把 Boot 放在第一位。Boot 只放启动逻辑；不要在它的序列化字段、预加载资产或其他启动逻辑里提前引用／加载带标签容器的游戏内容。
+
+将 **`GameBootstrap.cs`** 挂到 Boot 场景中的一个物体：
+
+```csharp
+using GameplayTags;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public sealed class GameBootstrap : MonoBehaviour
+{
+    private void Awake()
+    {
+        // 此示例选择程序集声明。自有注册表应在这里替换这一个调用。
+        GameplayTagManager.InitializeIfNeeded();
+
+        // 从这里开始，后续内容加载才可能恢复标签容器。
+        SceneManager.LoadSceneAsync("Game", LoadSceneMode.Single);
+    }
+}
+```
+
+**这个顺序的保证来自：初始化返回之后，才发起 Game 场景的加载。** 从 Boot 进入游戏；直接打开 Game 并点击 Play，会绕过这个入口，需要项目自己的等价启动流程。
+
+用 Resources、Addressables、AssetBundle 或自定义存档加载器时，原则相同：在第一次可能读取相关内容的加载／反序列化操作之前初始化，而不是等对象加载完、准备 `Instantiate` 时才补做。初始化后再启动依赖标签的后台工作；不要让多个加载线程争抢首次初始化。
+
+| 使用方式 | 注册表应当何时准备好？ |
+| --- | --- |
+| 代码中 `new GameplayTagContainer()` | 在解析句柄、添加或使用成员之前；空对象分配本身不是加载。 |
+| 场景、Prefab、SO 中已有容器字段 | 在加载它们及其依赖、恢复字段之前。 |
+| 从存档恢复容器 | 在调用反序列化器之前。 |
+| Editor 自定义工具加载资产 | 在工具发起相应资产读取之前，不能依赖游戏的 Boot 场景。 |
+
+不要把 `BeforeSceneLoad` 当成“尚未反序列化”：Unity 文档说明这个时点首场景对象已经加载到内存，只是尚未调用 `Awake`。`AfterAssembliesLoaded` 更早，但预加载资产已经初始化，也不能覆盖任意早期加载。这里采用显式启动场景，就是为了不猜这些回调之间的顺序。参见 [BeforeSceneLoad](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/RuntimeInitializeLoadType.BeforeSceneLoad.html) 和 [AfterAssembliesLoaded](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/RuntimeInitializeLoadType.AfterAssembliesLoaded.html)。
+
+主线的名称查询虽然保留了首次程序集发现，但**不要靠序列化回调第一次查名字来替你选择初始化方式**。特别是使用显式或生成注册表时，过早的 Inspector、静态字段或回调查询可能先发布另一套声明。
+
+<a name="cn-unity-and-serialization"></a>
+### 一个容器：Inspector 配置，加载后直接使用
+
+`GameplayTagContainer` 同时支持资源保存和运行时使用，不需要另外定义一套数据容器：
+
+```text
+保存到资源：显式标签名称
+加载恢复：名称 → 当前注册表的整数成员与祖先
+运行期间：直接查询和修改整数存储
+再次保存：当前显式成员 → 名称
+```
+
+上面的加载流程已就位后，可以在 **Game** 场景中的组件上直接配置容器。创建 **`CharacterState.cs`**：
+
+```csharp
+using GameplayTags;
+using UnityEngine;
+
+public sealed class CharacterState : MonoBehaviour
+{
+    [SerializeField] private GameplayTagContainer states = new GameplayTagContainer();
+
+    public GameplayTagContainer Tags => states;
+
+    private void Start()
+    {
+        // 注册表已由 Boot 准备好，序列化的成员也已恢复。
+        Debug.Log(states.HasTag(GameTags.Control));
+    }
+
+    public void ApplyBurning() => states.AddTag(GameTags.Burning);
+    public void RemoveBurning() => states.RemoveTag(GameTags.Burning);
+}
+```
+
+Inspector 绘制器用于选择已注册名称。在运行中的角色实例上增删标签，就修改这个实例；不需要额外的转换模式。正常保存会导出当时的显式成员，但**不代表修改了内存对象，就自动写入磁盘或 Prefab 资产**，保存时机仍由 Unity 或业务存档流程决定。
+
+**共享模板需要独立状态时，复制实例即可：**
+
+```csharp
+// templateTags 是已加载并恢复的模板容器。
+GameplayTagContainer actorTags = templateTags.Clone();
+actorTags.AddTag(GameTags.Burning); // 不修改模板。
+
+// 已有复用目标时：
+GameplayTagContainer.Copy(actorTags, templateTags);
+```
+
+存档保存显式名称，不保存 `RuntimeIndex`；加载时再推导祖先。计数容器的存档由业务保存“显式名称＋次数”，不能把祖先累计值再次当成独立贡献。未知名称不会恢复为容器成员，改名或删除声明后的资源迁移属于编辑／内容流程。
+
+独立的 `GameplayTag` 字段与容器的恢复是两回事。注册表准备好后，在拥有者的加载入口执行 `tag = tag.Resolve()`；自己修改 `m_Name` 后也要接住返回值。容器已经由回调恢复时，不要再手工重复调用 `OnAfterDeserialize()`。
+
+#### Editor 与重载时记住同一条顺序
+
+Inspector、场景编辑、对象复制和脚本重载也会触发序列化；回调可能不在主线程。自有显式／生成注册表需要相应的 Editor 初始化入口，不能只安排 Player 启动。`InitializeOnLoad` 可用于项目的代码级准备，但不是所有资产回调顺序的万能保证；也不要在其中依赖尚未完成导入的资产。参见 [序列化回调](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/ISerializationCallbackReceiver.html) 与 [Editor 初始化](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/InitializeOnLoadAttribute.html)。
+
+这份指南约定的是**先准备好注册表的加载路径**，不是对任意 Editor 加载顺序的自动兜底。恢复未完成的容器不能继续当作有效空容器保存；请修正加载顺序并从原资源重新加载，而不是把空运行态写回覆盖配置。
+
+关闭 Domain Reload 时，静态注册表、缓存句柄和订阅可能跨 Play Mode 保留。保持同一注册表，清理业务会话状态；声明改变时，在干净的脚本域重新进入。不要只重建注册表，却继续使用旧容器和旧句柄。参见 [Domain Reloading](https://docs.unity3d.com/2022.3/Documentation/Manual/DomainReloading.html)。
 
 <a name="cn-tag-semantics"></a>
 <a name="cn-sets"></a>
-### 分清两个问题：“属于这一类吗？”和“真的加过它吗？”
+### “属于这一类”与“直接加过它”
 
-添加 `State.Control.Frozen` 后，可以这样理解容器：
+加入 `State.Control.Frozen` 后，`HasTag(Control)` 为 true，`HasTagExact(Control)` 为 false。只有 Frozen 是显式成员；State 和 Control 由它贡献。反过来，只加入 Control 并不代表角色被冻结。
 
-```text
-State                       ← HasTag 能匹配
-└── Control                 ← HasTag 能匹配
-    └── Frozen              ← 直接添加的标签，HasTagExact 也能匹配
-```
-
-`HasTag(GameTags.Control)` 问的是“是否处于任意控制状态”；`HasTagExact(GameTags.Frozen)` 问的是“是否明确存在冰冻”。这个关系不是双向的：只添加 `State.Control`，并不代表角色也处于冰冻。
-
-普通 `GameplayTagContainer` 是一个**集合**，同一个标签加两次仍然只有一份。`TryAddTag`、`TryRemoveTag` 返回成员是否发生变化；多个系统需要同时持有同一标签时，改用[计数容器](#cn-counts)。
-
-`ExplicitTagCount` 统计直接添加的标签，`TagCount` 还包括它们的祖先。只有 `State.Control.Frozen` 的容器，因此是 **1 个显式标签、3 个总标签**。删除一个仅由后代带来的父标签不会清掉后代；应该删除实际添加的那个效果。
+`ExplicitTagCount` 统计显式成员，`TagCount` 还包括不同的祖先；上例分别为 1 和 3。普通容器是集合，重复添加不会叠层。`TryAddTag`、`TryRemoveTag` 返回成员是否变化，不是参数校验。删除仅隐式存在的父标签不会清掉其后代。
 
 <a name="cn-queries"></a>
-### 用法一：判断角色能不能施法
+### 技能条件：有法杖、能施法，而且没有受到控制
 
-技能要求“有法杖、能施法”，同时禁止控制状态。规则在技能加载时创建一次，之后反复使用：
+下面的代码片段放入业务方法，沿用 `GameTags`，并在注册表初始化之后执行。规则在技能加载时创建一次：
 
 ```csharp
 var castingRule = GameplayTagRequirements.Create(
@@ -620,28 +691,14 @@ actor.AddTag(GameTags.Cast);
 actor.AddTag(GameTags.Staff);
 UnityEngine.Debug.Log(castingRule.Matches(actor)); // True。
 actor.AddTag(GameTags.Silenced);
-UnityEngine.Debug.Log(castingRule.Matches(actor)); // False：沉默属于 Control。
+UnityEngine.Debug.Log(castingRule.Matches(actor)); // False。
 ```
 
-`Create(禁止标签, 必需标签, 另一必需标签)` 不需要临时条件容器。条件较多时，使用 `new GameplayTagRequirements(forbiddenTags, requiredTags)`，两个参数是已解析标签的数组或 span。构造时去除重复和被包含的条件，并识别矛盾；最多四个有效条件内联保存。
+三个参数依次为“禁止标签、必需标签、另一个必需标签”。条件更多时，构造器接受两份已解析标签的数组或 span：`new GameplayTagRequirements(forbidden, required)`。规则是不可变快照，配置改变就重新创建；最多四个化简后的有效条件内联保存。它不再接受旧版的两个可变条件容器，也不直接保存到资源。
 
-规则是**不可变的运行时快照**：输入数组不会被保留，配置改变时重新创建规则；匹配时读取的是角色此刻的状态。旧版接受两个容器、跟随容器修改的构造器已移除。规则保存运行时 ID，不直接序列化；存档保存名称，加载后重新创建规则。
+`castingRule.Matches(equipment, effects)` 可以让条件分别来自装备和临时效果，无需创建并集。简单条件集合仍可使用 `HasAny`、`HasAll`、`HasAnyExact`、`HasAllExact`；空条件下 Any 为 false，All 为 true。
 
-简单判断仍可以用 `HasAny(query)`、`HasAll(query)`；精确条件用 `HasAnyExact`、`HasAllExact`。空条件的 `HasAll` 为 true，`HasAny` 为 false。
-
-装备和临时效果分开放，也不需要先分配并集：
-
-```csharp
-var equipment = new GameplayTagContainer();
-equipment.AddTag(GameTags.Staff);
-var effects = new GameplayTagContainer();
-effects.AddTag(GameTags.Cast);
-bool canCast = castingRule.Matches(equipment, effects); // True。
-```
-
-### 多个技能共享条件时，集中判断
-
-把同一组技能规则共享给角色，每个角色持有自己的缓存：
+多个技能共享条件时，规则组可以共享给所有角色，每个角色保留自己的缓存：
 
 ```csharp
 var rules = new GameplayTagRuleSet(new[]
@@ -651,106 +708,81 @@ var rules = new GameplayTagRuleSet(new[]
 });
 var actorCache = rules.CreateCache();
 System.ReadOnlySpan<bool> available = actorCache.Evaluate(actor);
-bool canUseFirstSkill = available[0];
+bool canCast = available[0];
 ```
 
-规则组每次只查询一次相同条件。缓存发现角色存在状态未变时直接复用结果；状态改变时刷新不同条件，只重算受影响的规则。层数改变但“有／没有”没变，不必重算存在性规则。容器的存在版本是缓存正确性所需的状态，不是参数防御。
-
-不需要缓存时，用 `rules.Evaluate(actor, resultSpan)` 写入调用方提供的结果空间，长度至少为 `rules.Count`。缓存返回的 span 是借用视图，下次评估会覆盖；不要跨线程共享一个缓存。它也支持 `actorCache.Evaluate(equipment, effects)`。不要每帧重新创建规则组或缓存。
+缓存未失效时复用结果；状态改变时刷新不同条件，只重算结果受影响的规则。只改层数而不改变存在性，不必重算存在性条件。返回的 span 是借用视图，下次评估会覆盖；缓存不要跨线程共享。无缓存的 `rules.Evaluate(actor, resultSpan)` 要求调用方提供至少 `rules.Count` 个结果位置。
 
 <a name="cn-counts"></a>
-### 用法二：两个燃烧来源，互不误删
-
-普通集合只能知道“有或没有”，计数容器能保留多个来源的贡献：
+### Buff 叠加：一个来源结束，不误删另一个
 
 ```csharp
 var effects = new GameplayTagCountContainer();
-
-effects.AddTag(GameTags.Burning); // 火球附加一次燃烧。
-effects.AddTag(GameTags.Burning); // 地面火焰再附加一次。
+effects.AddTag(GameTags.Burning); // 火球。
+effects.AddTag(GameTags.Burning); // 地面火焰。
 UnityEngine.Debug.Log(effects.GetExplicitTagCount(GameTags.Burning)); // 2。
 
-effects.RemoveTag(GameTags.Burning); // 火球效果结束。
-UnityEngine.Debug.Log(effects.HasTag(GameTags.Burning)); // True：地面火焰还在。
-
-effects.RemoveTag(GameTags.Burning); // 角色离开火焰区域。
+effects.RemoveTag(GameTags.Burning); // 火球结束。
+UnityEngine.Debug.Log(effects.HasTag(GameTags.Burning)); // True。
+effects.RemoveTag(GameTags.Burning); // 离开火焰区域。
 UnityEngine.Debug.Log(effects.HasTag(GameTags.Burning)); // False。
 ```
 
-一次处理多层时，使用 `AddTag(tag, amount)` 和 `RemoveTag(tag, amount)`。`GetExplicitTagCount(tag)` 是标签自身的次数，`GetTagCount(tag)` 还会累计后代贡献。例如，两次燃烧加一次冰冻，会让 `State` 的总次数变成三。
+批量层数用 `AddTag(tag, amount)`、`RemoveTag(tag, amount)`。`GetExplicitTagCount` 是自身次数，`GetTagCount` 包含后代贡献；`ExplicitTagCount` 仍统计不同的显式标签，而不是层数总和。
 
-效果持续时间和移除时机仍由业务管理。容器只记录次数，不替你识别每个来源对象，也不会自动让 Buff 到期。各系统只应移除自己添加的次数。
-
-批量 `AddTags(source)` 对来源的每个不同显式标签各加 **1 次**，不会照搬来源的叠加层数；`RemoveTags(source)` 同样各减一次。`Clear()` 清掉所有次数，但保留订阅。
+各系统只移除自己添加的贡献。批量 `AddTags(source)`／`RemoveTags(source)` 对每个不同显式来源标签各加／减一次，不照搬来源的层数；`Clear()` 移除所有计数但保留订阅。
 
 <a name="cn-events"></a>
-### 用法三：状态变了再更新 UI
-
-燃烧图标、控制提示和动画层通常只关心状态变化，没有必要每帧重新查询。可以直接订阅计数容器：
+### 状态变化时再更新 UI
 
 ```csharp
 var effects = new GameplayTagCountContainer();
-OnTagCountChangedDelegate onBurningChanged = (tag, count) =>
+OnTagCountChangedDelegate onBurning = (tag, count) =>
     UnityEngine.Debug.Log($"燃烧层数：{count}");
 
 effects.RegisterTagEventCallback(
-    GameTags.Burning, GameplayTagEventType.AnyCountChange, onBurningChanged);
-
-effects.AddTag(GameTags.Burning);    // 回调：1。
-effects.AddTag(GameTags.Burning);    // 回调：2。
-effects.RemoveTag(GameTags.Burning); // 回调：1。
-effects.Clear();                    // 回调：0。
-
+    GameTags.Burning, GameplayTagEventType.AnyCountChange, onBurning);
+effects.AddTag(GameTags.Burning);    // 1。
+effects.AddTag(GameTags.Burning);    // 2。
+effects.RemoveTag(GameTags.Burning); // 1。
+effects.Clear();                    // 0。
 effects.RemoveTagEventCallback(
-    GameTags.Burning, GameplayTagEventType.AnyCountChange, onBurningChanged);
+    GameTags.Burning, GameplayTagEventType.AnyCountChange, onBurning);
 ```
 
-只关心“出现、消失”时，用 `NewOrRemoved`：它只在 **0 → 正数**和**正数 → 0** 时触发，不会每次叠层都通知。订阅 `State.Control` 这样的父标签，就能观察整个类别。直接注册事件不会立即推送当前值。
-
-一组只关心存在性的监听，可以用 `GameplayTagContainerBinds` 管理，它还会在绑定时立即报告当前状态：
+只关心出现／消失，用 `NewOrRemoved`；监听父标签能观察整个类别。直接注册不会立即报告当前值。管理一组存在性监听时，用 `GameplayTagContainerBinds`：
 
 ```csharp
-var effects = new GameplayTagCountContainer();
 using (var bindings = new GameplayTagContainerBinds(effects))
 {
-    bindings.Bind(GameTags.Burning, present => UnityEngine.Debug.Log(present)); // 现在是 False。
-    effects.AddTag(GameTags.Burning); // True。
-} // 取消这一组订阅，不释放 effects 容器。
+    bindings.Bind(GameTags.Burning, present => UnityEngine.Debug.Log(present));
+    effects.AddTag(GameTags.Burning);
+}
 ```
 
-实际 UI 中，让绑定组和界面一起存活，关闭界面时再 `Dispose()`。上面的 `using` 适合临时作用域，不适合长期显示的界面。全局通知还有 `OnAnyTagCountChange` 和 `OnAnyTagNewOrRemove`，需要分别取消订阅。
-
-回调发生时，状态已经修改完成。回调中的再次修改会排队通知；回调抛出异常会向上传播，不会撤销已经完成的状态变化。
+绑定会立即报告当前存在性，释放绑定组会取消这些订阅，不释放容器。长期 UI 应让绑定组随界面存活，关闭时再释放，而不是在每帧建立一个短暂的 `using`。回调看到已提交状态；回调内的修改排队通知，异常不会撤销已完成的状态变化。
 
 <a name="cn-parent-containers"></a>
-### 用法四：装备与光环分别管理，角色统一查询
-
-各子系统需要管理自己的贡献时，用 `GameplayTagHierarchicalContainer`：
+### 装备和光环各管各的，角色统一查询
 
 ```csharp
 var actor = new GameplayTagCountContainer();
 var equipment = new GameplayTagHierarchicalContainer { Parent = actor };
 var aura = new GameplayTagHierarchicalContainer { Parent = actor };
-
 equipment.AddTag(GameTags.Cast);
 aura.AddTag(GameTags.Cast);
 UnityEngine.Debug.Log(actor.GetExplicitTagCount(GameTags.Cast)); // 2。
 
-equipment.Parent = null; // 卸下装备：撤销它在角色身上的已有贡献。
-UnityEngine.Debug.Log(actor.GetExplicitTagCount(GameTags.Cast)); // 1：光环仍然有效。
-
-aura.Clear();           // 再移除光环贡献。
+equipment.Parent = null;
+UnityEngine.Debug.Log(actor.GetExplicitTagCount(GameTags.Cast)); // 1。
+aura.Clear();
 aura.Parent = null;
 ```
 
-这是**子容器向父容器汇总**，不是从父容器继承标签。解除挂接不会清空子容器本身，重新挂接时会转移它当前的贡献。容器之间的父子关系，与标签名称中的点分层级是两回事。
-
-通过拥有贡献的子容器来移除效果。子容器仍然挂接、认为贡献还存在时，不要直接清空聚合父容器；父链也不能形成循环。
+这是子容器向父容器汇总，不是继承父容器的成员。解除挂接撤销它在父级的贡献，但不清空子容器；重新挂接会转移现有贡献。通过拥有者移除贡献，不要在子容器仍挂接时直接清空聚合父容器，父链不能形成循环。
 
 <a name="cn-set-algebra"></a>
-### 合并、筛选和复用标签集合
-
-例如，比较两个角色的状态：
+### 复制、并集、交集与差集
 
 ```csharp
 var left = new GameplayTagContainer();
@@ -760,61 +792,41 @@ var right = new GameplayTagContainer();
 right.AddTag(GameTags.Frozen);
 right.AddTag(GameTags.Cast);
 
-var combined = GameplayTagContainer.Union(left, right);       // Burning、Frozen、Cast。
+var combined = GameplayTagContainer.Union(left, right);
 var shared = GameplayTagContainer.Intersection(left, right); // 只有 Cast。
+var remaining = left.Clone();
+remaining.RemoveTags(right); // 只剩 Burning。
 
-var remaining = left.Clone(); // 独立的存储。
-remaining.RemoveTags(right);  // 只剩 Burning。
-```
-
-集合运算针对**显式成员**，再从结果推导祖先。`{State.Burning}` 和 `{State.Control.Frozen}` 的交集为空，不会因为它们都属于 `State` 就产生一个显式 `State`。计数容器作为来源时，也只贡献标签是否存在，不复制重复次数。
-
-需要频繁计算时，可以保留输出容器：
-
-```csharp
 var output = new GameplayTagContainer(32);
-GameplayTagContainer.Copy(output, left);               // 用 left 替换 output。
-output.AddTags(right);                                 // 把 right 合并进来。
-GameplayTagContainer.Union(output, left, right);      // Replaces output; either input may be output.
-GameplayTagContainer.Intersection(output, left, right); // 替换成交集。
-output.Clear();                                       // 保留容量，下次继续用。
+GameplayTagContainer.Copy(output, left);
+GameplayTagContainer.Union(output, left, right);
+GameplayTagContainer.Intersection(output, left, right);
+output.Clear(); // 保留容量，下次继续用。
 ```
 
-这里的 `output` 与两份输入不同。如果输出本来就是某个并集输入，直接追加另一份，不要先用复制覆盖掉它。交集允许输出与任一输入相同，也可以用 `IntersectWith(other)` 原地求交集。普通集合复制自己、添加自己都不改变内容，移除自己则会清空。
+运算针对显式成员，再推导结果祖先。燃烧与冰冻的交集为空，不会因为共同属于 State 就产生显式 State。计数输入也只贡献成员存在性。
+
+三参数并集／交集允许输出与任一输入相同；复制自己、普通集合添加自己是无操作，普通集合移除自己会清空。`AddTags(other)` 原地合并，`IntersectWith(other)` 原地求交。不要先用 `Copy(output, left)` 覆盖仍需作为右输入的同一对象，再试图求并集。
 
 <a name="cn-enumeration"></a>
-### 只读取你真正关心的成员
+### 枚举实际效果，而不是所有祖先
 
 ```csharp
-var states = new GameplayTagContainer();
-states.AddTag(GameTags.Frozen);
+foreach (GameplayTag tag in actorTags.GetExplicitTags())
+    UnityEngine.Debug.Log(tag.Name); // 直接添加的成员。
 
-foreach (GameplayTag tag in states.GetExplicitTags())
-    UnityEngine.Debug.Log(tag.Name); // State.Control.Frozen。
-
-foreach (GameplayTag tag in states)
-    UnityEngine.Debug.Log(tag.Name); // State、State.Control、State.Control.Frozen，顺序不保证。
+foreach (GameplayTag tag in actorTags)
+    UnityEngine.Debug.Log(tag.Name); // 包含祖先。
 ```
 
-展示实际添加的效果或 Buff 列表时，用 **`GetExplicitTags()`**；默认 `foreach` 还包含祖先。枚举是无序的，枚举期间不要修改容器。
-
-UI 或导出文件需要稳定的名称顺序时，在输出环节排序：
-
-```csharp
-var names = new System.Collections.Generic.List<string>();
-foreach (GameplayTag tag in states.GetExplicitTags()) names.Add(tag.Name);
-names.Sort(System.StringComparer.Ordinal);
-```
-
-更新 UI 列表还可以用 `current.GetDiffExplicitTags(previous, added, removed)`，它会向两个列表追加新增项和移除项。复用输出列表时先清空；父子标签提取方法同样是追加，不会自动清空结果。
+容器枚举无序，期间不要修改。UI／导出需要稳定顺序时，再提取名称并用 `StringComparer.Ordinal` 排序。`GetDiffExplicitTags(previous, added, removed)` 以及父子成员提取方法向结果列表追加，不会自动清空它们。
 
 <a name="cn-registration"></a>
-### 接入自己的配置和存档
+### 已有自己的配置或生成表？使用显式注册
 
-快速开始使用程序集声明。如果游戏有自己的内容管线，也可以在启动时传入完整注册表：
+在同一个启动位置，把程序集发现**替换为**完整注册表的初始化：
 
 ```csharp
-// 代替程序集发现；放在任何名称查询或 GameTags 字段访问之前。
 GameplayTagManager.Initialize(
     new GameplayTagRegistration("State.Burning"),
     new GameplayTagRegistration("State.Control.Frozen"),
@@ -823,124 +835,77 @@ GameplayTagManager.Initialize(
     new GameplayTagRegistration("Equipment.Weapon.Staff"));
 ```
 
-两种方式选一种即可。显式注册不会再合并程序集声明。由负责启动的线程初始化一次，之后再加载带标签的资源；只要句柄、容器、订阅或池内对象还在使用，就不要替换注册表。这里没有初始化锁或重复调用保护。
+它不会合并程序集特性。自有 SO 或配置生成器可以输出这些注册项，加载顺序仍是“初始化→缓存句柄→加载内容”。当前主线自带的可选生成器见[下一节](#cn-player-registry)，不是 SO 标签设置窗口。
 
-名称区分大小写，每一级使用字母、数字或下划线，以 `.` 分隔。读取外部名称时，可以用带 `out` 的查询，在业务边界决定如何处理缺失声明：
+名称区分大小写。外部存档或输入可在边界使用 `RequestTag(name, out tag)` 处理缺失标签，再缓存结果；不要在每帧依赖字符串隐式转换。注册表发布后保持不变，`Initialize` 本身没有锁或防重复保护，不能为了切换场景反复调用它。
 
-```csharp
-string savedName = "State.Burning";
-if (GameplayTagManager.RequestTag(savedName, out GameplayTag tag))
-{
-    var loaded = new GameplayTagContainer();
-    loaded.AddTag(tag);
-}
-```
+<a name="cn-player-registry"></a>
+### 可选：生成 Player 注册表，减少启动发现工作
 
-未知、null 或空名称返回 `None`。编辑工具需要校验名称时，可以主动调用 `GameplayTagUtility.IsValidName` 或 `ValidateName`；运行时不会自动检查声明。解析后的标签应缓存下来，不要每帧重新查询字符串。
+**Tools → Gameplay Tags → Generate Player Registry** 启用当前主线的生成器。它读取实际 Player 编译后的 DLL 声明，输出 `Assets/GameplayTags.Generated.cs`；Mono.Cecil 只用于 Editor。
 
-<a name="cn-unity-and-serialization"></a>
-### 在 Inspector 和存档中使用
+首次构建或声明改变时，生成器更新文件并停止构建；让 Unity 编译它，再以同一平台和宏配置构建。第二次核对源码及已编译表指纹。自定义管线可在裁剪前调用 `GenerateFromPlayerAssemblies(paths)`；返回 false 表示生成代码需要重新编译。
 
-包内提供了标签选择的 Inspector 绘制器。它们用于选择已注册的名称，不会创建声明，也不是一套配置资源管理器。
-
-独立的序列化标签字段，加载后解析并保存句柄：
+在已有启动入口中，用下面的调用**替换**程序集发现：
 
 ```csharp
-using GameplayTags;
-using UnityEngine;
-
-public sealed class DamageTypeExample : MonoBehaviour
-{
-    [SerializeField] private GameplayTag damageType;
-
-    private void Awake()
-    {
-        GameplayTagManager.InitializeIfNeeded();
-        damageType = damageType.Resolve();
-    }
-}
+GameplayTags.Generated.GameplayTagRegistry.Initialize();
 ```
 
-先声明需要选择的名称。`Resolve()` 返回的是结构体，**要接住返回值**；自己修改 `m_Name` 后也一样。查询只使用缓存 ID，不会顺便修正被改过的名称。
-
-序列化的**容器**需要更早的准备：它会在反序列化回调里立即重建成员。因此要在**加载这些资源或场景之前**初始化注册表，Editor 工具也需要考虑这个顺序。不能把 `Awake` 当成所有序列化容器的通用初始化位置；Unity 回调还可能不在主线程执行。相关行为见 [Unity 序列化回调说明](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/ISerializationCallbackReceiver.html)。
-
-需要直接挂在 GameObject 上时，可以使用 `GameObjectGameplayTagContainer`。它的 `m_PersistentTags` 在 `Awake` 中加入计数容器，通过 `GameplayTagContainer` 属性访问运行态。`gameObject.Bind()` 会获取或添加这个组件，并创建绑定组；初始化先后和绑定的释放时机由业务组件协调。
-
-存档保存**名称**，不要保存 `RuntimeIndex`。ID 只属于当前注册表，不同构建之间可能变化。普通容器保存显式名称，加载后推导祖先；未知名称不会恢复为成员。计数容器则应由业务存档保存名称和次数。本库不提供自动存档迁移或名称重定向。
-
-关闭 Domain Reload 时，静态注册表、缓存句柄、订阅和对象池可能跨 Play Mode 保留，不能在这些活状态上重新发布另一套注册表。从旧名称版升级也需要明确迁移 API 和资源，并非直接替换包就能兼容。
+随后才加载内容。该入口在 Player 使用生成表，在 Editor 使用程序集发现；它不生成 `GameTags` 字段，也不安装自动启动回调。不要混用另一套显式初始化。只支持直接 `GameplayTagAttribute` 声明及其命名参数，不执行自定义派生特性；不能求值的派生声明会在构建时报告，而不是静默遗漏。
 
 <a name="cn-pooling"></a>
-### 临时计算：自己选择复用策略
+### 临时计算：按项目选择复用策略
 
-每帧重复使用的工作容器，可以直接长期持有，用完 `Clear()`。多个临时作用域需要借还时，再用线程本地池：
+每帧使用的工作容器可以长期持有并 `Clear()`。需要多个短作用域时，再借用线程本地池：
 
 ```csharp
 using (GameplayTagContainerPool.Get(out GameplayTagContainer temporary))
 {
     temporary.AddTag(GameTags.Burning);
-    temporary.AddTag(GameTags.Cast);
+    // 查询、组合或筛选；不把 temporary 留到作用域之外。
 }
 ```
 
-默认采用**不限制保留预算**的策略，大容器不会因为内置的 64 KiB 阈值被丢弃。在负责借还的线程上，加载阶段自行选择：
+默认不限保留预算。在加载阶段、负责借还的线程上选择一种策略：
 
 ```csharp
-// 只限制个数，不限制单个容器的容量。
 GameplayTagContainerPool.Configure(new GameplayTagContainerPool.RetentionPolicy(32));
 
-// 或者同时限制个数、单个和总数组载荷。以下数值仅为业务配置示例。
+// 或限制单个与总数组载荷；数值仅为项目配置示例。
 GameplayTagContainerPool.Configure(new GameplayTagContainerPool.RetentionPolicy(
     maxCount: 64, maxContainerBytes: 256 * 1024, maxTotalBytes: 4L * 1024 * 1024));
 
-// 或者不保留归还对象，或恢复不限制预算。
+// 或禁用保留，或恢复不限制预算。实际使用时选择一种。
 GameplayTagContainerPool.Configure(GameplayTagContainerPool.RetentionPolicy.Disabled);
 GameplayTagContainerPool.Configure(GameplayTagContainerPool.RetentionPolicy.Unbounded);
 ```
 
-`Configure` 会释放当前线程已经缓存的对象。`Clear()` 同样释放缓存及池数组，但保留选定策略。`RetainedCount` 与 `RetainedDataBytes` 可用于观察保留量；字节数只计算容器的数组载荷，不含对象头、数组头和进程共享数据。预算判断是调用方选择的复用策略，不是非法参数校验；预算必须有效且非负。
+`Configure` 释放当前缓存并切换策略；池的 `Clear()` 释放缓存但保留策略，和容器自身保留容量的 `Clear()` 不同。`RetainedCount`、`RetainedDataBytes` 用于观察保留情况；字节数只统计容器数组载荷。
 
-策略只影响当前线程，不会自动传播到其他线程。默认不限制预算可能保留峰值内存；大型工作流可以选择长期持有容器，或设置适合项目的预算。借还期间由调用方保证同线程、恰好一次归还，不复制租约分别释放，不释放默认租约，不使用已经归还的引用。池不追踪这些误用。
-
-<a name="cn-player-registry"></a>
-### Player 注册表：按实际构建采集，不猜 Editor 声明
-
-普通项目继续使用程序集声明或显式 `Initialize`。希望 Player 启动不扫描程序集时，可以启用 Editor 生成器。它通过 Mono.Cecil **读取本次 Player 编译后的 DLL 元数据**，不加载或执行这些 DLL，不再把 Editor 域当成 Player。程序集定义的平台选择、`#if !UNITY_EDITOR`、平台宏、额外 scripting defines，以及随构建进入的托管插件，都以该次编译产物为准。
-
-在 **Tools → Gameplay Tags → Generate Player Registry** 启用后，使用平时的 Build 流程构建目标。第一次或声明变化时，脚本编译后的回调会写出正确的 `Assets/GameplayTags.Generated.cs`，并停止当前构建。让 Unity 导入并编译新脚本，再以相同配置构建。第二次会同时核对源码和**已编译表的指纹**；旧代码没编进去就不会通过。切换平台或 defines 导致声明不同，也会更新后要求重编，不静默沿用旧表。
-
-这是有意的两阶段生成，不尝试在已经完成的脚本编译阶段塞入新 C#。批处理时，第一次输出生成文件后，由构建任务重新启动一次 Unity 构建；不要无条件循环重试所有构建错误。自定义管线也可以在链接／裁剪前，将该次完整 Player 托管 DLL 列表交给 `GameplayTagRegistryGenerator.GenerateFromPlayerAssemblies(paths)`，返回 false 表示需要编译更新后的表。不存在输出文件时不启用生成检查。
-
-生成表**不安装自动启动回调**。由自己的启动流程调用一次 `GameplayTags.Generated.GameplayTagRegistry.Initialize()`，再创建标签缓存和加载序列化容器；不要与另一套显式初始化混用。Editor 下该入口使用 Editor 自己的程序集声明，Player 下使用生成表。业务缓存类加显式静态构造器，可以避免 `beforefieldinit` 提前初始化；首次访问仍必须排在启动之后。
-
-只支持直接的 `GameplayTagAttribute` 声明，包含构造参数和 `TagName`、`Description`、`Flags` 命名覆盖。自定义派生特性可能执行任意代码，元数据工具不能替它求值；发现这类声明会在构建时报错，改用直接特性或显式注册，不会把它静默遗漏。运行中加载的额外程序集不属于本次 Player 构建。Mono.Cecil 只被 Editor 程序集引用，不进入运行时 API。该回调会增加构建期读取／中转工作，不是零成本构建；实际 Unity/IL2CPP 整体流程仍需在项目中验收。
+默认不限预算可能保留峰值内存。调用方负责同线程、恰好一次归还，不复制租约后重复释放、不释放默认租约、不使用已归还的引用。
 
 <a name="cn-caller-contract"></a>
-### 让热路径保持简单
+### 让运行时保持简单
 
-运行时使用整数句柄、紧凑存储，并为较大的集合建立哈希索引，不把名称解析和通用校验放进每次查询。实际使用时，记住一条即可：**启动时注册，加载时解析，运行时复用句柄和容器。**
+**启动时注册，加载时恢复，运行时直接使用。** 不增加单独的数据容器，不在 `HasTag` 中偷偷恢复，也不要求每次查询检查初始化。
 
-`EnsureCapacity(n)` 按**包含祖先的不同成员总数**预留，不是只按叶标签数量。具体类型的枚举使用结构体枚举器，通过 `IEnumerable<GameplayTag>` 使用时可能装箱。新建、扩容、序列化、订阅和池首次使用仍可能分配内存。这是托管 C# 实现，不是可直接放进 Burst/Jobs 的 `NativeContainer`。
+使用有效的非 None 句柄与非 null 修改操作数；正数计数、合法容量、不溢出的运算、正确的贡献所有权和线程同步由调用方保证。共享 `Empty` 按只读使用。`EnsureCapacity(n)` 的容量包含不同的祖先，不是只算显式叶子。
 
-调用方需要提供有效、非 `None` 的句柄和非 null 修改操作数，保证数量为正、容量有效、计数不溢出，删除不超过自己拥有的次数，并管理好同步、父链贡献和对象池生命周期。共享 `Empty` 按只读使用。非法使用不属于内核的恢复职责；把输入校验和错误处理放在业务边界即可。
-
-**版本说明：** 当前源码为 `2.1.0-rc.2-optimized.2`，不代表已经完成 Unity/IL2CPP 全面验收，也不承诺所有场景普遍更快。容量与池化策略，请根据项目自己的标签数量、层级深度和目标后端来选择。
+具体类型枚举使用结构体枚举器，经接口使用可能装箱；新建、扩容、订阅和序列化仍可能分配。该库是托管 C#，不是 Burst/Jobs 的 NativeContainer。当前版本为 `2.1.0-rc.2-optimized.2`，完整 Unity／IL2CPP 与目标设备验证仍需由项目完成；这份文档不宣称全面提速或新的性能验收。
 
 <a name="cn-api-map"></a>
 ### 接下来查哪个 API？
 
-| 你想做的事 | 从这里开始 |
+| 你想做的事 | 入口 |
 | --- | --- |
-| 保存一组角色状态 | [`GameplayTagContainer`](Runtime/GameplayTagContainer.cs) |
-| 记录 Buff 叠层、监听变化 | [`GameplayTagCountContainer`](Runtime/GameplayTagCountContainer.cs) |
-| 汇总各子系统拥有的贡献 | [`GameplayTagHierarchicalContainer`](Runtime/GameplayTagHierarchicalContanier.cs) |
-| 表达必需条件与禁止条件 | [`GameplayTagRequirements`](Runtime/GameplayTagRequirements.cs) |
-| 注册名称、缓存标签 | [`GameplayTagManager`](Runtime/GameplayTagManager.cs)、[`GameplayTag`](Runtime/GameplayTag.cs) |
-| 管理一组订阅、借用临时容器 | [`GameplayTagContainerBinds`](Runtime/GameplayTagContainerBinds.cs)、[`GameplayTagContainerPool`](Runtime/GameplayTagContainerPool.cs) |
+| Inspector 成员、运行时状态、复制与集合运算 | [`GameplayTagContainer`](Runtime/GameplayTagContainer.cs) |
+| Buff 层数和变化事件 | [`GameplayTagCountContainer`](Runtime/GameplayTagCountContainer.cs) |
+| 各系统的贡献汇总 | [`GameplayTagHierarchicalContainer`](Runtime/GameplayTagHierarchicalContanier.cs) |
+| 固定技能条件与共享规则缓存 | [`GameplayTagRequirements`](Runtime/GameplayTagRequirements.cs)、[`GameplayTagRuleSet`](Runtime/GameplayTagRuleSet.cs) |
+| 注册表、句柄、名称与层级关系 | [`GameplayTagManager`](Runtime/GameplayTagManager.cs)、[`GameplayTag`](Runtime/GameplayTag.cs) |
+| 一组 UI 订阅与临时容器 | [`GameplayTagContainerBinds`](Runtime/GameplayTagContainerBinds.cs)、[`GameplayTagContainerPool`](Runtime/GameplayTagContainerPool.cs) |
 
-`GameplayTag` 还提供 `Name`、`Label`、`Description`、`Flags`、`ParentTag`、`ParentTags`、`HierarchyTags` 和 `ChildTags`，描述的是注册表关系。`IsParentOf`、`IsChildOf` 是严格的祖先关系，标签不是自己的祖先。只提取容器中实际存在的父子成员时，用 `GetParentTags`、`GetChildTags` 或显式成员版本。
+`GameplayTag` 提供 `Name`、`Label`、`Description`、`Flags`、`ParentTag`、`ParentTags`、`HierarchyTags` 和 `ChildTags`。它们描述注册表关系；`IsParentOf`、`IsChildOf` 不把自身算作祖先。`GameObjectGameplayTagContainer` 可把计数容器挂到对象上，持久标签在 `Awake` 加入，注册表仍需提前准备。
 
-仓库只保留[运行时](Runtime)、[Editor 集成](Editor)和使用文档。许可证：[MIT](LICENSE)。
-
-[返回中文开头](#cn) · [EN · English](#en)
+许可证：[MIT](LICENSE)。仓库主线只保留运行时、Editor 集成、包配置和使用文档。

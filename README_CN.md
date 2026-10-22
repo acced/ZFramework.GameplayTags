@@ -4,57 +4,43 @@
 
 **用同一套标签，描述角色状态、技能条件和 Buff 叠加。**
 
-ZFramework Gameplay Tags 是一个面向 Unity 的 C# 游戏标签库。它让不同系统都能回答一个问题：**这个角色或物品，现在具备哪些状态和能力？**
+ZFramework Gameplay Tags 是一个面向 Unity 的 C# 游戏标签库。战斗系统给角色加上 `State.Burning`，技能系统检查 `Ability.Cast`，UI 监听状态变化。它们共享一套名称和层级，不必知道一个状态具体来自装备、技能还是场景效果。
 
-角色可以同时处于 `State.Burning`，持有 `Equipment.Weapon.Staff`，并具备 `Ability.Cast`。战斗系统添加状态，技能系统检查条件，UI 监听变化。它们使用同一套标签，不必知道状态具体来自哪个系统。
+**一个 `GameplayTagContainer` 就够了：既能在 Inspector 中配置并保存，也能直接用于运行时。** 资源里保存名称，加载时恢复整数成员，后续查询使用整数索引。使用上最重要的一条是：**先准备注册表，再加载带标签的内容。**
 
-[解决什么问题](#why-tags) · [安装](#installation) · [快速开始](#quick-start) · [技能条件](#queries) · [Buff 叠加](#counts) · [变化通知](#events) · [Unity 集成](#unity-and-serialization) · [API 导航](#api-map)
+[用途](#why-tags) · [安装](#installation) · [快速开始](#quick-start) · **[加载顺序](#loading)** · [Inspector 与保存](#unity-and-serialization) · [技能规则](#queries) · [Buff 与通知](#counts) · [集合运算](#set-algebra) · [对象池](#pooling) · [API 导航](#api-map)
 
 <a name="why-tags"></a>
-### 什么时候会用到它？
+### 它能解决什么问题？
 
-假设你正在做一个有技能、装备和 Buff 的游戏：
-
-| 遇到的问题 | 用标签怎么处理 |
+| 游戏中的问题 | 标签库的做法 |
 | --- | --- |
-| 技能要求装备法杖、拥有施法能力，而且不能处于控制状态。 | 把“必须有”和“不能有”的标签组成一条规则。 |
-| 火球和地面火焰同时造成燃烧，其中一个结束后，不应该直接清掉燃烧状态。 | 为每次贡献计数，最后一个来源移除后，状态才消失。 |
-| 装备和光环都能赋予同一种能力，卸下装备不能把光环的效果一起删掉。 | 各自维护子容器，角色容器汇总它们的贡献。 |
+| 受到冰冻或沉默时，角色不能施法。 | 都归入 `State.Control`，检查一个父标签即可。 |
+| 火球和地面火焰都造成燃烧，结束其中一个不能清掉整个状态。 | 使用计数容器，最后一个来源移除后状态才消失。 |
+| 装备和光环分别赋予能力，角色需要统一查询。 | 子容器管理自己的贡献，父容器汇总。 |
+| 技能栏的多个按钮反复检查相同条件。 | 共享固定规则，用规则组与每角色缓存减少重复查询。 |
 
-标签还可以分层。`State.Control.Frozen` 和 `State.Control.Silenced` 都属于 `State.Control`。因此，“受到任意控制时不能施法”只需要检查父标签，不必把每一种控制效果都列出来。
-
-它是一块基础积木，不是一整套技能框架。伤害怎么算、Buff 持续多久、AI 如何决策，仍由你的游戏负责；标签库只处理状态的表达、组合和查询。如果只是一个独立开关，直接用 `bool` 就很好。
+它是游戏逻辑的基础积木，不是一整套技能框架：伤害、持续时间、冷却和来源对象仍由业务管理。只有一个独立开关时，`bool` 就很好；需要跨系统组合、层级匹配和叠加贡献时，再使用标签。
 
 <a name="installation"></a>
 ### 安装
 
-Unity 包目标为 **Unity 2022.3 及以上**。打开 **Window → Package Manager**，选择 **+ → Add package from git URL**，粘贴：
+包目标为 **Unity 2022.3 及以上**。在 Package Manager 选择 **+ → Add package from git URL**：
 
 ```text
 https://github.com/acced/ZFramework.GameplayTags.git#main
 ```
 
-团队项目需要固定版本时，把 `main` 换成你要使用的完整提交号。本地源码则通过 **Add package from disk** 选择 `package.json`。
+团队项目可以把 `main` 换成完整提交号来固定版本。本地源码通过 **Add package from disk** 选择 `package.json`。使用 `.asmdef` 的业务程序集需要引用 **`ZFramework.GameplayTags`**；代码命名空间是 **`GameplayTags`**。不要同时安装另一份定义相同类型的包。
 
-使用 `.asmdef` 的业务程序集需要引用 **`ZFramework.GameplayTags`**，代码命名空间是 **`GameplayTags`**。不要同时安装另一份定义同名类型的包。
-
-<details>
-<summary>在 Unity 之外使用核心库</summary>
-
-在兼容的 C# 工程中引用附带的 `GameplayTags.Runtime.csproj`，或直接构建：
-
-```bash
-dotnet build GameplayTags.Runtime.csproj -c Release
-```
-
-独立工程目标为 .NET Standard 2.1 / C# 9，不包含 Unity 组件和 Editor 集成，也不需要源码生成器。
-
-</details>
+独立 C# 项目可以引用 `GameplayTags.Runtime.csproj`，或执行 `dotnet build GameplayTags.Runtime.csproj -c Release`。核心目标为 .NET Standard 2.1 / C# 9，独立工程不编译 Unity 组件和 Editor 代码。
 
 <a name="quick-start"></a>
-### 快速开始：给角色添加一个状态
+### 快速开始：声明一次，运行时使用句柄
 
-先声明游戏会用到的标签。创建 **`GameTags.cs`**：
+本指南的默认示例使用当前主线内置的**程序集声明**。已有自己的配置或代码生成流程时，也可以使用[显式注册](#registration)，容器用法不变。
+
+创建 **`GameTags.cs`**，把程序集特性放在 `using` 之后、类型声明之前：
 
 ```csharp
 using GameplayTags;
@@ -68,6 +54,7 @@ using GameplayTags;
 public static class GameTags
 {
     static GameTags() { }
+
     public static readonly GameplayTag State = GameplayTagManager.RequestTag("State");
     public static readonly GameplayTag Control = GameplayTagManager.RequestTag("State.Control");
     public static readonly GameplayTag Burning = GameplayTagManager.RequestTag("State.Burning");
@@ -78,9 +65,9 @@ public static class GameTags
 }
 ```
 
-`State`、`State.Control`、`Equipment.Weapon` 等父标签会自动注册。这里的 `GameTags` 就是你自己维护的普通类：解析一次名称，把句柄留给后续代码使用。
+父标签会自动补全。`GameTags` 只是业务自己的缓存类，不依赖源码生成器。显式静态构造器避免字段提前初始化，但首次访问仍应在注册表准备好之后。
 
-再创建 **`CharacterTagsExample.cs`**，挂到 GameObject 上，进入 Play Mode：
+只体验纯代码用法时，把下面的 **`CharacterTagsExample.cs`** 挂到空物体上：
 
 ```csharp
 using GameplayTags;
@@ -94,45 +81,147 @@ public sealed class CharacterTagsExample : MonoBehaviour
     {
         GameplayTagManager.InitializeIfNeeded();
         states = new GameplayTagContainer();
-        states.AddTag(GameTags.Burning);
-
-        Debug.Log(states.HasTag(GameTags.State));        // True：燃烧属于 State。
-        Debug.Log(states.HasTagExact(GameTags.State));   // False：没有直接加入 State。
-        Debug.Log(states.HasTagExact(GameTags.Burning)); // True。
-
         states.AddTag(GameTags.Frozen);
-        Debug.Log(!states.HasTag(GameTags.Control));     // False：还不能行动。
+
+        Debug.Log(states.HasTag(GameTags.Control));      // True: 属于控制状态。
+        Debug.Log(states.HasTagExact(GameTags.Control)); // False: 没有直接添加父标签。
+        Debug.Log(states.HasTagExact(GameTags.Frozen));  // True。
 
         states.RemoveTag(GameTags.Frozen);
-        Debug.Log(!states.HasTag(GameTags.Control));     // True：已经没有控制状态。
+        Debug.Log(states.IsEmpty);                      // True。
     }
 }
 ```
 
-这个例子在运行时创建容器。在 Inspector 中配置标签字段的用法见 [Unity 集成](#unity-and-serialization)。后面的代码片段放进业务方法即可，沿用上面的 `GameTags`。
+**这里在 `Awake` 初始化成立，是因为容器也在它之后才创建。** 如果容器来自场景、Prefab 或 SO 字段，使用下面的加载流程，而不是把同样的 `Awake` 调用复制过去。
+
+<a name="loading"></a>
+### 接入项目：先初始化，再加载内容
+
+注册表回答“项目有哪些标签”，容器回答“这个对象有哪些成员”。注册表每个进程／脚本域准备一次；每个角色可以有自己的容器。
+
+```text
+启动入口（不含需要恢复的标签容器）
+    ↓ 初始化选定的完整注册表
+    ↓ 允许访问缓存句柄
+    ↓ 发起游戏场景、Prefab、SO 或存档的加载
+    ↓ 容器回调按名称恢复整数成员
+    ↓ 查询、增删、计数和规则匹配
+```
+
+关键不是“比其他组件的 `Awake` 早”，而是**比带标签内容的反序列化早**。容器会在 `OnAfterDeserialize()` 立即恢复成员，不等第一次查询，也不需要再调用一次 `LoadInto()`。
+
+#### 推荐方式：一个不携带游戏内容的启动场景
+
+新建 **Boot** 和 **Game** 场景，都加入构建列表，把 Boot 放在第一位。Boot 只放启动逻辑；不要在它的序列化字段、预加载资产或其他启动逻辑里提前引用／加载带标签容器的游戏内容。
+
+将 **`GameBootstrap.cs`** 挂到 Boot 场景中的一个物体：
+
+```csharp
+using GameplayTags;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public sealed class GameBootstrap : MonoBehaviour
+{
+    private void Awake()
+    {
+        // 此示例选择程序集声明。自有注册表应在这里替换这一个调用。
+        GameplayTagManager.InitializeIfNeeded();
+
+        // 从这里开始，后续内容加载才可能恢复标签容器。
+        SceneManager.LoadSceneAsync("Game", LoadSceneMode.Single);
+    }
+}
+```
+
+**这个顺序的保证来自：初始化返回之后，才发起 Game 场景的加载。** 从 Boot 进入游戏；直接打开 Game 并点击 Play，会绕过这个入口，需要项目自己的等价启动流程。
+
+用 Resources、Addressables、AssetBundle 或自定义存档加载器时，原则相同：在第一次可能读取相关内容的加载／反序列化操作之前初始化，而不是等对象加载完、准备 `Instantiate` 时才补做。初始化后再启动依赖标签的后台工作；不要让多个加载线程争抢首次初始化。
+
+| 使用方式 | 注册表应当何时准备好？ |
+| --- | --- |
+| 代码中 `new GameplayTagContainer()` | 在解析句柄、添加或使用成员之前；空对象分配本身不是加载。 |
+| 场景、Prefab、SO 中已有容器字段 | 在加载它们及其依赖、恢复字段之前。 |
+| 从存档恢复容器 | 在调用反序列化器之前。 |
+| Editor 自定义工具加载资产 | 在工具发起相应资产读取之前，不能依赖游戏的 Boot 场景。 |
+
+不要把 `BeforeSceneLoad` 当成“尚未反序列化”：Unity 文档说明这个时点首场景对象已经加载到内存，只是尚未调用 `Awake`。`AfterAssembliesLoaded` 更早，但预加载资产已经初始化，也不能覆盖任意早期加载。这里采用显式启动场景，就是为了不猜这些回调之间的顺序。参见 [BeforeSceneLoad](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/RuntimeInitializeLoadType.BeforeSceneLoad.html) 和 [AfterAssembliesLoaded](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/RuntimeInitializeLoadType.AfterAssembliesLoaded.html)。
+
+主线的名称查询虽然保留了首次程序集发现，但**不要靠序列化回调第一次查名字来替你选择初始化方式**。特别是使用显式或生成注册表时，过早的 Inspector、静态字段或回调查询可能先发布另一套声明。
+
+<a name="unity-and-serialization"></a>
+### 一个容器：Inspector 配置，加载后直接使用
+
+`GameplayTagContainer` 同时支持资源保存和运行时使用，不需要另外定义一套数据容器：
+
+```text
+保存到资源：显式标签名称
+加载恢复：名称 → 当前注册表的整数成员与祖先
+运行期间：直接查询和修改整数存储
+再次保存：当前显式成员 → 名称
+```
+
+上面的加载流程已就位后，可以在 **Game** 场景中的组件上直接配置容器。创建 **`CharacterState.cs`**：
+
+```csharp
+using GameplayTags;
+using UnityEngine;
+
+public sealed class CharacterState : MonoBehaviour
+{
+    [SerializeField] private GameplayTagContainer states = new GameplayTagContainer();
+
+    public GameplayTagContainer Tags => states;
+
+    private void Start()
+    {
+        // 注册表已由 Boot 准备好，序列化的成员也已恢复。
+        Debug.Log(states.HasTag(GameTags.Control));
+    }
+
+    public void ApplyBurning() => states.AddTag(GameTags.Burning);
+    public void RemoveBurning() => states.RemoveTag(GameTags.Burning);
+}
+```
+
+Inspector 绘制器用于选择已注册名称。在运行中的角色实例上增删标签，就修改这个实例；不需要额外的转换模式。正常保存会导出当时的显式成员，但**不代表修改了内存对象，就自动写入磁盘或 Prefab 资产**，保存时机仍由 Unity 或业务存档流程决定。
+
+**共享模板需要独立状态时，复制实例即可：**
+
+```csharp
+// templateTags 是已加载并恢复的模板容器。
+GameplayTagContainer actorTags = templateTags.Clone();
+actorTags.AddTag(GameTags.Burning); // 不修改模板。
+
+// 已有复用目标时：
+GameplayTagContainer.Copy(actorTags, templateTags);
+```
+
+存档保存显式名称，不保存 `RuntimeIndex`；加载时再推导祖先。计数容器的存档由业务保存“显式名称＋次数”，不能把祖先累计值再次当成独立贡献。未知名称不会恢复为容器成员，改名或删除声明后的资源迁移属于编辑／内容流程。
+
+独立的 `GameplayTag` 字段与容器的恢复是两回事。注册表准备好后，在拥有者的加载入口执行 `tag = tag.Resolve()`；自己修改 `m_Name` 后也要接住返回值。容器已经由回调恢复时，不要再手工重复调用 `OnAfterDeserialize()`。
+
+#### Editor 与重载时记住同一条顺序
+
+Inspector、场景编辑、对象复制和脚本重载也会触发序列化；回调可能不在主线程。自有显式／生成注册表需要相应的 Editor 初始化入口，不能只安排 Player 启动。`InitializeOnLoad` 可用于项目的代码级准备，但不是所有资产回调顺序的万能保证；也不要在其中依赖尚未完成导入的资产。参见 [序列化回调](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/ISerializationCallbackReceiver.html) 与 [Editor 初始化](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/InitializeOnLoadAttribute.html)。
+
+这份指南约定的是**先准备好注册表的加载路径**，不是对任意 Editor 加载顺序的自动兜底。恢复未完成的容器不能继续当作有效空容器保存；请修正加载顺序并从原资源重新加载，而不是把空运行态写回覆盖配置。
+
+关闭 Domain Reload 时，静态注册表、缓存句柄和订阅可能跨 Play Mode 保留。保持同一注册表，清理业务会话状态；声明改变时，在干净的脚本域重新进入。不要只重建注册表，却继续使用旧容器和旧句柄。参见 [Domain Reloading](https://docs.unity3d.com/2022.3/Documentation/Manual/DomainReloading.html)。
 
 <a name="tag-semantics"></a>
 <a name="sets"></a>
-### 分清两个问题：“属于这一类吗？”和“真的加过它吗？”
+### “属于这一类”与“直接加过它”
 
-添加 `State.Control.Frozen` 后，可以这样理解容器：
+加入 `State.Control.Frozen` 后，`HasTag(Control)` 为 true，`HasTagExact(Control)` 为 false。只有 Frozen 是显式成员；State 和 Control 由它贡献。反过来，只加入 Control 并不代表角色被冻结。
 
-```text
-State                       ← HasTag 能匹配
-└── Control                 ← HasTag 能匹配
-    └── Frozen              ← 直接添加的标签，HasTagExact 也能匹配
-```
-
-`HasTag(GameTags.Control)` 问的是“是否处于任意控制状态”；`HasTagExact(GameTags.Frozen)` 问的是“是否明确存在冰冻”。这个关系不是双向的：只添加 `State.Control`，并不代表角色也处于冰冻。
-
-普通 `GameplayTagContainer` 是一个**集合**，同一个标签加两次仍然只有一份。`TryAddTag`、`TryRemoveTag` 返回成员是否发生变化；多个系统需要同时持有同一标签时，改用[计数容器](#counts)。
-
-`ExplicitTagCount` 统计直接添加的标签，`TagCount` 还包括它们的祖先。只有 `State.Control.Frozen` 的容器，因此是 **1 个显式标签、3 个总标签**。删除一个仅由后代带来的父标签不会清掉后代；应该删除实际添加的那个效果。
+`ExplicitTagCount` 统计显式成员，`TagCount` 还包括不同的祖先；上例分别为 1 和 3。普通容器是集合，重复添加不会叠层。`TryAddTag`、`TryRemoveTag` 返回成员是否变化，不是参数校验。删除仅隐式存在的父标签不会清掉其后代。
 
 <a name="queries"></a>
-### 用法一：判断角色能不能施法
+### 技能条件：有法杖、能施法，而且没有受到控制
 
-技能要求“有法杖、能施法”，同时禁止控制状态。规则在技能加载时创建一次，之后反复使用：
+下面的代码片段放入业务方法，沿用 `GameTags`，并在注册表初始化之后执行。规则在技能加载时创建一次：
 
 ```csharp
 var castingRule = GameplayTagRequirements.Create(
@@ -143,28 +232,14 @@ actor.AddTag(GameTags.Cast);
 actor.AddTag(GameTags.Staff);
 UnityEngine.Debug.Log(castingRule.Matches(actor)); // True。
 actor.AddTag(GameTags.Silenced);
-UnityEngine.Debug.Log(castingRule.Matches(actor)); // False：沉默属于 Control。
+UnityEngine.Debug.Log(castingRule.Matches(actor)); // False。
 ```
 
-`Create(禁止标签, 必需标签, 另一必需标签)` 不需要临时条件容器。条件较多时，使用 `new GameplayTagRequirements(forbiddenTags, requiredTags)`，两个参数是已解析标签的数组或 span。构造时去除重复和被包含的条件，并识别矛盾；最多四个有效条件内联保存。
+三个参数依次为“禁止标签、必需标签、另一个必需标签”。条件更多时，构造器接受两份已解析标签的数组或 span：`new GameplayTagRequirements(forbidden, required)`。规则是不可变快照，配置改变就重新创建；最多四个化简后的有效条件内联保存。它不再接受旧版的两个可变条件容器，也不直接保存到资源。
 
-规则是**不可变的运行时快照**：输入数组不会被保留，配置改变时重新创建规则；匹配时读取的是角色此刻的状态。旧版接受两个容器、跟随容器修改的构造器已移除。规则保存运行时 ID，不直接序列化；存档保存名称，加载后重新创建规则。
+`castingRule.Matches(equipment, effects)` 可以让条件分别来自装备和临时效果，无需创建并集。简单条件集合仍可使用 `HasAny`、`HasAll`、`HasAnyExact`、`HasAllExact`；空条件下 Any 为 false，All 为 true。
 
-简单判断仍可以用 `HasAny(query)`、`HasAll(query)`；精确条件用 `HasAnyExact`、`HasAllExact`。空条件的 `HasAll` 为 true，`HasAny` 为 false。
-
-装备和临时效果分开放，也不需要先分配并集：
-
-```csharp
-var equipment = new GameplayTagContainer();
-equipment.AddTag(GameTags.Staff);
-var effects = new GameplayTagContainer();
-effects.AddTag(GameTags.Cast);
-bool canCast = castingRule.Matches(equipment, effects); // True。
-```
-
-### 多个技能共享条件时，集中判断
-
-把同一组技能规则共享给角色，每个角色持有自己的缓存：
+多个技能共享条件时，规则组可以共享给所有角色，每个角色保留自己的缓存：
 
 ```csharp
 var rules = new GameplayTagRuleSet(new[]
@@ -174,106 +249,81 @@ var rules = new GameplayTagRuleSet(new[]
 });
 var actorCache = rules.CreateCache();
 System.ReadOnlySpan<bool> available = actorCache.Evaluate(actor);
-bool canUseFirstSkill = available[0];
+bool canCast = available[0];
 ```
 
-规则组每次只查询一次相同条件。缓存发现角色存在状态未变时直接复用结果；状态改变时刷新不同条件，只重算受影响的规则。层数改变但“有／没有”没变，不必重算存在性规则。容器的存在版本是缓存正确性所需的状态，不是参数防御。
-
-不需要缓存时，用 `rules.Evaluate(actor, resultSpan)` 写入调用方提供的结果空间，长度至少为 `rules.Count`。缓存返回的 span 是借用视图，下次评估会覆盖；不要跨线程共享一个缓存。它也支持 `actorCache.Evaluate(equipment, effects)`。不要每帧重新创建规则组或缓存。
+缓存未失效时复用结果；状态改变时刷新不同条件，只重算结果受影响的规则。只改层数而不改变存在性，不必重算存在性条件。返回的 span 是借用视图，下次评估会覆盖；缓存不要跨线程共享。无缓存的 `rules.Evaluate(actor, resultSpan)` 要求调用方提供至少 `rules.Count` 个结果位置。
 
 <a name="counts"></a>
-### 用法二：两个燃烧来源，互不误删
-
-普通集合只能知道“有或没有”，计数容器能保留多个来源的贡献：
+### Buff 叠加：一个来源结束，不误删另一个
 
 ```csharp
 var effects = new GameplayTagCountContainer();
-
-effects.AddTag(GameTags.Burning); // 火球附加一次燃烧。
-effects.AddTag(GameTags.Burning); // 地面火焰再附加一次。
+effects.AddTag(GameTags.Burning); // 火球。
+effects.AddTag(GameTags.Burning); // 地面火焰。
 UnityEngine.Debug.Log(effects.GetExplicitTagCount(GameTags.Burning)); // 2。
 
-effects.RemoveTag(GameTags.Burning); // 火球效果结束。
-UnityEngine.Debug.Log(effects.HasTag(GameTags.Burning)); // True：地面火焰还在。
-
-effects.RemoveTag(GameTags.Burning); // 角色离开火焰区域。
+effects.RemoveTag(GameTags.Burning); // 火球结束。
+UnityEngine.Debug.Log(effects.HasTag(GameTags.Burning)); // True。
+effects.RemoveTag(GameTags.Burning); // 离开火焰区域。
 UnityEngine.Debug.Log(effects.HasTag(GameTags.Burning)); // False。
 ```
 
-一次处理多层时，使用 `AddTag(tag, amount)` 和 `RemoveTag(tag, amount)`。`GetExplicitTagCount(tag)` 是标签自身的次数，`GetTagCount(tag)` 还会累计后代贡献。例如，两次燃烧加一次冰冻，会让 `State` 的总次数变成三。
+批量层数用 `AddTag(tag, amount)`、`RemoveTag(tag, amount)`。`GetExplicitTagCount` 是自身次数，`GetTagCount` 包含后代贡献；`ExplicitTagCount` 仍统计不同的显式标签，而不是层数总和。
 
-效果持续时间和移除时机仍由业务管理。容器只记录次数，不替你识别每个来源对象，也不会自动让 Buff 到期。各系统只应移除自己添加的次数。
-
-批量 `AddTags(source)` 对来源的每个不同显式标签各加 **1 次**，不会照搬来源的叠加层数；`RemoveTags(source)` 同样各减一次。`Clear()` 清掉所有次数，但保留订阅。
+各系统只移除自己添加的贡献。批量 `AddTags(source)`／`RemoveTags(source)` 对每个不同显式来源标签各加／减一次，不照搬来源的层数；`Clear()` 移除所有计数但保留订阅。
 
 <a name="events"></a>
-### 用法三：状态变了再更新 UI
-
-燃烧图标、控制提示和动画层通常只关心状态变化，没有必要每帧重新查询。可以直接订阅计数容器：
+### 状态变化时再更新 UI
 
 ```csharp
 var effects = new GameplayTagCountContainer();
-OnTagCountChangedDelegate onBurningChanged = (tag, count) =>
+OnTagCountChangedDelegate onBurning = (tag, count) =>
     UnityEngine.Debug.Log($"燃烧层数：{count}");
 
 effects.RegisterTagEventCallback(
-    GameTags.Burning, GameplayTagEventType.AnyCountChange, onBurningChanged);
-
-effects.AddTag(GameTags.Burning);    // 回调：1。
-effects.AddTag(GameTags.Burning);    // 回调：2。
-effects.RemoveTag(GameTags.Burning); // 回调：1。
-effects.Clear();                    // 回调：0。
-
+    GameTags.Burning, GameplayTagEventType.AnyCountChange, onBurning);
+effects.AddTag(GameTags.Burning);    // 1。
+effects.AddTag(GameTags.Burning);    // 2。
+effects.RemoveTag(GameTags.Burning); // 1。
+effects.Clear();                    // 0。
 effects.RemoveTagEventCallback(
-    GameTags.Burning, GameplayTagEventType.AnyCountChange, onBurningChanged);
+    GameTags.Burning, GameplayTagEventType.AnyCountChange, onBurning);
 ```
 
-只关心“出现、消失”时，用 `NewOrRemoved`：它只在 **0 → 正数**和**正数 → 0** 时触发，不会每次叠层都通知。订阅 `State.Control` 这样的父标签，就能观察整个类别。直接注册事件不会立即推送当前值。
-
-一组只关心存在性的监听，可以用 `GameplayTagContainerBinds` 管理，它还会在绑定时立即报告当前状态：
+只关心出现／消失，用 `NewOrRemoved`；监听父标签能观察整个类别。直接注册不会立即报告当前值。管理一组存在性监听时，用 `GameplayTagContainerBinds`：
 
 ```csharp
-var effects = new GameplayTagCountContainer();
 using (var bindings = new GameplayTagContainerBinds(effects))
 {
-    bindings.Bind(GameTags.Burning, present => UnityEngine.Debug.Log(present)); // 现在是 False。
-    effects.AddTag(GameTags.Burning); // True。
-} // 取消这一组订阅，不释放 effects 容器。
+    bindings.Bind(GameTags.Burning, present => UnityEngine.Debug.Log(present));
+    effects.AddTag(GameTags.Burning);
+}
 ```
 
-实际 UI 中，让绑定组和界面一起存活，关闭界面时再 `Dispose()`。上面的 `using` 适合临时作用域，不适合长期显示的界面。全局通知还有 `OnAnyTagCountChange` 和 `OnAnyTagNewOrRemove`，需要分别取消订阅。
-
-回调发生时，状态已经修改完成。回调中的再次修改会排队通知；回调抛出异常会向上传播，不会撤销已经完成的状态变化。
+绑定会立即报告当前存在性，释放绑定组会取消这些订阅，不释放容器。长期 UI 应让绑定组随界面存活，关闭时再释放，而不是在每帧建立一个短暂的 `using`。回调看到已提交状态；回调内的修改排队通知，异常不会撤销已完成的状态变化。
 
 <a name="parent-containers"></a>
-### 用法四：装备与光环分别管理，角色统一查询
-
-各子系统需要管理自己的贡献时，用 `GameplayTagHierarchicalContainer`：
+### 装备和光环各管各的，角色统一查询
 
 ```csharp
 var actor = new GameplayTagCountContainer();
 var equipment = new GameplayTagHierarchicalContainer { Parent = actor };
 var aura = new GameplayTagHierarchicalContainer { Parent = actor };
-
 equipment.AddTag(GameTags.Cast);
 aura.AddTag(GameTags.Cast);
 UnityEngine.Debug.Log(actor.GetExplicitTagCount(GameTags.Cast)); // 2。
 
-equipment.Parent = null; // 卸下装备：撤销它在角色身上的已有贡献。
-UnityEngine.Debug.Log(actor.GetExplicitTagCount(GameTags.Cast)); // 1：光环仍然有效。
-
-aura.Clear();           // 再移除光环贡献。
+equipment.Parent = null;
+UnityEngine.Debug.Log(actor.GetExplicitTagCount(GameTags.Cast)); // 1。
+aura.Clear();
 aura.Parent = null;
 ```
 
-这是**子容器向父容器汇总**，不是从父容器继承标签。解除挂接不会清空子容器本身，重新挂接时会转移它当前的贡献。容器之间的父子关系，与标签名称中的点分层级是两回事。
-
-通过拥有贡献的子容器来移除效果。子容器仍然挂接、认为贡献还存在时，不要直接清空聚合父容器；父链也不能形成循环。
+这是子容器向父容器汇总，不是继承父容器的成员。解除挂接撤销它在父级的贡献，但不清空子容器；重新挂接会转移现有贡献。通过拥有者移除贡献，不要在子容器仍挂接时直接清空聚合父容器，父链不能形成循环。
 
 <a name="set-algebra"></a>
-### 合并、筛选和复用标签集合
-
-例如，比较两个角色的状态：
+### 复制、并集、交集与差集
 
 ```csharp
 var left = new GameplayTagContainer();
@@ -283,61 +333,41 @@ var right = new GameplayTagContainer();
 right.AddTag(GameTags.Frozen);
 right.AddTag(GameTags.Cast);
 
-var combined = GameplayTagContainer.Union(left, right);       // Burning、Frozen、Cast。
+var combined = GameplayTagContainer.Union(left, right);
 var shared = GameplayTagContainer.Intersection(left, right); // 只有 Cast。
+var remaining = left.Clone();
+remaining.RemoveTags(right); // 只剩 Burning。
 
-var remaining = left.Clone(); // 独立的存储。
-remaining.RemoveTags(right);  // 只剩 Burning。
-```
-
-集合运算针对**显式成员**，再从结果推导祖先。`{State.Burning}` 和 `{State.Control.Frozen}` 的交集为空，不会因为它们都属于 `State` 就产生一个显式 `State`。计数容器作为来源时，也只贡献标签是否存在，不复制重复次数。
-
-需要频繁计算时，可以保留输出容器：
-
-```csharp
 var output = new GameplayTagContainer(32);
-GameplayTagContainer.Copy(output, left);               // 用 left 替换 output。
-output.AddTags(right);                                 // 把 right 合并进来。
-GameplayTagContainer.Union(output, left, right);      // Replaces output; either input may be output.
-GameplayTagContainer.Intersection(output, left, right); // 替换成交集。
-output.Clear();                                       // 保留容量，下次继续用。
+GameplayTagContainer.Copy(output, left);
+GameplayTagContainer.Union(output, left, right);
+GameplayTagContainer.Intersection(output, left, right);
+output.Clear(); // 保留容量，下次继续用。
 ```
 
-这里的 `output` 与两份输入不同。如果输出本来就是某个并集输入，直接追加另一份，不要先用复制覆盖掉它。交集允许输出与任一输入相同，也可以用 `IntersectWith(other)` 原地求交集。普通集合复制自己、添加自己都不改变内容，移除自己则会清空。
+运算针对显式成员，再推导结果祖先。燃烧与冰冻的交集为空，不会因为共同属于 State 就产生显式 State。计数输入也只贡献成员存在性。
+
+三参数并集／交集允许输出与任一输入相同；复制自己、普通集合添加自己是无操作，普通集合移除自己会清空。`AddTags(other)` 原地合并，`IntersectWith(other)` 原地求交。不要先用 `Copy(output, left)` 覆盖仍需作为右输入的同一对象，再试图求并集。
 
 <a name="enumeration"></a>
-### 只读取你真正关心的成员
+### 枚举实际效果，而不是所有祖先
 
 ```csharp
-var states = new GameplayTagContainer();
-states.AddTag(GameTags.Frozen);
+foreach (GameplayTag tag in actorTags.GetExplicitTags())
+    UnityEngine.Debug.Log(tag.Name); // 直接添加的成员。
 
-foreach (GameplayTag tag in states.GetExplicitTags())
-    UnityEngine.Debug.Log(tag.Name); // State.Control.Frozen。
-
-foreach (GameplayTag tag in states)
-    UnityEngine.Debug.Log(tag.Name); // State、State.Control、State.Control.Frozen，顺序不保证。
+foreach (GameplayTag tag in actorTags)
+    UnityEngine.Debug.Log(tag.Name); // 包含祖先。
 ```
 
-展示实际添加的效果或 Buff 列表时，用 **`GetExplicitTags()`**；默认 `foreach` 还包含祖先。枚举是无序的，枚举期间不要修改容器。
-
-UI 或导出文件需要稳定的名称顺序时，在输出环节排序：
-
-```csharp
-var names = new System.Collections.Generic.List<string>();
-foreach (GameplayTag tag in states.GetExplicitTags()) names.Add(tag.Name);
-names.Sort(System.StringComparer.Ordinal);
-```
-
-更新 UI 列表还可以用 `current.GetDiffExplicitTags(previous, added, removed)`，它会向两个列表追加新增项和移除项。复用输出列表时先清空；父子标签提取方法同样是追加，不会自动清空结果。
+容器枚举无序，期间不要修改。UI／导出需要稳定顺序时，再提取名称并用 `StringComparer.Ordinal` 排序。`GetDiffExplicitTags(previous, added, removed)` 以及父子成员提取方法向结果列表追加，不会自动清空它们。
 
 <a name="registration"></a>
-### 接入自己的配置和存档
+### 已有自己的配置或生成表？使用显式注册
 
-快速开始使用程序集声明。如果游戏有自己的内容管线，也可以在启动时传入完整注册表：
+在同一个启动位置，把程序集发现**替换为**完整注册表的初始化：
 
 ```csharp
-// 代替程序集发现；放在任何名称查询或 GameTags 字段访问之前。
 GameplayTagManager.Initialize(
     new GameplayTagRegistration("State.Burning"),
     new GameplayTagRegistration("State.Control.Frozen"),
@@ -346,122 +376,77 @@ GameplayTagManager.Initialize(
     new GameplayTagRegistration("Equipment.Weapon.Staff"));
 ```
 
-两种方式选一种即可。显式注册不会再合并程序集声明。由负责启动的线程初始化一次，之后再加载带标签的资源；只要句柄、容器、订阅或池内对象还在使用，就不要替换注册表。这里没有初始化锁或重复调用保护。
+它不会合并程序集特性。自有 SO 或配置生成器可以输出这些注册项，加载顺序仍是“初始化→缓存句柄→加载内容”。当前主线自带的可选生成器见[下一节](#player-registry)，不是 SO 标签设置窗口。
 
-名称区分大小写，每一级使用字母、数字或下划线，以 `.` 分隔。读取外部名称时，可以用带 `out` 的查询，在业务边界决定如何处理缺失声明：
+名称区分大小写。外部存档或输入可在边界使用 `RequestTag(name, out tag)` 处理缺失标签，再缓存结果；不要在每帧依赖字符串隐式转换。注册表发布后保持不变，`Initialize` 本身没有锁或防重复保护，不能为了切换场景反复调用它。
 
-```csharp
-string savedName = "State.Burning";
-if (GameplayTagManager.RequestTag(savedName, out GameplayTag tag))
-{
-    var loaded = new GameplayTagContainer();
-    loaded.AddTag(tag);
-}
-```
+<a name="player-registry"></a>
+### 可选：生成 Player 注册表，减少启动发现工作
 
-未知、null 或空名称返回 `None`。编辑工具需要校验名称时，可以主动调用 `GameplayTagUtility.IsValidName` 或 `ValidateName`；运行时不会自动检查声明。解析后的标签应缓存下来，不要每帧重新查询字符串。
+**Tools → Gameplay Tags → Generate Player Registry** 启用当前主线的生成器。它读取实际 Player 编译后的 DLL 声明，输出 `Assets/GameplayTags.Generated.cs`；Mono.Cecil 只用于 Editor。
 
-<a name="unity-and-serialization"></a>
-### 在 Inspector 和存档中使用
+首次构建或声明改变时，生成器更新文件并停止构建；让 Unity 编译它，再以同一平台和宏配置构建。第二次核对源码及已编译表指纹。自定义管线可在裁剪前调用 `GenerateFromPlayerAssemblies(paths)`；返回 false 表示生成代码需要重新编译。
 
-包内提供了标签选择的 Inspector 绘制器。它们用于选择已注册的名称，不会创建声明，也不是一套配置资源管理器。
-
-独立的序列化标签字段，加载后解析并保存句柄：
+在已有启动入口中，用下面的调用**替换**程序集发现：
 
 ```csharp
-using GameplayTags;
-using UnityEngine;
-
-public sealed class DamageTypeExample : MonoBehaviour
-{
-    [SerializeField] private GameplayTag damageType;
-
-    private void Awake()
-    {
-        GameplayTagManager.InitializeIfNeeded();
-        damageType = damageType.Resolve();
-    }
-}
+GameplayTags.Generated.GameplayTagRegistry.Initialize();
 ```
 
-先声明需要选择的名称。`Resolve()` 返回的是结构体，**要接住返回值**；自己修改 `m_Name` 后也一样。查询只使用缓存 ID，不会顺便修正被改过的名称。
-
-序列化的**容器**需要更早的准备：它会在反序列化回调里立即重建成员。因此要在**加载这些资源或场景之前**初始化注册表，Editor 工具也需要考虑这个顺序。不能把 `Awake` 当成所有序列化容器的通用初始化位置；Unity 回调还可能不在主线程执行。相关行为见 [Unity 序列化回调说明](https://docs.unity3d.com/2022.3/Documentation/ScriptReference/ISerializationCallbackReceiver.html)。
-
-需要直接挂在 GameObject 上时，可以使用 `GameObjectGameplayTagContainer`。它的 `m_PersistentTags` 在 `Awake` 中加入计数容器，通过 `GameplayTagContainer` 属性访问运行态。`gameObject.Bind()` 会获取或添加这个组件，并创建绑定组；初始化先后和绑定的释放时机由业务组件协调。
-
-存档保存**名称**，不要保存 `RuntimeIndex`。ID 只属于当前注册表，不同构建之间可能变化。普通容器保存显式名称，加载后推导祖先；未知名称不会恢复为成员。计数容器则应由业务存档保存名称和次数。本库不提供自动存档迁移或名称重定向。
-
-关闭 Domain Reload 时，静态注册表、缓存句柄、订阅和对象池可能跨 Play Mode 保留，不能在这些活状态上重新发布另一套注册表。从旧名称版升级也需要明确迁移 API 和资源，并非直接替换包就能兼容。
+随后才加载内容。该入口在 Player 使用生成表，在 Editor 使用程序集发现；它不生成 `GameTags` 字段，也不安装自动启动回调。不要混用另一套显式初始化。只支持直接 `GameplayTagAttribute` 声明及其命名参数，不执行自定义派生特性；不能求值的派生声明会在构建时报告，而不是静默遗漏。
 
 <a name="pooling"></a>
-### 临时计算：自己选择复用策略
+### 临时计算：按项目选择复用策略
 
-每帧重复使用的工作容器，可以直接长期持有，用完 `Clear()`。多个临时作用域需要借还时，再用线程本地池：
+每帧使用的工作容器可以长期持有并 `Clear()`。需要多个短作用域时，再借用线程本地池：
 
 ```csharp
 using (GameplayTagContainerPool.Get(out GameplayTagContainer temporary))
 {
     temporary.AddTag(GameTags.Burning);
-    temporary.AddTag(GameTags.Cast);
+    // 查询、组合或筛选；不把 temporary 留到作用域之外。
 }
 ```
 
-默认采用**不限制保留预算**的策略，大容器不会因为内置的 64 KiB 阈值被丢弃。在负责借还的线程上，加载阶段自行选择：
+默认不限保留预算。在加载阶段、负责借还的线程上选择一种策略：
 
 ```csharp
-// 只限制个数，不限制单个容器的容量。
 GameplayTagContainerPool.Configure(new GameplayTagContainerPool.RetentionPolicy(32));
 
-// 或者同时限制个数、单个和总数组载荷。以下数值仅为业务配置示例。
+// 或限制单个与总数组载荷；数值仅为项目配置示例。
 GameplayTagContainerPool.Configure(new GameplayTagContainerPool.RetentionPolicy(
     maxCount: 64, maxContainerBytes: 256 * 1024, maxTotalBytes: 4L * 1024 * 1024));
 
-// 或者不保留归还对象，或恢复不限制预算。
+// 或禁用保留，或恢复不限制预算。实际使用时选择一种。
 GameplayTagContainerPool.Configure(GameplayTagContainerPool.RetentionPolicy.Disabled);
 GameplayTagContainerPool.Configure(GameplayTagContainerPool.RetentionPolicy.Unbounded);
 ```
 
-`Configure` 会释放当前线程已经缓存的对象。`Clear()` 同样释放缓存及池数组，但保留选定策略。`RetainedCount` 与 `RetainedDataBytes` 可用于观察保留量；字节数只计算容器的数组载荷，不含对象头、数组头和进程共享数据。预算判断是调用方选择的复用策略，不是非法参数校验；预算必须有效且非负。
+`Configure` 释放当前缓存并切换策略；池的 `Clear()` 释放缓存但保留策略，和容器自身保留容量的 `Clear()` 不同。`RetainedCount`、`RetainedDataBytes` 用于观察保留情况；字节数只统计容器数组载荷。
 
-策略只影响当前线程，不会自动传播到其他线程。默认不限制预算可能保留峰值内存；大型工作流可以选择长期持有容器，或设置适合项目的预算。借还期间由调用方保证同线程、恰好一次归还，不复制租约分别释放，不释放默认租约，不使用已经归还的引用。池不追踪这些误用。
-
-<a name="player-registry"></a>
-### Player 注册表：按实际构建采集，不猜 Editor 声明
-
-普通项目继续使用程序集声明或显式 `Initialize`。希望 Player 启动不扫描程序集时，可以启用 Editor 生成器。它通过 Mono.Cecil **读取本次 Player 编译后的 DLL 元数据**，不加载或执行这些 DLL，不再把 Editor 域当成 Player。程序集定义的平台选择、`#if !UNITY_EDITOR`、平台宏、额外 scripting defines，以及随构建进入的托管插件，都以该次编译产物为准。
-
-在 **Tools → Gameplay Tags → Generate Player Registry** 启用后，使用平时的 Build 流程构建目标。第一次或声明变化时，脚本编译后的回调会写出正确的 `Assets/GameplayTags.Generated.cs`，并停止当前构建。让 Unity 导入并编译新脚本，再以相同配置构建。第二次会同时核对源码和**已编译表的指纹**；旧代码没编进去就不会通过。切换平台或 defines 导致声明不同，也会更新后要求重编，不静默沿用旧表。
-
-这是有意的两阶段生成，不尝试在已经完成的脚本编译阶段塞入新 C#。批处理时，第一次输出生成文件后，由构建任务重新启动一次 Unity 构建；不要无条件循环重试所有构建错误。自定义管线也可以在链接／裁剪前，将该次完整 Player 托管 DLL 列表交给 `GameplayTagRegistryGenerator.GenerateFromPlayerAssemblies(paths)`，返回 false 表示需要编译更新后的表。不存在输出文件时不启用生成检查。
-
-生成表**不安装自动启动回调**。由自己的启动流程调用一次 `GameplayTags.Generated.GameplayTagRegistry.Initialize()`，再创建标签缓存和加载序列化容器；不要与另一套显式初始化混用。Editor 下该入口使用 Editor 自己的程序集声明，Player 下使用生成表。业务缓存类加显式静态构造器，可以避免 `beforefieldinit` 提前初始化；首次访问仍必须排在启动之后。
-
-只支持直接的 `GameplayTagAttribute` 声明，包含构造参数和 `TagName`、`Description`、`Flags` 命名覆盖。自定义派生特性可能执行任意代码，元数据工具不能替它求值；发现这类声明会在构建时报错，改用直接特性或显式注册，不会把它静默遗漏。运行中加载的额外程序集不属于本次 Player 构建。Mono.Cecil 只被 Editor 程序集引用，不进入运行时 API。该回调会增加构建期读取／中转工作，不是零成本构建；实际 Unity/IL2CPP 整体流程仍需在项目中验收。
+默认不限预算可能保留峰值内存。调用方负责同线程、恰好一次归还，不复制租约后重复释放、不释放默认租约、不使用已归还的引用。
 
 <a name="caller-contract"></a>
-### 让热路径保持简单
+### 让运行时保持简单
 
-运行时使用整数句柄、紧凑存储，并为较大的集合建立哈希索引，不把名称解析和通用校验放进每次查询。实际使用时，记住一条即可：**启动时注册，加载时解析，运行时复用句柄和容器。**
+**启动时注册，加载时恢复，运行时直接使用。** 不增加单独的数据容器，不在 `HasTag` 中偷偷恢复，也不要求每次查询检查初始化。
 
-`EnsureCapacity(n)` 按**包含祖先的不同成员总数**预留，不是只按叶标签数量。具体类型的枚举使用结构体枚举器，通过 `IEnumerable<GameplayTag>` 使用时可能装箱。新建、扩容、序列化、订阅和池首次使用仍可能分配内存。这是托管 C# 实现，不是可直接放进 Burst/Jobs 的 `NativeContainer`。
+使用有效的非 None 句柄与非 null 修改操作数；正数计数、合法容量、不溢出的运算、正确的贡献所有权和线程同步由调用方保证。共享 `Empty` 按只读使用。`EnsureCapacity(n)` 的容量包含不同的祖先，不是只算显式叶子。
 
-调用方需要提供有效、非 `None` 的句柄和非 null 修改操作数，保证数量为正、容量有效、计数不溢出，删除不超过自己拥有的次数，并管理好同步、父链贡献和对象池生命周期。共享 `Empty` 按只读使用。非法使用不属于内核的恢复职责；把输入校验和错误处理放在业务边界即可。
-
-**版本说明：** 当前源码为 `2.1.0-rc.2-optimized.2`，不代表已经完成 Unity/IL2CPP 全面验收，也不承诺所有场景普遍更快。容量与池化策略，请根据项目自己的标签数量、层级深度和目标后端来选择。
+具体类型枚举使用结构体枚举器，经接口使用可能装箱；新建、扩容、订阅和序列化仍可能分配。该库是托管 C#，不是 Burst/Jobs 的 NativeContainer。当前版本为 `2.1.0-rc.2-optimized.2`，完整 Unity／IL2CPP 与目标设备验证仍需由项目完成；这份文档不宣称全面提速或新的性能验收。
 
 <a name="api-map"></a>
 ### 接下来查哪个 API？
 
-| 你想做的事 | 从这里开始 |
+| 你想做的事 | 入口 |
 | --- | --- |
-| 保存一组角色状态 | [`GameplayTagContainer`](Runtime/GameplayTagContainer.cs) |
-| 记录 Buff 叠层、监听变化 | [`GameplayTagCountContainer`](Runtime/GameplayTagCountContainer.cs) |
-| 汇总各子系统拥有的贡献 | [`GameplayTagHierarchicalContainer`](Runtime/GameplayTagHierarchicalContanier.cs) |
-| 表达必需条件与禁止条件 | [`GameplayTagRequirements`](Runtime/GameplayTagRequirements.cs) |
-| 注册名称、缓存标签 | [`GameplayTagManager`](Runtime/GameplayTagManager.cs)、[`GameplayTag`](Runtime/GameplayTag.cs) |
-| 管理一组订阅、借用临时容器 | [`GameplayTagContainerBinds`](Runtime/GameplayTagContainerBinds.cs)、[`GameplayTagContainerPool`](Runtime/GameplayTagContainerPool.cs) |
+| Inspector 成员、运行时状态、复制与集合运算 | [`GameplayTagContainer`](Runtime/GameplayTagContainer.cs) |
+| Buff 层数和变化事件 | [`GameplayTagCountContainer`](Runtime/GameplayTagCountContainer.cs) |
+| 各系统的贡献汇总 | [`GameplayTagHierarchicalContainer`](Runtime/GameplayTagHierarchicalContanier.cs) |
+| 固定技能条件与共享规则缓存 | [`GameplayTagRequirements`](Runtime/GameplayTagRequirements.cs)、[`GameplayTagRuleSet`](Runtime/GameplayTagRuleSet.cs) |
+| 注册表、句柄、名称与层级关系 | [`GameplayTagManager`](Runtime/GameplayTagManager.cs)、[`GameplayTag`](Runtime/GameplayTag.cs) |
+| 一组 UI 订阅与临时容器 | [`GameplayTagContainerBinds`](Runtime/GameplayTagContainerBinds.cs)、[`GameplayTagContainerPool`](Runtime/GameplayTagContainerPool.cs) |
 
-`GameplayTag` 还提供 `Name`、`Label`、`Description`、`Flags`、`ParentTag`、`ParentTags`、`HierarchyTags` 和 `ChildTags`，描述的是注册表关系。`IsParentOf`、`IsChildOf` 是严格的祖先关系，标签不是自己的祖先。只提取容器中实际存在的父子成员时，用 `GetParentTags`、`GetChildTags` 或显式成员版本。
+`GameplayTag` 提供 `Name`、`Label`、`Description`、`Flags`、`ParentTag`、`ParentTags`、`HierarchyTags` 和 `ChildTags`。它们描述注册表关系；`IsParentOf`、`IsChildOf` 不把自身算作祖先。`GameObjectGameplayTagContainer` 可把计数容器挂到对象上，持久标签在 `Awake` 加入，注册表仍需提前准备。
 
-仓库只保留[运行时](Runtime)、[Editor 集成](Editor)和使用文档。许可证：[MIT](LICENSE)。
+许可证：[MIT](LICENSE)。仓库主线只保留运行时、Editor 集成、包配置和使用文档。
