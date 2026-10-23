@@ -5,13 +5,14 @@ using System.Runtime.CompilerServices;
 namespace GameplayTags
 {
     /// <summary>
-    /// Immutable process/domain registry. Initialize explicitly before creating containers.
+    /// Immutable process/domain registry. Generated declarations initialize on first use.
     /// Cache returned tags;
     /// runtime IDs are local to this registry and must never be persisted as asset data.
     /// </summary>
     public class GameplayTagManager
     {
-        private static bool s_IsInitialized;
+        private static volatile bool s_IsInitialized;
+        private static readonly object s_InitializationLock = new object();
         private static Dictionary<string, int> s_IndicesByName;
         private static GameplayTagDefinition[] s_Definitions = { GameplayTagDefinition.None };
         private static GameplayTag[] s_Tags = { default };
@@ -33,20 +34,24 @@ namespace GameplayTags
         }
 
         /// <summary>
-        /// Publish valid declarations once on the owning initialization thread,
-        /// before loading serialized tags or exposing handles to other threads.
-        /// The caller guarantees valid names, one-time initialization and publication.
+        /// Publish declarations once per domain. Subsequent calls are no-ops, preserving
+        /// existing handles. Custom declarations must be supplied before first tag use.
         /// Duplicate declarations use the ordinal minimum description.
         /// </summary>
         public static void Initialize(params GameplayTagRegistration[] registrations)
         {
-            var context = new GameplayTagRegistrationContext();
-            for (int i = 0; i < registrations.Length; ++i)
+            lock (s_InitializationLock)
             {
-                GameplayTagRegistration registration = registrations[i];
-                context.RegisterTag(registration.Name, registration.Description);
+                if (s_IsInitialized) return;
+                if (registrations == null) throw new ArgumentNullException(nameof(registrations));
+                var context = new GameplayTagRegistrationContext();
+                for (int i = 0; i < registrations.Length; ++i)
+                {
+                    GameplayTagRegistration registration = registrations[i];
+                    context.RegisterTag(registration.Name, registration.Description);
+                }
+                Publish(context);
             }
-            Publish(context);
         }
 
         /// <summary>All tags in ordinal sibling order and depth-first preorder; excludes None.</summary>
@@ -72,9 +77,23 @@ namespace GameplayTags
 
         private static void RequireInitialized()
         {
-            if (!s_IsInitialized)
-                throw new InvalidOperationException("Call GameplayTagRegistry.Initialize() or " +
-                    "GameplayTagManager.Initialize(registrations) before querying tags.");
+            if (s_IsInitialized) return;
+            lock (s_InitializationLock)
+            {
+                if (s_IsInitialized) return;
+#if !GAMEPLAY_TAGS_MANUAL_INITIALIZATION
+                // The generated assembly references Runtime, so discover it only at the cold
+                // name boundary. This also works during editor/worker-thread deserialization
+                // before Unity startup callbacks, without calling any Unity APIs.
+                var registry = Type.GetType("GameplayTags.Generated.GameplayTagRegistry, ZFramework.GameplayTags.Generated");
+                var initialize = registry?.GetMethod("Initialize", Type.EmptyTypes);
+                if (initialize != null)
+                    ((Action)Delegate.CreateDelegate(typeof(Action), initialize))();
+#endif
+                if (!s_IsInitialized)
+                    throw new InvalidOperationException("Generate the gameplay tag registry, or call " +
+                        "GameplayTagRegistry.Initialize() / GameplayTagManager.Initialize(registrations) before querying tags.");
+            }
         }
 
         // Cold name boundary only. Cached handles never call this from RuntimeIndex.
@@ -89,7 +108,7 @@ namespace GameplayTags
         {
             context.Build(out s_Definitions, out s_Tags, out s_Parents, out s_SubtreeEnds,
                 out s_HierarchyIndices, out s_HierarchyTags, out s_IndicesByName);
-            // Caller owns synchronization; published arrays are thereafter read-only.
+            // Volatile publication makes the completed arrays visible to all readers.
             s_IsInitialized = true;
         }
 

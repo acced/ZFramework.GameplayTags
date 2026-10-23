@@ -97,7 +97,7 @@ namespace GameplayTags
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context) => OnAfterDeserialize();
 
-        // Initialize the registry before deserialization. Binding belongs here, never in lookup.
+        // Name resolution automatically initializes the generated registry if needed.
         // Unity owners must assign Resolve() for standalone struct fields after loading.
         // Unknown names remain available to an explicit caller-side validation pass.
         public void OnBeforeSerialize() { }

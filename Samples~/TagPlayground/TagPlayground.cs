@@ -1,5 +1,4 @@
 using GameplayTags;
-using GameplayTags.Generated;
 using UnityEngine;
 using Tags = GameplayTags.Generated.GameplayTagRegistry.Tags;
 
@@ -10,12 +9,6 @@ namespace GameplayTags.Samples
     /// <summary>挂到空物体上，进入 Play Mode，在 Console 查看 API 结果。</summary>
     public sealed class TagPlayground : MonoBehaviour
     {
-        private void Awake()
-        {
-            if (!GameplayTagManager.IsInitialized)
-                GameplayTagRegistry.Initialize();
-        }
-
         private void Start()
         {
             DemoMatching();
