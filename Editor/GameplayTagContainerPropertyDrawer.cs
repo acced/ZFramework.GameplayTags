@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace GameplayTags.Editor
 {
-   [CustomPropertyDrawer(typeof(GameplayTagContainer))]
+   [CustomPropertyDrawer(typeof(GameplayTagContainerField))]
    public class GameplayTagContainerPropertyDrawer : PropertyDrawer
    {
       private const float k_Gap = 2.0f;

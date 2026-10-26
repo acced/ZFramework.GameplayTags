@@ -178,7 +178,8 @@ namespace GameplayTags
             if (m_BucketMask == 0)
             {
                 slot = -1;
-                for (int i = 0; i < Count; i++) if (Entries[i].Id == id) return i;
+                // Balanced add/remove paths usually withdraw the most recently inserted entries.
+                for (int i = Count - 1; i >= 0; i--) if (Entries[i].Id == id) return i;
                 return -1;
             }
             slot = Hash(id) & m_BucketMask;

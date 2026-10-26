@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>重构方案：com.yeeyo.gas 依赖 ZFramework.GameplayTags 的引擎边界划分</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --paper: #ffffff; --ink: #1f2328; --muted: #5f6670;
+    --line: #d9dcdf; --accent: #2f5d8a; --accent-soft: #e8f0f8;
+    --core: #2e7d4f; --core-soft: #e7f4ec; --unity: #8a5a12; --unity-soft: #fbf1df;
+    --editor: #6a4c93; --editor-soft: #f0eaf7; --danger: #b3261e; --danger-soft: #fbe9e7;
+    --mono: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.7 "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 48px 32px 96px; }
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 20px; margin-bottom: 32px; }
+  header .kicker { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  h1 { font-size: 28px; line-height: 1.35; margin: 6px 0 10px; }
+  h2 { font-size: 21px; margin: 48px 0 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+  h2 .no { color: var(--accent); font-family: var(--mono); margin-right: 8px; }
+  h3 { font-size: 16.5px; margin: 26px 0 8px; }
+  p, li { color: var(--ink); }
+  .muted { color: var(--muted); }
+  code { font-family: var(--mono); font-size: 13px; background: #eef0f2; padding: 1px 5px; border-radius: 4px; }
+  pre { font-family: var(--mono); font-size: 12.8px; line-height: 1.55; background: #1e2329; color: #e6e6e6;
+        padding: 14px 16px; border-radius: 8px; overflow-x: auto; }
+  pre code { background: none; padding: 0; color: inherit; }
+  pre .c { color: #8b949e; } pre .k { color: #ff9b72; } pre .s { color: #a5d6ff; } pre .t { color: #7ee787; }
+  table { width: 100%; border-collapse: collapse; background: var(--paper); margin: 12px 0 18px; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #f0f1f3; font-weight: 600; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; padding: 0 8px; border-radius: 10px; white-space: nowrap; }
+  .tag.core { background: var(--core-soft); color: var(--core); }
+  .tag.unity { background: var(--unity-soft); color: var(--unity); }
+  .tag.editor { background: var(--editor-soft); color: var(--editor); }
+  .tag.danger { background: var(--danger-soft); color: var(--danger); }
+  .callout { background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+             padding: 12px 16px; border-radius: 6px; margin: 16px 0; }
+  .callout.warn { border-left-color: var(--danger); background: #fffaf9; }
+  .callout.ok { border-left-color: var(--core); }
+  .callout strong:first-child { display: block; margin-bottom: 4px; }
+  .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
+  .summary div { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+  .summary b { display: block; font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
+  .diagram { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 12px; margin: 16px 0; }
+  .diagram svg { width: 100%; height: auto; display: block; }
+  .option { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 12px 16px; margin: 10px 0; }
+  .option.pick { border: 2px solid var(--core); }
+  .option h4 { margin: 0 0 6px; font-size: 15px; }
+  .phase { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 6px 18px 12px; margin: 14px 0; }
+  .phase h3 { margin-top: 14px; }
+  .phase ul { margin: 6px 0; padding-left: 20px; }
+  .verify { font-size: 13.5px; background: var(--core-soft); border-radius: 6px; padding: 8px 12px; margin-top: 8px; }
+  ul.check { list-style: none; padding-left: 0; }
+  ul.check li::before { content: "☐"; margin-right: 8px; color: var(--muted); }
+  nav.toc { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 12px 20px; }
+  nav.toc ol { margin: 4px 0; padding-left: 20px; columns: 2; }
+  nav.toc a { color: var(--accent); text-decoration: none; }
+  @media (max-width: 760px) { .summary { grid-template-columns: 1fr; } nav.toc ol { columns: 1; } }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <div class="kicker">重构方案 · 草案 · 2026-10-26</div>
+  <h1>com.yeeyo.gas 依赖 ZFramework.GameplayTags：<br>划清「纯 C# 本体」与「引擎能力部分」</h1>
+  <p class="muted">涉及包：<code>com.yeeyo.gas</code> 0.1.0 · <code>com.acced.zframework.gameplaytags</code> 2.1.0-rc.2-optimized.2<br>
+  状态：只出方案，尚未改动任何代码。</p>
+</header>
+
+<div class="summary">
+  <div><b>约束</b><code>YeeYo.Gas</code> 只依赖 mscorlib + System。依赖 ZFramework.GameplayTags 以后，这条约束要沿着<strong>整个传递依赖链</strong>成立。</div>
+  <div><b>问题</b>ZFramework.GameplayTags 目前是单一程序集，里面混着 MonoBehaviour，还靠 <code>#if UNITY_5_3_OR_NEWER</code> 实现了 Unity 序列化接口。在 Unity 里它带着引擎引用。</div>
+  <div><b>方案</b>两个包都拆成 <span class="tag core">Core</span>（<code>noEngineReferences: true</code>）和 <span class="tag unity">Unity</span> 两层。GAS 本体只引用 Tags Core，并删掉自带的字符串标签实现。</div>
+</div>
+
+<nav class="toc">
+  <strong>目录</strong>
+  <ol>
+    <li><a href="#s1">现状诊断</a></li>
+    <li><a href="#s2">目标程序集图</a></li>
+    <li><a href="#s3">ZFramework.GameplayTags 拆分</a></li>
+    <li><a href="#s4">关键决策：Unity 序列化回调</a></li>
+    <li><a href="#s5">YeeYo.Gas 接入（类型映射）</a></li>
+    <li><a href="#s6">行为差异与处理</a></li>
+    <li><a href="#s7">asmdef / package.json 变更</a></li>
+    <li><a href="#s8">实施阶段与验证</a></li>
+    <li><a href="#s9">风险与待决问题</a></li>
+  </ol>
+</nav>
+
+<!-- ================================================================== -->
+<h2 id="s1"><span class="no">01</span>现状诊断</h2>
+
+<h3>ZFramework.GameplayTags/Runtime：逐文件归属</h3>
+<table>
+  <tr><th>文件</th><th>引擎依赖</th><th>说明</th></tr>
+  <tr><td><code>GameObjectGameplayTagContainer.cs</code></td><td><span class="tag danger">显式</span></td>
+      <td><code>using UnityEngine</code>，含 <code>MonoBehaviour</code> 子类和 <code>Bind(this GameObject)</code> 扩展方法。<code>GameplayTags.Runtime.csproj</code> 已经把它排除在外。</td></tr>
+  <tr><td><code>GameplayTag.cs</code></td><td><span class="tag danger">隐式</span></td>
+      <td><code>#if UNITY_5_3_OR_NEWER</code> 下实现 <code>UnityEngine.ISerializationCallbackReceiver</code>，并给字段加 <code>[UnityEngine.SerializeField]</code>。</td></tr>
+  <tr><td><code>GameplayTagContainer.cs</code></td><td><span class="tag danger">隐式</span></td>
+      <td>同上，在 <code>OnAfterDeserialize</code> 里用 <code>m_SerializedExplicitTags</code> 重建存储。</td></tr>
+  <tr><td>其余 15 个文件<br><span class="muted">Manager / RegistrationContext / TagStorage / CountContainer / HierarchicalContainer / Requirements / RuleSet / Pool / Binds / Enumerator / Definition / Utility / ContainerUtility / ExtensionMethods / DebugView</span></td>
+      <td><span class="tag core">无</span></td>
+      <td>只用 System、System.Collections.Generic、System.Diagnostics、System.Runtime.Serialization、System.Buffers。<code>GameplayTagManager</code> 用 <code>Type.GetType</code> 反射自动初始化，同样不依赖引擎。</td></tr>
+</table>
+
+<div class="callout warn">
+  <strong>坑：不能直接给现有 asmdef 加 <code>noEngineReferences: true</code></strong>
+  在 Unity 里，<code>UNITY_5_3_OR_NEWER</code> 这类版本宏对<em>所有</em>程序集都定义，和 <code>noEngineReferences</code> 无关。
+  去掉引擎引用之后，<code>#if</code> 分支仍然会编译，<code>UnityEngine.ISerializationCallbackReceiver</code> 无法解析，编译失败。
+  <code>dotnet build GameplayTags.Runtime.csproj</code> 能通过，只是因为在纯 .NET 下这个宏没定义，<strong>不能证明 Unity 里的依赖图是干净的</strong>。
+</div>
+
+<h3>其他现状</h3>
+<ul>
+  <li><code>ZFramework.GameplayTags.asmdef</code>：<code>noEngineReferences: false</code>，一个程序集同时装着纯逻辑和 MonoBehaviour。</li>
+  <li>生成代码（<code>Assets/GameplayTags.Generated</code>，程序集 <code>ZFramework.GameplayTags.Generated</code>）在 <code>#if UNITY_5_3_OR_NEWER</code> 下使用 <code>[Preserve]</code> 和 <code>[RuntimeInitializeOnLoadMethod]</code>。它是只被项目代码引用的叶子程序集，GAS 本体不引用它，<strong>可以保留引擎引用</strong>。</li>
+  <li><code>YeeYo.Gas.asmdef</code>：同样是 <code>noEngineReferences: false</code>。README 里说的「仅 mscorlib + System」目前<strong>只靠自觉，编译器并不检查</strong>。</li>
+  <li>GAS 自带一套字符串标签（<code>Runtime/Tags/GameplayTag.cs</code>、<code>GameplayTagContainer.cs</code>）：用前缀比较做层级匹配，用线性列表做引用计数。这套实现要换成 ZFramework 的 int handle。</li>
+  <li>GAS 的 Unity 层（<code>GameplayEffectAsset</code>、<code>GameplayAbilityAsset</code>、<code>SkillAnimationAsset</code>）用 <code>string[]</code> / <code>string</code> 存标签名，经 <code>TagAssetUtility.ToSet</code> 转成本体类型。授权资产在 Unity 层、定义在本体，这个模式本身是对的，可以保留。</li>
+  <li>ZFramework 包根目录下有 <code>bin/</code>、<code>obj/</code>（dotnet build 产物），目录名不带 <code>~</code>。Unity 会把里面的 <code>GameplayTags.Runtime.dll</code> 当插件导入，和 asmdef 编出的程序集产生<strong>重复类型</strong>。见 <a href="#s9">§9</a>。</li>
+</ul>
+
+<!-- ================================================================== -->
+<h2 id="s2"><span class="no">02</span>目标程序集图</h2>
+<p>箭头表示「引用」。<strong>引擎边界以下的程序集一律 <code>noEngineReferences: true</code></strong>，由编译器保证，不靠约定。</p>
+
+<div class="diagram">
+<svg viewBox="0 0 820 470" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+    </marker>
+  </defs>
+  <!-- column labels -->
+  <text x="140" y="20" text-anchor="middle" font-size="13" font-weight="600" fill="#5f6670">ZFramework.GameplayTags 包</text>
+  <text x="410" y="20" text-anchor="middle" font-size="13" font-weight="600" fill="#5f6670">项目 Assets</text>
+  <text x="680" y="20" text-anchor="middle" font-size="13" font-weight="600" fill="#5f6670">com.yeeyo.gas 包</text>
+  <!-- row labels -->
+  <text x="808" y="72" text-anchor="end" font-size="11" fill="#6a4c93">Editor-only</text>
+  <text x="808" y="202" text-anchor="end" font-size="11" fill="#8a5a12">Runtime + UnityEngine</text>
+  <text x="808" y="352" text-anchor="end" font-size="11" fill="#2e7d4f">Runtime · 纯 C#</text>
+
+  <!-- Editor row -->
+  <rect x="30" y="38" width="220" height="64" rx="8" fill="#f0eaf7" stroke="#6a4c93"/>
+  <text x="140" y="64" text-anchor="middle" font-size="13.5" font-weight="600">ZFramework.GameplayTags.Editor</text>
+  <text x="140" y="84" text-anchor="middle" font-size="11.5" fill="#5f6670">Settings 窗口 · 生成器 · Drawer</text>
+
+  <rect x="570" y="38" width="220" height="64" rx="8" fill="#f0eaf7" stroke="#6a4c93"/>
+  <text x="680" y="64" text-anchor="middle" font-size="13.5" font-weight="600">YeeYo.Gas.Editor</text>
+  <text x="680" y="84" text-anchor="middle" font-size="11.5" fill="#5f6670">SkillGraph · 时间轴面板</text>
+
+  <!-- Unity row -->
+  <rect x="30" y="168" width="220" height="64" rx="8" fill="#fbf1df" stroke="#8a5a12"/>
+  <text x="140" y="194" text-anchor="middle" font-size="13.5" font-weight="600">ZFramework.GameplayTags.Unity</text>
+  <text x="140" y="214" text-anchor="middle" font-size="11.5" fill="#5f6670">MonoBehaviour · 序列化代理</text>
+
+  <rect x="300" y="150" width="220" height="56" rx="8" fill="#fbf1df" stroke="#8a5a12" stroke-dasharray="5 3"/>
+  <text x="410" y="174" text-anchor="middle" font-size="13" font-weight="600">…GameplayTags.Generated</text>
+  <text x="410" y="193" text-anchor="middle" font-size="11.5" fill="#5f6670">生成的注册表 · Tags.*（叶子）</text>
+
+  <rect x="570" y="168" width="220" height="64" rx="8" fill="#fbf1df" stroke="#8a5a12"/>
+  <text x="680" y="194" text-anchor="middle" font-size="13.5" font-weight="600">YeeYo.Gas.Unity</text>
+  <text x="680" y="214" text-anchor="middle" font-size="11.5" fill="#5f6670">目标查询 · 投射物 · 区域 · 资产</text>
+
+  <!-- engine boundary -->
+  <line x1="20" y1="275" x2="800" y2="275" stroke="#b3261e" stroke-width="2" stroke-dasharray="8 5"/>
+  <rect x="270" y="263" width="280" height="24" rx="4" fill="#fbe9e7"/>
+  <text x="410" y="280" text-anchor="middle" font-size="12" font-weight="600" fill="#b3261e">引擎边界 · 下方禁止引用 UnityEngine</text>
+
+  <!-- Core row -->
+  <rect x="30" y="318" width="220" height="80" rx="8" fill="#e7f4ec" stroke="#2e7d4f" stroke-width="2"/>
+  <text x="140" y="346" text-anchor="middle" font-size="13.5" font-weight="600">ZFramework.GameplayTags</text>
+  <text x="140" y="366" text-anchor="middle" font-size="11.5" fill="#5f6670">Tag · Container · Manager</text>
+  <text x="140" y="384" text-anchor="middle" font-size="11.5" fill="#5f6670">Requirements · RuleSet · Pool</text>
+
+  <rect x="570" y="318" width="220" height="80" rx="8" fill="#e7f4ec" stroke="#2e7d4f" stroke-width="2"/>
+  <text x="680" y="346" text-anchor="middle" font-size="13.5" font-weight="600">YeeYo.Gas</text>
+  <text x="680" y="366" text-anchor="middle" font-size="11.5" fill="#5f6670">Attribute · Effect · Ability</text>
+  <text x="680" y="384" text-anchor="middle" font-size="11.5" fill="#5f6670">Cue 路由 · TagSet 包装</text>
+
+  <!-- arrows -->
+  <line x1="140" y1="102" x2="140" y2="166" stroke="#444" stroke-width="1.6" marker-end="url(#arr)"/>
+  <path d="M40,102 C10,180 10,260 40,316" fill="none" stroke="#444" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+  <line x1="140" y1="232" x2="140" y2="316" stroke="#444" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="350" y1="206" x2="232" y2="316" stroke="#444" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <line x1="680" y1="102" x2="680" y2="166" stroke="#444" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="680" y1="232" x2="680" y2="316" stroke="#444" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="570" y1="226" x2="252" y2="340" stroke="#444" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#arr)"/>
+  <line x1="568" y1="372" x2="252" y2="372" stroke="#2e7d4f" stroke-width="2.4" marker-end="url(#arr)"/>
+  <text x="410" y="392" text-anchor="middle" font-size="12" font-weight="600" fill="#2e7d4f">本体唯一的外部依赖</text>
+
+  <text x="20" y="452" font-size="11.5" fill="#5f6670">虚线 = 必须显式写进 asmdef 的直接引用（asmdef 引用不传递：YeeYo.Gas.Unity 用到 GameplayTag 类型，就要直接引用 Tags Core）。</text>
+</svg>
+</div>
+
+<div class="callout ok">
+  <strong>依赖规则（写进两个包的 README）</strong>
+  ① Core 层只能引用 Core 层。② Unity 层可以引用 Core 层和 UnityEngine。③ 任何程序集都不能反向引用上一层。
+  ④ GAS 本体<em>不</em>引用 <code>ZFramework.GameplayTags.Generated</code>：标签词表属于项目，不属于库。
+</div>
+
+<!-- ================================================================== -->
+<h2 id="s3"><span class="no">03</span>ZFramework.GameplayTags 拆分</h2>
+
+<h3>目录结构</h3>
+<pre><code>ZFramework.GameplayTags/
+├─ Runtime/
+│  ├─ Core/                                   <span class="c">← ZFramework.GameplayTags.asmdef（保持原名，noEngineReferences: true）</span>
+│  │  ├─ GameplayTag.cs                       <span class="c">去掉 #if UNITY 分支</span>
+│  │  ├─ GameplayTagContainer.cs              <span class="c">去掉 #if UNITY 分支，公开「按名称读写」两个方法</span>
+│  │  ├─ GameplayTagContainerBinds.cs         <span class="c">纯 struct，不动</span>
+│  │  └─ …其余 13 个纯 C# 文件原样搬入
+│  └─ Unity/                                  <span class="c">← 新建 ZFramework.GameplayTags.Unity.asmdef</span>
+│     ├─ GameObjectGameplayTagContainer.cs    <span class="c">MonoBehaviour（连同 .meta 一起移动，GUID 不变）</span>
+│     ├─ GameplayTagContainerBindsHelper.cs   <span class="c">从上面那个文件里拆出来：Bind(this GameObject)</span>
+│     └─ GameplayTagContainerField.cs         <span class="c">新增：Unity 序列化代理，见 §4</span>
+├─ Editor/                                    <span class="c">引用 Core + Unity；容器 Drawer 改成针对 Field 类型</span>
+├─ GameplayTags.Runtime.csproj                <span class="c">Compile Include 改为 Runtime/Core/**，不再需要 Exclude</span>
+└─ Documentation~/                            <span class="c">本文档</span></code></pre>
+
+<h3>要点</h3>
+<ul>
+  <li><strong>Core 程序集保持原名</strong> <code>ZFramework.GameplayTags</code>，命名空间保持 <code>GameplayTags</code>。生成的 asmdef（<code>"references": ["ZFramework.GameplayTags"]</code>）和现有引用方都不用改。</li>
+  <li><strong>Unity 层也用命名空间 <code>GameplayTags</code></strong>，并设 <code>autoReferenced: true</code>。Assembly-CSharp 里的用户代码零改动；只有带自定义 asmdef 的用户需要补一条引用（破坏性变更，写进迁移说明）。</li>
+  <li><strong>MonoBehaviour 跨程序集移动不会丢引用</strong>：场景和 Prefab 按 <code>.cs</code> 文件的 GUID 引用脚本，所以只要 <code>.cs</code> 和 <code>.meta</code> 一起移动、类名和文件名一致即可。</li>
+  <li>版本号升到 <strong>3.0.0</strong>：<code>GameplayTagContainer</code> 不再自动参与 Unity 序列化，属于破坏性变更。</li>
+  <li><code>GameplayTags.Runtime.csproj</code> 的 <code>BaseOutputPath</code> / <code>BaseIntermediateOutputPath</code> 改到 <code>.build~/</code>，避免产物被 Unity 导入（§9）。</li>
+</ul>
+
+<!-- ================================================================== -->
+<h2 id="s4"><span class="no">04</span>关键决策：Unity 序列化回调放哪里</h2>
+<p>Core 不能实现 <code>UnityEngine.ISerializationCallbackReceiver</code>，而 C# 的 partial 类型不能跨程序集，所以 Unity 层也没法给 Core 类型补上这个接口。一共三条路：</p>
+
+<div class="option pick">
+  <h4>方案 A · Core 只负责名称，Unity 层提供序列化代理 <span class="tag core">推荐</span></h4>
+  <ul>
+    <li><strong><code>GameplayTag</code></strong>：保留 <code>[Serializable]</code>、<code>[DataContract]</code> 和公共字段 <code>m_Name</code>，Unity 依旧能序列化名称，现有 Drawer 依旧可用。去掉回调后，Unity 加载出来的 handle 需要调用方在加载边界自己 <code>Resolve()</code>。源码注释里本来就是这个契约（<em>“Unity owners must assign Resolve() for standalone struct fields after loading”</em>），所以没有引入新契约。</li>
+    <li><strong><code>GameplayTagContainer</code></strong>：<strong>去掉 <code>[Serializable]</code></strong>，免得 Unity 序列化出一个「有名称、没存储」的半成品，导致查询静默返回 false。保留 <code>[DataContract]</code> 路径。把现有的 <code>OnBeforeSerialize</code>/<code>OnAfterDeserialize</code> 改名为公开方法 <code>CopyExplicitTagNamesTo(List&lt;string&gt;)</code> / <code>SetExplicitTagsFromNames(IReadOnlyList&lt;string&gt;)</code>。</li>
+    <li>Unity 层新增 <code>GameplayTagContainerField</code>。它的内部字段<strong>和原来同名</strong>（<code>m_SerializedExplicitTags</code>），所以把 MonoBehaviour 里的字段类型从 <code>GameplayTagContainer</code> 换成 <code>GameplayTagContainerField</code> 时，YAML 数据可以原样读回。</li>
+  </ul>
+  <p class="muted">代价：Inspector 里的容器字段类型要改名。好处：Core 查询热路径一个分支都不加，依赖方向干净，也和 GAS 的「资产在 Unity 层 → 定义在本体」模式一致。</p>
+</div>
+
+<div class="option">
+  <h4>方案 B · Core 内惰性恢复</h4>
+  <p>Core 容器在每次查询时检查「有序列化名称但存储未建」，必要时就地重建。这样兼容性最好，但 <code>HasTag</code> 等热路径要多一个分支和一个字段读取，违背这个包「caller-contract performance core」的定位。另外反序列化后「谁、在哪个线程」触发重建也变得不确定。<strong>不推荐。</strong></p>
+</div>
+
+<div class="option">
+  <h4>方案 C · Core 引用 UnityEngine.CoreModule</h4>
+  <p>直接违反「仅 mscorlib + System」的约束，GAS 本体也就无法在纯 .NET 环境下单测。<strong>否决。</strong></p>
+</div>
+
+<h3>方案 A 草图</h3>
+<pre><code><span class="c">// Runtime/Unity/GameplayTagContainerField.cs — ZFramework.GameplayTags.Unity</span>
+<span class="k">namespace</span> GameplayTags
+{
+    <span class="c">/// Unity 序列化代理：持久化显式标签名，运行时 handle 只在 Core 容器里。</span>
+    [Serializable]
+    <span class="k">public sealed class</span> <span class="t">GameplayTagContainerField</span> : UnityEngine.ISerializationCallbackReceiver
+    {
+        <span class="c">// 与旧 GameplayTagContainer 同名，字段类型替换后 YAML 原样读回。</span>
+        [UnityEngine.SerializeField] <span class="k">private</span> List&lt;<span class="k">string</span>&gt; m_SerializedExplicitTags = <span class="k">new</span>();
+        [NonSerialized] <span class="k">private readonly</span> GameplayTagContainer m_Value = <span class="k">new</span>();
+
+        <span class="k">public</span> GameplayTagContainer Value => m_Value;
+
+        <span class="k">public void</span> OnBeforeSerialize() => m_Value.CopyExplicitTagNamesTo(m_SerializedExplicitTags);
+        <span class="k">public void</span> OnAfterDeserialize() => m_Value.SetExplicitTagsFromNames(m_SerializedExplicitTags);
+
+        <span class="k">public static implicit operator</span> GameplayTagContainer(GameplayTagContainerField field) => field.Value;
+    }
+}</code></pre>
+<p class="muted">Editor：<code>GameplayTagContainerPropertyDrawer</code> 的 <code>[CustomPropertyDrawer]</code> 目标改成 <code>GameplayTagContainerField</code>。它按 <code>"m_SerializedExplicitTags"</code> 查找属性，内部逻辑不用改。<code>GameplayTagPropertyDrawer</code> 仍然针对 Core 的 <code>GameplayTag</code>，Editor 程序集本来就引用 Core。</p>
+
+<!-- ================================================================== -->
+<h2 id="s5"><span class="no">05</span>YeeYo.Gas 接入：类型映射</h2>
+
+<table>
+  <tr><th>现在（YeeYo.Gas）</th><th>重构后</th><th>处理</th></tr>
+  <tr><td><code>YeeYo.Gas.GameplayTag</code><br><span class="muted">string 引用，前缀比较</span></td>
+      <td><code>GameplayTags.GameplayTag</code><br><span class="muted">4 字节 int handle</span></td>
+      <td>删除 <code>Runtime/Tags/GameplayTag.cs</code> 里的结构体。层级判断从字符串前缀比较变成 <code>IsParentOf</code> 的整数区间比较。</td></tr>
+  <tr><td><code>YeeYo.Gas.GameplayTagContainer</code><br><span class="muted">引用计数 + OnTagAdded/Removed</span></td>
+      <td><code>GameplayTags.GameplayTagCountContainer</code></td>
+      <td>删除 <code>Runtime/Tags/GameplayTagContainer.cs</code>。<code>AbilitySystemComponent.OwnedTags</code> 的类型随之改变；事件语义有差异，见 <a href="#s6">§6</a>。</td></tr>
+  <tr><td><code>GameplayTagSet</code><br><span class="muted">不可变配置清单</span></td>
+      <td><strong>保留</strong>，内部改存 handle 数组</td>
+      <td>它是 GAS 自己的配置语义，不是通用容器，所以留在本体。<code>HasAnyMatching</code> 改成 <code>q == s || q.IsParentOf(s)</code>，全是整数比较。构造时拒绝 <code>!IsValid</code> 的标签（§6）。新增 <code>internal ReadOnlySpan&lt;GameplayTag&gt; AsSpan()</code>，供构造 Requirements 用。</td></tr>
+  <tr><td><code>ActivationRequiredTags</code> + <code>ActivationBlockedTags</code><br><span class="muted">每次激活两次线性扫描</span></td>
+      <td>在定义构造时预算出 <code>GameplayTagRequirements</code></td>
+      <td><code>GameplayAbilityDefinition</code> 新增 <code>ActivationRequirements</code> 属性，原有 TagSet 属性保留给编辑器和调试查看。<code>CanActivate</code> 只调用一次 <code>Matches(OwnedTags)</code>。</td></tr>
+  <tr><td><code>EffectTags.ApplicationRequired</code> + <code>ApplicationBlocked</code> / <code>OngoingBlocked</code></td>
+      <td>同上：<code>ApplicationRequirements</code>、<code>OngoingRequirements</code>（后者只有 forbidden）</td>
+      <td><code>GameplayEffectContainer</code> 的第 107/112/379 行改为 <code>Matches</code>。</td></tr>
+  <tr><td><code>GameplayCueRouter</code>：<code>List&lt;GameplayTag&gt;</code> + <code>==</code></td>
+      <td>结构不变</td>
+      <td>相等性从字符串序数比较变成 int 比较。层级 Cue 匹配（注册 <code>GameplayCue.Hit</code>，接住 <code>GameplayCue.Hit.Fire</code>）以后可以用 <code>IsParentOf</code> 低成本实现，<strong>不在本次范围内</strong>。</td></tr>
+  <tr><td>Unity 层 <code>string[] xxxTags</code> + <code>TagAssetUtility.ToSet</code></td>
+      <td><code>GameplayTag[] xxxTags</code></td>
+      <td>Inspector 直接获得 ZFramework 的标签选择器。<code>ToSet</code> 改为逐个 <code>Resolve()</code>：跳过空名称，未注册的名称用 <code>Debug.LogWarning</code> 报出来，不静默丢弃。<code>SkillAnimationAsset.cueTag</code> 同样处理。</td></tr>
+</table>
+
+<h3>代码示意</h3>
+<pre><code><span class="c">// GameplayAbilityDefinition 构造函数（YeeYo.Gas，纯 C#）</span>
+ActivationRequirements = GameplayTagRequirements.Create(
+    activationBlockedTags.AsSpan(),     <span class="c">// forbidden</span>
+    activationRequiredTags.AsSpan());   <span class="c">// required</span>
+
+<span class="c">// AbilitySystemComponent.CanActivate —— 原来两个 if 合并成一个</span>
+<span class="k">if</span> (!definition.ActivationRequirements.Matches(OwnedTags))
+    <span class="k">return false</span>;</code></pre>
+<p class="muted"><code>GameplayTagRequirements</code> 的语义和现有 <code>HasAllTags</code> / <code>HasAnyTags</code> 一致：required 做层级匹配、必须全部满足；forbidden 必须全部不存在。两者矛盾时 <code>IsImpossible</code> 为真，永远不匹配，和现在「同一标签既是必需又是阻止就永远激活不了」的结果相同。这一点要用单测锁定（阶段 0）。</p>
+
+<!-- ================================================================== -->
+<h2 id="s6"><span class="no">06</span>行为差异与处理</h2>
+<table>
+  <tr><th>差异点</th><th>旧（GAS 自带）</th><th>新（ZFramework）</th><th>处理</th></tr>
+  <tr><td>添加/移除事件</td>
+      <td><code>OnTagAdded</code> / <code>OnTagRemoved</code> 只针对<strong>显式</strong>标签</td>
+      <td><code>OnAnyTagNewOrRemove(tag, newCount)</code> 对<strong>隐式祖先也触发</strong>：加 <code>A.B.C</code> 会依次通知 <code>A</code>、<code>A.B</code>、<code>A.B.C</code></td>
+      <td>本体内部没有订阅者（已用 grep 确认）。README 改为推荐 <code>RegisterTagEventCallback(tag, NewOrRemoved, cb)</code> 按标签订阅。外部订阅方属于破坏性变更。</td></tr>
+  <tr><td>None / 未注册标签</td>
+      <td><code>AddTag(None)</code> 被静默忽略</td>
+      <td>契约要求 handle 已注册且非 None。<code>AddTag(None)</code> 会把 id 0 写进存储，之后 <code>HasTag(None)</code> 返回 true</td>
+      <td>在边界上校验：<code>GameplayTagSet</code> 构造时对 <code>!IsValid</code> 抛 <code>ArgumentException</code>；ASC 公开的增删入口加 Debug 断言。</td></tr>
+  <tr><td>字符串隐式转换</td>
+      <td>零分配，任意字符串都能用</td>
+      <td><code>RequestTag</code> 走字典查找；首次调用会触发注册表初始化；未知名称返回 None</td>
+      <td>README 里删掉「零分配」的说法。热路径用生成的 <code>Tags.*</code> 字段或缓存的 handle；字符串只用于冷路径和配置。</td></tr>
+  <tr><td><code>RemoveTag</code> 返回值</td><td><code>bool</code></td><td><code>void</code>；移除次数超过显式计数属于契约违例</td>
+      <td>GAS 内部增删本来就对称（效果授予/移除、能力激活/结束），影响不大。外部调用方的签名会变。</td></tr>
+  <tr><td>回调中抛异常</td><td>后续标签的结构清理可能被打断</td>
+      <td>状态先提交、再派发；抛异常时<strong>丢弃剩余排队事件</strong></td>
+      <td><code>GameplayEffectContainer</code> 第 589 行「逐项移除」的写法继续保留：结构总是一致，但后面的通知可能丢失，这一点写进文档。</td></tr>
+  <tr><td><code>Clear()</code></td><td>先清空，再只通知显式标签，处理了重入</td>
+      <td>对所有条目（含祖先）派发 <code>newCount = 0</code>，重入的变更追加到同一个队列</td>
+      <td>重入语义等价。用阶段 0 的特征测试覆盖。</td></tr>
+  <tr><td>注册表生命周期</td><td>无注册表</td><td>每个进程/域只初始化一次，之后冻结</td>
+      <td>单测：在 assembly 级 SetUp 里一次性 <code>GameplayTagManager.Initialize(...)</code> 注册所有测试用标签，各测试类不能自己初始化。</td></tr>
+</table>
+
+<!-- ================================================================== -->
+<h2 id="s7"><span class="no">07</span>asmdef / package.json 变更</h2>
+
+<table>
+  <tr><th>程序集</th><th>references</th><th>noEngineReferences</th></tr>
+  <tr><td><span class="tag core">Core</span> <code>ZFramework.GameplayTags</code></td><td>—</td><td><strong>true</strong>（新）</td></tr>
+  <tr><td><span class="tag unity">Unity</span> <code>ZFramework.GameplayTags.Unity</code>（新）</td><td>ZFramework.GameplayTags</td><td>false</td></tr>
+  <tr><td><span class="tag editor">Editor</span> <code>ZFramework.GameplayTags.Editor</code></td><td>ZFramework.GameplayTags, <strong>ZFramework.GameplayTags.Unity</strong></td><td>false</td></tr>
+  <tr><td><span class="tag core">Core</span> <code>YeeYo.Gas</code></td><td><strong>ZFramework.GameplayTags</strong></td><td><strong>true</strong>（新）</td></tr>
+  <tr><td><span class="tag unity">Unity</span> <code>YeeYo.Gas.Unity</code></td><td>YeeYo.Gas, <strong>ZFramework.GameplayTags</strong></td><td>false</td></tr>
+  <tr><td><span class="tag editor">Editor</span> <code>YeeYo.Gas.Editor</code></td><td>YeeYo.Gas, YeeYo.Gas.Unity, <strong>ZFramework.GameplayTags</strong></td><td>false</td></tr>
+</table>
+
+<pre><code><span class="c">// com.yeeyo.gas/Runtime/YeeYo.Gas.asmdef</span>
+{
+  <span class="s">"name"</span>: <span class="s">"YeeYo.Gas"</span>,
+  <span class="s">"rootNamespace"</span>: <span class="s">"YeeYo.Gas"</span>,
+  <span class="s">"references"</span>: [<span class="s">"ZFramework.GameplayTags"</span>],
+  <span class="s">"noEngineReferences"</span>: <span class="k">true</span>,
+  <span class="s">"autoReferenced"</span>: <span class="k">true</span>
+}
+
+<span class="c">// com.yeeyo.gas/package.json —— 声明包依赖</span>
+<span class="s">"dependencies"</span>: { <span class="s">"com.acced.zframework.gameplaytags"</span>: <span class="s">"3.0.0"</span> }</code></pre>
+
+<p>GAS README 里的程序集表相应更新为：</p>
+<table>
+  <tr><th>程序集</th><th>内容</th><th>依赖</th></tr>
+  <tr><td><code>YeeYo.Gas</code></td><td>规则本体：Attribute / Effect / Ability / Cue 路由，标签配置清单</td><td><strong>仅 mscorlib + System + ZFramework.GameplayTags（同样 noEngineReferences）</strong></td></tr>
+  <tr><td><code>YeeYo.Gas.Unity</code></td><td>需要引擎能力的部分：目标查询、投射物、区域效果、授权资产</td><td>上者 + UnityEngine</td></tr>
+</table>
+
+<!-- ================================================================== -->
+<h2 id="s8"><span class="no">08</span>实施阶段与验证</h2>
+<p class="muted">开始前：先提交 com.yeeyo.gas 工作区里还没提交的改动（GameplayEffectContainer 重写、Samples 删除等），再从干净的基线起分支。根目录下误生成的 <code>NUL</code> 文件一并删除。</p>
+
+<div class="phase">
+  <h3>阶段 0 · 用特征测试锁定现有语义（只动 GAS）</h3>
+  <ul class="check">
+    <li>为现有标签行为补单测：层级匹配要落在 <code>.</code> 边界；多来源引用计数；Clear 重入；Required/Blocked 矛盾时永远不激活；冷却标签阻断激活；RemoveEffectsWithAnyTag 的层级匹配。</li>
+    <li>测试用例只通过 ASC / Definition 的公开 API 编写，不直接碰标签类型，这样阶段 2 换实现后同一套测试可以直接复用。</li>
+  </ul>
+  <div class="verify">验证：在 Unity Test Runner（EditMode）里全部通过，作为阶段 2 的回归基线。</div>
+</div>
+
+<div class="phase">
+  <h3>阶段 1 · 拆分 ZFramework.GameplayTags（不动 GAS）</h3>
+  <ul class="check">
+    <li>建 <code>Runtime/Core</code>、<code>Runtime/Unity</code>；用 Unity 或 <code>git mv</code> 连同 <code>.meta</code> 一起移动文件。</li>
+    <li>Core asmdef 设 <code>noEngineReferences: true</code>；删除 <code>GameplayTag</code> / <code>GameplayTagContainer</code> 里的 <code>#if UNITY_5_3_OR_NEWER</code> 分支；容器去掉 <code>[Serializable]</code>，公开按名称读写的两个方法。</li>
+    <li>新建 Unity asmdef，放入 <code>GameObjectGameplayTagContainer</code>、拆出的 <code>GameplayTagContainerBindsHelper</code>、新增的 <code>GameplayTagContainerField</code>。<code>GameObjectGameplayTagContainer.m_PersistentTags</code> 改为 Field 类型。</li>
+    <li>Editor asmdef 补引用；容器 Drawer 改为针对 Field 类型。</li>
+    <li>csproj 改 Compile Include 和输出目录；删除包内的 <code>bin/</code>、<code>obj/</code>。</li>
+    <li>README / README_CN：程序集表、迁移说明（容器字段改用 Field、自定义 asmdef 需要补引用）；版本号改为 3.0.0。</li>
+  </ul>
+  <div class="verify">验证：① Unity 编译 0 错误 ② <code>dotnet build GameplayTags.Runtime.csproj</code> 通过 ③ Tag Playground 示例的 Console 输出和升级前一致 ④ 挂了 <code>GameObjectGameplayTagContainer</code> 的 Prefab 没有出现 Missing Script，<code>m_PersistentTags</code> 的数据读回无误 ⑤ <code>grep -r UnityEngine Runtime/Core</code> 没有结果。</div>
+</div>
+
+<div class="phase">
+  <h3>阶段 2 · GAS 本体切换到 Tags Core</h3>
+  <ul class="check">
+    <li><code>YeeYo.Gas.asmdef</code> 加引用并设 <code>noEngineReferences: true</code>；<code>package.json</code> 声明依赖。</li>
+    <li>删除自带的 <code>GameplayTag</code> / <code>GameplayTagContainer</code>；<code>GameplayTagSet</code> 改存 handle 并做校验；全局加 <code>using GameplayTags;</code>。</li>
+    <li>Ability / Effect 定义预算 <code>GameplayTagRequirements</code>；ASC 和 EffectContainer 的检查点改用 <code>Matches</code>。</li>
+    <li><code>OwnedTags</code> 改为 <code>GameplayTagCountContainer</code>；<code>CancelAbilitiesWithTags</code> / <code>RemoveEffectsWithAnyTag</code> 走 <code>GameplayTagSet.HasAnyMatching</code>。</li>
+    <li>测试程序集在 assembly 级 SetUp 里一次性初始化测试用标签注册表。</li>
+  </ul>
+  <div class="verify">验证：阶段 0 的测试全部通过；可选：新增 <code>YeeYo.Gas.Core.csproj</code>（引用 <code>GameplayTags.Runtime.csproj</code>），用 <code>dotnet build</code> / <code>dotnet test</code> 在纯 .NET 下跑一遍，从编译层面证明「仅 mscorlib + System」。</div>
+</div>
+
+<div class="phase">
+  <h3>阶段 3 · GAS Unity 层与编辑器</h3>
+  <ul class="check">
+    <li><code>YeeYo.Gas.Unity</code> / <code>YeeYo.Gas.Editor</code> asmdef 加上对 <code>ZFramework.GameplayTags</code> 的引用。</li>
+    <li>三个资产里的 <code>string[]</code> / <code>string</code> 改为 <code>GameplayTag[]</code> / <code>GameplayTag</code>；<code>TagAssetUtility.ToSet</code> 改为 Resolve + 告警。</li>
+    <li>如果已有授权资产：同时保留旧的 <code>string[]</code> 字段（加 <code>[HideInInspector]</code>），在 <code>OnValidate</code> 里一次性迁移到新字段后清空；或者提供一个菜单命令批量迁移。<em>字段类型从 string 换成 struct 时，Unity 不会自动转换数据。</em></li>
+    <li>SkillGraph / 时间轴面板里如果有手写的标签输入框，换成 ZFramework 的选择器。</li>
+  </ul>
+  <div class="verify">验证：资产在 Inspector 里显示标签选择器；Play Mode 下 <code>Definition</code> 构建正确，未注册的标签名有告警；迁移后旧字段为空，新字段数据完整。</div>
+</div>
+
+<div class="phase">
+  <h3>阶段 4 · 防回退</h3>
+  <ul class="check">
+    <li>两个 Core asmdef 的 <code>noEngineReferences: true</code> 就是编译期护栏：以后谁在本体里写 <code>using UnityEngine</code> 都会直接编译失败。</li>
+    <li>可选：CI 里跑两个纯 .NET csproj 的 build，防止有人通过 <code>#if UNITY_*</code> 绕过护栏。</li>
+  </ul>
+</div>
+
+<!-- ================================================================== -->
+<h2 id="s9"><span class="no">09</span>风险与待决问题</h2>
+<table>
+  <tr><th>#</th><th>事项</th><th>建议</th></tr>
+  <tr><td>R1</td><td><strong>包内 <code>bin/</code>、<code>obj/</code> 会被 Unity 导入</strong>：<code>GameplayTags.Runtime.dll</code> 和 asmdef 编出的程序集定义了同样的类型，可能出现重复类型或引用歧义。</td>
+      <td>阶段 1 删除，并把 csproj 输出改到 <code>.build~/</code>。加 <code>.gitignore</code>。</td></tr>
+  <tr><td>R2</td><td>现有 ZFramework 用户在 MonoBehaviour 里声明了 <code>GameplayTagContainer</code> 字段：去掉 <code>[Serializable]</code> 后，Unity 不再序列化该字段。如果在改成 Field 类型<strong>之前</strong>重新保存了场景，数据会丢失。</td>
+      <td>迁移说明写明：升级包和修改字段类型放在同一次提交里，期间不要保存资产。或者在 3.0 里保留一个 <code>[Obsolete]</code> 过渡期。</td></tr>
+  <tr><td>R3</td><td>Unity 加载出来的 <code>GameplayTag</code> 字段不再自动 Resolve（以前依赖 <code>#if UNITY</code> 回调）。</td>
+      <td>契约本来就要求调用方在加载边界 Resolve。GAS 的资产全部经 Definition 构建，正好就是这个边界。待决：要不要在 Unity 层也提供一个 <code>GameplayTagField</code>，做到和容器对称？</td></tr>
+  <tr><td>R4</td><td>事件会对隐式祖先触发，外部订阅 <code>OwnedTags</code> 事件的代码行为会变。</td>
+      <td>GAS 是 0.1.0，破坏性变更可以接受；README 给出 <code>RegisterTagEventCallback</code> 的写法。</td></tr>
+  <tr><td>R5</td><td>注册表冻结后就不能重新初始化：Editor 不进行 Domain Reload 时，新增标签必须重新生成代码并编译。</td>
+      <td>这是 ZFramework 现有的行为，不在本次范围内，只在 GAS README 里提一句。</td></tr>
+  <tr><td>Q1</td><td><code>OwnedTags</code> 是直接暴露 <code>GameplayTagCountContainer</code>，还是只暴露只读接口加 ASC 上的 <code>AddLooseTag</code> / <code>RemoveLooseTag</code>？</td>
+      <td>倾向后者：外部直接 RemoveTag 能把效果授予的计数减掉，破坏不变量。但这超出「依赖划分」的范围，可以单独立项。</td></tr>
+  <tr><td>Q2</td><td>阶段 3 的资产迁移：有没有已经存在、需要保留的 <code>.asset</code> 数据？</td>
+      <td>没有的话直接换字段类型，省掉迁移代码。</td></tr>
+</table>
+
+</main>
+</body>
+</html>

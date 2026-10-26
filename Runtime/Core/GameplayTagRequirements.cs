@@ -139,6 +139,7 @@ namespace GameplayTags
         }
 
         /// <summary>Check current holder state. Matching does not allocate or cache the result.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Matches<T>(in T container) where T : IGameplayTagContainer
         {
             if (m_RequiredCount <= 0 && m_ForbiddenCount == 0)

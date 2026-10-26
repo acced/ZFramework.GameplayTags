@@ -1,0 +1,9 @@
+{
+  "name": "ZFramework.GameplayTags.Unity",
+  "rootNamespace": "GameplayTags",
+  "references": [
+    "ZFramework.GameplayTags"
+  ],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

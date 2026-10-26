@@ -13,9 +13,6 @@ namespace GameplayTags
     [DataContract]
     [DebuggerDisplay("{m_Name,nq}")]
     public struct GameplayTag : IEquatable<GameplayTag>
-#if UNITY_5_3_OR_NEWER
-        , UnityEngine.ISerializationCallbackReceiver
-#endif
     {
         public static readonly GameplayTag None = default;
         // Preconditions: a resolved handle from the current registry; no name edits
@@ -53,9 +50,6 @@ namespace GameplayTags
             GameplayTagManager.GetParentIndex(RuntimeIndex));
 
         [DataMember(Name = "m_Name", Order = 0)]
-#if UNITY_5_3_OR_NEWER
-        [UnityEngine.SerializeField]
-#endif
         public string m_Name;
 
         [NonSerialized]

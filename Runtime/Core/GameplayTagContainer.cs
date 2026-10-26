@@ -54,14 +54,10 @@ namespace GameplayTags
     /// A set of explicit tags with reference-counted ancestor closure. Mutations require
     /// registered, non-None tags. Enumeration is unordered and invalidated by mutation.
     /// </summary>
-    [Serializable]
     [DataContract]
     [DebuggerTypeProxy(typeof(GameplayTagContainerDebugView))]
     [DebuggerDisplay("Explicit = {ExplicitTagCount}, Total = {TagCount}")]
     public class GameplayTagContainer : IGameplayTagContainer
-#if UNITY_5_3_OR_NEWER
-        , UnityEngine.ISerializationCallbackReceiver
-#endif
     {
         /// <summary>Shared empty query operand. Treat as read-only.</summary>
         public static GameplayTagContainer Empty { get; } = new GameplayTagContainer();
@@ -349,25 +345,39 @@ namespace GameplayTags
         public void GetExplicitChildTags(GameplayTag tag, List<GameplayTag> output) =>
             GameplayTagContainerUtility.GetChildTags(m_Indices.Storage, tag, output, true);
 
-        // Names are a cold serialization boundary. Runtime state never stores strings.
+        /// <summary>Replace output with sorted explicit names. Serialization boundary only.</summary>
+        public void CopyExplicitTagNamesTo(List<string> output)
+        {
+            output.Clear();
+            foreach (GameplayTag tag in GetExplicitTags())
+                output.Add(tag.Name);
+            output.Sort(StringComparer.Ordinal);
+        }
+
+        /// <summary>
+        /// Replace runtime state from names, skipping empty or unregistered names.
+        /// Reuses container storage; resolution and filtering happen only at this loading boundary.
+        /// </summary>
+        public void SetExplicitTagsFromNames(IReadOnlyList<string> names)
+        {
+            m_Indices.Storage.Clear();
+            for (int i = 0; i < names.Count; i++)
+                if (GameplayTagManager.RequestTag(names[i], out GameplayTag tag))
+                    AddTag(tag);
+        }
+
+        // DataContract serialization remains independent of the Unity field adapter.
         public void OnBeforeSerialize()
         {
             m_SerializedExplicitTags ??= new List<string>(ExplicitTagCount);
-            m_SerializedExplicitTags.Clear();
-            foreach (GameplayTag tag in GetExplicitTags())
-                m_SerializedExplicitTags.Add(tag.Name);
-            m_SerializedExplicitTags.Sort(StringComparer.Ordinal);
+            CopyExplicitTagNamesTo(m_SerializedExplicitTags);
         }
 
-        // Requires a published registry. No pending state or first-access checks.
         public void OnAfterDeserialize()
         {
             m_Indices = GameplayTagContainerIndices.Create();
-            if (m_SerializedExplicitTags == null)
-                return;
-            for (int i = 0; i < m_SerializedExplicitTags.Count; i++)
-                if (GameplayTagManager.RequestTag(m_SerializedExplicitTags[i], out GameplayTag tag))
-                    AddTag(tag);
+            if (m_SerializedExplicitTags != null)
+                SetExplicitTagsFromNames(m_SerializedExplicitTags);
         }
 
         [OnSerializing]

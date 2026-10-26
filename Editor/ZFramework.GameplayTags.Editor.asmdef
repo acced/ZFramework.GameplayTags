@@ -2,7 +2,8 @@
   "name": "ZFramework.GameplayTags.Editor",
   "rootNamespace": "GameplayTags.Editor",
   "references": [
-    "ZFramework.GameplayTags"
+    "ZFramework.GameplayTags",
+    "ZFramework.GameplayTags.Unity"
   ],
   "includePlatforms": [
     "Editor"

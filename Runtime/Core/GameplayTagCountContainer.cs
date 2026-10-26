@@ -260,19 +260,22 @@ namespace GameplayTags
 
         private void AddTagInternal(int id, int amount, bool notify)
         {
-            int ownCount = Storage.AddExplicitAndTotal(id, amount);
+            TagStorage storage = Storage;
             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
             if (!notify)
             {
+                // Insert root-to-leaf so a balanced removal can pop newly added entries.
                 for (int i = 0; i < hierarchy.Length - 1; i++)
-                    Storage.AddTotal(hierarchy[i], amount);
+                    storage.AddTotal(hierarchy[i], amount);
+                storage.AddExplicitAndTotal(id, amount);
                 return;
             }
 
+            int ownCount = storage.AddExplicitAndTotal(id, amount);
             for (int i = 0; i < hierarchy.Length - 1; i++)
             {
                 int current = hierarchy[i];
-                int newCount = Storage.AddTotal(current, amount);
+                int newCount = storage.AddTotal(current, amount);
                 QueueChange(current, newCount, newCount == amount);
             }
             QueueChange(id, ownCount, ownCount == amount);
@@ -333,22 +336,24 @@ namespace GameplayTags
 
         private bool RemoveTagInternal(int id, int amount, bool notify)
         {
-            int ownCount = Storage.RemoveExplicitAndTotal(id, amount);
+            TagStorage storage = Storage;
+            int ownCount = storage.RemoveExplicitAndTotal(id, amount);
             if (ownCount < 0)
                 return false;
 
             ReadOnlySpan<int> hierarchy = GameplayTagManager.GetHierarchyIndices(id);
             if (!notify)
             {
-                for (int i = 0; i < hierarchy.Length - 1; i++)
-                    Storage.RemoveTotal(hierarchy[i], amount);
+                // Reverse insertion order avoids moving the remaining path entries.
+                for (int i = hierarchy.Length - 2; i >= 0; i--)
+                    storage.RemoveTotal(hierarchy[i], amount);
                 return true;
             }
 
             for (int i = 0; i < hierarchy.Length - 1; i++)
             {
                 int current = hierarchy[i];
-                int newCount = Storage.RemoveTotal(current, amount);
+                int newCount = storage.RemoveTotal(current, amount);
                 QueueChange(current, newCount, newCount == 0);
             }
             QueueChange(id, ownCount, ownCount == 0);
