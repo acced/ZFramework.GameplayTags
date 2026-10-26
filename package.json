@@ -1,6 +1,6 @@
 {
   "name": "com.acced.zframework.gameplaytags",
-  "version": "3.0.0",
+  "version": "1.0.0",
   "displayName": "ZFramework Gameplay Tags",
   "description": "Caller-contract performance core: cached integer handles, compact indexed storage and batched ancestor propagation.",
   "unity": "2022.3",
